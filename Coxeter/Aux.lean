@@ -10,6 +10,14 @@ def subsetList (S: Set G) : (Set (List G)) :=
 { L | ∀ a∈ L , a ∈ S}
 
 @[simp]
+lemma nil_in_subsetList {S : Set G} : [] ∈ subsetList S := by {
+   rw [subsetList]
+   intro a ha 
+   exfalso
+   exact (List.mem_nil_iff a).1 ha 
+} 
+
+@[simp]
 def eqSubsetProd (S : Set G) : G → Prop := λ (g : G) =>  ∃ (L : List G), (∀ a∈L, a∈ S) ∧ g = L.prod 
 
 lemma mem_SubsetProd (S : Set G) (g : G ): g ∈ S → eqSubsetProd S g := by {
@@ -36,8 +44,8 @@ def isInvSymm (S : Set G) := ∀ a ∈ S, a⁻¹ ∈ S
 def InvSymm (S : Set G) := {a:G | a∈ S ∨ a⁻¹ ∈ S}
 
 
-
 lemma mem_InvSymm (S : Set G) : a ∈ S → a ∈ InvSymm S:= Or.inl   
+
 lemma memInv_InvSymm (S : Set G) : a ∈ S → a⁻¹ ∈ InvSymm S:= by {
   rintro ha
   apply Or.inr 
@@ -49,7 +57,6 @@ lemma memInv_InvSymm' (S : Set G) : a⁻¹ ∈ S → a ∈ InvSymm S:= by {
   apply Or.inr 
   exact ha 
 }
-
 lemma mem_InvSymm_iff (S : Set G) : a ∈ InvSymm S → a⁻¹ ∈ InvSymm S:= by {
    rintro ha 
    cases ha with 
