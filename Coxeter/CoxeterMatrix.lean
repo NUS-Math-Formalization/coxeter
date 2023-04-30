@@ -214,7 +214,7 @@ class HExchangePropClass (A : Type _) (G : Type _) [Group G] [SetLike A G]  exte
 
 class HDeletionPropClass (A : Type _) (G : Type _) [Group G] [SetLike A G]  extends HOrderTwoGenClass A G  where 
    deletion: ∀ {S : A} {L : List G}, 
-    (length S (s * L.prod) < L.length → 
+    length S (s * L.prod) < L.length → 
     ∃ (j: Fin L.length), ∃ (i:Fin j), L.prod = ((L.removeNth j).removeNth i).prod
 
 
