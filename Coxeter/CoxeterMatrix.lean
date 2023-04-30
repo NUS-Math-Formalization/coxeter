@@ -263,6 +263,8 @@ structure CoxeterGroup (A : Type _) (G : Type _) (G : Type _) [Group G] [SetLike
    ι: G ≃* m.toGroup 
 
 
+
+
 end CoxeterGroup
 
 
