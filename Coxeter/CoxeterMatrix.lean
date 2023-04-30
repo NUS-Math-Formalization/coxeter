@@ -66,7 +66,9 @@ class HOrderTwoGenClass (A : Type _) (G : Type _) [Group G] [SetLike A G] : Prop
    gen :  ∀ {S:A},  ∀(g :G), g ∈ Subgroup.closure S 
 
 
-variable {G: Type _} [Group G] [SetLike A G] [HOrderTwoGenClass A G] (S : A)
+
+
+variable {G: Type _} {A : Type _ } [Group G] [SetLike A G] [HOrderTwoGenClass A G] (S : A)
 
 lemma s_eq_inv_s {s : G}: s ∈ S → s = s⁻¹ := by { 
    intro hs
@@ -74,6 +76,15 @@ lemma s_eq_inv_s {s : G}: s ∈ S → s = s⁻¹ := by {
    rw [<- mul_eq_one_iff_eq_inv,s2] 
 } 
 
+--{A G} [Group G] [SetLike A G] [HOrderTwoGenClass A G] 
+instance : InvMemClass A G :=  
+  {inv_mem :=  by {
+     intro S x hx 
+     have := @s_eq_inv_s G A _ _ _ S ↑x hx 
+     rw [<-this] 
+     exact hx
+   }
+  }  
 
 lemma s_eq_inv_s' {s : G}: s⁻¹ ∈ S → s = s⁻¹ := by 
    {
@@ -204,8 +215,6 @@ end Length
 
 section CoxeterGroup
 
-variable {G: Type _} [Group G]  
-
 
 class HExchangePropClass (A : Type _) (G : Type _) [Group G] [SetLike A G]  extends HOrderTwoGenClass A G  where 
    exchange: ∀ {S : A} {L : List G} {Hred: reduced_word S L} {s : G} (Hs: s ∈ S), 
@@ -218,7 +227,12 @@ class HDeletionPropClass (A : Type _) (G : Type _) [Group G] [SetLike A G]  exte
     ∃ (j: Fin L.length), ∃ (i:Fin j), L.prod = ((L.removeNth j).removeNth i).prod
 
 
+class SimpleReflectionClass  (A : Type _) (G : Type _) [Group G] [SetLike A G]  extends
+HOrderTwoGenClass A G, HExchangePropClass A G, HOrderTwoGenClass A G : Prop
 
+
+
+structure CoxeterGroup (G : Type _) [Group G] 
 
 
 end CoxeterGroup
