@@ -10,7 +10,7 @@ universe u1 u2 u3
 
 variable {α: Type u1}  {β: Type u2}
 
-@[ext,class] structure CoxeterMatrix:= 
+@[ext,class] structure CoxeterMatrix {α : Type u1}:= 
 (m : Matrix α α ℕ)
 (isSymm : ∀ (a b : α ), m a b = m b a )
 (one_iff: ∀  {a b : α}, (m a b = 1) ↔ (a=b) )
@@ -62,13 +62,13 @@ section Length
 open Subgroup
 
 class HOrderTwoGenClass (A : Type _) (G : Type _) [Group G] [SetLike A G] : Prop where 
-   order_two: ∀ {S:A}, x∈ S → x * x = 1  
-   gen :  ∀ {S:A},  ∀(g :G), g ∈ Subgroup.closure S 
+   order_two: ∀ {x : G} {S:A}, x∈ S → x * x = 1  
+   gen :  ∀ {S:A} (g :G), g ∈ Subgroup.closure S 
 
 
 
 
-variable {G: Type _} {A : Type _ } [Group G] [SetLike A G] [HOrderTwoGenClass A G] (S : A)
+variable {A : Type _ } {G: Type _} [Group G] [SetLike A G] [HOrderTwoGenClass A G] (S : A)
 
 lemma s_eq_inv_s {s : G}: s ∈ S → s = s⁻¹ := by { 
    intro hs
@@ -80,7 +80,7 @@ lemma s_eq_inv_s {s : G}: s ∈ S → s = s⁻¹ := by {
 instance : InvMemClass A G :=  
   {inv_mem :=  by {
      intro S x hx 
-     have := @s_eq_inv_s G A _ _ _ S ↑x hx 
+     have := @s_eq_inv_s A G _ _ _ S ↑x hx 
      rw [<-this] 
      exact hx
    }
@@ -215,24 +215,58 @@ end Length
 
 section CoxeterGroup
 
+variable (A : Type _) (G : Type _) [Group G] [SetLike A G]
 
-class HExchangePropClass (A : Type _) (G : Type _) [Group G] [SetLike A G]  extends HOrderTwoGenClass A G  where 
+class HExchangePropClass  extends HOrderTwoGenClass A G  where 
    exchange: ∀ {S : A} {L : List G} {Hred: reduced_word S L} {s : G} (Hs: s ∈ S), 
     (length S (s * L.prod) < length S (L.prod)) → ∃ (i: Fin L.length) ,t * w = (L.removeNth i).prod
 
 
+
 class HDeletionPropClass (A : Type _) (G : Type _) [Group G] [SetLike A G]  extends HOrderTwoGenClass A G  where 
-   deletion: ∀ {S : A} {L : List G}, 
-    length S (s * L.prod) < L.length → 
+   deletion: ∀ {S : A} {L : List G} {Hred: reduced_word S L}, 
+    length S (L.prod) < L.length → 
     ∃ (j: Fin L.length), ∃ (i:Fin j), L.prod = ((L.removeNth j).removeNth i).prod
+
+
+instance exchangeProp_imp_deletionProp [HExchangePropClass A G]: HDeletionPropClass A G := {
+   deletion := by {
+      intro S L Hred Hlen 
+      sorry  
+   },
+}
+
+
+instance deletionProp_imp_exchangeProp [HDeletionPropClass A G]: HExchangePropClass A G := {
+   exchange:= by {
+      intro S L Hred Hlen 
+      sorry  
+   },
+}
+
+/-
+class HPresentationPropClass (A : Type _) (G : Type _) [Group G] [SetLike A G] extends HOrderTwoGenClass A G  where 
+   m : ∀ {S : A} {L : List G} {Hred: reduced_word S L}, 
+    length S (L.prod) < L.length → 
+    ∃ (j: Fin L.length), ∃ (i:Fin j), L.prod = ((L.removeNth j).removeNth i).prod
+-/
 
 
 class SimpleReflectionClass  (A : Type _) (G : Type _) [Group G] [SetLike A G]  extends
 HOrderTwoGenClass A G, HExchangePropClass A G, HOrderTwoGenClass A G : Prop
 
-
-
-structure CoxeterGroup (G : Type _) [Group G] 
+@[class]
+structure CoxeterGroup (A : Type _) (G : Type _) (G : Type _) [Group G] [SetLike A G]extends Group G where 
+   S : A
+   m : @CoxeterMatrix (↑S)
+   props: SimpleReflectionClass A G
+   ι: G ≃* m.toGroup 
 
 
 end CoxeterGroup
+
+
+section CoxeterMatrix
+
+
+end CoxeterMatrix
