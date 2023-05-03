@@ -219,6 +219,7 @@ lemma one_length_zero : length S order_two gen (1 : G) = 0 := by {
 end Length
 
 
+
 section CoxeterGroup
 
 
