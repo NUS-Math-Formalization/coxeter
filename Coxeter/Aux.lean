@@ -1,13 +1,51 @@
 import Mathlib.GroupTheory.Subgroup.Basic
 import Mathlib.GroupTheory.Submonoid.Membership
+import Mathlib.Data.List.Range
+
+@[simp]
+def subsetList {G : Type _} (S : Set G): (Set (List G)) := 
+{ L | ∀ a∈ L , a ∈ S}
 
 namespace Subgroup
 section SubgroupClosure 
-variable {G : Type u3} [Group G]
+variable {G : Type u3} [Group G] (S : Set G)
+
 
 @[simp]
-def subsetList (S: Set G) : (Set (List G)) := 
-{ L | ∀ a∈ L , a ∈ S}
+def coe_ListG_to_ListS' (S: Set G)(L : List G) (h: L ∈ subsetList S): List S
+:= match L with  
+| [] => []
+| hd ::tail => ⟨hd,by {
+      simp at h 
+      exact h.1
+   } ⟩ :: coe_ListG_to_ListS' S tail (by { 
+                                       simp at h
+                                       exact h.2})  
+
+
+
+instance (L : List G) (h : L ∈ subsetList S) : CoeDep (List G) L (List S) 
+:= {
+   coe := coe_ListG_to_ListS' S L h  
+}  
+
+lemma ListS_is_in_subsetList (S : Set G) (L : List S) : (L : List G) ∈ subsetList S :=
+by {
+  intro a ha 
+  rw [Lean.Internal.coeM] at ha
+  simp [List.mem_range] at ha 
+  let ⟨a, HSa, hha ⟩ := ha 
+  rw [hha.2] 
+  exact HSa 
+}
+
+/-
+lemma coe_coe_eq (L : List S) : coe_ListG_to_ListS' S (L : List G) (by sorry)= L := by {
+  rw [Lean.Internal.coeM] 
+  simp [List.bind]
+  sorry  
+} 
+-/
 
 @[simp]
 lemma nil_in_subsetList {S : Set G} : [] ∈ subsetList S := by {

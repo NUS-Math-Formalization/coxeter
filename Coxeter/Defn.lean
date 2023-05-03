@@ -61,6 +61,7 @@ end CoxeterMatrix
 section Length
 open Subgroup
 
+variable {G : Type} [Group G] (S : Set G)
 
 
 class HOrderTwoGenClass (A : Type _) (G : Type _) [Group G] [SetLike A G] : Prop where 
@@ -68,39 +69,28 @@ class HOrderTwoGenClass (A : Type _) (G : Type _) [Group G] [SetLike A G] : Prop
    gen :  ∀ {S:A} (g :G), g ∈ Subgroup.closure S 
 
 
-def OrderTwoSet (S : Set G) [Group G] := ∀ s : G, s ∈ S →  s * s=1 
+def OrderTwoSet := ∀ s : G, s ∈ S →  s * s=1 
 
 
-def GeneratorSet (S : Set G) [Group G] := ∀ g : G, g ∈ Subgroup.closure S 
+def isGeneratorSet := ∀ g : G, g ∈ Subgroup.closure S 
 
 
-variable {A : Type _ } {G: Type _} [Group G] [SetLike A G] [HOrderTwoGenClass A G] (S : A)
-
-lemma s_eq_inv_s {s : G}: s ∈ S → s = s⁻¹ := by { 
+lemma s_eq_inv_s  {s : G} (H : OrderTwoSet S) : s ∈ S → s = s⁻¹ := by { 
    intro hs
-   have s2 := HOrderTwoGenClass.order_two hs  
+   have s2 := H s hs  
    rw [<- mul_eq_one_iff_eq_inv,s2] 
 } 
 
---{A G} [Group G] [SetLike A G] [HOrderTwoGenClass A G] 
-instance : InvMemClass A G :=  
-  {inv_mem :=  by {
-     intro S x hx 
-     have := @s_eq_inv_s A G _ _ _ S ↑x hx 
-     rw [<-this] 
-     exact hx
-   }
-  }  
 
-lemma s_eq_inv_s' {s : G}: s⁻¹ ∈ S → s = s⁻¹ := by 
+lemma s_eq_inv_s' {s : G} (H : OrderTwoSet S) : s⁻¹ ∈ S → s = s⁻¹ := by 
    {
       intro h
-      have := s_eq_inv_s _ h
+      have := s_eq_inv_s S H h 
       rw [this] 
       norm_num 
    } 
 
-lemma S_eq_InnSymm {s : G}: s ∈ S ↔ s ∈ InvSymm S := by { 
+lemma S_eq_InnSymm {s : G} (H: OrderTwoSet S): s ∈ S ↔ s ∈ InvSymm S := by { 
    apply Iff.intro
    . { exact mem_InvSymm _} 
    . {
@@ -109,35 +99,46 @@ lemma S_eq_InnSymm {s : G}: s ∈ S ↔ s ∈ InvSymm S := by {
       . simp
       . { 
          intro hs 
-         rw [s_eq_inv_s' _ hs]
+         rw [s_eq_inv_s' S H hs]
          exact hs
        } 
    }    
 } 
 
-#check HOrderTwoGenClass.gen
+variable {G: Type _} [Group G] (S : Set G) (order_two: OrderTwoSet S) (gen: isGeneratorSet S) 
 
-def length_aux (x : G): ∃ (n:ℕ) , ∃ (L : List G),
+def length_aux_prop (x : G) (n :ℕ) := ∃ (L : List G),  
    (∀ a ∈ L , a ∈ S )∧ L.length = n ∧ x = L.prod  
+
+def length_aux (x : G) : ∃ (n:ℕ) , ∃ (L : List G),
+   (∀ a ∈ L , a ∈ S ) ∧ L.length = n ∧ x = L.prod  
    := by {
-   have in_closure:= @HOrderTwoGenClass.gen _ G _  _ _ S x    
-   have hx := memClosure_iff_Prod.1 in_closure
+   have hx := memClosure_iff_Prod.1 (gen x)  
    let ⟨L, HL⟩ := hx
    use L.length  
    use L
    exact ⟨by { intro a ha 
                have := HL.1 a ha 
-               rw [S_eq_InnSymm ]
-               exact this
+               rw [S_eq_InnSymm]
+               exact this 
+               exact order_two 
             },
           by norm_num, HL.2⟩  
 } 
 
+#check length_aux 
 
-noncomputable def length (x : G) : ℕ := Nat.find (length_aux S x) 
+noncomputable def length (x : G) : ℕ := Nat.find (@length_aux G _ S order_two gen x) 
 
-lemma length_is_min (L : List G)  (h : L ∈ subsetList S):  length S L.prod ≤ L.length :=  by {
-  apply Nat.find_le 
+#check Nat.find_le
+#check length_aux
+
+
+
+lemma length_is_min (L : List G)  (h : L ∈ subsetList S):   
+  @length G _ S order_two gen L.prod ≤ L.length :=  by {
+  -- have HS := @length_aux _ _ S order_two gen L.prod  
+  apply @Nat.find_le L.length (length_aux_prop S L.prod)  
   use L 
   exact ⟨h,rfl,rfl⟩ 
 } 
@@ -156,7 +157,7 @@ lemma nil_is_reduced_word: reduced_word S ([] : List G)
 
 
 lemma length_le_reduced_words_iff (L: List G) (h: L ∈ subsetList S) : 
-   reduced_word S L  ↔   L.length ≤ length S L.prod:= by { 
+   reduced_word S L  ↔   L.length ≤ @length G _ S order_two gen L.prod:= by { 
       rw [length, (Nat.le_find_iff _)]
       apply Iff.intro
       . { 
@@ -195,89 +196,65 @@ lemma length_le_reduced_words_iff (L: List G) (h: L ∈ subsetList S) :
    }
 
 lemma length_eq_reduced_words_iff (L: List G) (h: L ∈ subsetList S) : 
-   reduced_word S L  ↔   L.length = length S L.prod:= by  
+   reduced_word S L  ↔   L.length = length S order_two gen L.prod:= by  
 {
    apply Iff.intro
    . {
      intro H 
-     exact ge_antisymm  (length_is_min S L h)  ((length_le_reduced_words_iff S _ h).1 H)
+     exact ge_antisymm  (length_is_min S order_two gen L h)  ((length_le_reduced_words_iff S order_two gen L h).1 H)
    }
    . {
      intro H 
-     exact (length_le_reduced_words_iff S _ h).2 (le_of_eq H)     
+     exact (length_le_reduced_words_iff S order_two gen L h).2 (le_of_eq H)     
    }
 }
 
 
-lemma one_length_zero : length S (1 : G) = 0 := by {
-   have h:= (length_eq_reduced_words_iff S [] (by simp)).1 (nil_is_reduced_word S) 
+lemma one_length_zero : length S order_two gen (1 : G) = 0 := by {
+   have h:= (length_eq_reduced_words_iff S order_two gen [] (by simp)).1 (nil_is_reduced_word S) 
    simp at h
    rw [h]
 } 
-
 
 end Length
 
 
 section CoxeterGroup
 
-variable (A : Type _) (G : Type _) [Group G] [SetLike A G]
 
-class HExchangePropClass  extends HOrderTwoGenClass A G  where 
-   exchange: ∀ {S : A} {L : List G} {Hred: reduced_word S L} {s : G} (Hs: s ∈ S), 
-    (length S (s * L.prod) < length S (L.prod)) → ∃ (i: Fin L.length) ,t * w = (L.removeNth i).prod
+variable  {G : Type _} [Group G] (S : Set G) {order_two : OrderTwoSet S} {gen: isGeneratorSet S} 
 
+def exchangeProp (S : Set G) (order_two : OrderTwoSet S) (gen: isGeneratorSet S):=
+   ∀ (L : List G) {s : G } 
+     (Hred : reduced_word S L ) (Hs : s ∈ S), 
+      ((length S order_two gen (s * L.prod)) < length S order_two gen (L.prod)) → ∃ (i: Fin L.length) ,s * L.prod = (L.removeNth i).prod
 
-
-class HDeletionPropClass (A : Type _) (G : Type _) [Group G] [SetLike A G]  extends HOrderTwoGenClass A G  where 
-   deletion: ∀ {S : A} {L : List G} {Hred: reduced_word S L}, 
-    length S (L.prod) < L.length → 
+def deletionProp (S : Set G) (order_two : OrderTwoSet S) (gen: isGeneratorSet S) := 
+    ∀ {L : List G} {H: L ∈ subsetList S}, 
+    (length S order_two gen (L.prod) < L.length) → 
     ∃ (j: Fin L.length), ∃ (i:Fin j), L.prod = ((L.removeNth j).removeNth i).prod
+   
+
+lemma exchange_imp_deletion 
+(S : Set G) (order_two : OrderTwoSet S) (gen: isGeneratorSet S) : exchangeProp S order_two gen → deletionProp S order_two gen:= by {sorry }
 
 
-instance exchangeProp_imp_deletionProp [HExchangePropClass A G]: HDeletionPropClass A G := {
-   deletion := by {
-      intro S L Hred Hlen 
-      sorry  
-   },
-}
+lemma deletion_imp_exchange 
+(S : Set G) (order_two : OrderTwoSet S) (gen: isGeneratorSet S) : deletionProp S order_two gen → exchangeProp S order_two gen:= by {sorry }
 
-
-instance deletionProp_imp_exchangeProp [HDeletionPropClass A G]: HExchangePropClass A G := {
-   exchange:= by {
-      intro S L Hred Hlen 
-      sorry  
-   },
-}
-
-/-
-class HPresentationPropClass (A : Type _) (G : Type _) [Group G] [SetLike A G] extends HOrderTwoGenClass A G  where 
-   m : ∀ {S : A} {L : List G} {Hred: reduced_word S L}, 
-    length S (L.prod) < L.length → 
-    ∃ (j: Fin L.length), ∃ (i:Fin j), L.prod = ((L.removeNth j).removeNth i).prod
--/
-
-/-
-@[coe]
-def coe_list_mem {α : Type _ } {β : Type _} [Coe α β] (L : List α) : List β :=
-List.map Coe.coe L
--/
-
---instance {α : Type _ } {β : Type _} [Coe α β] : Coe (List α) (List β) :=    
 
 #check (([3,2] : List ℕ ) : List ℚ) 
 
 
-class SimpleReflectionClass  (A : Type _) (G : Type _) [Group G] [SetLike A G]  extends
-HOrderTwoGenClass A G, HExchangePropClass A G, HOrderTwoGenClass A G : Prop
-
 @[class]
-structure CoxeterGroup (A : Type _) (G : Type _) (G : Type _) [Group G] [SetLike A G]extends Group G where 
-   S : A
+structure CoxeterGroup (G : Type _) extends Group G where 
+   S : Set G 
    m : @CoxeterMatrix (↑S)
-   props: SimpleReflectionClass A G
    ι: G ≃* m.toGroup 
-
+   order_two : OrderTwoSet S 
+   gen : isGeneratorSet S
+   exchange : exchangeProp S order_two gen
+   deletion : deletionProp S order_two gen 
 
 
 
