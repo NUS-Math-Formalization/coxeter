@@ -79,9 +79,12 @@ lemma surS : Surjective m.alpha_to_S := by {
    simp [hy]
 }
 
-lemma bijS : Bijective m.alpha_to_S := by sorry  
+lemma bijS : Bijective m.alpha_to_S := ⟨m.injS, m.surS⟩    
 
-lemma order_eq_m (s s' : α) : orderOf ((m.of s) * (m.of s')) = m.m s s' := by sorry    
+
+lemma order_eq_m (s s' : α) : orderOf ((m.of s) * (m.of s')) = m.m s s' := by sorry   
+
+
 
 #check Equiv.ofBijective 
 
