@@ -1,19 +1,25 @@
 import Mathlib.Tactic.Linarith
 import Mathlib.GroupTheory.PresentedGroup
+import Mathlib.GroupTheory.OrderOfElement
 import Mathlib.Data.Matrix.Basic
 import Mathlib.GroupTheory.Subgroup.Basic
 import Coxeter.Aux
 
 open Classical
 
+open Function
+
 universe u1 u2 u3
 
-variable {α: Type u1}  {β: Type u2}
+variable {α: Type u1}  {β: Type u2}  
 
 @[ext,class] structure CoxeterMatrix {α : Type u1}:= 
 (m : Matrix α α ℕ)
 (isSymm : ∀ (a b : α ), m a b = m b a )
 (one_iff: ∀  {a b : α}, (m a b = 1) ↔ (a=b) )
+
+instance : CoeFun (@CoxeterMatrix α) (fun _ => α -> α -> ℕ) where
+   coe m := m.m 
 
 #check CoxeterMatrix
 namespace CoxeterMatrix 
@@ -29,7 +35,7 @@ local notation  "F" => FreeGroup α
 
 
 @[simp] def toRelation'  (s : α × α ) : F :=
-RelTwoElements s.1 s.2 (m.m s.1 s.2) 
+RelTwoElements s.1 s.2 (m s.1 s.2) 
 -- (FreeGroup.mk [(s.1,true), (s.2, true)])^(m.m s.1 s.2)
 
 
@@ -54,7 +60,50 @@ def of (x : α) : G :=
 QuotientGroup.mk' N (FreeGroup.of x) 
 
 -- The set of simple reflections
-def S := Set.image (m.of) Set.univ
+@[simp]
+def S := Set.range (m.of) 
+
+@[simp]
+def alpha_to_S (a : α) : ↑ m.S := ⟨m.of a, by norm_num⟩       
+
+lemma injS : Injective m.alpha_to_S := by {
+   rw [Injective]  
+   sorry 
+} 
+
+lemma surS : Surjective m.alpha_to_S := by {
+   rw [Surjective] 
+   intro b
+   let ⟨y, hy⟩ :=b.2
+   use y
+   simp [hy]
+}
+
+lemma bijS : Bijective m.alpha_to_S := by sorry  
+
+lemma order_eq_m (s s' : α) : orderOf ((m.of s) * (m.of s')) = m.m s s' := by sorry    
+
+#check Equiv.ofBijective 
+
+noncomputable def ιS : α ≃ m.S := Equiv.ofBijective m.alpha_to_S m.bijS 
+
+
+
+
+/-
+lemma injS  (x y : α) : x=y ↔ m.of x=m.of y := by {
+   apply Iff.intro
+   . intro; congr
+   . {sorry}
+}   
+
+noncomputable def ιS [Nonempty α] : α ≃  m.S := {
+   toFun := m.alpha_to_S,
+   invFun := Function.invFun m.alpha_to_S,
+   left_inv := @Function.leftInverse_invFun _ _ _ m.alpha_to_S m.injS ,
+   right_inv := @Function.rightInverse_invFun _ _ _ m.alpha_to_S m.surS 
+}
+-/ 
 
 end CoxeterMatrix
 
@@ -63,11 +112,11 @@ open Subgroup
 
 variable {G : Type} [Group G] (S : Set G)
 
-
+/-
 class HOrderTwoGenClass (A : Type _) (G : Type _) [Group G] [SetLike A G] : Prop where 
    order_two: ∀ {x : G} {S:A}, x∈ S → x * x = 1  
    gen :  ∀ {S:A} (g :G), g ∈ Subgroup.closure S 
-
+-/
 
 def OrderTwoSet := ∀ s : G, s ∈ S →  s * s=1 
 
@@ -225,6 +274,8 @@ section CoxeterGroup
 
 variable  {G : Type _} [Group G] (S : Set G) {order_two : OrderTwoSet S} {gen: isGeneratorSet S} 
 
+
+
 def exchangeProp (S : Set G) (order_two : OrderTwoSet S) (gen: isGeneratorSet S):=
    ∀ (L : List G) {s : G } 
      (Hred : reduced_word S L ) (Hs : s ∈ S), 
@@ -256,6 +307,7 @@ structure CoxeterGroup (G : Type _) extends Group G where
    gen : isGeneratorSet S
    exchange : exchangeProp S order_two gen
    deletion : deletionProp S order_two gen 
+
 
 
 
