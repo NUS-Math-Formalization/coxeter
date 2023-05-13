@@ -10,24 +10,73 @@ namespace Subgroup
 section SubgroupClosure 
 variable {G : Type u3} [Group G] (S : Set G)
 
+lemma cons_hd_subsetList {S : Set G} {hd : G} {tail : List G} (H: hd :: tail ∈ subsetList S) 
+: hd ∈ S := H hd (List.mem_cons_self hd tail)
+
+
+lemma cons_tail_subsetList {S : Set G}{hd : G} {tail : List G} (H: hd :: tail ∈ subsetList S) 
+: tail ∈ subsetList S := 
+λ a ha =>  H a (List.mem_cons_of_mem hd ha)
+
 
 @[simp]
-def coe_ListG_to_ListS' (S: Set G)(L : List G) (h: L ∈ subsetList S): List S
+def coe_ListG_to_ListS' {S: Set G} (L : List G) (h: L ∈ subsetList S): List S
 := match L with  
 | [] => []
 | hd ::tail => ⟨hd,by {
       simp at h 
       exact h.1
-   } ⟩ :: coe_ListG_to_ListS' S tail (by { 
-                                       simp at h
-                                       exact h.2})  
+   } ⟩ :: coe_ListG_to_ListS' tail (by { 
+   simp at h
+   exact h.2})  
 
 
 
-instance (L : List G) (h : L ∈ subsetList S) : CoeDep (List G) L (List S) 
+
+instance {L : List G} (h : L ∈ subsetList S) : CoeDep (L ∈ subsetList S) h (List S) 
 := {
-   coe := coe_ListG_to_ListS' S L h  
+   coe := coe_ListG_to_ListS' L h  
 }  
+
+lemma cons_coe_ListG_to_ListS {S : Set G} {hd : G}  {tail : List G} (h : hd :: tail ∈ subsetList S) : coe_ListG_to_ListS' (hd::tail) h =  ⟨hd, cons_hd_subsetList h⟩ :: coe_ListG_to_ListS' tail (cons_tail_subsetList h) := by {
+  rfl 
+} 
+
+
+@[simp]
+lemma coe_ListS_coe_eq {S : Set G} {L:List G} (h : L∈ subsetList S) :
+((h : List S) : List G) = L := by {
+ induction L with 
+ | nil => {
+   rw [Lean.Internal.coeM]
+   rfl 
+ } 
+ | cons hd tail ih => {
+      rw [cons_coe_ListG_to_ListS]
+      have ihtail := ih ( cons_tail_subsetList h)
+      conv =>  
+         rhs
+         rw [<-ihtail]
+ }
+}
+
+@[simp]
+lemma coe_length_eq {S : Set G} {L: List S} :
+L.length = (L : List G).length := by 
+{
+  induction L with 
+  | nil => {rfl} 
+  | cons hd tail ih => {
+    rw [List.length_cons, ih] 
+    rfl 
+  }
+}  
+
+lemma prod_eq_prod {S : Set G} {L : List G} {h : L ∈ subsetList S} :  ((h : List S): List G).prod  =  L.prod :=  by {
+  simp 
+} 
+
+
 
 lemma ListS_is_in_subsetList (S : Set G) (L : List S) : (L : List G) ∈ subsetList S :=
 by {
@@ -38,14 +87,6 @@ by {
   rw [hha.2] 
   exact HSa 
 }
-
-/-
-lemma coe_coe_eq (L : List S) : coe_ListG_to_ListS' S (L : List G) (by sorry)= L := by {
-  rw [Lean.Internal.coeM] 
-  simp [List.bind]
-  sorry  
-} 
--/
 
 @[simp]
 lemma nil_in_subsetList {S : Set G} : [] ∈ subsetList S := by {
@@ -206,6 +247,7 @@ lemma memClosure_iff_Prod {g : G} {S : Set G} : g ∈ Subgroup.closure S ↔ eqS
     apply memProdInvSymm _ _ HLa
    }
 }  
+
 
 end SubgroupClosure
 
