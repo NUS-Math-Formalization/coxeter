@@ -113,6 +113,9 @@ end CoxeterMatrix
 section Length
 open Subgroup
 
+
+
+
 variable {G : Type} [Group G] (S : Set G)
 
 /-
@@ -182,6 +185,10 @@ def length_aux (x : G) : ∃ (n:ℕ) , ∃ (L : List G),
 
 noncomputable def length (x : G) : ℕ := Nat.find (@length_aux G _ S order_two gen x) 
 
+
+local notation:max "ℓ(" g ")" => (@length G _ S order_two gen g)   
+
+
 #check Nat.find_le
 #check length_aux
 
@@ -198,6 +205,31 @@ lemma length_is_min (L : List G)  (h : L ∈ subsetList S):
 @[simp]
 def reduced_word (L : List G) := (L ∈ subsetList S) ∧ 
  ∀ (L' : List G), L'∈ subsetList S → L.prod =  L'.prod →  L.length ≤ L'.length
+
+
+def reduced_word' (L : List S) :=
+∀ (L' : List S), (L : List G).prod  = (L' : List G).prod → L.length ≤ L'.length   
+
+lemma reduced_word_iff (L : List S) : 
+reduced_word' S L → reduced_word S (L : List G) := by {  
+   rw [reduced_word,reduced_word'] 
+   intro H
+   constructor
+   . exact ListS_is_in_subsetList S L
+   . {
+      intro L' HL'
+      have := H (HL' : List S)  
+      have hh := coe_ListS_coe_eq HL' 
+      rw [<- hh] 
+      conv =>
+         {  intro xx
+            rw [<-@coe_length_eq G S]
+            rw [<-@coe_length_eq G S]
+         }
+      exact this 
+   } 
+} 
+
 
 
 lemma nil_is_reduced_word: reduced_word S ([] : List G) 
@@ -268,21 +300,52 @@ lemma one_length_zero : length S order_two gen (1 : G) = 0 := by {
    rw [h]
 } 
 
+
+lemma reduced_word_exist (g : G) :∃ (L: List G) (h : L ∈ subsetList S), reduced_word S L ∧ g = L.prod := by 
+{
+   let ⟨L,h1,h2,h3⟩ := Nat.find_spec (length_aux S order_two gen g)
+   use L
+   use h1 
+   have C1 := (length_eq_reduced_words_iff S order_two gen L h1).2  
+   rw [length] at C1
+   conv at h2 =>
+      rhs 
+      rw [h3]
+   exact ⟨C1 h2,h3⟩ 
+}
+
+
 end Length
 
 
 
 section CoxeterGroup
 
+section ExchangeDeletion
 
-variable  {G : Type _} [Group G] (S : Set G) {order_two : OrderTwoSet S} {gen: isGeneratorSet S} 
+variable  {G : Type _} [Group G] (S : Set G) (order_two : OrderTwoSet S) (gen: isGeneratorSet S) 
 
 
 
-def exchangeProp (S : Set G) (order_two : OrderTwoSet S) (gen: isGeneratorSet S):=
+
+
+@[simp]
+def exchangeProp :=
    ∀ (L : List G) {s : G } 
      (Hred : reduced_word S L ) (Hs : s ∈ S), 
       ((length S order_two gen (s * L.prod)) < length S order_two gen (L.prod)) → ∃ (i: Fin L.length) ,s * L.prod = (L.removeNth i).prod
+
+@[simp]
+def exchangeProp' :=
+   ∀ (L : List G) {s : G } 
+     (Hred : reduced_word S L ) (Hs : s ∈ S), 
+      ((length S order_two gen (L.prod * s)) < length S order_two gen (L.prod)) → ∃ (i: Fin L.length) ,s * L.prod = (L.removeNth i).prod
+
+lemma exchangeL_iff_R : exchangeProp S order_two gen ↔ exchangeProp' S order_two gen := by {
+   sorry  
+
+} 
+
 
 def deletionProp (S : Set G) (order_two : OrderTwoSet S) (gen: isGeneratorSet S) := 
     ∀ {L : List G} {H: L ∈ subsetList S}, 
@@ -297,6 +360,7 @@ lemma exchange_imp_deletion
 lemma deletion_imp_exchange 
 (S : Set G) (order_two : OrderTwoSet S) (gen: isGeneratorSet S) : deletionProp S order_two gen → exchangeProp S order_two gen:= by {sorry }
 
+end ExchangeDeletion
 
 #check (([3,2] : List ℕ ) : List ℚ) 
 
