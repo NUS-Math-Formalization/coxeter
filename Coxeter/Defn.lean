@@ -160,6 +160,12 @@ lemma S_eq_InnSymm {s : G} (H: OrderTwoSet S): s ∈ S ↔ s ∈ InvSymm S := by
    }    
 } 
 
+
+@[simp]
+def List.gprod {S : Set G} (L : List S) := (L : List G).prod 
+
+#check List.gprod
+
 variable {G: Type _} [Group G] (S : Set G) (order_two: OrderTwoSet S) (gen: isGeneratorSet S) 
 
 def length_aux_prop (x : G) (n :ℕ) := ∃ (L : List G),  
@@ -194,6 +200,7 @@ local notation:max "ℓ(" g ")" => (@length G _ S order_two gen g)
 
 
 
+
 lemma length_is_min (L : List G)  (h : L ∈ subsetList S):   
   @length G _ S order_two gen L.prod ≤ L.length :=  by {
   -- have HS := @length_aux _ _ S order_two gen L.prod  
@@ -208,9 +215,9 @@ def reduced_word (L : List G) := (L ∈ subsetList S) ∧
 
 
 def reduced_word' (L : List S) :=
-∀ (L' : List S), (L : List G).prod  = (L' : List G).prod → L.length ≤ L'.length   
+∀ (L' : List S), (L : List G).prod  = L'.gprod → L.length ≤ L'.length   
 
-lemma reduced_word_iff (L : List S) : 
+lemma reduced_word_if₁ (L : List S) : 
 reduced_word' S L → reduced_word S (L : List G) := by {  
    rw [reduced_word,reduced_word'] 
    intro H
@@ -230,7 +237,17 @@ reduced_word' S L → reduced_word S (L : List G) := by {
    } 
 } 
 
-
+lemma reduced_word_if₂ (L : List G) (h : L ∈ subsetList S): 
+reduced_word S L → reduced_word' S (h : List S) := by {  
+  intros H L' HL'
+  rw [reduced_word] at H
+  have := H.2 (L' : List G) (@coe_in_subsetList _ S L') (by {
+   simp at HL'
+   exact HL'
+  }) 
+  simp
+  exact this
+}
 
 lemma nil_is_reduced_word: reduced_word S ([] : List G) 
 := by {
@@ -314,6 +331,17 @@ lemma reduced_word_exist (g : G) :∃ (L: List G) (h : L ∈ subsetList S), redu
    exact ⟨C1 h2,h3⟩ 
 }
 
+lemma reduced_word_exist' (g : G) : ∃ (L : List S), reduced_word' S L  ∧ g = L.gprod := by {
+  let ⟨L', hL', redL', eq⟩ := reduced_word_exist S order_two gen g
+  use coe_ListG_to_ListS' L' hL'  
+  constructor 
+  . {
+     
+    }
+  . {
+   rw [eq,List.gprod,coe_ListS_coe_eq]
+  }
+}   
 
 end Length
 

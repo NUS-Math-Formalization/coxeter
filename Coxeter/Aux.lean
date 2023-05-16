@@ -60,6 +60,7 @@ lemma coe_ListS_coe_eq {S : Set G} {L:List G} (h : L∈ subsetList S) :
  }
 }
 
+
 @[simp]
 lemma coe_length_eq {S : Set G} {L: List S} :
 L.length = (L : List G).length := by 
@@ -72,11 +73,21 @@ L.length = (L : List G).length := by
   }
 }  
 
+
 lemma prod_eq_prod {S : Set G} {L : List G} {h : L ∈ subsetList S} :  ((h : List S): List G).prod  =  L.prod :=  by {
   simp 
 } 
 
-
+lemma cons_in_subsetList {S : Set G} {hd : G} {tail : List G} : hd ∈  S → tail ∈ subsetList S → hd::tail ∈ subsetList S := by {
+ intros H1 H2 x hx
+ rw [List.mem_cons] at hx
+ cases hx with 
+ | inl h1 => { rw [h1]
+               exact H1} 
+ | inr h2 => {
+   exact H2 x h2
+ }
+}   
 
 lemma ListS_is_in_subsetList (S : Set G) (L : List S) : (L : List G) ∈ subsetList S :=
 by {
@@ -95,6 +106,24 @@ lemma nil_in_subsetList {S : Set G} : [] ∈ subsetList S := by {
    exfalso
    exact (List.mem_nil_iff a).1 ha 
 } 
+
+
+lemma coe_in_subsetList {S : Set G} {L:List S}: (L : List G)
+∈ subsetList S := by {
+  induction L with 
+  | nil => { 
+     have : Lean.Internal.coeM ([] : List ↑S) = ([] : List G):= by rfl 
+     rw [this]
+     exact nil_in_subsetList     
+  } 
+  | cons hd tail ih => {
+    have : (Lean.Internal.coeM (hd::tail) : List G)  = (↑ hd) :: (tail : List G) := by rfl
+    rw [this]
+    exact cons_in_subsetList hd.2 ih 
+  }  
+}
+
+
 
 @[simp]
 def eqSubsetProd (S : Set G) : G → Prop := λ (g : G) =>  ∃ (L : List G), (∀ a∈L, a∈ S) ∧ g = L.prod 
