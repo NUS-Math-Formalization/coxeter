@@ -30,8 +30,25 @@ def coe_ListG_to_ListS' {S: Set G} (L : List G) (h: L ∈ subsetList S): List S
    simp at h
    exact h.2})  
 
+lemma reverse_is_subsetList' {S : Set G} {L : List G} : 
+  L ∈ subsetList S → L.reverse ∈ subsetList S := by {
+    intros HL x  Hx
+    rw [List.mem_reverse] at Hx
+    exact HL x Hx 
+  }  
 
-
+lemma reverse_is_subsetList {S : Set G} {L : List G} : 
+L ∈ subsetList S ↔  L.reverse ∈ subsetList S := by {
+  constructor
+  . exact reverse_is_subsetList' 
+  . {
+    --intro HL
+    --have := @reverse_is_subsetList' S L.reverse HL 
+    have := @reverse_is_subsetList' G S L.reverse  
+    rw [List.reverse_reverse] at this 
+    exact this
+  }
+}
 
 instance {L : List G} (h : L ∈ subsetList S) : CoeDep (L ∈ subsetList S) h (List S) 
 := {
@@ -127,6 +144,8 @@ lemma coe_in_subsetList {S : Set G} {L:List S}: (L : List G)
 
 @[simp]
 def eqSubsetProd (S : Set G) : G → Prop := λ (g : G) =>  ∃ (L : List G), (∀ a∈L, a∈ S) ∧ g = L.prod 
+ 
+
 
 lemma mem_SubsetProd (S : Set G) (g : G ): g ∈ S → eqSubsetProd S g := by {
    intro hx 
