@@ -1,14 +1,12 @@
-import Coxeter.List
-import Coxeter.Subgroup
+import Coxeter.Defn
 
-open Classical
+open Classical 
+
 
 
 section Length
 
 open Subgroup
-
-class 
 
 variable {G: Type _} [Group G] (S : Set G) (order_two: OrderTwoSet S) (gen: isGeneratorSet S) 
 

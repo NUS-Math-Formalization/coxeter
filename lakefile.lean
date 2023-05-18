@@ -10,6 +10,5 @@ require mathlib from git
 
 @[default_target]
 lean_lib Coxeter {
-
   -- add any library configuration options here
 }

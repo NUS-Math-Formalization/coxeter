@@ -336,7 +336,7 @@ lemma reduced_word_exist' (g : G) : ∃ (L : List S), reduced_word' S L  ∧ g =
   use coe_ListG_to_ListS' L' hL'  
   constructor 
   . {
-     
+    sorry 
     }
   . {
    rw [eq,List.gprod,coe_ListS_coe_eq]
