@@ -1,2 +1,3 @@
 import Coxeter.List
---import Coxeter.Aux
+import Coxeter.Subgroup
+import Coxeter.Length
