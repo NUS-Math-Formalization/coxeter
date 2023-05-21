@@ -7,8 +7,8 @@ open Classical
 variable  {G: Type _} {A : Type _} [Group G] [SetLike A G] {S : A}
 
 
-class orderTwoGen (S : A) :Prop  where 
-  order_two :  ∀ (x:G) , x ∈ S →  x * x = 1  
+class orderTwoGen (S : A):Prop  where 
+  order_two :  ∀ (x:G) , x ∈ S →  x * x = (1 :G) ∧  x ≠ (1 :G)  
   generating : ∀ (x:G) , x ∈ Subgroup.closure S  
 
 #check orderTwoGen
@@ -16,7 +16,13 @@ class orderTwoGen (S : A) :Prop  where
 namespace orderTwoGen
 
 lemma inv_eq_self  [orderTwoGen S]: ∀ x:G,  x∈S → x = x⁻¹ := 
-fun x hx => mul_eq_one_iff_eq_inv.1 (order_two x hx)
+fun x hx => mul_eq_one_iff_eq_inv.1 (order_two x hx).1
+
+
+
+lemma non_one [orderTwoGen S]: ∀ x:G,  x∈S → x ≠ 1 := 
+fun x hx => (order_two x hx).2
+
 
 instance memInvMem  [orderTwoGen S]: Subgroup.InvMem S := 
 {
@@ -46,6 +52,7 @@ lemma eqSubsetProd [orderTwoGen S] (g : G) : ∃ (L : List S),
 end orderTwoGen
 
 variable [orderTwoGen S]
+
 def length_aux (g : G) : ∃ (n:ℕ) , ∃ (L : List S),
    L.length = n ∧ g = L.gprod  
    := by {
@@ -133,6 +140,7 @@ lemma reduced_word_iff_length_eq (L: List S) :
 }
 
 
+
 lemma one_length_zero : ℓ((1 : G)) = 0 := by {
    have h:= (reduced_word_iff_length_eq []).1 (@nil_is_reduced_word G A _ _ S) 
    simp at h
@@ -147,9 +155,7 @@ lemma reduced_word_exist (g : G) :∃ (L: List S) , reduced_word L ∧ g = L.gpr
    use L'
    have C1 := (reduced_word_iff_length_eq L').2  
    rw [length] at C1
-   conv at h1 =>
-      rhs 
-      rw [h2]
+   simp_rw [h2] at h1
    exact ⟨C1 h1,h2⟩ 
 }
 
@@ -158,11 +164,7 @@ lemma reduced_word_exist (g : G) :∃ (L: List S) , reduced_word L ∧ g = L.gpr
 lemma inv_reverse (L : List S) : L.gprod ⁻¹ = L.reverse.gprod := by {
    rw [Subgroup.inv_reverse_inv] 
    congr
-   conv =>
-      lhs
-      congr
-      ext x 
-      rw [<-orderTwoGen.inv_eq_self' x]
+   simp_rw [<-orderTwoGen.inv_eq_self']
    exact List.map_id L 
 }
 
@@ -190,7 +192,7 @@ lemma length_eq_inv_length (g : G) :
 }
 
 
-lemma reduced_word_inv (L: List S) : reduced_word L ↔ reduced_word  L.reverse:=
+lemma reduced_word_inv (L: List S) : reduced_word L ↔ reduced_word L.reverse:=
 by {
   repeat rw [reduced_word_iff_length_eq]
   rw [List.length_reverse,<-inv_reverse,length_eq_inv_length] 
