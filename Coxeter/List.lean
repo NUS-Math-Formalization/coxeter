@@ -52,7 +52,8 @@ lemma sub_one_lt_self (n: ℕ) (h :0 < n) : n-1 < n := match n with
 | n+1 => by {simp}
 
 
-lemma take_drop_get {α : Type _} (L: List α) (n : ℕ) (h : n < L.length): L = L.take n ++ [L.get ⟨n,h⟩ ] ++ L.drop (n+1) := by {
+lemma take_drop_get {α : Type _} (L: List α) (n : ℕ) (h : n < L.length): 
+  L = L.take n ++ [L.get ⟨n,h⟩ ] ++ L.drop (n+1) := by {
   have Hn :=  List.take_append_drop n L 
   have Hd := List.drop_eq_get_cons h
   rw [Hd] at Hn
@@ -80,14 +81,14 @@ lemma take_get_lt {α : Type _} (L: List α) (n : ℕ) (h : n < L.length): L.tak
 lemma get_eq_nthLe {α : Type _} {L: List α} {n : ℕ} {h : n < L.length} : L.get ⟨n,h⟩ = L.nthLe n h := by rfl 
 
 
-
+/-
 
 lemma take_drop_nth_le {α : Type _} (L: List α) (n : ℕ) (h : n < L.length): L = L.take n ++ [L.nthLe n h] ++ L.drop (n+1) := by {
   have := take_drop_get L n h
   rw [List.nthLe_eq] 
   exact this
 }
-
+-/
 
 lemma removeNth_append_lt {α : Type _} (L1 L2: List α) (n : ℕ) (h : n < L1.length) : 
 (L1 ++ L2).removeNth n = L1.removeNth n ++ L2 := by {
