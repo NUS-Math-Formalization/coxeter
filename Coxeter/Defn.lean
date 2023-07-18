@@ -38,7 +38,33 @@ def exchangeProp' :=
       ℓ((s * L.gprod)) ≤ ℓ(L.gprod) → ∃ (i: Fin L.length) ,s * L.gprod = (L.removeNth i).gprod
 
 
--- lemma echange_iff : exchangeProp S ↔  exchangeProp' S := sorry
+example {a b : G} : a⁻¹*b⁻¹=(b*a)⁻¹:= by simp only [mul_inv_rev]
+
+
+lemma removeNth_reverse (L:ℕ) : True := sorry 
+
+
+lemma echange_iff : exchangeProp S →  exchangeProp' S := by {
+   rw [exchangeProp,exchangeProp']
+   intro EP L s HL Hlen
+   let Lr := L.reverse
+   have HLr := (reduced_word_inv L).1 HL
+   have Hlenr :ℓ(L.reverse.gprod * s)≤ ℓ(L.reverse.gprod) := by {
+      rw [<-inv_reverse,orderTwoGen.inv_eq_self s.1 s.2, <-(mul_inv_rev (↑s) (L.gprod))]
+      rw [length_eq_inv_length,length_eq_inv_length] 
+      exact Hlen 
+   }
+   let ⟨i, Hp⟩  := EP HLr Hlenr  
+   rw [<-inv_reverse,orderTwoGen.inv_eq_self s.1 s.2,<-mul_inv_rev (↑s) (L.gprod)] at Hp
+   let j : Fin L.length:= ⟨L.length -1 - i.1, by {
+      sorry 
+   }⟩    
+   use j 
+
+
+} 
+
+
 
 @[simp]
 def deletionProp := 
