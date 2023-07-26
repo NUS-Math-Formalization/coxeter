@@ -9,7 +9,7 @@ import Coxeter.CoxeterMatrix
 import Coxeter.Length
 
 
-set_option trace.Meta.Tactic.simp.rewrite true 
+--set_option trace.Meta.Tactic.simp.rewrite true 
 
 
 open Classical
@@ -41,7 +41,7 @@ def exchangeProp' :=
 example {a b : G} : a⁻¹*b⁻¹=(b*a)⁻¹:= by simp only [mul_inv_rev]
 
 
-lemma removeNth_reverse (L:ℕ) : True := sorry 
+--lemma removeNth_reverse (L:ℕ) : True := rfls
 
 
 lemma echange_iff : exchangeProp S →  exchangeProp' S := by {
