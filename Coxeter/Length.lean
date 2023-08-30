@@ -59,7 +59,7 @@ def length_aux (g : G) : ∃ (n:ℕ) , ∃ (L : List S),
    have ⟨L, HL⟩   := @orderTwoGen.eqSubsetProd G A _ _  S _ g  
    use L.length  
    use L 
-   exact ⟨rfl,HL⟩  
+   --exact ⟨rfl,HL⟩  
 } 
 
 
@@ -78,7 +78,7 @@ lemma length_is_min (L : List S) :
   -- have HS := @length_aux _ _ S order_two gen L.prod  
   apply @Nat.find_le L.length (length_aux_prop L.gprod)  
   use L 
-  exact ⟨rfl,rfl⟩ 
+  -- exact ⟨rfl,rfl⟩ 
 } 
 
 
@@ -119,7 +119,7 @@ lemma reduced_word_iff_length_le (L: List S) :
          . exact H 
          . {
             use L' 
-            exact ⟨rfl,HL'⟩ 
+            --exact ⟨rfl,HL'⟩ 
          }   
       }
    }
