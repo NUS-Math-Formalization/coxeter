@@ -3,6 +3,7 @@ import Mathlib.GroupTheory.PresentedGroup
 import Mathlib.GroupTheory.OrderOfElement
 import Mathlib.Data.Matrix.Basic
 import Mathlib.GroupTheory.Subgroup.Basic
+import Mathlib.Logic.Relation
 
 import Coxeter.List
 import Coxeter.CoxeterMatrix 
@@ -60,7 +61,7 @@ lemma echange_iff : exchangeProp S →  exchangeProp' S := by {
       sorry 
    }⟩    
    use j 
-
+   sorry
 
 } 
 
@@ -276,6 +277,37 @@ class CoxeterSystem (S : A)  extends orderTwoGen S where
    --m : CoxeterMatrix S 
    --order_eq: ∀ (x y : S), orderOf ((x:G) * (y:G)) = m x y 
 
+
+variable {S : A} [CoxeterSystem S]
+
+local notation:max "ℓ(" g ")" => (@length G A _ _ S _ g)   
+
+namespace CoxeterSystem
+
+
+--def T :Set G := fun x => ∃ (w: G) (s : S),  x = w * (s : G) * w⁻¹
+noncomputable def T: Set G := {x :G | ∃ (w: G) (s : S),   w * (s:G) * w⁻¹  = x}
+
+local notation "TT" => (@T G A _ _ S)
+
+
+@[simp]
+def ltBt (x y) (t : TT) :=   (t:G) * x = y ∧ ℓ(x) < ℓ(y) 
+
+@[simp]
+def ltBone (x y : G) :=  ∃ (t : TT),  ltBt x y t
+
+@[simp]
+def ltB (x y : G) := Relation.TransGen (@ltBone G A _ _ S _)  x y 
+
+def leB (x y : G) := x=y ∨ (@ltB G A _ _ S _ x y) 
+
+local notation lhs:65 " <B  " rhs:65 => (@ltB G A _ _ S _  lhs rhs) 
+local notation lhs:65 " ≤B  " rhs:65 => (@leB G A _ _ S _  lhs rhs) 
+
+lemma trans (x y z:G) : x <B y → y <B z → x <B z := sorry  
+
+end CoxeterSystem 
 /-
 namespace CoxeterSystem
 
