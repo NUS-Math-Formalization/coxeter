@@ -1,6 +1,9 @@
 import Coxeter.List
 import Coxeter.Subgroup
 import Mathlib.Data.List.Basic
+import Mathlib.Algebra.Algebra.Basic
+import Mathlib.Algebra.Algebra.Bilinear
+
 
 open Classical
 
@@ -158,7 +161,8 @@ lemma reduced_word_exist (g : G) :∃ (L: List S) , reduced_word L ∧ g = L.gpr
    simp_rw [h2] at h1
    exact ⟨C1 h1,h2⟩ 
 }
-
+variable (g:G)
+#check reduced_word_exist g
 #check List.map_id
 
 lemma inv_reverse (L : List S) : L.gprod ⁻¹ = L.reverse.gprod := by {

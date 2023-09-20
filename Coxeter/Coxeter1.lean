@@ -43,6 +43,8 @@ variable {α: Type u1}  {β: Type u2}
 instance : CoeFun (CoxeterMatrix α) (fun _ => α -> α -> ℕ) where
    coe m := m.m 
 
+--coe ??
+
 #check CoxeterMatrix
 namespace CoxeterMatrix 
 

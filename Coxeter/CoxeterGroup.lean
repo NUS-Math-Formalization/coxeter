@@ -1,7 +1,7 @@
 import Mathlib.GroupTheory.PresentedGroup
 -- import Coxeter.CoxeterMatrix
 
-
+variable {α: Type u1}
 
 class CoxeterGroup :=  extend 
 (S : Set α α ℕ)

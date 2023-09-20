@@ -67,7 +67,7 @@ class HOrderTwoGenClass (A : Type _) (G : Type _) [Group G] [SetLike A G] : Prop
    order_two: ∀ {x : G} {S:A}, x∈ S → x * x = 1  
    gen :  ∀ {S:A} (g :G), g ∈ Subgroup.closure S 
 
-
+--setlike ??
 def OrderTwoSet (S : Set G) [Group G] := ∀ s : G, s ∈ S →  s * s=1 
 
 

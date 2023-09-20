@@ -66,7 +66,7 @@ lemma coe_ListS_coe_eq {S : Set G} {L:List G} (h : L∈ subsetList S) :
  induction L with 
  | nil => {
    rw [Lean.Internal.coeM]
-   rfl 
+   rfl   
  } 
  | cons hd tail ih => {
       rw [cons_coe_ListG_to_ListS]
@@ -91,7 +91,7 @@ L.length = (L : List G).length := by
 }  
 
 
-lemma prod_eq_prod {S : Set G} {L : List G} {h : L ∈ subsetList S} :  ((h : List S): List G).prod  =  L.prod :=  by {
+lemma prod_eq_prod {S : Set G} {L : List G} {h : L ∈ subsetList S} :  ((h : List S): List G).prod  =  L.prod :=  by {-- def of * in G??
   simp 
 } 
 
@@ -160,6 +160,7 @@ lemma mem_SubsetProd (S : Set G) (g : G ): g ∈ S → eqSubsetProd S g := by {
 }  
 
 lemma mem_one_SubsetProd (S : Set G) :  eqSubsetProd S 1 := by {
+  --1 ∈ G ??
    use []
    norm_num
 }
@@ -300,3 +301,5 @@ lemma memClosure_iff_Prod {g : G} {S : Set G} : g ∈ Subgroup.closure S ↔ eqS
 end SubgroupClosure
 
 end Subgroup
+
+

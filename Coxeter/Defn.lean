@@ -4,6 +4,7 @@ import Mathlib.GroupTheory.OrderOfElement
 import Mathlib.Data.Matrix.Basic
 import Mathlib.GroupTheory.Subgroup.Basic
 import Mathlib.Logic.Relation
+import Mathlib.Data.Set.Card
 
 import Coxeter.List
 import Coxeter.CoxeterMatrix 
@@ -266,7 +267,7 @@ end ExchangeDeletion
 
 section Coxeter
 
-variable {G : Type _} {A : Type _} [Group G]  [SetLike A G]  
+variable {G : Type _} {A : Type _} [Group G]  [SetLike A G] 
 
 -- #check orderOf 
 
@@ -290,6 +291,23 @@ noncomputable def T: Set G := {x :G | ∃ (w: G) (s : S),   w * (s:G) * w⁻¹  
 
 local notation "TT" => (@T G A _ _ S)
 
+def TL (w:G) :={t ∈ TT | ℓ(t*w) < ℓ(w)}
+def TR (w:G) :={t ∈ TT | ℓ(w*t) < ℓ(w)}
+ --left&right associated reflections to w
+
+local notation "T_L" => @TL G A _ _ S _
+local notation "T_R" => @TR G A _ _ S _
+
+lemma T_Symm (w :G) :T_L w = T_R (w⁻¹):=sorry
+
+lemma T_card_eq_length (w:G) : Set.ncard (T_L w) = ℓ(w):=sorry
+
+def DL (w:G) :={t ∈ TT | ℓ(t*w) < ℓ(w)} ∩ S
+def DR (w:G) :={t ∈ TT | ℓ(w*t) < ℓ(w)} ∩ S
+-- left&right descent set
+
+local notation "D_L" => @DL G A _ _ S _
+local notation "D_R" => @DR G A _ _ S _
 
 @[simp]
 def ltBt (x y) (t : TT) :=   (t:G) * x = y ∧ ℓ(x) < ℓ(y) 
@@ -302,10 +320,10 @@ def ltB (x y : G) := Relation.TransGen (@ltBone G A _ _ S _)  x y
 
 def leB (x y : G) := x=y ∨ (@ltB G A _ _ S _ x y) 
 
+
 local notation lhs:65 " <B  " rhs:65 => (@ltB G A _ _ S _  lhs rhs) 
 local notation lhs:65 " ≤B  " rhs:65 => (@leB G A _ _ S _  lhs rhs) 
 
-lemma trans (x y z:G) : x <B y → y <B z → x <B z := sorry  
 
 end CoxeterSystem 
 /-

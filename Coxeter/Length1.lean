@@ -1,4 +1,6 @@
-import Coxeter.Defn
+import Coxeter.Aux
+import Coxeter.Length
+
 
 open Classical 
 
