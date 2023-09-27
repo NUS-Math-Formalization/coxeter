@@ -267,11 +267,11 @@ end ExchangeDeletion
 
 section Coxeter
 
-variable {G : Type _} {A : Type _} [Group G]  [SetLike A G] 
+variable {G : outParam Type*} {A : outParam Type*} [Group G]  [SetLike A G] 
 
 -- #check orderOf 
 
-class CoxeterSystem (S : A)  extends orderTwoGen S where 
+class CoxeterSystem (S : outParam A)  extends orderTwoGen S where 
    exchange: exchangeProp S  
    exchange': exchangeProp' S  
    deletion: deletionProp S

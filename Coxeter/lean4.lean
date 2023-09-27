@@ -2,6 +2,7 @@ import Mathlib.Data.Real.Basic
 import Mathlib.Algebra.Group.Defs
 import Mathlib.Algebra.Order.Group.Abs
 import Mathlib.Init.Order.Defs
+import Mathlib.Data.Real.EReal
 
 variable (R : Type*) [Ring R]
 

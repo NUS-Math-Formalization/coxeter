@@ -272,7 +272,7 @@ class SimpleReflectionClass  (A : Type _) (G : Type _) [Group G] [SetLike A G]  
 HOrderTwoGenClass A G, HExchangePropClass A G, HOrderTwoGenClass A G : Prop
 
 @[class]
-structure CoxeterGroup (A : Type _) (G : Type _) (G : Type _) [Group G] [SetLike A G]extends Group G where 
+structure CoxeterGroup (A : Type _) (G : Type _) (G : Type _) [Group G] [SetLike A G]where 
    S : A
    m : @CoxeterMatrix (↑S)
    props: SimpleReflectionClass A G

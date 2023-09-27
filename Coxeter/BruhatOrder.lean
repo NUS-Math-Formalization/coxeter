@@ -4,15 +4,42 @@ import Std.Data.List.Basic
 import Mathlib.Data.Set.Card
 
 
+set_option quotPrecheck false
+--set_option synthInstance.checkSynthOrder false 
+--magic! dont delete!
 
 
 open CoxeterSystem
-variable {G : Type _} {A : Type _} [Group G] [SetLike A G] {S : A} [CoxeterSystem S]
-variable [orderTwoGen S]
+variable {G : Type _} {A : Type _} [hG:Group G] [hS:SetLike A G] {S : A} [hCS:CoxeterSystem S]
 
 
-instance Bruhat.LT : LT G where 
-lt:= @ltB G A _ _ S _
+local notation:max "ℓ(" g ")" => (@length G A _ _ S _ g)   
+local notation "TT" => (@T G A _ _ S)
+local notation "D_L" => @DL G A _ _ S _
+
+-- @[simp]
+-- def ltBt (x y) (t : TT) :=   (t:G) * x = y ∧ ℓ(x) < ℓ(y) 
+
+-- @[simp]
+-- def ltBone (x y : G) :=  ∃ (t : TT),  ltBt x y t
+
+
+
+-- @[simp]
+-- def ltB {G A : Type _} [Group G] [SetLike A G] {S:A}
+--   [CoxeterSystem S] (x y : G) := Relation.TransGen (@ltBone G A _ _ S _)  x y 
+#check ltB
+#check ltBone
+
+-- def leB (x y : G) := x=y ∨ (@ltB G A _ _ S _ x y) 
+
+#check hCS
+--instance Bruhat.LT : LT G :=
+--{lt:= @ltB G A hG hS S hCS}
+
+instance Bruhat.LT : LT G :=
+{lt:= @ltB G A hG hS S hCS}
+
 
 instance Bruhat.LE : LE G where 
 le:= @leB G A _ _ S _
@@ -39,27 +66,25 @@ le_trans := fun (x y z:G) => leBtrans x y z
 lt_iff_le_not_le  := sorry
 le_antisymm:= fun (x y:G) => leBAntisymm x y
 
-def BruhatInte (x y : G) (h: x ≤ y): Set G := {a | x ≤ a ∧ a ≤ y } 
+
+def BruhatInte (x y : G) : Set G := {a | x ≤ a ∧ a ≤ y } 
 
 #check Set.ncard
 #check length
 
-local notation:max "ℓ(" g ")" => (@length G A _ _ S _ g)   
-local notation "TT" => (@T G A _ _ S)
---local notation just in  current file?? 
 
 
 lemma SubwordAux (L L':List S) (hred:reduced_word L) (hw: (w:G) = L.gprod) (hsub: List.Sublist L' L) (hu: u = L'.gprod): ∃ (v: G) (L'':List S), u < v ∧ ℓ(v) = ℓ(u) + 1 ∧ v = L''.gprod:=by
-  done
+  sorry
 
 theorem SubwordProp (L: List S) (u w : G) (hred:reduced_word L) (hw: (w:G) = L.gprod) : u ≤ w ↔ ∃ (L': List S), reduced_word L' ∧ List.Sublist L' L ∧ u = L'.gprod where
   mp := by
-    done
+    sorry 
   mpr := fun
     | .intro w h => by
-      done
+      sorry
 
-lemma BruhuatInteIsFin (u w :G) (h:u ≤ w) : Set.ncard (BruhatInte u w h) ≤ 2^ℓ(w):=sorry
+lemma BruhuatInteIsFin (u w :G)  : Set.ncard (@BruhatInte G A  _ _ S _ u w) ≤ 2^ℓ(w):=sorry
 
 lemma leIffInvle (u w : G) : @leB G A _ _ S _ u w ↔ @leB G A _ _ S _ u⁻¹ w⁻¹ := sorry
 
@@ -84,9 +109,9 @@ lemma Bruhat'Congr' (x y :G) (ht:t∈TT) (hlt: x < x*t) (hlt: y < (t:G)*y) : x *
   have hredx := @reduced_word_exist G A _ _ S _ x
   have hredy := @reduced_word_exist G A _ _ S _ y
   --have hf' := @le_of_not_lt G _ (x * t * y) (x * y) hf
-  rcases hredx with ⟨L1| ⟨hx1,hx2⟩⟩
-  sorry
-  sorry
+  let ⟨L1,hL1⟩ := hredx 
+  let ⟨L2,hL2⟩ := hredy
+
 
 
 
