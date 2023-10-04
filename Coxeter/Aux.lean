@@ -1,305 +1,102 @@
+import Mathlib.Tactic.Linarith
+import Mathlib.Data.List.Basic
+import Mathlib.Data.Subtype
+import Mathlib.Data.Set.Basic
 import Mathlib.GroupTheory.Subgroup.Basic
 import Mathlib.GroupTheory.Submonoid.Membership
 import Mathlib.Data.List.Range
 
-@[simp]
-def subsetList {G : Type _} (S : Set G): (Set (List G)) := 
-{ L | ∀ a∈ L , a ∈ S}
+-- set_option trace.Meta.Tactic.simp.rewrite true
+/-
+variable {G : Type _} {S : Set G}
 
-namespace Subgroup
-section SubgroupClosure 
-variable {G : Type u3} [Group G] (S : Set G)
+#check Coe (List ↑S) (List G)
 
-lemma cons_hd_subsetList {S : Set G} {hd : G} {tail : List G} (H: hd :: tail ∈ subsetList S) 
-: hd ∈ S := H hd (List.mem_cons_self hd tail)
+def mapList : List (↑S) → List G  
+| []    => [] 
+| a:: as => a.val :: mapList as
 
+instance (priority := low) list_coe {G : Type _} {S : Set G} : CoeTC (List (↑S)) (List G) where 
+coe (L : List ↑S) := @mapList G S L 
 
-lemma cons_tail_subsetList {S : Set G}{hd : G} {tail : List G} (H: hd :: tail ∈ subsetList S) 
-: tail ∈ subsetList S := 
-λ a ha =>  H a (List.mem_cons_of_mem hd ha)
-
-
-@[simp]
-def coe_ListG_to_ListS' {S: Set G} (L : List G) (h: L ∈ subsetList S): List S
-:= match L with  
-| [] => []
-| hd ::tail => ⟨hd,by {
-      simp at h 
-      exact h.1
-   } ⟩ :: coe_ListG_to_ListS' tail (by { 
-   simp at h
-   exact h.2})  
-
-lemma reverse_is_subsetList' {S : Set G} {L : List G} : 
-  L ∈ subsetList S → L.reverse ∈ subsetList S := by {
-    intros HL x  Hx
-    rw [List.mem_reverse] at Hx
-    exact HL x Hx 
-  }  
-
-lemma reverse_is_subsetList {S : Set G} {L : List G} : 
-L ∈ subsetList S ↔  L.reverse ∈ subsetList S := by {
-  constructor
-  . exact reverse_is_subsetList' 
-  . {
-    --intro HL
-    --have := @reverse_is_subsetList' S L.reverse HL 
-    have := @reverse_is_subsetList' G S L.reverse  
-    rw [List.reverse_reverse] at this 
-    exact this
-  }
+lemma coe_eq_coe  {hd : ↑S} {tail :   List ↑S} : (hd :: tail : List G) = hd.1 :: (tail : List G) := by {
+  simp
 }
+-/
+namespace  List
+variable {α : Type _}
 
-instance {L : List G} (h : L ∈ subsetList S) : CoeDep (L ∈ subsetList S) h (List S) 
-:= {
-   coe := coe_ListG_to_ListS' L h  
-}  
-
-lemma cons_coe_ListG_to_ListS {S : Set G} {hd : G}  {tail : List G} (h : hd :: tail ∈ subsetList S) : coe_ListG_to_ListS' (hd::tail) h =  ⟨hd, cons_hd_subsetList h⟩ :: coe_ListG_to_ListS' tail (cons_tail_subsetList h) := by {
-  rfl 
-} 
+lemma take_le_length (L : List α) (h : n ≤ L.length)  : (L.take n).length = n := by 
+  simp only [length_take,ge_iff_le, h, min_eq_left]
 
 
-@[simp]
-lemma coe_ListS_coe_eq {S : Set G} {L:List G} (h : L∈ subsetList S) :
-((h : List S) : List G) = L := by {
- induction L with 
- | nil => {
-   rw [Lean.Internal.coeM]
-   rfl   
- } 
- | cons hd tail ih => {
-      rw [cons_coe_ListG_to_ListS]
-      have ihtail := ih ( cons_tail_subsetList h)
-      conv =>  
-         rhs
-         rw [<-ihtail]
- }
-}
 
-
-@[simp]
-lemma coe_length_eq {S : Set G} {L: List S} :
-L.length = (L : List G).length := by 
-{
-  induction L with 
-  | nil => {rfl} 
-  | cons hd tail ih => {
-    rw [List.length_cons, ih] 
-    rfl 
-  }
-}  
-
-
-lemma prod_eq_prod {S : Set G} {L : List G} {h : L ∈ subsetList S} :  ((h : List S): List G).prod  =  L.prod :=  by {-- def of * in G??
-  simp 
-} 
-
-lemma cons_in_subsetList {S : Set G} {hd : G} {tail : List G} : hd ∈  S → tail ∈ subsetList S → hd::tail ∈ subsetList S := by {
- intros H1 H2 x hx
- rw [List.mem_cons] at hx
- cases hx with 
- | inl h1 => { rw [h1]
-               exact H1} 
- | inr h2 => {
-   exact H2 x h2
- }
-}   
-
-lemma ListS_is_in_subsetList (S : Set G) (L : List S) : (L : List G) ∈ subsetList S :=
+lemma remove_nth_eq_take_drop {α : Type _} (L: List α) (n : ℕ) : L.removeNth n = L.take n ++ L.drop (n+1) :=
 by {
-  intro a ha 
-  rw [Lean.Internal.coeM] at ha
-  simp [List.mem_range] at ha 
-  let ⟨a, HSa, hha ⟩ := ha 
-  rw [hha.2] 
-  exact HSa 
-}
-
-@[simp]
-lemma nil_in_subsetList {S : Set G} : [] ∈ subsetList S := by {
-   rw [subsetList]
-   intro a ha 
-   exfalso
-   exact (List.mem_nil_iff a).1 ha 
-} 
-
-
-lemma coe_in_subsetList {S : Set G} {L:List S}: (L : List G)
-∈ subsetList S := by {
+  revert n
   induction L with 
-  | nil => { 
-     have : Lean.Internal.coeM ([] : List ↑S) = ([] : List G):= by rfl 
-     rw [this]
-     exact nil_in_subsetList     
-  } 
+  | nil => {intro n; simp only [removeNth, take_nil, drop, append_nil]} 
   | cons hd tail ih => {
-    have : (Lean.Internal.coeM (hd::tail) : List G)  = (↑ hd) :: (tail : List G) := by rfl
-    rw [this]
-    exact cons_in_subsetList hd.2 ih 
-  }  
-}
-
-
-
-@[simp]
-def eqSubsetProd (S : Set G) : G → Prop := λ (g : G) =>  ∃ (L : List G), (∀ a∈L, a∈ S) ∧ g = L.prod 
- 
-
-
-lemma mem_SubsetProd (S : Set G) (g : G ): g ∈ S → eqSubsetProd S g := by {
-   intro hx 
-   use [g]
-   constructor 
-   { intro a ha
-     have : a=g := List.mem_singleton.1 ha 
-     rw [this] 
-     exact hx
-   }
-   norm_num
-}  
-
-lemma mem_one_SubsetProd (S : Set G) :  eqSubsetProd S 1 := by {
-  --1 ∈ G ??
-   use []
-   norm_num
-}
-
-@[simp]
-def isInvSymm (S : Set G) := ∀ a ∈ S, a⁻¹ ∈ S 
-
-@[simp] 
-def InvSymm (S : Set G) := {a:G | a∈ S ∨ a⁻¹ ∈ S}
-
-
-lemma mem_InvSymm (S : Set G) : a ∈ S → a ∈ InvSymm S:= Or.inl   
-
-lemma memInv_InvSymm (S : Set G) : a ∈ S → a⁻¹ ∈ InvSymm S:= by {
-  rintro ha
-  apply Or.inr 
-  simp [ha] 
-}
-
-lemma memInv_InvSymm' (S : Set G) : a⁻¹ ∈ S → a ∈ InvSymm S:= by {
-  rintro ha
-  apply Or.inr 
-  exact ha 
-}
-lemma mem_InvSymm_iff (S : Set G) : a ∈ InvSymm S → a⁻¹ ∈ InvSymm S:= by {
-   rintro ha 
-   cases ha with 
-   | inl haa => exact memInv_InvSymm _ haa 
-   | inr haa => exact Or.inl haa
-}   
-
-
-lemma eqInvSymm (S : Set G)  (H : isInvSymm S) : S = InvSymm S := by {
-   rw [InvSymm]
-   ext x
-   rw [isInvSymm] at H
-   constructor 
-   { intro hx 
-     simp [hx]}
-   {
-     intro hx
-     apply Or.elim hx 
-     simp  
-     intro hxx
-     have hxx := H x⁻¹ hxx
-     simp at hxx
-     exact hxx
-   }
-} 
-
-
-
-lemma memClosureInvSymm (S : Set G) : InvSymm S ⊆ Subgroup.closure S:= by 
-{
-  rw [InvSymm]
-  have HH : S ⊆ Subgroup.closure S := Subgroup.subset_closure 
-  intro x hx 
-  exact hx.elim (fun hxa => HH hxa) (fun hxb => by {
-   apply (Subgroup.inv_mem_iff _).1
-   exact HH hxb
-  }) 
-} 
-
-lemma memProdInvSymm (S : Set G) (L : List G) (H : L∈ subsetList (InvSymm S)) : L.prod ∈ Subgroup.closure S := by {
-   apply list_prod_mem
-   intro x hx
-   rw [subsetList] at H
-   have := H x hx 
-   exact (memClosureInvSymm S this)
-} 
-
-
-lemma memInvProdInvSymm (S : Set G)  (x : G) : eqSubsetProd (InvSymm S) x → eqSubsetProd (InvSymm S) x⁻¹  := by {
-   rintro ⟨L, Lxa, Lxp⟩  
-   use (List.map (fun x:G => x⁻¹) L).reverse
-   apply And.intro
-   case left => {
-      rintro a ha 
-      rw [List.mem_reverse,List.mem_map] at ha
-      let ⟨b, hb1, hb2⟩ := ha  
-      rw [<-hb2]
-      have hb := Lxa b hb1
-      exact mem_InvSymm_iff _ hb
-   }
-   case right => {
-      rw [Lxp]
-      apply List.prod_inv_reverse
-   }
-} 
-
-#check Subgroup.closure_induction 
-
-lemma memClosure_if_Prod {g : G} {S : Set G} : g ∈ Subgroup.closure S →  eqSubsetProd (InvSymm S) g := by {
-   intro hg
-   apply @Subgroup.closure_induction _ _ S (eqSubsetProd (InvSymm S)) g hg 
-   {
-     intro x hx
-     have hxx := mem_InvSymm S hx
-     apply mem_SubsetProd _ _ hxx
-   } 
-   {
-     apply mem_one_SubsetProd 
-   }
-   { 
-      intro x y hx hy  
-      let ⟨Lx, Hx⟩  := hx 
-      let ⟨Ly, Hy⟩  := hy 
-      use Lx++Ly
-      constructor 
-      {
-         intro a ha 
-         rw [List.mem_append] at ha
-         cases ha with 
-         | inl La => exact Hx.1 a La
-         | inr La => exact Hy.1 a La 
+      intro n
+      match n with 
+      | 0 => {simp only [removeNth, take, drop, nil_append]}
+      | k+1 => {
+        simp only [removeNth, Nat.add_eq, add_zero, take, drop, cons_append, cons.injEq, true_and] 
+        exact ih k 
       }
-      {rw [Hx.2,Hy.2,List.prod_append] }
-   }
-   {
-     intro x
-     apply memInvProdInvSymm 
-   }
+   } 
+} 
+
+lemma sub_one_lt_self (n: ℕ) (h :0 < n) : n-1 < n := match n with
+| 0 => by {contradiction}
+| n+1 => by {simp}
+
+
+lemma take_drop_get {α : Type _} (L: List α) (n : ℕ) (h : n < L.length): 
+  L = L.take n ++ [L.get ⟨n,h⟩ ] ++ L.drop (n+1) := by {
+  have Hn :=  List.take_append_drop n L 
+  have Hd := List.drop_eq_get_cons h
+  rw [Hd] at Hn
+  simp only [append_assoc, singleton_append, Hn]
 }
 
-lemma memClosure_iff_Prod {g : G} {S : Set G} : g ∈ Subgroup.closure S ↔ eqSubsetProd (InvSymm S) g:= by 
-{
-   constructor 
-   .  exact memClosure_if_Prod
-   . {
-    rw [eqSubsetProd, ] 
-    intro ⟨L, HLa, HLb⟩ 
-    rw [HLb] 
-    apply memProdInvSymm _ _ HLa
-   }
-}  
+@[simp]
+lemma drop_take_nil {α : Type _} {L : List α} {n : ℕ} : (L.take n).drop n = [] := by {
+  have h:= drop_take n 0 L 
+  simp only [add_zero, take] at h  
+  exact h
+} 
+
+lemma take_get_lt {α : Type _} (L: List α) (n : ℕ) (h : n < L.length): L.take (n+1) = L.take n ++ [L.get ⟨n,h⟩ ] := by {
+  have H1 : (L.take (n+1)).length = n+1 := by {rw [List.length_take]; simp only [ge_iff_le, min_eq_left_iff];linarith }
+  have Hn := take_drop_get (L.take (n+1)) n (by linarith)  
+  have nn1 : min n (n+1) = n := by simp only [ge_iff_le, le_add_iff_nonneg_right, min_eq_left]
+  simp only [drop_take_nil, append_nil,take_take,nn1] at Hn
+  have nn2 : n < n+1 := by simp only [lt_add_iff_pos_right] 
+  have Hgt := get_take L h nn2   
+  rw [Hn,Hgt]
+}
 
 
-end SubgroupClosure
+lemma get_eq_nthLe {α : Type _} {L: List α} {n : ℕ} {h : n < L.length} : L.get ⟨n,h⟩ = L.nthLe n h := by rfl 
 
-end Subgroup
+
+/-
+
+lemma take_drop_nth_le {α : Type _} (L: List α) (n : ℕ) (h : n < L.length): L = L.take n ++ [L.nthLe n h] ++ L.drop (n+1) := by {
+  have := take_drop_get L n h
+  rw [List.nthLe_eq] 
+  exact this
+}
+-/
+
+lemma removeNth_append_lt {α : Type _} (L1 L2: List α) (n : ℕ) (h : n < L1.length) : 
+(L1 ++ L2).removeNth n = L1.removeNth n ++ L2 := by {
+  rw [remove_nth_eq_take_drop,remove_nth_eq_take_drop,List.take_append_of_le_length (le_of_lt h)]
+  have : (L1 ++ L2).drop (n+1) = L1.drop (n+1) ++ L2 := drop_append_of_le_length (by linarith) 
+  rw [this,append_assoc]
+}
+
+end List
 
 

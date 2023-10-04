@@ -51,8 +51,24 @@ instance : SetLike (Set J) (ParabolicSubgroup J) where
   coe := coeSetJ 
   coe_injective' := sorry
 
-instance : @orderTwoGen (ParabolicSubgroup J) _ (@Set.univ J) :=sorry
+instance : @orderTwoGen (ParabolicSubgroup J) _ (@Set.univ J) where
+order_two := by {
+  intro x hx
+  have hxsub: ↑x ∈ S:=sorry
+  have aux:= @orderTwoGen.order_two G _ S _ ↑x hxsub
+  rw [←Subgroup.coe_mul,←Subgroup.coe_one] at aux
+  constructor
+  {
+    apply Subtype.coe_inj.1 
+    exact aux.1
+  }
+  simp at *
+  exact aux.2
 
+}
+expression := sorry
 
+instance : @CoxeterSystem (ParabolicSubgroup J) (@Set.univ J) _ _ where
+exchange :=sorry
+deletion :=sorry
 
-#check Set.inclusion
