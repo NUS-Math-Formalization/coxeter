@@ -64,7 +64,6 @@ order_two := by {
   }
   simp at *
   exact aux.2
-
 }
 expression := sorry
 
