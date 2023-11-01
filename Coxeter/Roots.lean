@@ -79,7 +79,7 @@ noncomputable def α_s (s : S) : S → ℝ := fun s' => ite (s = s') 1 0
 variable {s:S} {L:List S}
 #check sigma s
 
-#check (List.map (fun (s:S) => @sigma G S m s) L).prod
+#check (List.map (fun (s:S) => @sigma G S m s) L)
 
 def sigma' (L:List S) := List.map (fun (s:S) => @sigma G S m s) L
 
