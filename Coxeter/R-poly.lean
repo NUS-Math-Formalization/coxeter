@@ -93,35 +93,66 @@ variable [AddCommMonoid H][Module (LaurentPolynomial ℤ) H] [Semiring H]
 -- mul1: ∀ (s w :G), s∈S → ℓ(w) < ℓ(s*w) → T s * T w = T (s*w)
 -- mul2: ∀ (s w :G), s∈S → ℓ(s*w) < ℓ(w) → T s * T w = a s • T w + b s • T (s*w)
 
-structure Hecke_algebra where
-FreeModule: Module.Free (LaurentPolynomial ℤ) H
-algebra: Algebra (LaurentPolynomial ℤ) H
-TT: G → H
-mul1: ∀ (s w :G), s∈S → ℓ(w) < ℓ(s*w) → TT s * TT w = TT (s*w)
-mul2: ∀ (s w :G), s∈S → ℓ(s*w) < ℓ(w) → TT s * TT w = (@LaurentPolynomial.T ℤ _ 1 - LaurentPolynomial.T 0) • TT w + (@LaurentPolynomial.T ℤ _ 1) • TT (s*w)
+-- structure Hecke_algebra where
+-- FreeModule: Module.Free (LaurentPolynomial ℤ) H
+-- algebra: Algebra (LaurentPolynomial ℤ) H
+-- TT: G → H
+-- mul1: ∀ (s w :G), s∈S → ℓ(w) < ℓ(s*w) → TT s * TT w = TT (s*w)
+-- mul2: ∀ (s w :G), s∈S → ℓ(s*w) < ℓ(w) → TT s * TT w = (@LaurentPolynomial.T ℤ _ 1 - LaurentPolynomial.T 0) • TT w + (@LaurentPolynomial.T ℤ _ 1) • TT (s*w)
 
+section Hecke_algebra
 
-def TT : G → H:=sorry
+def Hecke (G:Type _):= G → LaurentPolynomial ℤ
+
+noncomputable instance Hecke.AddCommMonoid : AddCommMonoid (Hecke G):= Pi.addCommMonoid
+
+instance Hecke.Module : Module (LaurentPolynomial ℤ) (Hecke G):=_
+
+instance Hecke.FreeModule : Module.Free (LaurentPolynomial ℤ) (Hecke G) where
+exists_basis := Pi.basis
+
+instance Hecke.HSMul :HSMul (LaurentPolynomial ℤ) (Hecke G) (Hecke G) := _
+
+noncomputable def TT : G → Hecke G:= fun w => Pi.single w 1
 
 def llr (u v:G) := ℓ(u) < ℓ(v) ∧ ∃ s∈S , s*u=v
 
 theorem well_founded_llr : WellFounded (@llr G _ S _ ) :=sorry
 
-def HeckeMul_aux.F (v:G) (F:(w:G) → llr w v → S → H) (u:S): H:=
-if hv:v=1 then TT u else 
-(
-  if ℓ(u*v)<ℓ(v) then (@LaurentPolynomial.T ℤ _ 1 - LaurentPolynomial.T 0) • (F (u*v) (sorry) u) + (@LaurentPolynomial.T ℤ _ 1) • TT (u*v) else (TT u*v)
-)
+#check Module.smul
 
-noncomputable def HeckMul_aux : G → S → H:= @WellFounded.fix G (fun g => S → H) llr well_founded_llr HeckeMul_aux.F
+-- def HeckeMul_aux.F (v:G) (F:(w:G) → llr w v → S → H) (u:S): H:=
+-- if hv:v=1 then TT u else 
+-- (
+-- --   if ℓ(u*v)<ℓ(v) then (@LaurentPolynomial.T ℤ _ 1 - LaurentPolynomial.T 0) • (F (u*v) (sorry) u) + (@LaurentPolynomial.T ℤ _ 1) • TT (u*v) else (TT u*v)
+-- -- )
 
-noncomputable def HeckeMul.F (u :G) (F:(w:G) → llr w u → G → H) (v:G): H:=
+-- noncomputable def HeckMul_aux : G → S → H:= @WellFounded.fix G (fun g => S → H) llr well_founded_llr HeckeMul_aux.F
+
+--Ts *Tw = Ts*Ts*Tu= (q-1)Ts*Tu+qTu=(q-1) Tw + qT(s*w) if s∈D_L w
+noncomputable def q :=@LaurentPolynomial.T ℤ _ 1
+
+noncomputable def mulsw (s:S) (w:G)  : Hecke G := 
+  if s.val ∈ D_L w then 
+  (Pi.single w q-1 + Pi.single (s*w) q)
+  else(
+    TT (s*w)
+  )
+--Ts* ∑ᶠ w, h (w) * TT w = ∑ᶠ h w * Ts * T w
+noncomputable def muls (s:S) (h:Hecke G) : Hecke G:= 
+finsum (fun w:G => Module.smul (h w) (mulsw s w) ) 
+--∑ᶠ (w :G), ((h w) • (mulsw s w):Hecke G)
+
+noncomputable def HeckeMul.F (u :G) (F:(w:G) → llr w u → G → Hecke G) (v:G): Hecke G:=
 if h:u =1 then TT v else 
   (
-      if u ∈ S then sorry else
-      let s:= Classical.choice (nonemptyD_R u h)
-      TT s * (F (s*u) (sorry) v)
+      
+        let s:= Classical.choice (nonemptyD_R u h)
+        mulsw s 
+      )
+      
   )
 
 noncomputable def HeckeMul :G → G →H := @WellFounded.fix G (fun g => G → H) llr well_founded_llr HeckeMul.F
 
+end Hecke_algebra
