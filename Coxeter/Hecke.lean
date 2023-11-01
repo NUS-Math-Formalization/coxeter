@@ -74,7 +74,7 @@ if h:u =1 then TT v else
         mulsw s
       )
 
-  )
+
 
 noncomputable def HeckeMul :G → G →H := @WellFounded.fix G (fun g => G → H) llr well_founded_llr HeckeMul.F
 
