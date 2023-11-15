@@ -30,15 +30,15 @@ structure Rpoly where
 variable {R:@Rpoly G _ S _}
 lemma monic_R_poly (u v: G) (h: u ≤ v) (R:@Rpoly G _ S _): Polynomial.Monic (R.R u v) ∧ Polynomial.degree (R.R u v)  = ℓ(v)-ℓ(u) ∧ Polynomial.constantCoeff (R.R u v) = (-1)^(ℓ(v)-ℓ(u)):=sorry
 
-structure KLpoly where
-P: G → G → Polynomial ℤ
-not_le:∀(u v:G), ¬ (u ≤ v) → P u v = 0
-eq:∀(u v:G), u = v → P u v = 1
-deg_le_of_lt: ∀(u v:G), u < v → Polynomial.degree (P u v) ≤ ((ℓ(v)-ℓ(u)-1)/2:ℕ)
-le:∀(u v:G), u ≤ v → X^(ℓ(v)-ℓ(u))* Polynomial.reverse (P u v) = (Finset.sum (BruhatInte u v) (fun a => R.R u a * P a v))* X^(Polynomial.natDegree (P u v))
+-- structure KLpoly where
+-- P: G → G → Polynomial ℤ
+-- not_le:∀(u v:G), ¬ (u ≤ v) → P u v = 0
+-- eq:∀(u v:G), u = v → P u v = 1
+-- deg_le_of_lt: ∀(u v:G), u < v → Polynomial.degree (P u v) ≤ ((ℓ(v)-ℓ(u)-1)/2:ℕ)
+-- le:∀(u v:G), u ≤ v → X^(ℓ(v)-ℓ(u))* Polynomial.reverse (P u v) = (Finset.sum (BruhatInte u v) (fun a => R.R u a * P a v))* X^(Polynomial.natDegree (P u v))
 
 
-lemma constant_eq_one_of_KL (u v :G) (h : u ≤ v) (KL:@KLpoly G _ S _ R): Polynomial.constantCoeff (KL.P u v) = 1:=sorry
+-- lemma constant_eq_one_of_KL (u v :G) (h : u ≤ v) (KL:@KLpoly G _ S _ R): Polynomial.constantCoeff (KL.P u v) = 1:=sorry
 
 def rr  (y x :G) := ∃ s∈D_R x, y*s = x
 
@@ -77,25 +77,7 @@ noncomputable def RF  (v:G) (F: (y : G) → rr y v → (G→ Polynomial ℤ)) : 
 noncomputable def defaultR := @WellFounded.fix G (fun g => G → Polynomial ℤ) rr (well_founded_rr) (RF)
 
 instance : Unique (@Rpoly G _ S _) where
-  default:= @defaultR G _ S _
+  default:= sorry
   uniq :=sorry
 
 #check defaultR
-
-variable [AddCommMonoid H][Module (LaurentPolynomial ℤ) H] [Semiring H]
-
--- structure generic_algebra where
--- FreeModule: Module.Free A ε
--- algebra: Algebra A ε
--- a: G → A
--- b: G → A
--- T: G → ε
--- mul1: ∀ (s w :G), s∈S → ℓ(w) < ℓ(s*w) → T s * T w = T (s*w)
--- mul2: ∀ (s w :G), s∈S → ℓ(s*w) < ℓ(w) → T s * T w = a s • T w + b s • T (s*w)
-
--- structure Hecke_algebra where
--- FreeModule: Module.Free (LaurentPolynomial ℤ) H
--- algebra: Algebra (LaurentPolynomial ℤ) H
--- TT: G → H
--- mul1: ∀ (s w :G), s∈S → ℓ(w) < ℓ(s*w) → TT s * TT w = TT (s*w)
--- mul2: ∀ (s w :G), s∈S → ℓ(s*w) < ℓ(w) → TT s * TT w = (@LaurentPolynomial.T ℤ _ 1 - LaurentPolynomial.T 0) • TT w + (@LaurentPolynomial.T ℤ _ 1) • TT (s*w)
