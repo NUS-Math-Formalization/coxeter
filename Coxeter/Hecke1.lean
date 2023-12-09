@@ -17,31 +17,29 @@ open Classical
 
 
 
-def Hecke {G :(Type _)} [Group G] (S : (Set G)) [orderTwoGen S] [CoxeterSystem G S]:= DirectSum G (fun _ => LaurentPolynomial ℤ)
+def Hecke {G :(Type _)} [Group G] (S : (Set G)) [orderTwoGen S] [CoxeterSystem G S]:= G →₀  (LaurentPolynomial ℤ)
+--DirectSum G (fun _ => LaurentPolynomial ℤ)
 --def Hecke (G:Type _):= Π₀ (i:G), (fun _ => LaurentPolynomial ℤ) i
 
-noncomputable instance Hecke.AddCommMonoid : AddCommMonoid (Hecke S):= instAddCommMonoidDirectSum G _
+noncomputable instance Hecke.AddCommMonoid : AddCommMonoid (Hecke S):= Finsupp.addCommMonoid
 
-noncomputable instance Hecke.Module : Module (LaurentPolynomial ℤ) (Hecke S):= DFinsupp.module
+noncomputable instance Hecke.Module : Module (LaurentPolynomial ℤ) (Hecke S):= Finsupp.module _ _
 
 noncomputable instance Hecke.AddCommGroup : AddCommGroup (Hecke S) := Module.addCommMonoidToAddCommGroup (LaurentPolynomial ℤ)
 
-noncomputable instance Hecke.Module.Free : Module.Free (LaurentPolynomial ℤ) (Hecke S):= Module.Free.directSum _ _
+noncomputable instance Hecke.Module.Free : Module.Free (LaurentPolynomial ℤ) (Hecke S):= Module.Free.finsupp _ _ _
 
-noncomputable instance Hecke.Sub : Sub (Hecke S) := DFinsupp.instSubDFinsuppToZeroToNegZeroClassToSubNegZeroMonoidToSubtractionMonoid
+--noncomputable instance Hecke.Sub : Sub (Hecke S) := DFinsupp.instSubDFinsuppToZeroToNegZeroClassToSubNegZeroMonoidToSubtractionMonoid
 --Dfinsupp.funlike
-instance Hecke.funLike : FunLike (Hecke S) G (fun _ => LaurentPolynomial ℤ):= instFunLikeDirectSum _ _
+instance Hecke.funLike : FunLike (Hecke S) G (fun _ => LaurentPolynomial ℤ):= Finsupp.funLike
 
 noncomputable instance LaurentPolynomial.CommSemiring : CommSemiring (LaurentPolynomial ℤ):=
 AddMonoidAlgebra.commSemiring
 
-noncomputable def TT : G → Hecke S:= fun w => DFinsupp.single w 1
+noncomputable def TT : G → Hecke S:= fun w => Finsupp.single w 1
 
 
-instance TT.Basis : Basis G (LaurentPolynomial ℤ) (Hecke S) := by{
-  --@Finsupp.basisSingleOne (LaurentPolynomial ℤ) G _
-  sorry
-}
+noncomputable instance TT.Basis : Basis G (LaurentPolynomial ℤ) (Hecke S) := Finsupp.basisSingleOne
 
 #check finsum_eq_sum
 #check Basis.sum_repr
@@ -139,7 +137,7 @@ noncomputable def opl' (s:S): End_ε :={
     rw[smul_finsum' r _]
     apply finsum_congr
     intro g
-    rw [DirectSum.smul_apply,smul_smul]
+    rw [Finsupp.smul_apply,smul_smul]
     simp only [smul_eq_mul]
     sorry
   }
@@ -307,7 +305,7 @@ noncomputable def alg_hom :LinearEquiv (@RingHom.id (LaurentPolynomial ℤ) _)  
 --   mul_one:=sorry
 --
 
-noncomputable instance Hecke.algebra : Algebra (LaurentPolynomial ℤ) (Hecke G):=
+noncomputable instance Hecke.algebra : Algebra (LaurentPolynomial ℤ) (Hecke S):=
 Algebra.ofModule (sorry) (sorry)
 --∀ (r : LaurentPolynomial ℤ) (x y : Hecke G), r • x * y = r • (x * y)
 -- r • x * y = r • ∑ᶠ w , (x w) • TT w  *  y = ∑ᶠ w, r •((x w) • TT w)  * y = ∑ᶠ w, ( (r * (x w)) • TT w) * y
