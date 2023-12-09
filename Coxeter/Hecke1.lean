@@ -305,8 +305,8 @@ noncomputable def alg_hom :LinearEquiv (@RingHom.id (LaurentPolynomial ℤ) _)  
 --   mul_one:=sorry
 --
 
-noncomputable instance Hecke.algebra : Algebra (LaurentPolynomial ℤ) (Hecke S):=
-Algebra.ofModule (sorry) (sorry)
+--noncomputable instance Hecke.algebra : Algebra (LaurentPolynomial ℤ) (Hecke S):=
+--Algebra.ofModule (sorry) (sorry)
 --∀ (r : LaurentPolynomial ℤ) (x y : Hecke G), r • x * y = r • (x * y)
 -- r • x * y = r • ∑ᶠ w , (x w) • TT w  *  y = ∑ᶠ w, r •((x w) • TT w)  * y = ∑ᶠ w, ( (r * (x w)) • TT w) * y
 --r • (x * y) = r • ∑ᶠ w, (x w) • (mulw w y) = ∑ᶠ w, ( (r * (x w)) • (TT w * y))
