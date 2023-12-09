@@ -18,10 +18,7 @@ open Classical
 
 
 def Hecke (G:Type _):= DirectSum G (fun _ => LaurentPolynomial ℤ)
-
 --def Hecke (G:Type _):= Π₀ (i:G), (fun _ => LaurentPolynomial ℤ) i
-
-
 
 noncomputable instance Hecke.AddCommMonoid : AddCommMonoid (Hecke G):= instAddCommMonoidDirectSum G _
 
@@ -40,13 +37,18 @@ AddMonoidAlgebra.commSemiring
 
 noncomputable def TT : G → Hecke G:= fun w => DFinsupp.single w 1
 
-instance TT.Basis : Basis G (LaurentPolynomial ℤ) (Hecke G) := sorry
+instance TT.Basis : Basis G (LaurentPolynomial ℤ) (Hecke G) := by{
+  --@Finsupp.basisSingleOne (LaurentPolynomial ℤ) G _
+  sorry
+}
 
-#check Basis.repr (@TT.Basis G)
-
+#check finsum_eq_sum
+#check Basis.sum_repr
 -- ∀ h:Hecke G, h = ∑ᶠ w, (h w) * TT w
 @[simp]
 noncomputable def repr_of_Hecke_respect_TT (h:Hecke G):= Finsupp.total G (Hecke G) (LaurentPolynomial ℤ) (@TT G) (Basis.repr (@TT.Basis G) h)
+
+
 
 lemma repr_apply (h:Hecke G):  @repr_of_Hecke_respect_TT G h = finsum fun w => (h w) • TT w :=by {
   simp
@@ -191,19 +193,15 @@ lemma alg_hom_aux_bijective : Function.Bijective (@alg_hom_aux G _ S _) := by {
   }
 }
 
-#check LinearEquiv.invFun
+
 --synthesized type class instance is not definitionally equal to expression inferred by typing rules, synthesized
 --   Distrib.toAdd
 -- inferred
 --   AddSemigroup.toAdd
-noncomputable def alg_hom_aux.LinearEquiv : LinearEquiv (@RingHom.id (LaurentPolynomial ℤ) _) (@subalg G _ S _) (Hecke G) where
-
-
-
-noncomputable def HecekMul' : (Hecke G) → (Hecke G) →(Hecke G):= by{
-  intro x y
-  exact alg_hom_aux (LinearEquiv.invFun (@alg_hom_aux G _ S _) x * LinearEquiv.invFun (@alg_hom_aux G _ S _)  y)
+noncomputable instance alg_hom_aux.LinearEquiv : LinearEquiv (@RingHom.id (LaurentPolynomial ℤ) _)  (@subalg G _ S _) (Hecke G) :=by{
+  sorry
 }
+
 
 lemma HeckeMul.mul_zero : ∀ (a : Hecke G), HeckeMul a 0 = 0 := by{
   intro a

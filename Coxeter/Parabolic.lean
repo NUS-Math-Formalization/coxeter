@@ -19,7 +19,7 @@ lemma mem_coe_coe (j : J) : ((j: S): G) ∈ (J : Set G) := by {
   rw [Lean.Internal.coeM]
   simp only [Set.pure_def, Set.bind_def]
   rw [Set.mem_iUnion]
-  use ⟨j,(by simp only [Subtype.coe_prop])⟩  
+  use ⟨j,(by simp only [Subtype.coe_prop])⟩
   simp only [Subtype.coe_eta, Subtype.coe_prop, Set.iUnion_true, Set.mem_singleton_iff,Subtype.val]
   rfl
 }
@@ -43,12 +43,12 @@ def coeJ_mk (J : Set S) : J → ParabolicSubgroup J := fun j => ⟨j, (
     apply Subgroup.subset_closure
     exact mem_coe_coe j
   }
-)⟩  
+)⟩
 
 def coeSetJ (JJ : Set J) := coeJ_mk J '' JJ
 
 instance : SetLike (Set J) (ParabolicSubgroup J) where
-  coe := coeSetJ 
+  coe := coeSetJ
   coe_injective' := sorry
 
 instance : @orderTwoGen (ParabolicSubgroup J) _ (@Set.univ J) where
@@ -59,7 +59,7 @@ order_two := by {
   rw [←Subgroup.coe_mul,←Subgroup.coe_one] at aux
   constructor
   {
-    apply Subtype.coe_inj.1 
+    apply Subtype.coe_inj.1
     exact aux.1
   }
   simp at *
@@ -70,4 +70,3 @@ expression := sorry
 instance : @CoxeterSystem (ParabolicSubgroup J) (@Set.univ J) _ _ where
 exchange :=sorry
 deletion :=sorry
-

@@ -26,34 +26,38 @@ noncomputable def kk_aux : ℕ → ℝ
 
 noncomputable def kk (m : @CoxeterMatrix α) : α → α → ℝ := fun s s': α => kk_aux (m.m s s')
 
-instance kk.split : split (kk m) m := {
-  m_eq_one := by {
-  intros s s' hs
-  simp_rw [kk,hs,kk_aux]
-  }
-  m_eq_two := by {
-    intros s s' hs
-    simp_rw [kk,hs,kk_aux]}
-  m_gt_three := by {
-    intros s s' hs
-    simp_rw [kk]
-    have hss:=Nat.add_sub_of_le hs
-    rw [add_comm] at hss
-    rw[ ←hss,kk_aux]
-    nth_rewrite 1 [m.isSymm] at hss
-    rw [←hss,kk_aux]
-    split
-    {rw [pow_two,mul_assoc]
-    }
+instance kk.split : split (kk m) m := by{
+  -- m_eq_one := by {
+  -- intros s s' hs
+  -- simp_rw [kk,hs,kk_aux]
+  -- }
+  -- m_eq_two := by {
+  --   intros s s' hs
+  --   simp_rw [kk,hs,kk_aux]}
+  -- m_gt_three := by {
+  --   intros s s' hs
+  --   simp_rw [kk]
+  --   have hss:=Nat.add_sub_of_le hs
+  --   rw [add_comm] at hss
+  --   rw[ ←hss,kk_aux]
+  --   nth_rewrite 1 [m.isSymm] at hss
+  --   rw [←hss,kk_aux]
+  --   split
+  --   {--rw [pow_two,mul_assoc]
+  --   sorry
+  --   }
+  --   sorry
+  --   }
 
-    }
-  m_eq_zero := by {
-    intros s s' hs
-    simp_rw [kk]
-    rw [hs,kk_aux]
-    rw [m.isSymm] at hs
-    rw [hs,kk_aux]
-    sorry}}
+  -- m_eq_zero := by {
+  --   intros s s' hs
+  --   simp_rw [kk]
+  --   rw [hs,kk_aux]
+  --   rw [m.isSymm] at hs
+  --   rw [hs,kk_aux]
+  --   sorry}
+sorry
+}
 
 
 variable {G : Type _} [Group G] {S :Set G} [orderTwoGen S] {m : @CoxeterMatrix S}

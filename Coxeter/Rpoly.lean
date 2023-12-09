@@ -1,5 +1,6 @@
 import Coxeter.Basic
 import Coxeter.Bruhat
+import Coxeter.Length_reduced_word
 
 import Mathlib.Data.Polynomial.Degree.Definitions
 import Mathlib.Data.Polynomial.Reverse
@@ -53,7 +54,7 @@ theorem well_founded_rr : WellFounded (@rr G _ S _) := sorry
 
 -- def Rv (v:G) :fun (u:{ z:G// z ≤ v}) => Polynomial ℤ:= WellFounded.Fix well_founded_rrv Rv.F
 
-lemma nonemptyD_R(v:G) (h:v ≠ 1) :Nonempty (D_R v):=sorry
+
 
 noncomputable def RF  (v:G) (F: (y : G) → rr y v → (G→ Polynomial ℤ)) : G → Polynomial ℤ:=
  if hv:v=1 then

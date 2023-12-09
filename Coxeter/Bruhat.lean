@@ -31,8 +31,8 @@ instance Bruhat.poset : PartialOrder G where
 le := @le G _ S _
 lt := @lt G _ S _
 le_refl  := fun x => Or.inl (refl x)
-le_trans := fun (x y z:G) => by{ 
-  intros lxy lyz 
+le_trans := fun (x y z:G) => by{
+  intros lxy lyz
   sorry
 }
 lt_iff_le_not_le  := sorry
@@ -45,7 +45,7 @@ lemma ltone_is_lt {u w:G}  : ltone u w → u < w := by{
   assumption
 }
 
-def BruhatInte (x y : G) : Set G := {a | x ≤ a ∧ a ≤ y } 
+def BruhatInte (x y : G) : Set G := {a | x ≤ a ∧ a ≤ y }
 
 #check Set.ncard
 #check length
@@ -57,7 +57,7 @@ lemma SubwordAux (L L':List S) (hred:reduced_word L) (hw: (w:G) = L.gprod) (hsub
 
 theorem SubwordProp (L: List S) (u w : G) (hred:reduced_word L) (hw: (w:G) = L.gprod) : u ≤ w ↔ ∃ (L': List S), reduced_word L' ∧ List.Sublist L' L ∧ u = L'.gprod where
   mp := by
-    sorry 
+    sorry
   mpr := fun
     | .intro w h => by
       sorry
@@ -68,13 +68,13 @@ lemma leIffInvle (u w : G) :  u ≤ w ↔ u⁻¹ ≤ w⁻¹ := sorry
 
 theorem ChainProp (u w :G) (hlt: u < w) : ∃ (L: List G) (h:L ≠ [])(n:Fin L.length), u = L.head h∧ w =L.ilast' w ∧ ℓ(L.get n) = ℓ(u) + n:= sorry
 
-def OrderCovering (u w:G) := u < w ∧ ℓ(u) + 1 = ℓ(w) 
+def OrderCovering (u w:G) := u < w ∧ ℓ(u) + 1 = ℓ(w)
 
 local notation lhs:65 " ◁  " rhs:65 => (@OrderCovering G  _ S _ _ lhs rhs)
 
 lemma LiftingProp (u w : G) (h:s∈ D_L w) : u ≤ s*w ∧ s*u ≤ w := sorry
 
-class DirectedPoset (α:Type u) extends PartialOrder α where 
+class DirectedPoset (α:Type u) extends PartialOrder α where
 directed:∀ (u w:α) , ∃ z:α, u ≤ z ∧ w ≤ z
 
 
@@ -88,6 +88,5 @@ lemma Bruhat'Congr' (x y :G) (t:T S) (hlt: x < x*t) (hlt: y < (t:G)*y) : x * y <
   -- have hredx := @reduced_word_exist G A _ _ S _ x
   -- have hredy := @reduced_word_exist G A _ _ S _ y
   -- --have hf' := @le_of_not_lt G _ (x * t * y) (x * y) hf
-  -- let ⟨L1,hL1⟩ := hredx 
+  -- let ⟨L1,hL1⟩ := hredx
   -- let ⟨L2,hL2⟩ := hredy
-
