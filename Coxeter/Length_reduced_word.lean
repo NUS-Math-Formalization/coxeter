@@ -327,6 +327,12 @@ lemma length_mul_lt_of_mem_D_L (w:G) (h:w≠ 1) (h2:s ∈ D_L w) : ℓ(s*w) < �
    exact this.2
 }
 
+lemma length_mul_lt_of_mem_D_R (w:G) (h:w≠ 1) (h2:s ∈ D_R w) : ℓ(w*s) < ℓ(w):=by{
+   rw [D_R] at h2
+   have :s ∈ T_R w:= ((Set.mem_inter_iff s (T_R w) S).1 h2).1
+   exact this.2
+}
+
 lemma Nat.le_sub_one_of_lt (h : m < n) :m ≤ n - 1 :=sorry
 
 

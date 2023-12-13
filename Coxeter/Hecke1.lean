@@ -10,6 +10,7 @@ import Mathlib.Data.Polynomial.Basic
 import Mathlib.LinearAlgebra.FreeModule.Basic
 import Mathlib.Data.Polynomial.Laurent
 import Mathlib.Algebra.DirectSum.Basic
+import Mathlib.Algebra.Ring.Defs
 
 variable {G :(Type _)} [Group G] {S : (Set G)} [orderTwoGen S] [CoxeterSystem G S]
 local notation :max "ℓ(" g ")" => (@length G  _ S _ g)
@@ -82,6 +83,7 @@ noncomputable def mulws --{G : Type*} [Group G] {S : Set G} [orderTwoGen S] [Cox
 noncomputable def muls_right (h:Hecke S) (s:S)  : Hecke S:=
 finsum (fun w:G =>  (h w) • (mulws w s) )
 
+
 noncomputable def mulw.F (u :G) (F:(w:G) → llr w u → Hecke S → Hecke S) (v:Hecke S): Hecke S:=
 if h:u =1 then v
   else(
@@ -92,20 +94,29 @@ if h:u =1 then v
 
 noncomputable def mulw :G → Hecke S → Hecke S := @WellFounded.fix G (fun _ => Hecke S → Hecke S) llr well_founded_llr mulw.F
 
--- lemma mulw_zero : ∀ w:G ,mulw S w 0 = 0:= by{
---   intro w
---   rw [mulw,WellFounded.fix,WellFounded.fixF]
---   sorry
---
--- }
+lemma finsupp_mulsw_of_finsupp_Hecke (x:Hecke S) :Set.Finite (Function.support (fun w => x w • mulsw s w)):=by{
+  have : Function.support (fun w => x w • mulsw s w) ⊆ {i | (x i) ≠ 0}:=by{
+      simp only [ne_eq, Function.support_subset_iff, Set.mem_setOf_eq]
+      intro w
+      apply Function.mt
+      intro h
+      rw [h]
+      simp
+    }
+  exact Set.Finite.subset (Finsupp.finite_support x) this
+}
 
---noncomputable def HeckeMul (h1:Hecke S) (h2:Hecke S) : Hecke S :=
---finsum (fun w:G => (h1 w) • mulw S w h2)
---
-
--- noncomputable instance Hecke.Mul : Mul (Hecke S) where
--- mul:=HeckeMul
-
+lemma finsupp_mulws_of_finsupp_Hecke (x:Hecke S) :Set.Finite (Function.support (fun w => x w • mulws w s)):=by{
+  have : Function.support (fun w => x w • mulws w s) ⊆ {i | (x i) ≠ 0}:=by{
+      simp only [ne_eq, Function.support_subset_iff, Set.mem_setOf_eq]
+      intro w
+      apply Function.mt
+      intro h
+      rw [h]
+      simp
+    }
+  exact Set.Finite.subset (Finsupp.finite_support x) this
+}
 
 lemma finsupp_mul_of_directsum  (a c: Hecke S): Function.support (fun w ↦ ↑(a w) • mulw w c) ⊆  {i | ↑(a i) ≠ 0} := by {
   simp only [ne_eq, Function.support_subset_iff, Set.mem_setOf_eq]
@@ -127,10 +138,19 @@ noncomputable def opl (s:S) : (Hecke S)→ (Hecke S) := fun h:(Hecke S) => muls 
 --noncomputable def opl1 (w:G) := DirectSum.toModule  (LaurentPolynomial ℤ) G (Hecke G) (fun w:G => (fun (Hecke G) w => mulw w ))
 
 noncomputable def opr (s:S) : (Hecke S )→ (Hecke S) := fun h:(Hecke S) => muls_right h s
-
-noncomputable def opl' (s:S): End_ε :={
+#check Set.Finite.subset
+noncomputable def opl' (s:S): End_ε :=
+{
   toFun:=opl s
-  map_add':=sorry
+  map_add':=by{
+    intro x y
+    simp[opl,muls]
+    rw [←finsum_add_distrib (finsupp_mulsw_of_finsupp_Hecke x) (finsupp_mulsw_of_finsupp_Hecke y)]
+    congr
+    apply funext
+    intro w
+    rw [Finsupp.add_apply,add_smul]
+  }
   map_smul':=by{
     intro r x
     simp[opl,muls]
@@ -139,32 +159,67 @@ noncomputable def opl' (s:S): End_ε :={
     intro g
     rw [Finsupp.smul_apply,smul_smul]
     simp only [smul_eq_mul]
-    sorry
+    exact finsupp_mulsw_of_finsupp_Hecke x
   }
 }
 
+noncomputable def opr' (s:S): End_ε :={
+  toFun:=opr s
+  map_add':=by{
+    intro x y
+    simp[opr,muls_right]
+    rw [←finsum_add_distrib (finsupp_mulws_of_finsupp_Hecke x) (finsupp_mulws_of_finsupp_Hecke y)]
+    congr
+    apply funext
+    intro w
+    rw [Finsupp.add_apply,add_smul]
+  }
+  map_smul':=by{
+    intro r x
+    simp[opr,muls_right]
+    rw[smul_finsum' r _]
+    apply finsum_congr
+    intro g
+    rw [Finsupp.smul_apply,smul_smul]
+    simp only [smul_eq_mul]
+    exact finsupp_mulws_of_finsupp_Hecke x
+  }
+}
+
+lemma TT_muls_right_eq_mul_of_length_lt {s:S} (h:ℓ(w)<ℓ(w*s)):  opr' s (TT w)  = TT (w*s):=by{
+  simp [opr',opr,muls_right]
+  sorry
+}
+
+lemma opl_commute_opr : ∀ s t:S, opl' s ∘ opr' t = opr' t ∘ opl' s:=by{
+  intro s t
+  sorry
+}
+
 def generator_set :=  opl' '' (Set.univ :Set S)
+def generator_set' :=  opr' '' (Set.univ :Set S)
 
 noncomputable def subalg {G : Type u_1} [Group G] (S : Set G) [orderTwoGen S] [CoxeterSystem G S]
 := Algebra.adjoin (LaurentPolynomial ℤ) (@generator_set G _ S _ _)
+
+#check (subalg S).one
+
 
 @[simp]
 noncomputable def alg_hom_aux : subalg S→ (Hecke S) := fun f => f.1 (TT 1)
 --compiler IR check failed at 'alg_hom_aux._rarg', error: unknown declaration 'TT'
 
+noncomputable def subalg' {G : Type u_1} [Group G] (S : Set G) [orderTwoGen S] [CoxeterSystem G S]
+:= Algebra.adjoin (LaurentPolynomial ℤ) (@generator_set' G _ S _ _)
 
-
-
-#check alg_hom_aux
---noncomputable instance subalg.AddCommMonoid : AddCommMonoid (@subalg G _ S _) :=sorry
+@[simp]
+noncomputable def alg_hom_aux' : subalg' S→ (Hecke S) := fun f => f.1 (TT 1)
 
 noncomputable instance subalg.Algebra: Algebra (LaurentPolynomial ℤ) (subalg S) := Subalgebra.algebra (subalg S)
+noncomputable instance subalg'.Algebra: Algebra (LaurentPolynomial ℤ) (subalg' S) := Subalgebra.algebra (subalg' S)
 
---noncomputable instance subalg.Module: Module (LaurentPolynomial ℤ) (@subalg G _ S _) :=sorry
---@Algebra.toModule (LaurentPolynomial ℤ) (@subalg G _ S _) _ _ _
+lemma subalg_commute_subalg' (f:subalg S) (g:subalg' S): f.1 ∘ g.1 = g.1 ∘ f.1:=sorry
 
-
---prove alg_hom is module homo
 noncomputable instance alg_hom_aux.IsLinearMap : IsLinearMap (LaurentPolynomial ℤ) (alg_hom_aux: subalg S → Hecke S) where
 map_add:=by{
   intro x y
@@ -174,30 +229,71 @@ map_smul:=by {
   intro c x
   simp [alg_hom_aux]
 }
-
-lemma alg_hom_injective_aux (f: subalg S) (h: alg_hom_aux f = 0) : f = 0 := by {
-  simp at h
-  sorry
+noncomputable instance alg_hom_aux'.IsLinearMap : IsLinearMap (LaurentPolynomial ℤ) (alg_hom_aux': subalg' S → Hecke S) where
+map_add:=by{
+  intro x y
+  simp [alg_hom_aux]
+  --simp [alg_hom_aux']??????
+}
+map_smul:=by {
+  intro c x
+  simp [alg_hom_aux]
 }
 
-#check Function.bijective_iff_has_inverse
-
-lemma alg_hom_aux_injective : Function.Injective  (@alg_hom_aux G _ S _ _) := by {
-  sorry
+lemma TT_subset_image_of_alg_hom_aux_aux : ∀ l ,∀ w:G , l = ℓ(w) →∃ f:subalg' S, TT w = alg_hom_aux' f:= by{
+  intro l w h
+  induction' l with n hn
+  {
+    have := eq_one_of_length_eq_zero w (eq_comm.1 h)
+    rw [this]
+    use 1
+    simp [alg_hom_aux']}
+  {
+    sorry
+  }
 }
 
 lemma alg_hom_aux_surjective: Function.Surjective (@alg_hom_aux G _ S _ _) := by {
   sorry
 }
 
+lemma alg_hom_aux'_surjective: Function.Surjective (@alg_hom_aux' G _ S _ _) := by {
+  sorry
+}
+lemma alg_hom_injective_aux (f: subalg S) (h: alg_hom_aux f = 0) : f = 0 := by {
+  simp at h
+  have : ∀ w:G, f.1 (TT w) = 0:=by{
+    intro w
+    by_cases h1:w=1
+    {rw[h1,h]}
+    {
+      have h1: ∀ g:subalg' S, g.1 (f.1 (TT 1)) = 0:=by{
+        rw[h]
+        intro g
+        rw[map_zero]}
+      have h2: ∀ g:subalg' S, f.1 (g.1 (TT 1)) = 0:=by{
+        intro g
+        rw [←@Function.comp_apply _ _ _ f.1,subalg_commute_subalg']
+        exact h1 g
+      }
+      have :=@alg_hom_aux'_surjective G _ S _ _ (TT w)
+      simp [alg_hom_aux'] at this
+      rcases this with ⟨g,⟨hg1,hg2⟩⟩
+      rw [←hg2]
+      exact h2 ⟨g,hg1⟩
+    }
+  }
+  sorry
+}
+#check injective_iff_map_eq_zero
+lemma alg_hom_aux_injective : Function.Injective  (@alg_hom_aux G _ S _ _) := by {
+  apply (injective_iff_map_eq_zero (@alg_hom_aux G _ S _ _)).2
+}
+
+
 lemma alg_hom_aux_bijective : Function.Bijective (@alg_hom_aux G _ S _ _) := ⟨alg_hom_aux_injective, alg_hom_aux_surjective⟩
 
-
---synthesized type class instance is not definitionally equal to expression inferred by typing rules, synthesized
---   Distrib.toAdd
--- inferred
---   AddSemigroup.toAdd
-noncomputable def alg_hom :LinearEquiv (@RingHom.id (LaurentPolynomial ℤ) _)  (subalg S) (Hecke S) where
+noncomputable def alg_hom {G :(Type _)} [Group G] (S : (Set G)) [orderTwoGen S] [CoxeterSystem G S]:LinearEquiv (@RingHom.id (LaurentPolynomial ℤ) _)  (subalg S) (Hecke S) where
   toFun:= alg_hom_aux
   map_add' := by simp
   map_smul' := by simp
@@ -205,117 +301,108 @@ noncomputable def alg_hom :LinearEquiv (@RingHom.id (LaurentPolynomial ℤ) _)  
   left_inv := Function.leftInverse_surjInv alg_hom_aux_bijective
   right_inv := Function.rightInverse_surjInv alg_hom_aux_surjective
 
+#check (@alg_hom G _ S _ _).invFun
+#check (subalg S).1
 
--- lemma HeckeMul.mul_zero : ∀ (a : Hecke G), HeckeMul a 0 = 0 := by{
---   intro a
---   simp[HeckeMul]
---   apply finsum_eq_zero_of_forall_eq_zero
---   intro w
---   rw [mulw_zero]
---   simp
--- }
---
--- lemma HeckeMul.mul_zero1 : ∀ (a : Hecke G),  a * 0 = 0 := by{
---   intro a
---   apply finsum_eq_zero_of_forall_eq_zero
---   intro w
---   rw [mulw_zero]
---   simp
--- }
+lemma alg_hom_id : alg_hom S 1 = TT 1 :=by{simp[alg_hom]}
+lemma subalg.id_eq :(alg_hom S).invFun (TT 1) = 1:=by{
+  rw [←alg_hom_id]
+  simp
+}
 
--- lemma HeckeMul.zero_mul : ∀ (a : Hecke G),  0 * a = 0 := by{
---   intro a
---   apply finsum_eq_zero_of_forall_eq_zero
---   intro w
---   rw [DirectSum.zero_apply]
---   simp
--- }
---
--- lemma Hecke.one_mul : ∀ (a : Hecke G), TT 1 * a = a := by{
---   intro a
---   sorry
--- }
+noncomputable def HeckeMul : Hecke S → Hecke S → Hecke S := fun x =>(fun y => (alg_hom S).toFun ((alg_hom S).invFun x * (alg_hom S).invFun y))
+
+lemma Hecke.mul_zero : ∀ (a : Hecke S), HeckeMul a 0 = 0 := by{
+  intro a
+  simp[HeckeMul]
+}
+
+lemma Hecke.zero_mul : ∀ (a : Hecke S),  HeckeMul 0 a = 0 := by{
+  intro a
+  simp[HeckeMul]
+}
+
+lemma Hecke.mul_assoc :∀ (a b c : Hecke S), HeckeMul (HeckeMul a b) c = HeckeMul a (HeckeMul b c):=by{
+  intro a b c
+  simp[HeckeMul]
+}
+
+lemma Hecke.one_mul : ∀ (a : Hecke S), HeckeMul (TT 1) a = a := by{
+  intro a
+  simp[HeckeMul]
+  rw [←LinearEquiv.invFun_eq_symm,@subalg.id_eq G _ S _]
+  simp
+}
+
+lemma Hecke.mul_one : ∀ (a : Hecke S), HeckeMul a (TT 1) = a := by{
+  intro a
+  simp[HeckeMul]
+  rw [←LinearEquiv.invFun_eq_symm,@subalg.id_eq G _ S _]
+  simp
+}
 
 #check DirectSum.add_apply
 
 
+lemma Hecke.left_distrib : ∀ (a b c : Hecke S), HeckeMul a (b + c) = HeckeMul a b + HeckeMul a c := by{
+  intro a b c
+  simp[HeckeMul]
+  rw [NonUnitalNonAssocSemiring.left_distrib]
+  congr
+}
+
+lemma Hecke.right_distrib : ∀ (a b c : Hecke S),  HeckeMul (a + b)  c =  HeckeMul a c + HeckeMul b c :=by{
+  intro a b c
+  simp[HeckeMul]
+  rw [NonUnitalNonAssocSemiring.right_distrib]
+  congr
+}
 
 
--- lemma Hecke.right_distrib : ∀ (a b c : Hecke G),  HeckeMul (a + b)  c =  HeckeMul a c + HeckeMul b c :=by{
---   intro a b c
---   simp[HeckeMul]
---   rw [←finsum_add_distrib]--,←@Module.add_smul (LaurentPolynomial ℤ) (Hecke G) _ _ _ ]
---   congr
---   ext
---   rw [←@Module.add_smul (LaurentPolynomial ℤ) (Hecke G)]
---   congr
---   exact Set.Finite.subset (DFinsupp.finite_support a) (finsupp_mul_of_directsum a c)
---   exact Set.Finite.subset (DFinsupp.finite_support b) (finsupp_mul_of_directsum b c)
--- }
+noncomputable instance Hecke.Semiring : Semiring (Hecke S) where
+  add:= AddCommMonoid.add
+  add_assoc:= AddCommMonoid.add_assoc
+  zero:=0
+  zero_add:=AddCommMonoid.zero_add
+  add_zero:=AddCommMonoid.add_zero
+  add_comm:=AddCommMonoid.add_comm
+  nsmul:= AddCommMonoid.nsmul
+  nsmul_zero:=AddCommMonoid.nsmul_zero
+  nsmul_succ:=AddCommMonoid.nsmul_succ
+  mul:=HeckeMul
+  mul_zero:= Hecke.mul_zero
+  zero_mul:= Hecke.zero_mul
+  left_distrib:= Hecke.left_distrib
+  right_distrib:= Hecke.right_distrib
+  mul_assoc:=sorry
+  one:=TT 1
+  one_mul:=Hecke.one_mul
+  mul_one:=Hecke.mul_one
+
+lemma Hecke.smul_assoc : ∀ (r : LaurentPolynomial ℤ) (x y : Hecke S), HeckeMul (r • x) y = r • (HeckeMul x y):=by{
+  intro r x y
+  simp [HeckeMul]
+}
+
+lemma Hecke.smul_comm : ∀ (r : LaurentPolynomial ℤ) (x y : Hecke S), HeckeMul x (r • y) = r • (HeckeMul x y):=by{
+  intro r x y
+  simp [HeckeMul]
+}
+
+noncomputable instance Hecke.algebra : Algebra (LaurentPolynomial ℤ) (Hecke S):=
+Algebra.ofModule (Hecke.smul_assoc) (Hecke.smul_comm)
+
+--define (TT s)⁻¹
+noncomputable def Hecke_inv_s (s:S) := q⁻¹ • (TT s.val) - (1-q⁻¹) • (TT 1)
+
+noncomputable def Hecke_invG.F (u:G) (F: (w:G) → llr w u → Hecke S): Hecke S:= if h:u=1 then TT 1
+else (
+   let s:= Classical.choice (nonemptyD_L u h)
+   HeckeMul (F (s*u) (@llr_of_mem_D_L G _ S _ u s)) (Hecke_inv_s s)
+  )
 
 
-
--- To show (a * (TT s * TT sw)) * c = a * ( (TT s * TT sw) * c )
-
--- lemma Hecke.assoc : ∀ (a b c : Hecke G), a * b * c = a * (b * c) := by {
---   intro a b c
---   apply (DirectSum.ext_iff (LaurentPolynomial ℤ)).2
---   intro i
---   rw [DirectSum.component,DFinsupp.lapply]
---   simp
---   sorry
--- }
---
---
--- noncomputable def Hecke_inv_s (s:S) := q⁻¹ • (TT s.val) - (1-q⁻¹) • (TT 1)
---
--- noncomputable def Hecke_invG.F (u:G) (F: (w:G) → llr w u → Hecke G): Hecke G:= if h:u=1 then TT 1
--- else (
---    let s:= Classical.choice (nonemptyD_L u h)
---    HeckeMul (F (s*u) (@llr_of_mem_D_L G _ S _ u s)) (Hecke_inv_s s)
---   )
---
---
--- noncomputable def Hecke_invG : G → Hecke G := @WellFounded.fix G (fun _ => Hecke G) llr well_founded_llr Hecke_invG.F
---
---
---
--- noncomputable instance Hecke.Semiring : Semiring (Hecke G) where
---   add:= AddCommMonoid.add
---   add_assoc:= AddCommMonoid.add_assoc
---   zero:=0
---   zero_add:=AddCommMonoid.zero_add
---   add_zero:=AddCommMonoid.add_zero
---   add_comm:=AddCommMonoid.add_comm
---   nsmul:= AddCommMonoid.nsmul
---   nsmul_zero:=AddCommMonoid.nsmul_zero
---   nsmul_succ:=AddCommMonoid.nsmul_succ
---   mul:=HeckeMul
---   mul_zero:= HeckeMul.mul_zero
---   zero_mul:= HeckeMul.zero_mul
---   left_distrib:=by {
---     intro a b c
---     sorry
---     --rw [DirectSum.add_apply]
---   }
---   right_distrib:= Hecke.right_distrib
---   mul_assoc:=sorry
---   one:=TT 1
---   one_mul:=sorry
---   mul_one:=sorry
---
-
---noncomputable instance Hecke.algebra : Algebra (LaurentPolynomial ℤ) (Hecke S):=
---Algebra.ofModule (sorry) (sorry)
---∀ (r : LaurentPolynomial ℤ) (x y : Hecke G), r • x * y = r • (x * y)
--- r • x * y = r • ∑ᶠ w , (x w) • TT w  *  y = ∑ᶠ w, r •((x w) • TT w)  * y = ∑ᶠ w, ( (r * (x w)) • TT w) * y
---r • (x * y) = r • ∑ᶠ w, (x w) • (mulw w y) = ∑ᶠ w, ( (r * (x w)) • (TT w * y))
-
-#check Basis.repr_sum_self
-#check Finsupp.basisSingleOne
-#check Finsupp.total
-
-#check Basis.total_repr
+noncomputable def Hecke_invG : G → Hecke S := @WellFounded.fix G (fun _ => Hecke S) llr well_founded_llr Hecke_invG.F
 
 lemma Hecke_left_invG (u:G): (Hecke_invG u) * TT u  = 1 := by{sorry}
 
@@ -323,8 +410,6 @@ lemma Hecke_right_invG (u:G): TT u * (Hecke_invG u) = 1 :=by{
   rw [Hecke_invG]
   sorry
   }
-
-
 
 def length_le_set (w:G) := {x:G| ℓ(x) ≤ ℓ(w)}
 
@@ -338,13 +423,13 @@ section involution
 
 noncomputable def iot_A : LaurentPolynomial ℤ →  LaurentPolynomial ℤ := LaurentPolynomial.invert
 
-noncomputable def iot_T : G → Hecke G := fun w => Hecke_invG w
+noncomputable def iot_T : G → Hecke S := fun w => Hecke_invG w
 
-noncomputable def iot :Hecke G → Hecke G := fun h => finsum (fun x:G =>iot_A (h x) • TT x)
+noncomputable def iot :Hecke S → Hecke S := fun h => finsum (fun x:G =>iot_A (h x) • TT x)
 
-lemma iot_mul (x y :Hecke G) : iot (x*y) = iot x * iot y:= sorry
+lemma iot_mul (x y :Hecke S) : iot (x*y) = iot x * iot y:= sorry
 
-noncomputable instance iot.AlgHom : AlgHom (LaurentPolynomial ℤ) (Hecke G) (Hecke G) where
+noncomputable instance iot.AlgHom : AlgHom (LaurentPolynomial ℤ) (Hecke S) (Hecke S) where
 toFun:=iot
 map_one':=sorry
 map_mul':=iot_mul
