@@ -188,7 +188,22 @@ noncomputable def opr' (s:S): End_ε :={
 
 lemma TT_muls_right_eq_mul_of_length_lt {s:S} (h:ℓ(w)<ℓ(w*s)):  opr' s (TT w)  = TT (w*s):=by{
   simp [opr',opr,muls_right]
-  sorry
+  have :mulws w s = TT (w * s):=by{
+    rw [mulws]
+    have notsinD_R :¬ (s.1 ∈ D_R w):=sorry
+    simp [notsinD_R]
+  }
+  calc
+    ∑ᶠ (w_1 : G), (TT w) w_1 • mulws w_1 s = TT w w • mulws w s:=by{
+      apply finsum_eq_single
+      intro x hx
+      rw [TT,Finsupp.single_eq_of_ne (Ne.symm hx)]
+      simp
+    }
+    _ = _ :=by{
+      rw [TT,Finsupp.single_eq_same,this]
+      simp
+      }
 }
 
 lemma opl_commute_opr : ∀ s t:S, opl' s ∘ opr' t = opr' t ∘ opl' s:=by{
@@ -249,7 +264,11 @@ lemma TT_subset_image_of_alg_hom_aux_aux : ∀ l ,∀ w:G , l = ℓ(w) →∃ f:
     use 1
     simp [alg_hom_aux']}
   {
-    sorry
+    have hw:w≠1:=sorry
+    let s:= Classical.choice (nonemptyD_R w hw)
+    have :s.val ∈ S:= Set.mem_of_mem_of_subset s.2 (Set.inter_subset_right _ S)
+    have h1:=length_mul_of_mem_D_R w hw s.2
+
   }
 }
 
@@ -285,9 +304,12 @@ lemma alg_hom_injective_aux (f: subalg S) (h: alg_hom_aux f = 0) : f = 0 := by {
   }
   sorry
 }
-#check injective_iff_map_eq_zero
-lemma alg_hom_aux_injective : Function.Injective  (@alg_hom_aux G _ S _ _) := by {
-  apply (injective_iff_map_eq_zero (@alg_hom_aux G _ S _ _)).2
+#check injective_iff_map_eq_zero'
+lemma alg_hom_aux_injective : Function.Injective  (alg_hom_aux :subalg S → Hecke S) := by {
+  -- rw [Function.Injective]
+  -- intro a1 a2 h
+  -- sorry
+  sorry
 }
 
 
@@ -324,7 +346,8 @@ lemma Hecke.zero_mul : ∀ (a : Hecke S),  HeckeMul 0 a = 0 := by{
 
 lemma Hecke.mul_assoc :∀ (a b c : Hecke S), HeckeMul (HeckeMul a b) c = HeckeMul a (HeckeMul b c):=by{
   intro a b c
-  simp[HeckeMul]
+  simp only [HeckeMul]
+  sorry
 }
 
 lemma Hecke.one_mul : ∀ (a : Hecke S), HeckeMul (TT 1) a = a := by{
@@ -374,7 +397,10 @@ noncomputable instance Hecke.Semiring : Semiring (Hecke S) where
   zero_mul:= Hecke.zero_mul
   left_distrib:= Hecke.left_distrib
   right_distrib:= Hecke.right_distrib
-  mul_assoc:=sorry
+  mul_assoc:=by{
+    intro a b c
+    rw [Semiring.mul]
+  }
   one:=TT 1
   one_mul:=Hecke.one_mul
   mul_one:=Hecke.mul_one

@@ -333,7 +333,7 @@ lemma length_mul_lt_of_mem_D_R (w:G) (h:w≠ 1) (h2:s ∈ D_R w) : ℓ(w*s) < �
    exact this.2
 }
 
-lemma Nat.le_sub_one_of_lt (h : m < n) :m ≤ n - 1 :=sorry
+-- lemma Nat.le_sub_one_of_lt (h : m < n) :m ≤ n - 1 :=sorry
 
 
 lemma length_mul_of_mem_D_L (w:G) (h:w≠1) (h2:s ∈ D_L w) : ℓ(s*w) = ℓ(w) -1 :=by{
@@ -343,10 +343,13 @@ lemma length_mul_of_mem_D_L (w:G) (h:w≠1) (h2:s ∈ D_L w) : ℓ(s*w) = ℓ(w)
    have h4: ℓ(w) - 1 ≤ ℓ(s*w):=by{
       simp
       assumption}
-   have h5: ℓ(s*w) ≤ ℓ(w) -1:= by {exact Nat.le_sub_one_of_lt (length_mul_lt_of_mem_D_L w h h2)}
+   have h5: ℓ(s*w) ≤ ℓ(w) -1:= by {exact le_sub_one_of_lt (length_mul_lt_of_mem_D_L w h h2)}
    linarith
 }
 
+lemma length_mul_of_mem_D_R (w:G) (h:w≠1) (h2:s ∈ D_R w) : ℓ(w*s) = ℓ(w) -1 :=by{
+   sorry
+}
 section epsilon_map
 
 noncomputable def eps : G → ℤ:= fun w => (-1)^ℓ(w)

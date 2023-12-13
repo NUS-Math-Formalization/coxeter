@@ -81,8 +81,7 @@ finsum (fun w:G =>  (h w) • (mulws w s) )
 noncomputable def mulw.F (u :G) (F:(w:G) → llr w u → Hecke G → Hecke G) (v:Hecke G): Hecke G:=
 if h:u =1 then v
   else(
-    let s:= Classical.choice (nonemptyD_L u h)
-    have :s.val ∈ S:= Set.mem_of_mem_of_subset s.2 (Set.inter_subset_right _ S)
+
     @muls G _ S _ ⟨s,this⟩ (F (s.val*u) (@llr_of_mem_D_L G _ S _ u s ) v)
   )
 
