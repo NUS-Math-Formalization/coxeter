@@ -44,7 +44,7 @@ noncomputable instance TT.Basis : Basis G (LaurentPolynomial ℤ) (Hecke S) := F
 
 #check finsum_eq_sum
 #check Basis.sum_repr
--- ∀ h:Hecke G, h = ∑ᶠ w, (h w) * TT w
+
 @[simp]
 noncomputable def repr_of_Hecke_respect_TT (h:Hecke S):= Finsupp.total G (Hecke S) (LaurentPolynomial ℤ) (TT) (Basis.repr (TT.Basis) h)
 
@@ -55,6 +55,10 @@ lemma repr_apply (h:Hecke S):  repr_of_Hecke_respect_TT h = finsum fun w => (h w
   rw [ Finsupp.total_apply]
   sorry
 }
+
+--lemma Hecke.repr_respect_TT : ∀ h:Hecke S, h = finsum (fun w =>(h w) • TT w) :=sorry
+-- ∀ h:Hecke G, h = ∑ᶠ w, (h w) * TT w
+lemma Hecke.repr_respect_TT : ∀ h:Hecke S, h = Finsupp.sum h (fun w =>(fun p =>p • TT w)) :=sorry
 
 --Ts *Tw = Ts*Ts*Tu= (q-1)Ts*Tu+qTu=(qSS1) Tw + qT(s*w) if s∈D_L w
 noncomputable def q :=@LaurentPolynomial.T ℤ _ 1
@@ -255,7 +259,7 @@ map_smul:=by {
   simp [alg_hom_aux]
 }
 
-lemma TT_subset_image_of_alg_hom_aux_aux : ∀ l ,∀ w:G , l = ℓ(w) →∃ f:subalg' S, TT w = alg_hom_aux' f:= by{
+lemma TT_subset_image_of_alg_hom_aux'_aux : ∀ l ,∀ w:G , l = ℓ(w) →∃ f:subalg' S, TT w = alg_hom_aux' f:= by{
   intro l w h
   induction' l with n hn
   {
@@ -268,8 +272,17 @@ lemma TT_subset_image_of_alg_hom_aux_aux : ∀ l ,∀ w:G , l = ℓ(w) →∃ f:
     let s:= Classical.choice (nonemptyD_R w hw)
     have :s.val ∈ S:= Set.mem_of_mem_of_subset s.2 (Set.inter_subset_right _ S)
     have h1:=length_mul_of_mem_D_R w hw s.2
+    rw [←h,Nat.succ_sub_one] at h1
+    have h2:= hn (w * s) (eq_comm.1 h1)
+    rcases h2 with ⟨f',hf⟩
+    use (opr' ⟨s.1,this⟩)
 
   }
+}
+
+lemma TT_subset_image_of_alg_hom_aux' : ∀ w:G, ∃ f:subalg' S, TT w = alg_hom_aux' f:=by{
+  intro w
+  exact @TT_subset_image_of_alg_hom_aux'_aux G _ S _ _ ℓ(w) w rfl
 }
 
 lemma alg_hom_aux_surjective: Function.Surjective (@alg_hom_aux G _ S _ _) := by {
@@ -277,8 +290,11 @@ lemma alg_hom_aux_surjective: Function.Surjective (@alg_hom_aux G _ S _ _) := by
 }
 
 lemma alg_hom_aux'_surjective: Function.Surjective (@alg_hom_aux' G _ S _ _) := by {
-  sorry
+  rw [Function.Surjective]
+  intro b
+  simp_rw [←Basis.sum_repr ]
 }
+
 lemma alg_hom_injective_aux (f: subalg S) (h: alg_hom_aux f = 0) : f = 0 := by {
   simp at h
   have : ∀ w:G, f.1 (TT w) = 0:=by{
@@ -302,13 +318,20 @@ lemma alg_hom_injective_aux (f: subalg S) (h: alg_hom_aux f = 0) : f = 0 := by {
       exact h2 ⟨g,hg1⟩
     }
   }
-  sorry
+  ext x
+  simp
+  rw [Hecke.repr_respect_TT x,map_finsupp_sum]
+  simp[@IsLinearMap.map_smul (LaurentPolynomial ℤ),this]
 }
-#check injective_iff_map_eq_zero'
+
 lemma alg_hom_aux_injective : Function.Injective  (alg_hom_aux :subalg S → Hecke S) := by {
-  -- rw [Function.Injective]
-  -- intro a1 a2 h
-  -- sorry
+  rw [Function.Injective]
+  intro a1 a2 h
+  have : alg_hom_aux (a1 - a2) = 0:=by{
+    have := sub_eq_zero_of_eq h
+    rw [←@IsLinearMap.map_sub (LaurentPolynomial ℤ)] at this
+    assumption
+  }
   sorry
 }
 
