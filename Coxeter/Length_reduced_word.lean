@@ -343,7 +343,7 @@ lemma length_mul_of_mem_D_L (w:G) (h:w≠1) (h2:s ∈ D_L w) : ℓ(s*w) = ℓ(w)
    have h4: ℓ(w) - 1 ≤ ℓ(s*w):=by{
       simp
       assumption}
-   have h5: ℓ(s*w) ≤ ℓ(w) -1:= by {exact le_sub_one_of_lt (length_mul_lt_of_mem_D_L w h h2)}
+   have h5: ℓ(s*w) ≤ ℓ(w) -1:= by {exact Nat.le_sub_one_of_lt (length_mul_lt_of_mem_D_L w h h2)}
    linarith
 }
 
