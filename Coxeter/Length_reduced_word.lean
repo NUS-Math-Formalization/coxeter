@@ -240,33 +240,6 @@ lemma mul_le_of_lt_of_mul_lt (s:S) (w:G) (h: s*w < w) : x < w → s*w ≤ w:=by 
 
 
 
---map all s∈S to -1,extends to a group homo :W → {-1,1}
-
--- noncomputable def eps.F (w:G) (f: (u:G) → llr u w → ℤ) : ℤ:= if h:w = 1 then 1
--- else(
---   let s:= Classical.choice (nonemptyD_R w h)
---   (f (s*w) (sorry))* -1
--- )
-
--- noncomputable def eps : G → ℤ:=@WellFounded.fix G (fun _ => ℤ) llr well_founded_llr (eps.F )
-
--- lemma eps_apply_aux : ∀l, ∀w, l = ℓ(w) → @eps G _ S _ w = (-1)^ℓ(w):=by{
---   intros l w
---   induction' l with l hl
---   {
---     intro h
---     rw [←h]
---     have hh:= eq_one_of_length_eq_zero  _ (eq_comm.1 h)
---     simp [hh]
-
---   }
-
--- }
-
--- lemma eps_apply (w:G) : eps w = (-1)^ℓ(w):= by{
---   induction ℓ(w)
--- }
-
 lemma length_mul_le_sum  (u v:G): ℓ(u*v) ≤ ℓ(u) + ℓ(v):= by{
    rcases reduced_word_exist u with ⟨Lu,⟨hu1,hu2⟩⟩
    rcases reduced_word_exist v with ⟨Lv,⟨hv1,hv2⟩⟩
@@ -327,12 +300,23 @@ lemma length_mul_lt_of_mem_D_L (w:G) (h:w≠ 1) (h2:s ∈ D_L w) : ℓ(s*w) < �
    exact this.2
 }
 
+lemma non_mem_D_L_of_length_mul_gt (w:G) (h2:ℓ(w) < ℓ(s*w)) : s ∉ D_L w := by{
+   contrapose h2
+   push_neg at *
+   sorry
+}
+
 lemma length_mul_lt_of_mem_D_R (w:G) (h:w≠ 1) (h2:s ∈ D_R w) : ℓ(w*s) < ℓ(w):=by{
    rw [D_R] at h2
    have :s ∈ T_R w:= ((Set.mem_inter_iff s (T_R w) S).1 h2).1
    exact this.2
 }
 
+lemma non_mem_D_R_of_length_mul_gt (w:G) (h2:ℓ(w) < ℓ(w*s)) : s ∉ D_R w := by{
+   contrapose h2
+   push_neg at *
+   sorry
+}
 -- lemma Nat.le_sub_one_of_lt (h : m < n) :m ≤ n - 1 :=sorry
 
 

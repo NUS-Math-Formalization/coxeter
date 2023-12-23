@@ -194,11 +194,11 @@ lemma TT_muls_right_eq_mul_of_length_lt {s:S} (h:ℓ(w)<ℓ(w*s)):  opr' s (TT w
   simp [opr',opr,muls_right]
   have :mulws w s = TT (w * s):=by{
     rw [mulws]
-    have notsinD_R :¬ (s.1 ∈ D_R w):=sorry
+    have notsinD_R :¬ (s.1 ∈ D_R w):=non_mem_D_R_of_length_mul_gt w h
     simp [notsinD_R]
   }
   calc
-    ∑ᶠ (w_1 : G), (TT w) w_1 • mulws w_1 s = TT w w • mulws w s:=by{
+    _ = TT w w • mulws w s:=by{
       apply finsum_eq_single
       intro x hx
       rw [TT,Finsupp.single_eq_of_ne (Ne.symm hx)]
@@ -210,8 +210,12 @@ lemma TT_muls_right_eq_mul_of_length_lt {s:S} (h:ℓ(w)<ℓ(w*s)):  opr' s (TT w
       }
 }
 
+lemma Smul_eq_mulS_of_length_eq {s t:S} {w:G} :ℓ(s*w*t) = ℓ(w) ∧ ℓ(s*w)=ℓ(w*t) → s*w=w*t:=sorry
+
+
 lemma opl_commute_opr : ∀ s t:S, opl' s ∘ opr' t = opr' t ∘ opl' s:=by{
   intro s t
+  ext w
   sorry
 }
 
@@ -260,14 +264,16 @@ map_smul:=by {
 }
 
 lemma TT_subset_image_of_alg_hom_aux'_aux : ∀ l ,∀ w:G , l = ℓ(w) →∃ f:subalg' S, TT w = alg_hom_aux' f:= by{
-  intro l w h
+  intro l
   induction' l with n hn
   {
+    intro w h
     have := eq_one_of_length_eq_zero w (eq_comm.1 h)
     rw [this]
     use 1
     simp [alg_hom_aux']}
   {
+    intro w h
     have hw:w≠1:=sorry
     let s:= Classical.choice (nonemptyD_R w hw)
     have :s.val ∈ S:= Set.mem_of_mem_of_subset s.2 (Set.inter_subset_right _ S)
@@ -275,8 +281,8 @@ lemma TT_subset_image_of_alg_hom_aux'_aux : ∀ l ,∀ w:G , l = ℓ(w) →∃ f
     rw [←h,Nat.succ_sub_one] at h1
     have h2:= hn (w * s) (eq_comm.1 h1)
     rcases h2 with ⟨f',hf⟩
-    use (opr' ⟨s.1,this⟩)
-
+    sorry
+    --use (opr' ⟨s.1,this⟩)
   }
 }
 
@@ -292,7 +298,8 @@ lemma alg_hom_aux_surjective: Function.Surjective (@alg_hom_aux G _ S _ _) := by
 lemma alg_hom_aux'_surjective: Function.Surjective (@alg_hom_aux' G _ S _ _) := by {
   rw [Function.Surjective]
   intro b
-  simp_rw [←Basis.sum_repr ]
+  sorry
+  --simp_rw [←Basis.sum_repr ]
 }
 
 lemma alg_hom_injective_aux (f: subalg S) (h: alg_hom_aux f = 0) : f = 0 := by {
@@ -420,10 +427,7 @@ noncomputable instance Hecke.Semiring : Semiring (Hecke S) where
   zero_mul:= Hecke.zero_mul
   left_distrib:= Hecke.left_distrib
   right_distrib:= Hecke.right_distrib
-  mul_assoc:=by{
-    intro a b c
-    rw [Semiring.mul]
-  }
+  mul_assoc:=Hecke.mul_assoc
   one:=TT 1
   one_mul:=Hecke.one_mul
   mul_one:=Hecke.mul_one
