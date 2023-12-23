@@ -99,3 +99,19 @@ lemma removeNth_append_lt {α : Type _} (L1 L2: List α) (n : ℕ) (h : n < L1.l
 }
 
 end List
+
+
+section adjoin
+
+set_option checkBinderAnnotations false
+universe uR uS uA uB
+
+variable {R : Type uR} {S : Type uS} {A : Type uA} {B : Type uB}
+variable [CommSemiring R] [CommSemiring S] [Semiring A] [Semiring B]
+
+variable [Algebra R A] [Algebra S A] [Algebra R B]
+variable {s t : Set A}
+
+lemma adjoin_comm_of_generator_set_comm : ∀ a∈s, ∀b∈t ,a*b=b*a →
+
+end adjoin

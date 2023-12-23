@@ -39,26 +39,21 @@ AddMonoidAlgebra.commSemiring
 
 noncomputable def TT : G → Hecke S:= fun w => Finsupp.single w 1
 
-
+#check Basis
 noncomputable instance TT.Basis : Basis G (LaurentPolynomial ℤ) (Hecke S) := Finsupp.basisSingleOne
 
-#check finsum_eq_sum
-#check Basis.sum_repr
-
 @[simp]
-noncomputable def repr_of_Hecke_respect_TT (h:Hecke S):= Finsupp.total G (Hecke S) (LaurentPolynomial ℤ) (TT) (Basis.repr (TT.Basis) h)
-
-
-
-lemma repr_apply (h:Hecke S):  repr_of_Hecke_respect_TT h = finsum fun w => (h w) • TT w :=by {
-  simp
-  rw [ Finsupp.total_apply]
-  sorry
-}
+lemma TT.Basis_on{w:G}: TT.Basis w = TT w:=rfl
 
 --lemma Hecke.repr_respect_TT : ∀ h:Hecke S, h = finsum (fun w =>(h w) • TT w) :=sorry
 -- ∀ h:Hecke G, h = ∑ᶠ w, (h w) * TT w
-lemma Hecke.repr_respect_TT : ∀ h:Hecke S, h = Finsupp.sum h (fun w =>(fun p =>p • TT w)) :=sorry
+lemma Hecke.repr_respect_TT : ∀ h:Hecke S, h = Finsupp.sum h (fun w =>(fun p =>p • TT w)) :=by{
+  intro h
+  rw [←Finsupp.total_apply]
+  conv =>
+    lhs
+    rw [←Basis.total_repr TT.Basis h]
+}
 
 --Ts *Tw = Ts*Ts*Tu= (q-1)Ts*Tu+qTu=(qSS1) Tw + qT(s*w) if s∈D_L w
 noncomputable def q :=@LaurentPolynomial.T ℤ _ 1
@@ -212,21 +207,51 @@ lemma TT_muls_right_eq_mul_of_length_lt {s:S} (h:ℓ(w)<ℓ(w*s)):  opr' s (TT w
 
 lemma Smul_eq_mulS_of_length_eq {s t:S} {w:G} :ℓ(s*w*t) = ℓ(w) ∧ ℓ(s*w)=ℓ(w*t) → s*w=w*t:=sorry
 
-
-lemma opl_commute_opr : ∀ s t:S, opl' s ∘ opr' t = opr' t ∘ opl' s:=by{
+lemma opl_commute_opr : ∀ s t:S, LinearMap.comp (opr' t) (opl' s) = LinearMap.comp  (opl' s) (opr' t):=by{
   intro s t
-  ext w
-  sorry
+  have haux: ∀ w:G, (opr' t ∘ₗ opl' s) (TT.Basis w) = (opl' s ∘ₗ opr' t) (TT.Basis w):=by{
+    simp
+    intro w
+    by_cases h:ℓ(s*w*t) = ℓ(w)
+    {
+      by_cases h1:ℓ(s*w) < ℓ(w)
+      {
+        by_cases h2: ℓ(w*t) < ℓ(w)
+        --(c) ℓ(s*w)=ℓ(w*t) <ℓ(s*w*t) = ℓ(w)
+        {sorry}
+        --(e) length (↑s * w) < length w = ℓ(s*w*t) < length (w * ↑t)
+        {sorry}
+      }
+      {
+        by_cases h2: ℓ(w*t) < ℓ(w)
+        --(d) ℓ(wt) < ℓ{w) = ℓ(swt) < ℓ(sw)
+        {sorry}
+        --(f) ℓ(w) = ℓ(swt) < ℓ(wt) = ℓ(sw)
+        {sorry}
+      }
+    }
+    {
+      have hh:= lt_or_gt_of_ne h
+      sorry
+    }
+  }
+  exact @Basis.ext G (LaurentPolynomial ℤ) (Hecke S) _ _ _ TT.Basis  (LaurentPolynomial ℤ) _ (@RingHom.id (LaurentPolynomial ℤ) _) (Hecke S) _ _  (LinearMap.comp (opr' t) (opl' s)) (LinearMap.comp (opl' s) (opr' t) ) haux
 }
 
-def generator_set :=  opl' '' (Set.univ :Set S)
-def generator_set' :=  opr' '' (Set.univ :Set S)
+def generator_set {G : Type u_1} [Group G] (S : Set G) [orderTwoGen S] [CoxeterSystem G S]:=  opl' '' (Set.univ :Set S)
+def generator_set' {G : Type u_1} [Group G] (S : Set G) [orderTwoGen S] [CoxeterSystem G S]:=  opr' '' (Set.univ :Set S)
 
 noncomputable def subalg {G : Type u_1} [Group G] (S : Set G) [orderTwoGen S] [CoxeterSystem G S]
 := Algebra.adjoin (LaurentPolynomial ℤ) (@generator_set G _ S _ _)
 
 #check (subalg S).one
 
+--aux.lean
+lemma Algebra.mem_adjoin_of_mem_s {R : Type uR} {A : Type uA} [CommRing R] [Ring A] [Algebra R A] {s : Set A} {x : A} : x ∈ s → x ∈ Algebra.adjoin R s:=by{
+  intro h
+  have := @Algebra.subset_adjoin R A _ _ _ s
+  exact Set.mem_of_mem_of_subset h this
+}
 
 @[simp]
 noncomputable def alg_hom_aux : subalg S→ (Hecke S) := fun f => f.1 (TT 1)
@@ -241,7 +266,35 @@ noncomputable def alg_hom_aux' : subalg' S→ (Hecke S) := fun f => f.1 (TT 1)
 noncomputable instance subalg.Algebra: Algebra (LaurentPolynomial ℤ) (subalg S) := Subalgebra.algebra (subalg S)
 noncomputable instance subalg'.Algebra: Algebra (LaurentPolynomial ℤ) (subalg' S) := Subalgebra.algebra (subalg' S)
 
-lemma subalg_commute_subalg' (f:subalg S) (g:subalg' S): f.1 ∘ g.1 = g.1 ∘ f.1:=sorry
+def p_subalg_commute_subalg' (f:subalg S) :=∀ g:subalg' S, f.1 ∘ₗ g.1 = g.1 ∘ₗ f.1
+
+lemma adjoin_induction_Hs (f:subalg S) : f.1 ∈ generator_set S → p_subalg_commute_subalg' f:=by{
+  intro h
+  rw [p_subalg_commute_subalg']
+  rcases ((Set.mem_image opl' (Set.univ :Set S) f).1 h) with ⟨s,hs⟩
+  rw [←hs.2]
+  sorry
+}
+
+lemma adjoin_induction_Alg {G : Type u_1} [Group G] (S : Set G) [orderTwoGen S] [CoxeterSystem G S] :∀p: LaurentPolynomial ℤ, p_subalg_commute_subalg' (algebraMap (LaurentPolynomial ℤ) (subalg S) p) :=sorry
+
+lemma adjoin_induction_Hadd : ∀ (f1 f2:subalg S), p_subalg_commute_subalg' f1 → p_subalg_commute_subalg' f2 → p_subalg_commute_subalg' (f1 + f2) :=by{
+  intro f1 f2 h1 h2
+  rw [p_subalg_commute_subalg'] at *
+  intro g
+  rw [Subalgebra.coe_add,LinearMap.add_comp g.1,h1 g,h2 g,LinearMap.comp_add]
+}
+
+lemma adjoin_induction_Hmul : ∀ (f1 f2:subalg S), p_subalg_commute_subalg' f1 → p_subalg_commute_subalg' f2 → p_subalg_commute_subalg' (f1 * f2) :=by{
+  intro f1 f2 h1 h2
+  rw [p_subalg_commute_subalg'] at *
+  intro g
+  rw [Subalgebra.coe_mul,LinearMap.mul_eq_comp,LinearMap.comp_assoc,h2 g,←LinearMap.comp_assoc,h1 g,LinearMap.comp_assoc]
+}
+
+lemma subalg_commute_subalg' (f:subalg S) (g:subalg' S): f.1 ∘ₗ g.1 = g.1 ∘ₗ f.1:=by{
+  exact Algebra.adjoin_induction f.2 _ (adjoin_induction_Alg S) adjoin_induction_Hadd adjoin_induction_Hmul
+}
 
 noncomputable instance alg_hom_aux.IsLinearMap : IsLinearMap (LaurentPolynomial ℤ) (alg_hom_aux: subalg S → Hecke S) where
 map_add:=by{
@@ -298,8 +351,7 @@ lemma alg_hom_aux_surjective: Function.Surjective (@alg_hom_aux G _ S _ _) := by
 lemma alg_hom_aux'_surjective: Function.Surjective (@alg_hom_aux' G _ S _ _) := by {
   rw [Function.Surjective]
   intro b
-  sorry
-  --simp_rw [←Basis.sum_repr ]
+  rw [Hecke.repr_respect_TT b]
 }
 
 lemma alg_hom_injective_aux (f: subalg S) (h: alg_hom_aux f = 0) : f = 0 := by {
