@@ -186,11 +186,11 @@ noncomputable def opr' (s:S): End_ε :={
 }
 
 lemma TT_muls_right_eq_mul_of_length_lt {s:S} (h:ℓ(w)<ℓ(w*s)):  opr' s (TT w)  = TT (w*s):=by{
-  simp [opr',opr,muls_right]
+  simp only [opr',opr,muls_right]
   have :mulws w s = TT (w * s):=by{
     rw [mulws]
     have notsinD_R :¬ (s.1 ∈ D_R w):=non_mem_D_R_of_length_mul_gt w h
-    simp [notsinD_R]
+    simp only[notsinD_R,ite_false]
   }
   calc
     _ = TT w w • mulws w s:=by{
@@ -201,11 +201,10 @@ lemma TT_muls_right_eq_mul_of_length_lt {s:S} (h:ℓ(w)<ℓ(w*s)):  opr' s (TT w
     }
     _ = _ :=by{
       rw [TT,Finsupp.single_eq_same,this]
-      simp
+      simp only [one_smul]
       }
 }
 
-lemma Smul_eq_mulS_of_length_eq {s t:S} {w:G} :ℓ(s*w*t) = ℓ(w) ∧ ℓ(s*w)=ℓ(w*t) → s*w=w*t:=sorry
 
 lemma opl_commute_opr : ∀ s t:S, LinearMap.comp (opr' t) (opl' s) = LinearMap.comp  (opl' s) (opr' t):=by{
   intro s t
@@ -231,8 +230,20 @@ lemma opl_commute_opr : ∀ s t:S, LinearMap.comp (opr' t) (opl' s) = LinearMap.
       }
     }
     {
-      have hh:= lt_or_gt_of_ne h
-      sorry
+      have h1:=length_S_mul_eq_length_mul_S_of_neq s t w h
+      rcases( Ne.lt_or_lt h) with hl|hr
+      --(b) length (↑s * w * ↑t) < length (↑s * w) = length (w * ↑t)< length w
+      {
+        have h2:=length_lt_S_mul_of_length_S_mul_S_lt s t w hl
+        have h3:=length_S_mul_lt_of_length_S_mul_S_lt s t w hl
+        sorry
+      }
+      -- (a) ℓ(w) < ℓ(wt) = ℓ(sw) < ℓ(swt)
+      {
+        have h2:=length_S_mul_gt_of_length_S_mul_S_gt s t w hr
+        have h3:=length_gt_S_mul_of_length_S_mul_S_gt s t w hr
+        sorry
+      }
     }
   }
   exact @Basis.ext G (LaurentPolynomial ℤ) (Hecke S) _ _ _ TT.Basis  (LaurentPolynomial ℤ) _ (@RingHom.id (LaurentPolynomial ℤ) _) (Hecke S) _ _  (LinearMap.comp (opr' t) (opl' s)) (LinearMap.comp (opl' s) (opr' t) ) haux
@@ -367,7 +378,7 @@ lemma alg_hom_injective_aux (f: subalg S) (h: alg_hom_aux f = 0) : f = 0 := by {
         rw[map_zero]}
       have h2: ∀ g:subalg' S, f.1 (g.1 (TT 1)) = 0:=by{
         intro g
-        rw [←@Function.comp_apply _ _ _ f.1,subalg_commute_subalg']
+        rw [←@Function.comp_apply _ _ _ f.1,subalg_commute_subalg' f g]
         exact h1 g
       }
       have :=@alg_hom_aux'_surjective G _ S _ _ (TT w)

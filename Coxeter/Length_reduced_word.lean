@@ -117,6 +117,7 @@ lemma eq_one_of_length_eq_zero (w:G) : ℓ(w)=0 → w =1 := by{
    assumption
 }
 
+lemma length_neq_zero_of_neq_one {w:G} : ¬w=1 →¬ℓ(w)=0:= mt (eq_one_of_length_eq_zero w)
 
 lemma length_generator_eq_one (s:S) : ℓ(s) = 1:= by{
    apply (Nat.find_eq_iff (length_aux s.1)).2
@@ -281,6 +282,24 @@ lemma length_mul_ge_sub (u v :G) : ℓ(u) - ℓ(v) ≤ ℓ(u*v) :=by{
 
 lemma length_mul_ge_sub' (u v :G) : ℓ(v) - ℓ(u) ≤ ℓ(u*v) := sorry
 
+
+
+
+
+section  generator_mul
+
+lemma generator_mul_eq_one (s:S) (w:G) : s*w=1 → w=s:=by{
+   intro h
+   rw [mul_eq_one_iff_inv_eq]at h
+   rw [inv_eq_self',h]
+}
+
+lemma mul_generator_eq_one (w:G) (s:S) : w*s=1 → w=s:=by{
+   intro h
+   rw [mul_eq_one_iff_eq_inv]at h
+   rw [inv_eq_self',h]
+}
+
 lemma length_generator_mul_le_sum (s:S) (w:G) : ℓ(s*w) ≤ 1+ℓ(w) := by {
    have :=length_mul_le_sum s.val w
    rw [length_generator_eq_one] at this
@@ -293,6 +312,75 @@ lemma length_generator_mul_le_sub (s:S) (w:G) : ℓ(w) - 1 ≤ ℓ(s*w):=by{
    assumption
 }
 
+
+lemma length_generator_mul_neq_length_self (s:S) (w:G) : ℓ(s*w) ≠ ℓ(w):=by {
+   rcases reduced_word_exist w with ⟨L,h⟩
+   by_cases h0: w =1
+   {
+      rw [h0,mul_one,length_generator_eq_one,length_one_eq_zero]
+      simp
+   }
+   {
+      by_cases h1: ℓ(w) < ℓ(s*w)
+      {linarith}
+      {
+         push_neg at h1
+         rw [h.2] at h1
+         have := @CoxeterSystem.exchange G S _ _ _ L s h.1 h1
+         rw [←h.2] at this
+         rcases this with ⟨i,hi⟩
+         have h3:=length_generator_mul_le_sub s w
+         have h4: reduced_word (List.removeNth L i):=by{
+            apply (reduced_word_iff_length_le (List.removeNth L i)).2
+            simp_rw [←hi,List.length_removeNth (Fin.is_lt i),(reduced_word_iff_length_eq L).1 h.1,←h.2]
+            assumption
+         }
+         rw [reduced_word_iff_length_eq (List.removeNth L ↑i),List.length_removeNth (Fin.is_lt i),←hi,(reduced_word_iff_length_eq L).1 h.1,←h.2] at h4
+         rw [←h4]
+         have h5:= length_neq_zero_of_neq_one h0
+         exact Nat.pred_ne_self h5
+      }
+   }
+}
+
+lemma length_generator_mul (s:S) (w:G) : ℓ(s*w) = ℓ(w)+1 ∨ ℓ(s*w) = ℓ(w)-1:=by{
+   have h1:=Nat.lt_or_gt.1 (length_generator_mul_neq_length_self s w)
+   exact Or.elim h1 (fun hlt => (Or.inr ((LE.le.ge_iff_eq (Nat.le_sub_one_of_lt hlt)).1 (length_generator_mul_le_sub s w)))) (by{
+      intro h2
+      left
+      have h3:= length_generator_mul_le_sum s w
+      linarith
+   })
+}
+
+
+lemma length_mul_generator (w:G) (s:S) : ℓ(w*s) = ℓ(w)+1 ∨ ℓ(w*s) = ℓ(w)-1:=by{
+   sorry
+}
+
+lemma length_generator_mul_of_length_lt (s:S) (w:G) : ℓ(s*w) < ℓ(w) → ℓ(s*w) = ℓ(w)-1:= by{
+   intro h
+   have h1:=length_generator_mul s w
+   exact Or.elim h1 (fun h2=> (by{
+      have : length (↑s * w) > length w:= by linarith
+      have hlt_self : ℓ(w)<ℓ(w):= by linarith
+      exact byContradiction (fun _ => (LT.lt.false hlt_self))
+   })) (fun h2 =>h2)
+}
+lemma length_generator_mul_of_length_gt (s:S) (w:G) : ℓ(w) < ℓ(s*w) → ℓ(s*w) = ℓ(w)+1:=sorry
+
+lemma length_mul_generator_of_length_lt (w:G) (s:S) : ℓ(w*s) < ℓ(w) → ℓ(w*s) = ℓ(w)-1:=sorry
+
+lemma length_mul_generator_of_length_gt (w:G) (s:S) : ℓ(w) < ℓ(w*s) → ℓ(w*s) = ℓ(w)+1:=sorry
+
+lemma reduced_word_of_generator_mul_of_length_gt {s:S} {w:G} {L:List S} (h:reduced_word L) (heq:w=L.gprod) : ℓ(w) < ℓ(s*w) → reduced_word (s::L) :=by{
+   intro h1
+   have h2: (s::L).gprod = s*w:= by{rw [gprod_cons s L,heq]}
+   have h3: (s::L).length = ℓ(w)+1:=by{rw[List.length_cons,heq,(reduced_word_iff_length_eq L).1 h]}
+   have hle : (s :: L).length ≤ ℓ(s*w):=by linarith
+   rw [←h2] at hle
+   exact (reduced_word_iff_length_le (s :: L)).2 hle
+}
 
 lemma length_mul_lt_of_mem_D_L (w:G) (h:w≠ 1) (h2:s ∈ D_L w) : ℓ(s*w) < ℓ(w):=by{
    rw [D_L] at h2
@@ -319,7 +407,6 @@ lemma non_mem_D_R_of_length_mul_gt (w:G) (h2:ℓ(w) < ℓ(w*s)) : s ∉ D_R w :=
 }
 -- lemma Nat.le_sub_one_of_lt (h : m < n) :m ≤ n - 1 :=sorry
 
-
 lemma length_mul_of_mem_D_L (w:G) (h:w≠1) (h2:s ∈ D_L w) : ℓ(s*w) = ℓ(w) -1 :=by{
    have hs: s∈S:=((Set.mem_inter_iff s (T_L w) S).1 h2).2
    have h3:=length_generator_mul_le_sub ⟨s,hs⟩ w
@@ -334,6 +421,73 @@ lemma length_mul_of_mem_D_L (w:G) (h:w≠1) (h2:s ∈ D_L w) : ℓ(s*w) = ℓ(w)
 lemma length_mul_of_mem_D_R (w:G) (h:w≠1) (h2:s ∈ D_R w) : ℓ(w*s) = ℓ(w) -1 :=by{
    sorry
 }
+
+lemma length_lt_S_mul_of_length_S_mul_S_lt (s t :S) (w:G) : ℓ(s*w*t) < ℓ(w) → ℓ(s*w*t) <ℓ(s*w) :=by{
+   have h:= length_mul_generator (s*w) t
+   intro hlt
+   rcases h with hadd|hsub
+   {
+      have h1:=length_generator_mul_le_sub s w
+      rw [Nat.sub_le_iff_le_add,←hadd] at h1
+      exact byContradiction (fun _ =>(lt_iff_not_ge _ _).1 hlt h1)
+   }
+   {
+      by_cases h2: s*w=1
+      {
+         have : w=s:=generator_mul_eq_one _ _ h2
+         rw [h2,one_mul,this,length_generator_eq_one,length_generator_eq_one]at hlt
+         linarith
+      }
+      {
+         rw [hsub]
+         exact Nat.pred_lt (length_neq_zero_of_neq_one h2)
+      }
+   }
+}
+
+lemma length_S_mul_lt_of_length_S_mul_S_lt (s t :S) (w:G) : ℓ(s*w*t) < ℓ(w) → ℓ(s*w) <ℓ(w) :=by{
+   intro hlt
+   have hsub: length (s * w * t) = length (↑s * w) - 1:=length_mul_generator_of_length_lt (s*w) t (length_lt_S_mul_of_length_S_mul_S_lt s t w hlt)
+   have h1:=length_generator_mul s w
+   rcases h1 with hadd'|hsub'
+   {
+      rw [hadd'] at hsub
+      rw [hsub] at hlt
+      exact byContradiction (fun _ => LT.lt.false hlt)}
+   {
+      by_cases h2: w=1
+      {
+         rw [h2,length_one_eq_zero] at hlt
+         by_contra!
+         exact ((lt_iff_not_ge _ _).1 hlt ) (Nat.zero_le ℓ(s * 1 * t))
+      }
+      {
+         rw [hsub']
+         exact Nat.pred_lt (length_neq_zero_of_neq_one h2)
+      }
+   }
+
+
+}
+
+lemma length_S_mul_gt_of_length_S_mul_S_gt (s t :S) (w:G) : ℓ(w) < ℓ(s*w*t) → ℓ(w) <ℓ(s*w) :=sorry
+
+lemma length_gt_S_mul_of_length_S_mul_S_gt (s t :S) (w:G) : ℓ(w) < ℓ(s*w*t) → ℓ(s*w) <ℓ(s*w*t) :=sorry
+
+lemma length_S_mul_eq_length_mul_S_of_neq (s t :S) (w:G): ℓ(s*w*t) ≠ ℓ(w) → ℓ(s*w)=ℓ(w*t):=by{
+   intro h
+   cases (Ne.lt_or_lt h) with
+   | inl => (sorry)
+   | inr => (sorry)
+}
+
+lemma S_mul_eq_mul_S_of_length_eq {s t:S} {w:G} :ℓ(s*w*t) = ℓ(w) ∧ ℓ(s*w)=ℓ(w*t) → s*w=w*t:=sorry
+
+
+
+end generator_mul
+
+
 section epsilon_map
 
 noncomputable def eps : G → ℤ:= fun w => (-1)^ℓ(w)
@@ -344,13 +498,13 @@ lemma eps_ne_zero : ∀w:G, eps w ≠ 0:= by{
    apply pow_ne_zero
    linarith
 }
-
+@[simp]
 lemma eps_one : eps (1:G) = 1:=by {
    simp[eps]
    rw [length_one_eq_zero]
    linarith
    }
-
+@[simp]
 lemma eps_generator {s:S}: eps s.1 = -1:= by{
    rw [eps,length_generator_eq_one]
    linarith
@@ -358,9 +512,25 @@ lemma eps_generator {s:S}: eps s.1 = -1:= by{
 
 
 lemma eps_s_mul (s:S) (u:G) : eps (s*u) = eps s.1 * eps u := by{
-   repeat
-      rw [eps]
-   sorry
+   by_cases h0: u = 1
+   {rw [h0,mul_one,eps_one,mul_one]}
+   {
+      repeat
+         rw [eps]
+      have :=length_generator_mul s u
+      exact Or.elim this (fun h1 => by{
+         rw [h1,length_generator_eq_one,pow_add]
+         simp}) (fun h2 => (by{
+            rw [h2,length_generator_eq_one,←pow_add]
+            conv =>
+               lhs
+               rw [←mul_one ((-1) ^ (length u - 1))]
+               arg 2
+               rw [ ←neg_one_pow_two]
+            rw [←pow_add,←@Nat.sub_add_comm,add_comm]
+            simp
+            exact Nat.one_le_iff_ne_zero.2 (length_neq_zero_of_neq_one h0)
+      }))}
 }
 
 lemma eps_is_homo_aux : ∀l, ∀ (u v:G), l = ℓ(u) → eps u * eps v = eps (u*v):=by{
@@ -401,21 +571,5 @@ lemma eps_is_homo : ∀ (u v:G), eps u * eps v = eps (u*v):=by{
    exact this rfl
 }
 
-lemma length_generator_mul_neq_length_self (s:S) (w:G) : ℓ(s*w) ≠ ℓ(w):=by {
-      have :eps (s*w) ≠ eps (w):= by {
-      rw [←eps_is_homo,eps_generator,neg_mul,one_mul]
-      apply (neg_ne_self ℤ ℤ).2
-      exact eps_ne_zero w
-      }
-      rw [eps,eps] at this
-      contrapose this
-      push_neg at *
-      rw [this]
-}
-
-lemma length_generator_mul_neq_length_self1 (s:S) (w:G) : ℓ(s*w) ≠ ℓ(w):=by {
-   rcases reduced_word_exist w with ⟨L,h⟩
-   sorry
-}
 
 end epsilon_map

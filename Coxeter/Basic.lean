@@ -41,7 +41,7 @@ lemma gprod_nil : @List.gprod G _ S [] = (1:G ):=by {exact List.prod_nil}
 
 lemma gprod_singleton {s:S}: [s].gprod = s:=by rw [List.gprod,coe_cons, nil_eq_nil, List.prod_cons, List.prod_nil, mul_one]
 
-lemma gprod_cons {hd : S}  {tail : List S} : (hd::tail).gprod = hd * (tail.gprod) := by {
+lemma gprod_cons (hd : S)  (tail : List S) : (hd::tail).gprod = hd * (tail.gprod) := by {
   rw [List.gprod,List.gprod,<-List.prod_cons]
   congr
 }
@@ -86,7 +86,7 @@ fun x hx => mul_eq_one_iff_eq_inv.1 (orderTwoGen.order_two x hx).1
 
 lemma non_one [orderTwoGen S]: ∀ x:G,  x∈S → x ≠ 1 :=
 fun x hx => (orderTwoGen.order_two x hx).2
-
+@[simp]
 lemma inv_eq_self'  [orderTwoGen S]: ∀ x:S,  x = (x:G)⁻¹ :=
 by {
    intro x
@@ -155,3 +155,10 @@ def DeletionProp := ∀ (L:List S),ℓ(L.gprod) < L.length → ∃ (j: Fin L.len
 class CoxeterSystem (G : Type _) (S : Set G) [Group G] [orderTwoGen S] where
   exchange : @ExchangeProp G _ S _
   deletion : @DeletionProp G _ S _
+
+variable (L:List S)
+
+-- structure expression where
+-- element:G
+-- reduced_expr:List S
+-- reduced_property: reduced_word reduced_expr
