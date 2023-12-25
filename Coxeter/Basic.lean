@@ -79,7 +79,8 @@ class orderTwoGen {G : Type _}[Group G] (S:outParam (Set G))where
 --     have H:= @generating G A _ _ S _ g
 --     exact @Subgroup.memClosure_if_Prod G A _ _ S _ g H
 --    }
-lemma generator_order_two [orderTwoGen S] {s:S}: s.1 * s.1 = 1:=by{exact (orderTwoGen.order_two s.1 s.2).1}
+@[simp]
+lemma generator_square [orderTwoGen S] (s:S): s.1 * s.1 = 1:=by{exact (orderTwoGen.order_two s.1 s.2).1}
 
 lemma inv_eq_self  [orderTwoGen S]: ∀ x:G,  x∈S → x = x⁻¹ :=
 fun x hx => mul_eq_one_iff_eq_inv.1 (orderTwoGen.order_two x hx).1
@@ -138,7 +139,7 @@ lemma nonemptyD_R(v:G) (h:v ≠ 1) :Nonempty (D_R v):=sorry
 
 
 lemma mul_generator_twice (w:G) (s:S): w*s*s=w:=by{
-  rw [mul_assoc,generator_order_two]
+  rw [mul_assoc,generator_square]
   simp
 }
 

@@ -277,9 +277,34 @@ noncomputable def alg_hom_aux' : subalg' S→ (Hecke S) := fun f => f.1 (TT 1)
 noncomputable instance subalg.Algebra: Algebra (LaurentPolynomial ℤ) (subalg S) := Subalgebra.algebra (subalg S)
 noncomputable instance subalg'.Algebra: Algebra (LaurentPolynomial ℤ) (subalg' S) := Subalgebra.algebra (subalg' S)
 
+lemma opr'_alg_hom_aux'_comm : ∀s:S, ∀f:subalg S, opr' s (alg_hom_aux f) = alg_hom_aux ((opr' s)*f):=sorry
+
+noncomputable def generator_set_embedding : End_ε → subalg S := fun f => dite (f∈generator_set S) (fun h=>⟨f,Algebra.mem_adjoin_of_mem_s h⟩)  (fun _ =>1)
+
+lemma generator_set_embedding_image_eq : generator_set_embedding '' (generator_set S) = generator_set S :=by{
+  ext f
+  simp
+  constructor
+  {
+    intro h
+    rcases h with ⟨x,⟨hx1,hx2⟩⟩
+    simp [generator_set_embedding]at hx2
+    -- cases (dite_eq_or_eq (x ∈ generator_set S))
+    -- {
+    --   -- rename_i h1
+    --   -- rw [h1] at hx2
+    --   sorry
+    -- }
+    sorry
+  }
+  {
+    sorry
+  }
+}
+
 def p_subalg_commute_subalg' (f:subalg S) :=∀ g:subalg' S, f.1 ∘ₗ g.1 = g.1 ∘ₗ f.1
 
-lemma adjoin_induction_Hs (f:subalg S) : f.1 ∈ generator_set S → p_subalg_commute_subalg' f:=by{
+lemma adjoin_induction_Hs {G : Type u_1} [Group G] (S : Set G) [orderTwoGen S] [CoxeterSystem G S] (f:subalg S) : f.1 ∈ generator_set S → p_subalg_commute_subalg' f:=by{
   intro h
   rw [p_subalg_commute_subalg']
   rcases ((Set.mem_image opl' (Set.univ :Set S) f).1 h) with ⟨s,hs⟩
@@ -303,8 +328,10 @@ lemma adjoin_induction_Hmul : ∀ (f1 f2:subalg S), p_subalg_commute_subalg' f1 
   rw [Subalgebra.coe_mul,LinearMap.mul_eq_comp,LinearMap.comp_assoc,h2 g,←LinearMap.comp_assoc,h1 g,LinearMap.comp_assoc]
 }
 
+
 lemma subalg_commute_subalg' (f:subalg S) (g:subalg' S): f.1 ∘ₗ g.1 = g.1 ∘ₗ f.1:=by{
-  exact Algebra.adjoin_induction f.2 _ (adjoin_induction_Alg S) adjoin_induction_Hadd adjoin_induction_Hmul
+  apply @Algebra.adjoin_induction (LaurentPolynomial ℤ) (subalg S) _ _ _ (Set.image generator_set_embedding (generator_set S) ) p_subalg_commute_subalg'
+  .rw [generator_set_embedding_image_eq]
 }
 
 noncomputable instance alg_hom_aux.IsLinearMap : IsLinearMap (LaurentPolynomial ℤ) (alg_hom_aux: subalg S → Hecke S) where
@@ -345,6 +372,12 @@ lemma TT_subset_image_of_alg_hom_aux'_aux : ∀ l ,∀ w:G , l = ℓ(w) →∃ f
     rw [←h,Nat.succ_sub_one] at h1
     have h2:= hn (w * s) (eq_comm.1 h1)
     rcases h2 with ⟨f',hf⟩
+    have h3: ℓ(w*s) < ℓ(w*s*s):=by{
+      rw[mul_generator_twice w ⟨s.1,this⟩,h1,←h]
+      simp
+    }
+
+    rw [←mul_generator_twice w ⟨s.1,this⟩,←TT_muls_right_eq_mul_of_length_lt h3,hf]
     sorry
     --use (opr' ⟨s.1,this⟩)
   }
@@ -363,6 +396,7 @@ lemma alg_hom_aux'_surjective: Function.Surjective (@alg_hom_aux' G _ S _ _) := 
   rw [Function.Surjective]
   intro b
   rw [Hecke.repr_respect_TT b]
+  sorry
 }
 
 lemma alg_hom_injective_aux (f: subalg S) (h: alg_hom_aux f = 0) : f = 0 := by {
@@ -378,7 +412,7 @@ lemma alg_hom_injective_aux (f: subalg S) (h: alg_hom_aux f = 0) : f = 0 := by {
         rw[map_zero]}
       have h2: ∀ g:subalg' S, f.1 (g.1 (TT 1)) = 0:=by{
         intro g
-        rw [←@Function.comp_apply _ _ _ f.1,subalg_commute_subalg' f g]
+        rw [←LinearMap.comp_apply,subalg_commute_subalg' f g]
         exact h1 g
       }
       have :=@alg_hom_aux'_surjective G _ S _ _ (TT w)
@@ -440,7 +474,19 @@ lemma Hecke.zero_mul : ∀ (a : Hecke S),  HeckeMul 0 a = 0 := by{
 lemma Hecke.mul_assoc :∀ (a b c : Hecke S), HeckeMul (HeckeMul a b) c = HeckeMul a (HeckeMul b c):=by{
   intro a b c
   simp only [HeckeMul]
-  sorry
+  conv =>
+    lhs
+    congr
+    .skip
+    congr
+    congr
+    congr
+    rw [←LinearMap.comp_apply]
+
+
+
+
+
 }
 
 lemma Hecke.one_mul : ∀ (a : Hecke S), HeckeMul (TT 1) a = a := by{
@@ -514,7 +560,7 @@ noncomputable def Hecke_inv_s (s:S) := q⁻¹ • (TT s.val) - (1-q⁻¹) • (T
 noncomputable def Hecke_invG.F (u:G) (F: (w:G) → llr w u → Hecke S): Hecke S:= if h:u=1 then TT 1
 else (
    let s:= Classical.choice (nonemptyD_L u h)
-   HeckeMul (F (s*u) (@llr_of_mem_D_L G _ S _ u s)) (Hecke_inv_s s)
+   HeckeMul (F (s*u) (@llr_of_mem_D_L G _ S _ u s)) (sorry) --(Hecke_inv_s s)
   )
 
 
