@@ -5,6 +5,7 @@ import Mathlib.Data.Set.Basic
 import Mathlib.GroupTheory.Subgroup.Basic
 import Mathlib.GroupTheory.Submonoid.Membership
 import Mathlib.Data.List.Range
+import Mathlib.Algebra.Module.Equiv
 
 -- set_option trace.Meta.Tactic.simp.rewrite true
 /-
@@ -115,3 +116,9 @@ variable {s t : Set A}
 -- lemma adjoin_comm_of_generator_set_comm : ∀ a∈s, ∀b∈t ,a*b=b*a →
 
 end adjoin
+
+
+lemma LinearEquiv_invFun_comp_Fun (R:Type u) [Semiring R][AddCommMonoid M] [AddCommMonoid M₂] [Module R M] [Module R M₂](e:M ≃ₗ[R] M₂) : e.invFun ∘ e =id :=by{
+  apply Function.LeftInverse.id
+  exact e.left_inv
+}

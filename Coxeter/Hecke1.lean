@@ -3,6 +3,7 @@ import Coxeter.Bruhat
 import Coxeter.Rpoly
 import Coxeter.Length_reduced_word
 import Coxeter.Wellfounded
+import Coxeter.Auxi
 
 import Mathlib.Data.Polynomial.Degree.Definitions
 import Mathlib.Data.Polynomial.Reverse
@@ -276,8 +277,14 @@ noncomputable def alg_hom_aux' : subalg' S→ (Hecke S) := fun f => f.1 (TT 1)
 
 noncomputable instance subalg.Algebra: Algebra (LaurentPolynomial ℤ) (subalg S) := Subalgebra.algebra (subalg S)
 noncomputable instance subalg'.Algebra: Algebra (LaurentPolynomial ℤ) (subalg' S) := Subalgebra.algebra (subalg' S)
+variable {s:S} {f:subalg S}
 
-lemma opr'_alg_hom_aux'_comm : ∀s:S, ∀f:subalg S, opr' s (alg_hom_aux f) = alg_hom_aux ((opr' s)*f):=sorry
+#check (opr' s) * f
+#check Subalgebra.val
+
+lemma opr'_mem_subalg' (s:S) : opr' s ∈ subalg' S := Algebra.mem_adjoin_of_mem_s (Set.mem_image_of_mem _ (Set.mem_univ s))
+
+lemma opr'_alg_hom_aux'_comm : ∀s:S, ∀f:subalg' S, opr' s (alg_hom_aux' f) = @alg_hom_aux' G _ S _ _ (((opr' s):subalg' S)*f):=sorry
 
 noncomputable def generator_set_embedding : End_ε → subalg S := fun f => dite (f∈generator_set S) (fun h=>⟨f,Algebra.mem_adjoin_of_mem_s h⟩)  (fun _ =>1)
 
@@ -376,8 +383,7 @@ lemma TT_subset_image_of_alg_hom_aux'_aux : ∀ l ,∀ w:G , l = ℓ(w) →∃ f
       rw[mul_generator_twice w ⟨s.1,this⟩,h1,←h]
       simp
     }
-
-    rw [←mul_generator_twice w ⟨s.1,this⟩,←TT_muls_right_eq_mul_of_length_lt h3,hf]
+    rw [←mul_generator_twice w ⟨s.1,this⟩,←TT_muls_right_eq_mul_of_length_lt h3]
     sorry
     --use (opr' ⟨s.1,this⟩)
   }
@@ -387,6 +393,8 @@ lemma TT_subset_image_of_alg_hom_aux' : ∀ w:G, ∃ f:subalg' S, TT w = alg_hom
   intro w
   exact @TT_subset_image_of_alg_hom_aux'_aux G _ S _ _ ℓ(w) w rfl
 }
+
+
 
 lemma alg_hom_aux_surjective: Function.Surjective (@alg_hom_aux G _ S _ _) := by {
   sorry
@@ -433,10 +441,11 @@ lemma alg_hom_aux_injective : Function.Injective  (alg_hom_aux :subalg S → Hec
   intro a1 a2 h
   have : alg_hom_aux (a1 - a2) = 0:=by{
     have := sub_eq_zero_of_eq h
-    rw [←@IsLinearMap.map_sub (LaurentPolynomial ℤ)] at this
+    rw [←@IsLinearMap.map_sub (LaurentPolynomial ℤ) ] at this
     assumption
+    exact alg_hom_aux.IsLinearMap
   }
-  sorry
+  exact sub_eq_zero.1 (alg_hom_injective_aux _ this)
 }
 
 
@@ -470,23 +479,31 @@ lemma Hecke.zero_mul : ∀ (a : Hecke S),  HeckeMul 0 a = 0 := by{
   intro a
   simp[HeckeMul]
 }
+#check (AddHom.toFun ((alg_hom S)).toAddHom )
+#check LinearEquiv.invFun (alg_hom S)
 
+#check (Subalgebra.toSemiring (subalg S)).mul_assoc
+--f (f⁻¹( f (f⁻¹(a)*f⁻¹(b)) ) * f⁻¹(c)) = f (f⁻¹ (a) * f⁻¹  (f (f⁻¹(b)*f⁻¹(c)) ))
 lemma Hecke.mul_assoc :∀ (a b c : Hecke S), HeckeMul (HeckeMul a b) c = HeckeMul a (HeckeMul b c):=by{
   intro a b c
   simp only [HeckeMul]
   conv =>
     lhs
     congr
-    .skip
+    . skip
+    . congr
+      rw [LinearEquiv.toFun_eq_coe,←(@Function.comp_apply _ _ _ (LinearEquiv.invFun (alg_hom S))),(LinearEquiv_invFun_comp_Fun (LaurentPolynomial ℤ) (alg_hom S))]
+      simp only[id]
+      . skip
+  rw [(Subalgebra.toSemiring (subalg S)).mul_assoc]
+  conv =>
+    rhs
     congr
-    congr
-    congr
-    rw [←LinearMap.comp_apply]
-
-
-
-
-
+    . skip
+    . congr
+      . skip
+      . rw [LinearEquiv.toFun_eq_coe,←(@Function.comp_apply _ _ _ (LinearEquiv.invFun (alg_hom S))),(LinearEquiv_invFun_comp_Fun (LaurentPolynomial ℤ) (alg_hom S))]
+        simp only [id]
 }
 
 lemma Hecke.one_mul : ∀ (a : Hecke S), HeckeMul (TT 1) a = a := by{
