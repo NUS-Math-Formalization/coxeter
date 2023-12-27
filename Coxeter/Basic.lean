@@ -133,6 +133,8 @@ def D_L (w:G):= T_L w ∩ S
 def D_R (w:G):= T_R w ∩ S
 #check T
 
+lemma S_subset_T : S ⊆ T S :=sorry
+
 lemma nonemptyD_L(v:G) (h:v ≠ 1) :Nonempty (D_L v):=sorry
 
 lemma nonemptyD_R(v:G) (h:v ≠ 1) :Nonempty (D_R v):=sorry

@@ -1,5 +1,6 @@
 import Coxeter.Basic
 import Coxeter.Bruhat
+import Coxeter.Auxi
 
 import Mathlib.GroupTheory.Subgroup.Basic
 import Mathlib.Tactic.Simps.Basic
@@ -300,6 +301,8 @@ lemma mul_generator_eq_one (w:G) (s:S) : w*s=1 → w=s:=by{
    rw [inv_eq_self',h]
 }
 
+lemma generator_mul_eq_iff (s:S) (w u:G)  : s*w=u ↔ w=s*u :=sorry
+
 lemma length_generator_mul_le_sum (s:S) (w:G) : ℓ(s*w) ≤ 1+ℓ(w) := by {
    have :=length_mul_le_sum s.val w
    rw [length_generator_eq_one] at this
@@ -373,13 +376,18 @@ lemma length_mul_generator_of_length_lt (w:G) (s:S) : ℓ(w*s) < ℓ(w) → ℓ(
 
 lemma length_mul_generator_of_length_gt (w:G) (s:S) : ℓ(w) < ℓ(w*s) → ℓ(w*s) = ℓ(w)+1:=sorry
 
-lemma reduced_word_of_generator_mul_of_length_gt {s:S} {w:G} {L:List S} (h:reduced_word L) (heq:w=L.gprod) : ℓ(w) < ℓ(s*w) → reduced_word (s::L) :=by{
+lemma reduced_word_of_generator_mul_of_length_gt {s:S} {w:G} {L:List S} (h:reduced_word L) (heq:w=L.gprod) : ℓ(w) < ℓ(s*w) → reduced_word (s::L) ∧ (s::L).gprod = s*w:=by{
    intro h1
    have h2: (s::L).gprod = s*w:= by{rw [gprod_cons s L,heq]}
    have h3: (s::L).length = ℓ(w)+1:=by{rw[List.length_cons,heq,(reduced_word_iff_length_eq L).1 h]}
    have hle : (s :: L).length ≤ ℓ(s*w):=by linarith
    rw [←h2] at hle
-   exact (reduced_word_iff_length_le (s :: L)).2 hle
+   rw [heq]
+   exact ⟨(reduced_word_iff_length_le (s :: L)).2 hle,gprod_cons s L⟩
+}
+
+lemma reduced_word_of_mul_generator_of_length_gt {w:G} {s:S} {L:List S} (h:reduced_word L) (heq:w=L.gprod) : ℓ(w) < ℓ(w*s) → reduced_word (L++[s]) ∧ (L++[s]).gprod = w*s:=by{
+   sorry
 }
 
 lemma length_mul_lt_of_mem_D_L (w:G) (h:w≠ 1) (h2:s ∈ D_L w) : ℓ(s*w) < ℓ(w):=by{
@@ -481,7 +489,21 @@ lemma length_S_mul_eq_length_mul_S_of_neq (s t :S) (w:G): ℓ(s*w*t) ≠ ℓ(w) 
    | inr => (sorry)
 }
 
-lemma S_mul_eq_mul_S_of_length_eq {s t:S} {w:G} :ℓ(s*w*t) = ℓ(w) ∧ ℓ(s*w)=ℓ(w*t) → s*w=w*t:=sorry
+lemma S_mul_eq_mul_S_of_length_eq {s t:S} {w:G} :ℓ(s*w*t) = ℓ(w) ∧ ℓ(s*w)=ℓ(w*t) → s*w=w*t:=by{
+   intro h
+   by_cases h1: ℓ(w) < ℓ(w*t)
+   rcases reduced_word_exist w with ⟨L,hL⟩
+   .  have h2:=reduced_word_of_mul_generator_of_length_gt hL.1 hL.2 h1
+      rw [←h.1] at h1
+      have :=@CoxeterSystem.exchange G S _ _ _ (L++[t]) s h2.1
+      rw [h2.2,←mul_assoc] at this
+      rcases (this (le_of_lt h1)) with ⟨i,hi⟩
+      by_cases haux:i = L.length
+      .  rw [haux,←List.concat_eq_append,List.removeNth_concat L,←hL.2,mul_assoc,generator_mul_eq_iff s (w*t) w,eq_comm] at hi
+         assumption
+      .  sorry
+   .  sorry
+}
 
 
 

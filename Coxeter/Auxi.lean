@@ -99,6 +99,12 @@ lemma removeNth_append_lt {α : Type _} (L1 L2: List α) (n : ℕ) (h : n < L1.l
   rw [this,append_assoc]
 }
 
+#check dropLast_concat
+
+lemma removeNth_length_sub_one (L:List α) : removeNth L (L.length-1) = dropLast L :=by sorry
+
+lemma removeNth_concat {a:α} (L:List α) : removeNth (concat L a) L.length = L:=by sorry
+
 end List
 
 

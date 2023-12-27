@@ -83,7 +83,6 @@ noncomputable def mulws --{G : Type*} [Group G] {S : Set G} [orderTwoGen S] [Cox
 noncomputable def muls_right (h:Hecke S) (s:S)  : Hecke S:=
 finsum (fun w:G =>  (h w) • (mulws w s) )
 
-
 noncomputable def mulw.F (u :G) (F:(w:G) → llr w u → Hecke S → Hecke S) (v:Hecke S): Hecke S:=
 if h:u =1 then v
   else(
@@ -93,6 +92,22 @@ if h:u =1 then v
   )
 
 noncomputable def mulw :G → Hecke S → Hecke S := @WellFounded.fix G (fun _ => Hecke S → Hecke S) llr well_founded_llr mulw.F
+
+lemma mulsw_apply_of_length_lt {s:S} (h:ℓ(w)<ℓ(s*w)):mulsw s w = TT (s*w):=sorry
+
+lemma mulsw_apply_of_length_gt {s:S} (h:ℓ(s*w)<ℓ(w)):mulsw s w = (q-1) • (TT w) + q • (TT (s*w)):=sorry
+
+lemma mulws_apply_of_length_lt {s:S} (h:ℓ(w)<ℓ(w*s)):mulws w s = TT (w * s):=by{
+    rw [mulws]
+    have not_smemD_R :¬ (s.1 ∈ D_R w):=non_mem_D_R_of_length_mul_gt w h
+    simp only[not_smemD_R,ite_false]
+}
+
+lemma mulws_apply_of_length_gt {s:S} (h:ℓ(w*s)<ℓ(w)):mulws w s = (q-1) • (TT w) + q • (TT (w*s)):=by{
+  rw [mulws]
+  have smemD_R : s.1 ∈ D_R w :=Set.mem_inter (Set.mem_setOf.2 ⟨(Set.mem_of_subset_of_mem S_subset_T s.2),h⟩) (s.2)
+  simp only [smemD_R,ite_true]
+}
 
 lemma finsupp_mulsw_of_finsupp_Hecke (x:Hecke S) :Set.Finite (Function.support (fun w => x w • mulsw s w)):=by{
   have : Function.support (fun w => x w • mulsw s w) ⊆ {i | (x i) ≠ 0}:=by{
@@ -186,8 +201,11 @@ noncomputable def opr' (s:S): End_ε :={
   }
 }
 
+lemma TT_muls_eq_mul_of_length_lt {s:S} (h:ℓ(w)<ℓ(s*w)):  opl' s (TT w)  = TT (s*w):=sorry
+
+lemma TT_muls_eq_mul_of_length_gt {s:S} (h:ℓ(s*w)<ℓ(w)):  opl' s (TT w)  = (q-1) • TT w + q • TT (s*w):=sorry
+
 lemma TT_muls_right_eq_mul_of_length_lt {s:S} (h:ℓ(w)<ℓ(w*s)):  opr' s (TT w)  = TT (w*s):=by{
-  simp only [opr',opr,muls_right]
   have :mulws w s = TT (w * s):=by{
     rw [mulws]
     have notsinD_R :¬ (s.1 ∈ D_R w):=non_mem_D_R_of_length_mul_gt w h
@@ -204,6 +222,10 @@ lemma TT_muls_right_eq_mul_of_length_lt {s:S} (h:ℓ(w)<ℓ(w*s)):  opr' s (TT w
       rw [TT,Finsupp.single_eq_same,this]
       simp only [one_smul]
       }
+}
+
+lemma TT_muls_right_eq_mul_of_length_gt {s:S} (h:ℓ(w*s)<ℓ(w)):  opr' s (TT w)  = (q-1) • TT w + q • TT (w*s):=by{
+  sorry
 }
 
 
@@ -284,7 +306,7 @@ variable {s:S} {f:subalg S}
 
 lemma opr'_mem_subalg' (s:S) : opr' s ∈ subalg' S := Algebra.mem_adjoin_of_mem_s (Set.mem_image_of_mem _ (Set.mem_univ s))
 
-lemma opr'_alg_hom_aux'_comm : ∀s:S, ∀f:subalg' S, opr' s (alg_hom_aux' f) = @alg_hom_aux' G _ S _ _ (((opr' s):subalg' S)*f):=sorry
+lemma opr'_alg_hom_aux'_comm : ∀s:S, ∀f:subalg' S, opr' s (alg_hom_aux' f) = @alg_hom_aux' G _ S _ _ (((opr' s))*f):=sorry
 
 noncomputable def generator_set_embedding : End_ε → subalg S := fun f => dite (f∈generator_set S) (fun h=>⟨f,Algebra.mem_adjoin_of_mem_s h⟩)  (fun _ =>1)
 
@@ -361,6 +383,15 @@ map_smul:=by {
   simp [alg_hom_aux]
 }
 
+noncomputable instance alg_hom_aux'.AddMonoidHom : AddMonoidHom (subalg' S) (Hecke S) where
+toFun := alg_hom_aux'
+map_zero':=by simp
+map_add' :=by simp
+
+noncomputable instance alg_hom_aux'.AddMonoidHomClass : AddMonoidHomClass (subalg' S → Hecke S) (subalg' S) (Hecke S) := sorry
+
+-- #check @AddMonoidHom.addMonoidHomClass (subalg' S) (Hecke S) _ _
+
 lemma TT_subset_image_of_alg_hom_aux'_aux : ∀ l ,∀ w:G , l = ℓ(w) →∃ f:subalg' S, TT w = alg_hom_aux' f:= by{
   intro l
   induction' l with n hn
@@ -384,6 +415,7 @@ lemma TT_subset_image_of_alg_hom_aux'_aux : ∀ l ,∀ w:G , l = ℓ(w) →∃ f
       simp
     }
     rw [←mul_generator_twice w ⟨s.1,this⟩,←TT_muls_right_eq_mul_of_length_lt h3]
+
     sorry
     --use (opr' ⟨s.1,this⟩)
   }
@@ -394,7 +426,12 @@ lemma TT_subset_image_of_alg_hom_aux' : ∀ w:G, ∃ f:subalg' S, TT w = alg_hom
   exact @TT_subset_image_of_alg_hom_aux'_aux G _ S _ _ ℓ(w) w rfl
 }
 
+noncomputable def preimage: G → subalg' S := fun w =>(Classical.choose (TT_subset_image_of_alg_hom_aux' w) )
 
+lemma preimage_apply {w:G}: TT w = alg_hom_aux' (preimage w) :=by{
+  rw [preimage]
+  exact Classical.choose_spec (TT_subset_image_of_alg_hom_aux' w)
+}
 
 lemma alg_hom_aux_surjective: Function.Surjective (@alg_hom_aux G _ S _ _) := by {
   sorry
@@ -404,7 +441,28 @@ lemma alg_hom_aux'_surjective: Function.Surjective (@alg_hom_aux' G _ S _ _) := 
   rw [Function.Surjective]
   intro b
   rw [Hecke.repr_respect_TT b]
-  sorry
+  use (Finsupp.sum b fun w p => p • (preimage w))
+  simp_rw [preimage_apply]
+  -- have : ∀ (p:LaurentPolynomial ℤ ) (w:G) , p • alg_hom_aux' (preimage w) = alg_hom_aux' ( p•(preimage w)):=by{simp}
+  -- simp only [this]
+  simp [alg_hom_aux']
+  -- convert @map_finsupp_sum G _ _ _ _ _ _ _ _ alg_hom_aux' b  (fun w p => p • preimage w)
+  --rw [AddHomClass.toFunLike,AddMonoidHomClass.toAddHomClass,AddMonoidHomClass ]
+  --apply FunLike.ext_iff
+  have : ∀ (b:Hecke S) ,(fun (w:G) (p:LaurentPolynomial ℤ ) =>(p • ((preimage w).val b)))= fun (w:G) (p:LaurentPolynomial ℤ ) => (p • (preimage w)).val b:=sorry
+  simp[this]
+
+
+  convert LinearMap.finsupp_sum_apply b (fun w p => ((p • (preimage w)): End_ε)) (TT 1)
+  --convert map_finsupp_sum (Subtype.val: (subalg' S) → End_ε) b (fun w p => p • (preimage w) )
+  rw [Finsupp.sum,Finsupp.sum]
+  norm_cast
+  convert map_finsupp_sum (fun x:(subalg' S) => x.val) b (fun w p => p • (preimage w) )
+  simp
+
+  have h1: (fun (a:G) => (b a • preimage a).val) = (fun a => b a • ((preimage a).val)):=sorry
+  rw [←h1]
+  simp only[Finset.coe_sum]
 }
 
 lemma alg_hom_injective_aux (f: subalg S) (h: alg_hom_aux f = 0) : f = 0 := by {
