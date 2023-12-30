@@ -101,7 +101,7 @@ lemma reduced_word_iff_length_eq (L: List S) :
 }
 
 
-
+@[simp]
 lemma length_one_eq_zero : ℓ((1 : G)) = 0 := by {
    have h:= (reduced_word_iff_length_eq  []).1 (@nil_is_reduced_word G _ S _)
    simp at h
@@ -118,7 +118,11 @@ lemma eq_one_of_length_eq_zero (w:G) : ℓ(w)=0 → w =1 := by{
    assumption
 }
 
+lemma length_eq_zero_of_eq_one {w:G} : w=1 → ℓ(w) =0:=fun hw =>(by rw [hw];simp)
+
 lemma length_neq_zero_of_neq_one {w:G} : ¬w=1 →¬ℓ(w)=0:= mt (eq_one_of_length_eq_zero w)
+
+lemma ne_one_of_length_ne_zero {w:G} :  ¬ℓ(w)=0 → ¬w=1 :=fun h => fun hw =>h (length_eq_zero_of_eq_one hw)
 
 lemma length_generator_eq_one (s:S) : ℓ(s) = 1:= by{
    apply (Nat.find_eq_iff (length_aux s.1)).2
@@ -521,11 +525,8 @@ lemma eps_ne_zero : ∀w:G, eps w ≠ 0:= by{
    linarith
 }
 @[simp]
-lemma eps_one : eps (1:G) = 1:=by {
-   simp[eps]
-   rw [length_one_eq_zero]
-   linarith
-   }
+lemma eps_one : eps (1:G) = 1:=by simp[eps]
+
 @[simp]
 lemma eps_generator {s:S}: eps s.1 = -1:= by{
    rw [eps,length_generator_eq_one]

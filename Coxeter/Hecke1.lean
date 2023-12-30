@@ -306,10 +306,10 @@ variable {s:S} {f:subalg S}
 
 lemma opr'_mem_subalg' (s:S) : opr' s ∈ subalg' S := Algebra.mem_adjoin_of_mem_s (Set.mem_image_of_mem _ (Set.mem_univ s))
 
-lemma opr'_alg_hom_aux'_comm : ∀s:S, ∀f:subalg' S, opr' s (alg_hom_aux' f) = @alg_hom_aux' G _ S _ _ (((opr' s))*f):=sorry
+
 
 noncomputable def generator_set_embedding : End_ε → subalg S := fun f => dite (f∈generator_set S) (fun h=>⟨f,Algebra.mem_adjoin_of_mem_s h⟩)  (fun _ =>1)
-
+#check Subalgebra.coe_add
 lemma generator_set_embedding_image_eq : generator_set_embedding '' (generator_set S) = generator_set S :=by{
   ext f
   simp
@@ -359,7 +359,7 @@ lemma adjoin_induction_Hmul : ∀ (f1 f2:subalg S), p_subalg_commute_subalg' f1 
 
 
 lemma subalg_commute_subalg' (f:subalg S) (g:subalg' S): f.1 ∘ₗ g.1 = g.1 ∘ₗ f.1:=by{
-  apply @Algebra.adjoin_induction (LaurentPolynomial ℤ) (subalg S) _ _ _ (Set.image generator_set_embedding (generator_set S) ) p_subalg_commute_subalg'
+  apply @Algebra.adjoin_induction (LaurentPolynomial ℤ) (End_ε) _ _ _ ((generator_set S) ) p_subalg_commute_subalg'
   .rw [generator_set_embedding_image_eq]
 }
 
@@ -367,6 +367,9 @@ noncomputable instance alg_hom_aux.IsLinearMap : IsLinearMap (LaurentPolynomial 
 map_add:=by{
   intro x y
   simp [alg_hom_aux]
+/-
+
+-/
 }
 map_smul:=by {
   intro c x
@@ -383,14 +386,7 @@ map_smul:=by {
   simp [alg_hom_aux]
 }
 
-noncomputable instance alg_hom_aux'.AddMonoidHom : AddMonoidHom (subalg' S) (Hecke S) where
-toFun := alg_hom_aux'
-map_zero':=by simp
-map_add' :=by simp
 
-noncomputable instance alg_hom_aux'.AddMonoidHomClass : AddMonoidHomClass (subalg' S → Hecke S) (subalg' S) (Hecke S) := sorry
-
--- #check @AddMonoidHom.addMonoidHomClass (subalg' S) (Hecke S) _ _
 
 lemma TT_subset_image_of_alg_hom_aux'_aux : ∀ l ,∀ w:G , l = ℓ(w) →∃ f:subalg' S, TT w = alg_hom_aux' f:= by{
   intro l
@@ -403,21 +399,18 @@ lemma TT_subset_image_of_alg_hom_aux'_aux : ∀ l ,∀ w:G , l = ℓ(w) →∃ f
     simp [alg_hom_aux']}
   {
     intro w h
-    have hw:w≠1:=sorry
+    have hw:w≠1:=ne_one_of_length_ne_zero (h ▸ Nat.succ_ne_zero n)
     let s:= Classical.choice (nonemptyD_R w hw)
     have :s.val ∈ S:= Set.mem_of_mem_of_subset s.2 (Set.inter_subset_right _ S)
     have h1:=length_mul_of_mem_D_R w hw s.2
     rw [←h,Nat.succ_sub_one] at h1
     have h2:= hn (w * s) (eq_comm.1 h1)
     rcases h2 with ⟨f',hf⟩
-    have h3: ℓ(w*s) < ℓ(w*s*s):=by{
-      rw[mul_generator_twice w ⟨s.1,this⟩,h1,←h]
-      simp
-    }
-    rw [←mul_generator_twice w ⟨s.1,this⟩,←TT_muls_right_eq_mul_of_length_lt h3]
-
-    sorry
-    --use (opr' ⟨s.1,this⟩)
+    have h3: ℓ(w*s) < ℓ(w*s*s):=by rw[mul_generator_twice w ⟨s.1,this⟩,h1,←h];simp
+    rw [←mul_generator_twice w ⟨s.1,this⟩,←TT_muls_right_eq_mul_of_length_lt h3,hf]
+    use ⟨opr' ⟨s.1,this⟩,opr'_mem_subalg' ⟨s.1,this⟩⟩*f'
+    --∀s:S, ∀f:subalg' S, opr' s (alg_hom_aux' f) = @alg_hom_aux' G _ S _ _ (⟨(opr' s),opr'_mem_subalg' s⟩*f)
+    simp
   }
 }
 
@@ -443,26 +436,15 @@ lemma alg_hom_aux'_surjective: Function.Surjective (@alg_hom_aux' G _ S _ _) := 
   rw [Hecke.repr_respect_TT b]
   use (Finsupp.sum b fun w p => p • (preimage w))
   simp_rw [preimage_apply]
-  -- have : ∀ (p:LaurentPolynomial ℤ ) (w:G) , p • alg_hom_aux' (preimage w) = alg_hom_aux' ( p•(preimage w)):=by{simp}
-  -- simp only [this]
   simp [alg_hom_aux']
-  -- convert @map_finsupp_sum G _ _ _ _ _ _ _ _ alg_hom_aux' b  (fun w p => p • preimage w)
-  --rw [AddHomClass.toFunLike,AddMonoidHomClass.toAddHomClass,AddMonoidHomClass ]
-  --apply FunLike.ext_iff
-  have : ∀ (b:Hecke S) ,(fun (w:G) (p:LaurentPolynomial ℤ ) =>(p • ((preimage w).val b)))= fun (w:G) (p:LaurentPolynomial ℤ ) => (p • (preimage w)).val b:=sorry
+  have : ∀ (b:Hecke S) ,(fun (w:G) (p:LaurentPolynomial ℤ ) =>(p • ((preimage w).val b)))= fun (w:G) (p:LaurentPolynomial ℤ ) => (p • (preimage w)).val b:=by intro b ;simp
   simp[this]
-
-
   convert LinearMap.finsupp_sum_apply b (fun w p => ((p • (preimage w)): End_ε)) (TT 1)
-  --convert map_finsupp_sum (Subtype.val: (subalg' S) → End_ε) b (fun w p => p • (preimage w) )
-  rw [Finsupp.sum,Finsupp.sum]
-  norm_cast
-  convert map_finsupp_sum (fun x:(subalg' S) => x.val) b (fun w p => p • (preimage w) )
-  simp
-
-  have h1: (fun (a:G) => (b a • preimage a).val) = (fun a => b a • ((preimage a).val)):=sorry
-  rw [←h1]
-  simp only[Finset.coe_sum]
+  have h2 :(Finsupp.sum b fun w p => p • preimage w).val = Finsupp.sum b fun w p => p • (preimage w).val:=by{
+    simp_rw [Finsupp.sum]
+    norm_cast
+  }
+  assumption
 }
 
 lemma alg_hom_injective_aux (f: subalg S) (h: alg_hom_aux f = 0) : f = 0 := by {
