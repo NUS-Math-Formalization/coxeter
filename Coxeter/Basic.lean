@@ -140,13 +140,6 @@ lemma nonemptyD_L(v:G) (h:v ≠ 1) :Nonempty (D_L v):=sorry
 lemma nonemptyD_R(v:G) (h:v ≠ 1) :Nonempty (D_R v):=sorry
 
 
-lemma mul_generator_twice (w:G) (s:S): w*s*s=w:=by{
-  rw [mul_assoc,generator_square]
-  simp
-}
-
-
-
 def StrongExchangeProp:= ∀ (L:List S) (t: T S) ,ℓ(t*L.gprod) < ℓ(L.gprod) → ∃ (i:Fin L.length), t * L.gprod = (L.removeNth i).gprod
 
 def ExchangeProp := ∀ (L:List S) (s:S) ,reduced_word L →

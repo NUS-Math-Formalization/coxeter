@@ -9,6 +9,7 @@ import Std.Data.Nat.Lemmas
 
 open Classical
 
+
 variable {G: Type _} [Group G] {S : Set G} [orderTwoGen S] [CoxeterSystem G S]
 local notation:max "ℓ(" g ")" => (@length G _ S _ g)
 
@@ -313,6 +314,12 @@ lemma length_generator_mul_le_sum (s:S) (w:G) : ℓ(s*w) ≤ 1+ℓ(w) := by {
    assumption
 }
 
+@[simp]
+lemma generator_mul_twice (w:G) (s:S): s*s*w=w:=by rw [generator_square,one_mul]
+
+@[simp]
+lemma mul_generator_twice (w:G) (s:S): w*s*s=w:=by rw [mul_assoc,generator_square,mul_one]
+
 lemma length_generator_mul_le_sub (s:S) (w:G) : ℓ(w) - 1 ≤ ℓ(s*w):=by{
    have :=length_mul_ge_sub' s.1 w
    rw [length_generator_eq_one] at this
@@ -349,6 +356,8 @@ lemma length_generator_mul_neq_length_self (s:S) (w:G) : ℓ(s*w) ≠ ℓ(w):=by
       }
    }
 }
+
+lemma length_mul_generator_neq_length_self (w:G) (s:S) : ℓ(w*s) ≠ ℓ(w):=sorry
 
 lemma length_generator_mul (s:S) (w:G) : ℓ(s*w) = ℓ(w)+1 ∨ ℓ(s*w) = ℓ(w)-1:=by{
    have h1:=Nat.lt_or_gt.1 (length_generator_mul_neq_length_self s w)
@@ -478,8 +487,6 @@ lemma length_S_mul_lt_of_length_S_mul_S_lt (s t :S) (w:G) : ℓ(s*w*t) < ℓ(w) 
          exact Nat.pred_lt (length_neq_zero_of_neq_one h2)
       }
    }
-
-
 }
 
 lemma length_S_mul_gt_of_length_S_mul_S_gt (s t :S) (w:G) : ℓ(w) < ℓ(s*w*t) → ℓ(w) <ℓ(s*w) :=sorry
@@ -493,22 +500,51 @@ lemma length_S_mul_eq_length_mul_S_of_neq (s t :S) (w:G): ℓ(s*w*t) ≠ ℓ(w) 
    | inr => (sorry)
 }
 
+
+lemma S_mul_eq_mul_S_of_length_eq_aux {s t:S} (w:G) (h_1:ℓ(s*w*t) = ℓ(w)) (h_2:ℓ(s*w)=ℓ(w*t)): ℓ(w) < ℓ(w*t) → s*w=w*t:=by{
+   rcases reduced_word_exist w with ⟨L,hL⟩
+   intro h1
+   have h2:=reduced_word_of_mul_generator_of_length_gt hL.1 hL.2 h1
+   rw [←h_1] at h1
+   have :=@CoxeterSystem.exchange G S _ _ _ (L++[t]) s h2.1
+   rw [h2.2,←mul_assoc] at this
+   rcases (this (le_of_lt h1)) with ⟨i,hi⟩
+   by_cases haux:i = L.length
+   .  rw [haux,←List.concat_eq_append,List.removeNth_concat L,←hL.2,mul_assoc,generator_mul_eq_iff s (w*t) w,eq_comm] at hi
+      assumption
+   .  have haux' : i < L.length :=by {
+         have h3:=Fin.is_lt i
+         simp only [List.length_append]at h3
+         exact Ne.lt_of_le haux (Nat.le_of_lt_succ h3)
+      }
+      rw [List.removeNth_append_lt,mul_assoc] at hi
+      have h3:=(generator_mul_eq_iff s (w*t) _).1 hi
+      have h4:=mul_generator_twice w t
+      rw [h3,gprod_append,gprod_singleton,mul_assoc,mul_assoc,generator_square,mul_one] at h4
+      have h5 :=(generator_mul_eq_iff ..).1 h4
+      have h6:= h5 ▸ (length_le (List.removeNth L ↑i))
+      rw [List.length_removeNth,(reduced_word_iff_length_eq L).1 hL.1,←hL.2] at h6
+      by_contra
+      rw [h_1,←h_2] at h1
+      exact (lt_self_iff_false _).1 (lt_of_lt_of_le (lt_of_lt_of_le h1 h6) (Nat.pred_le ℓ(w)))
+      assumption
+      assumption
+}
+#check lt_self_iff_false
+
 lemma S_mul_eq_mul_S_of_length_eq {s t:S} {w:G} :ℓ(s*w*t) = ℓ(w) ∧ ℓ(s*w)=ℓ(w*t) → s*w=w*t:=by{
    intro h
    by_cases h1: ℓ(w) < ℓ(w*t)
-   rcases reduced_word_exist w with ⟨L,hL⟩
-   .  have h2:=reduced_word_of_mul_generator_of_length_gt hL.1 hL.2 h1
-      rw [←h.1] at h1
-      have :=@CoxeterSystem.exchange G S _ _ _ (L++[t]) s h2.1
-      rw [h2.2,←mul_assoc] at this
-      rcases (this (le_of_lt h1)) with ⟨i,hi⟩
-      by_cases haux:i = L.length
-      .  rw [haux,←List.concat_eq_append,List.removeNth_concat L,←hL.2,mul_assoc,generator_mul_eq_iff s (w*t) w,eq_comm] at hi
-         assumption
-      .  sorry
-   .  sorry
+   .  exact  S_mul_eq_mul_S_of_length_eq_aux w h.1 h.2 h1
+   .  push_neg at h1
+      have := Ne.lt_of_le (length_mul_generator_neq_length_self w t) h1
+      nth_rw 2[←mul_generator_twice w t] at this
+      have h1':ℓ(s*(w*t)*t)=ℓ(w*t):=by rw[mul_assoc,mul_generator_twice,h.2]
+      have h2':ℓ(s*(w*t))=ℓ(w*t*t):=by rw[mul_generator_twice,←mul_assoc,h.1]
+      have h3:= S_mul_eq_mul_S_of_length_eq_aux (w*t) h1' h2' this
+      rw [generator_mul_eq_iff,mul_generator_twice,eq_comm] at h3
+      assumption
 }
-
 
 
 end generator_mul
