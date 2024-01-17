@@ -17,3 +17,8 @@ variable (R : Type*) [Ring R]
 #check (mul_add : ∀ a b c : R, a * (b + c) = a * b + a * c)
 #check (add_mul : ∀ a b c : R, (a + b) * c = a * c + b * c)
 
+
+lemma test {a b : ℕ} : a + b = b + a :=by sorry
+
+theorem test1 {a b c : ℕ} : a + b + c = b + (a + c):= by
+  rw [@test a _,add_assoc]

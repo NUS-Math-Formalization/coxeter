@@ -5,11 +5,17 @@ import Coxeter.Auxi
 variable {G : Type _} [Group G] {S :Set G} [orderTwoGen S] [CoxeterSystem G S]
 
 local notation:max "ℓ(" g ")" => (@length G _ S _ g)
+open reduced_word
+
 
 @[simp]
 def ExchangeProp' :=
    ∀ {L : List S} {s : S },
    reduced_word L → ℓ(( L.gprod * s)) ≤ ℓ(L.gprod) → ∃ (i: Fin L.length) ,L.gprod * s= (L.removeNth i).gprod
+
+
+-- lemma ExchangeProp_of_reflection (L : List S) : ∀
+
 
 lemma zero_or_one_of_lt_two {n : ℕ} : n< 2 ↔ n=0 ∨ n=1 := by
 match n with
@@ -21,7 +27,7 @@ lemma exchange_iff : @ExchangeProp G _ S _ →  @ExchangeProp' G _ S _ := by {
    rw [ExchangeProp,ExchangeProp']
    intro EP L s HL Hlen
    let Lr := L.reverse
-   have HLr := reduced_word_inv  L HL
+   have HLr := reduced_word.inv  L HL
    have Hlenr :ℓ(s * L.reverse.gprod)≤ ℓ(L.reverse.gprod) := by {
       -- rw [<-inv_reverse,orderTwoGen.inv_eq_self s.1 s.2, <-(mul_inv_rev (↑s) (L.gprod))]
       -- rw [length_eq_inv_length,length_eq_inv_length]
