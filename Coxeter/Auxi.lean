@@ -24,13 +24,14 @@ lemma coe_eq_coe  {hd : ↑S} {tail :   List ↑S} : (hd :: tail : List G) = hd.
   simp
 }
 -/
+
+
+
 namespace  List
 variable {α : Type _}
 
 lemma take_le_length (L : List α) (h : n ≤ L.length)  : (L.take n).length = n := by
   simp only [length_take,ge_iff_le, h, min_eq_left]
-
-
 
 lemma remove_nth_eq_take_drop {α : Type _} (L: List α) (n : ℕ) : L.removeNth n = L.take n ++ L.drop (n+1) :=
 by {
@@ -105,6 +106,9 @@ lemma removeNth_length_sub_one (L:List α) : removeNth L (L.length-1) = dropLast
 
 lemma removeNth_concat {a:α} (L:List α) : removeNth (concat L a) L.length = L:=by sorry
 
+def toReflection_i  (L : List S) (i : Fin L.length) := (List.take i.val L) ++ [List.get L i] ++ (List.reverse (List.take i.val L))
+
+def toReflection (L : List S) : Set (List S):= (toReflection_i L)'' Set.univ
 end List
 
 

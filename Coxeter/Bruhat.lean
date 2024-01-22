@@ -13,7 +13,6 @@ local notation :max "ℓ(" g ")" => (@length G  _ S _ g)
 
 def ltone (u w: G) := ∃ t: T S, w = u * t ∧ ℓ(u) < ℓ(w)
 
-
 def lt (u w:G):= ∃ L:List G, List.Forall₂ (@ltone G _ S _) (u::L) (L++[w])
 
 def le (u w:G):= u=w ∨ @lt G _ S _ u w
@@ -50,14 +49,19 @@ def BruhatInte (x y : G) : Set G := {a | x ≤ a ∧ a ≤ y }
 #check Set.ncard
 #check length
 
-
-
 lemma SubwordAux (L L':List S) (hred:reduced_word L) (hw: (w:G) = L.gprod) (hsub: List.Sublist L' L) (hu: u = L'.gprod): ∃ (v: G) (L'':List S), u < v ∧ ℓ(v) = ℓ(u) + 1 ∧ v = L''.gprod:=by
   sorry
 
 theorem SubwordProp (L: List S) (u w : G) (hred:reduced_word L) (hw: (w:G) = L.gprod) : u ≤ w ↔ ∃ (L': List S), reduced_word L' ∧ List.Sublist L' L ∧ u = L'.gprod where
   mp := by
-    sorry
+    intro hle
+    exact Or.elim hle (fun h1 =>(by rw [h1];use L)) (fun h1=>(by{
+      rcases h1 with ⟨Laux,h2⟩
+      induction' Laux with head tail tail_ih
+      case nil => simp [ltone]at h2;sorry
+      case cons =>sorry
+    }))
+
   mpr := fun
     | .intro w h => by
       sorry
@@ -76,7 +80,6 @@ lemma LiftingProp (u w : G) (h:s∈ D_L w) : u ≤ s*w ∧ s*u ≤ w := sorry
 
 class DirectedPoset (α:Type u) extends PartialOrder α where
 directed:∀ (u w:α) , ∃ z:α, u ≤ z ∧ w ≤ z
-
 
 lemma BruhatOrderIsDir :DirectedPoset G:=sorry
 

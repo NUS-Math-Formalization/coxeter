@@ -3,12 +3,15 @@ import Mathlib.GroupTheory.OrderOfElement
 import Mathlib.GroupTheory.Subgroup.Basic
 import Mathlib.Tactic.Linarith.Frontend
 
-
+import Coxeter.Auxi
 open Classical
+
+
+
+section list_prop
 
 variable {G : Type _} [Group G] {S: Set G}
 
-section list_prop
 @[simp]
 lemma nil_eq_nil: (([]: List S) : List G) = [] := by rfl
 
@@ -69,18 +72,14 @@ end list_prop
 
 
 
-
-class orderTwoGen {G : Type _}[Group G] (S:outParam (Set G))where
+class orderTwoGen {G : Type _}[Group G] (S: outParam (Set G))where
   order_two :  ∀ (x:G) , x ∈ S →  x * x = (1 :G) ∧  x ≠ (1 :G)
   expression : ∀ (x:G) , ∃ (L : List S),  x = L.gprod
 
--- lemma eqSubsetProd [orderTwoGen S] (g : G) : ∃ (L : List S),
---    g = L.gprod := by {
---     have H:= @generating G A _ _ S _ g
---     exact @Subgroup.memClosure_if_Prod G A _ _ S _ g H
---    }
+variable {G : Type _} [Group G] {S: Set G} [h1:orderTwoGen S]
+
 @[simp]
-lemma generator_square [orderTwoGen S] (s:S): s.1 * s.1 = 1:=by{exact (orderTwoGen.order_two s.1 s.2).1}
+lemma generator_square (s:S): s.1 * s.1 = 1:=by{exact (orderTwoGen.order_two s.1 s.2).1}
 
 lemma inv_eq_self  [orderTwoGen S]: ∀ x:G,  x∈S → x = x⁻¹ :=
 fun x hx => mul_eq_one_iff_eq_inv.1 (orderTwoGen.order_two x hx).1
@@ -88,39 +87,27 @@ fun x hx => mul_eq_one_iff_eq_inv.1 (orderTwoGen.order_two x hx).1
 lemma non_one [orderTwoGen S]: ∀ x:G,  x∈S → x ≠ 1 :=
 fun x hx => (orderTwoGen.order_two x hx).2
 @[simp]
-lemma inv_eq_self'  [orderTwoGen S]: ∀ x:S,  x = (x:G)⁻¹ :=
+lemma generator_inv  [orderTwoGen S]: ∀ x:S,  x = (x:G)⁻¹ :=
 by {
    intro x
    nth_rw 1 [inv_eq_self x.1 x.2]
 }
 
-def expressionSet (g:G) [orderTwoGen S]:= {L:List S| g = L.gprod}
+def expressionSet (g:G) := {L:List S| g = L.gprod}
 
-#check List S
-#check Set.Elem S
-#check Set S
-#check orderTwoGen
-
-variable [orderTwoGen S]
-
-lemma eqSubsetProd [orderTwoGen S] (g : G) : ∃ (L : List S),  g = L.gprod := by {
+lemma eqSubsetProd  (g : G): ∃ (L : List S),  g = L.gprod := by {
     have H:= @orderTwoGen.expression G  _ S _ g
     exact H
    }
 
 @[simp]
-def reduced_word (L : List S) [orderTwoGen S]:= ∀ (L' : List S),  L.gprod =  L'.gprod →  L.length ≤ L'.length
+def reduced_word [orderTwoGen S] (L : List S) := ∀ (L' : List S),  L.gprod =  L'.gprod →  L.length ≤ L'.length
 
-def length_aux (g : G) [orderTwoGen S]: ∃ (n:ℕ) , ∃ (L : List S), L.length = n ∧ g = L.gprod := by
+def length_aux (g : G) : ∃ (n:ℕ) , ∃ (L : List S), L.length = n ∧ g = L.gprod := by
   let ⟨L,hL⟩ := @orderTwoGen.expression G _ S _ g
   use L.length,L
 
-#check length_aux
-
-noncomputable def length (x : G): ℕ := Nat.find (@length_aux G _ S x _)
-
-#check length
-
+noncomputable def length (x : G): ℕ := Nat.find (@length_aux G _ S  _ x)
 
 local notation :max "ℓ(" g ")" => (@length G  _ S _ g)
 
@@ -131,7 +118,11 @@ def T_R (w:G):= {t ∈ T S | ℓ(w*t) < ℓ(w)}
 
 def D_L (w:G):= T_L w ∩ S
 def D_R (w:G):= T_R w ∩ S
-#check T
+
+def T_w_i (L : List S) (i : Fin L.length) [orderTwoGen S]:= List.toReflection_i L i
+def T_w (L : List S) := List.toReflection L
+
+lemma T_w_i_mul (L : List S) (i : Fin L.length) : (T_w_i L i).gprod * L.gprod = (L.removeNth i).gprod :=sorry
 
 lemma S_subset_T : S ⊆ T S :=sorry
 
@@ -139,27 +130,23 @@ lemma nonemptyD_L(v:G) (h:v ≠ 1) :Nonempty (D_L v):=sorry
 
 lemma nonemptyD_R(v:G) (h:v ≠ 1) :Nonempty (D_R v):=sorry
 
-
-lemma mul_generator_twice (w:G) (s:S): w*s*s=w:=by{
-  rw [mul_assoc,generator_square]
-  simp
-}
-
-
-
 def StrongExchangeProp:= ∀ (L:List S) (t: T S) ,ℓ(t*L.gprod) < ℓ(L.gprod) → ∃ (i:Fin L.length), t * L.gprod = (L.removeNth i).gprod
+
+def StrongExchangeProp':= ∀ (L:List S) (t: T S) ,ℓ(L.gprod * t) < ℓ(L.gprod) → ∃ (i:Fin L.length), L.gprod * t = (L.removeNth i).gprod
 
 def ExchangeProp := ∀ (L:List S) (s:S) ,reduced_word L →
       ℓ((s * L.gprod)) ≤ ℓ(L.gprod) → ∃ (i: Fin L.length) ,s * L.gprod = (L.removeNth i).gprod
 
 def DeletionProp := ∀ (L:List S),ℓ(L.gprod) < L.length → ∃ (j: Fin L.length), ∃ (i:Fin j), L.gprod = ((L.removeNth j).removeNth i).gprod
 
-
-class CoxeterSystem (G : Type _) (S : Set G) [Group G] [orderTwoGen S] where
+class CoxeterSystem (G : Type _) (S : Set G) [Group G]  [orderTwoGen S] where
   exchange : @ExchangeProp G _ S _
   deletion : @DeletionProp G _ S _
 
 variable (L:List S)
+
+lemma mul_generator_inv {s:S} {w:G} [orderTwoGen S]: (w*s)⁻¹ = s*w⁻¹:=sorry
+
 
 -- structure expression where
 -- element:G

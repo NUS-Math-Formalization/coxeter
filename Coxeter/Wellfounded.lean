@@ -7,6 +7,8 @@ local notation :max "ℓ(" g ")" => (@length G  _ S _ g)
 
 def llr (u v:G) := ℓ(u) < ℓ(v) ∧ ∃ s∈S , s*u=v
 
+def llr' (u v:G) := ℓ(u) < ℓ(v)
+
 lemma well_founded_aux : ∀l ,∀ x, l = ℓ(x) → Acc llr x :=by {
   intro l
   induction' l with l h
@@ -26,6 +28,12 @@ lemma well_founded_aux : ∀l ,∀ x, l = ℓ(x) → Acc llr x :=by {
     sorry
   }
 }
+
+lemma well_founded_aux' {x:G}:  Acc llr' x :=
+  match (ℓ(x) :ℕ) with 
+  | 0 => by sorry
+  | i + 1 => by sorry
+
 
 theorem well_founded_llr : WellFounded (@llr G _ S _ ) :=by{
   apply WellFounded.intro
@@ -54,3 +62,6 @@ lemma llr_of_generator_mul_of_length_lt {u v :G} {s:S} (h:s*u = v) (hlt: ℓ(u) 
 lemma llr_of_mem_D_L  {u:G} (s:D_L u) : llr (s*u) u:= by {
   sorry
 }
+
+
+#check WellFounded.fix
