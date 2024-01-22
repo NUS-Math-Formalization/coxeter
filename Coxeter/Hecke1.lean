@@ -443,26 +443,14 @@ lemma alg_hom_aux'_surjective: Function.Surjective (@alg_hom_aux' G _ S _ _) := 
   rw [Hecke.repr_respect_TT b]
   use (Finsupp.sum b fun w p => p • (preimage w))
   simp_rw [preimage_apply]
-  -- have : ∀ (p:LaurentPolynomial ℤ ) (w:G) , p • alg_hom_aux' (preimage w) = alg_hom_aux' ( p•(preimage w)):=by{simp}
-  -- simp only [this]
-  simp [alg_hom_aux']
-  -- convert @map_finsupp_sum G _ _ _ _ _ _ _ _ alg_hom_aux' b  (fun w p => p • preimage w)
-  --rw [AddHomClass.toFunLike,AddMonoidHomClass.toAddHomClass,AddMonoidHomClass ]
-  --apply FunLike.ext_iff
-  have : ∀ (b:Hecke S) ,(fun (w:G) (p:LaurentPolynomial ℤ ) =>(p • ((preimage w).val b)))= fun (w:G) (p:LaurentPolynomial ℤ ) => (p • (preimage w)).val b:=sorry
-  simp[this]
-
-
+  simp only [alg_hom_aux']
+  have : ∀ (b:Hecke S) ,(fun (w:G) (p:LaurentPolynomial ℤ ) =>(p • ((preimage w).val b)))= fun (w:G) (p:LaurentPolynomial ℤ ) => (p • (preimage w)).val b := by  intro b; simp
+  simp only [this]
   convert LinearMap.finsupp_sum_apply b (fun w p => ((p • (preimage w)): End_ε)) (TT 1)
-  --convert map_finsupp_sum (Subtype.val: (subalg' S) → End_ε) b (fun w p => p • (preimage w) )
-  rw [Finsupp.sum,Finsupp.sum]
-  norm_cast
-  convert map_finsupp_sum (fun x:(subalg' S) => x.val) b (fun w p => p • (preimage w) )
-  simp
-
-  have h1: (fun (a:G) => (b a • preimage a).val) = (fun a => b a • ((preimage a).val)):=sorry
-  rw [←h1]
-  simp only[Finset.coe_sum]
+  calc
+    _ = (Finsupp.sum b fun w p => (p • preimage w).val)
+     := by {simp_rw [Finsupp.sum]; norm_cast }
+    _ = _ := by simp
 }
 
 lemma alg_hom_injective_aux (f: subalg S) (h: alg_hom_aux f = 0) : f = 0 := by {
