@@ -165,23 +165,23 @@ def length_aux (g : G) : ∃ (n:ℕ) , ∃ (L : List S), L.length = n ∧ g = L 
 noncomputable def length  (x : G): ℕ := Nat.find (length_aux S x)
 
 
-scoped notation: max "ℓ" S " (" g ")" => (length S g)
+--scoped notation: max "ℓ" S " (" g ")" => (length S g)
+
 
 end OrderTwoGen
 
 
-section reduced_word
-open OrderTwoGen
-
+namespace OrderTwoGen
 variable {G : Type*} [Group G] {S : Set G} [OrderTwoGen S]
 
 local notation: max "ℓ(" g ")" => (length S g)
 
-lemma length_le_list_length (L : List S) :  ℓ(L) ≤ L.length :=
+lemma length_le_list_length {L : List S} :  ℓ(L) ≤ L.length :=
   Nat.find_le (by use L)
 
+
 -- The lemma was called ``inv''
-lemma reverse_is_reduced (L: List S) (h: reduced_word L): reduced_word L.reverse:= by
+lemma reverse_is_reduced {L: List S} (h: reduced_word L): reduced_word L.reverse:= by
    contrapose h
    rw [reduced_word] at *
    push_neg at *
@@ -207,14 +207,14 @@ lemma singleton_is_reduced {s:S}: reduced_word [s]:= by
    rw [h1,gprod_nil,gprod_singleton]
    exact gen_ne_one s.1 s.2
 
-lemma pos_length_of_non_reduced_word (L : List S): ¬ reduced_word L → 1 ≤  L.length := by
+lemma pos_length_of_non_reduced_word {L : List S}: ¬ reduced_word L → 1 ≤  L.length := by
    contrapose
    simp_rw [not_le,not_not,Nat.lt_one_iff]
    rw [List.length_eq_zero];
    intro H
    simp only [H,nil_is_reduced]
 
-lemma length_le_iff (L: List S) : reduced_word L ↔ L.length ≤ ℓ(L.gprod):= by
+lemma length_le_iff {L: List S} : reduced_word L ↔ L.length ≤ ℓ(L.gprod):= by
    rw [length, (Nat.le_find_iff _)]
    apply Iff.intro
    .  intro h m hm
@@ -235,25 +235,36 @@ lemma length_le_iff (L: List S) : reduced_word L ↔ L.length ≤ ℓ(L.gprod):=
       . exact H
       . use L'
 
-lemma length_eq_iff (L: List S) : reduced_word L ↔ L.length = ℓ(L.gprod) := by
+lemma length_eq_iff {L: List S} : reduced_word L ↔ L.length = ℓ(L.gprod) := by
    constructor
    . intro H
-     exact ge_antisymm  (length_le_list_length  L)  ((length_le_iff  L).1 H)
+     exact ge_antisymm  (length_le_list_length )  ((length_le_iff ).1 H)
    . intro H
-     exact (length_le_iff  L).2 (le_of_eq H)
+     exact (length_le_iff).2 (le_of_eq H)
 
-lemma exist_reduced_word (S : Set G) [OrderTwoGen S] (g : G) : ∃ (L: List S) , reduced_word L ∧ g = L.gprod := by
+lemma exists_reduced_word (S : Set G) [OrderTwoGen S] (g : G) : ∃ (L: List S) , reduced_word L ∧ g = L.gprod := by
    let ⟨L',h1,h2⟩ := Nat.find_spec (@length_aux G  _ S _ g)
    use L'
-   have C1 := (length_eq_iff  L').2
+   have C1 := (@length_eq_iff _ _ _ _ L').2
    rw [length] at C1
    simp_rw [h2] at h1
    exact ⟨C1 h1,h2⟩
 
-noncomputable def choose_reduced_word (S : Set G) [OrderTwoGen S]  (g:G) : List S := Classical.choose (exist_reduced_word S g)
+
+lemma length_cons {hd : S} {tail : List S} : ℓ(hd::tail) ≤ ℓ(tail) + 1 := by {
+  obtain ⟨rtail, h1, h2⟩ := exists_reduced_word S tail
+  calc
+  _ = ℓ(hd::rtail) := by congr 1; simp_rw [gprod_cons,h2]
+  _ ≤ (hd::rtail).length :=  length_le_list_length
+  _ = rtail.length + 1:= by simp [List.length_cons]
+  _ = _ := by simp [h2,length_eq_iff.1 h1]
+}
+
+
+noncomputable def choose_reduced_word (S : Set G) [OrderTwoGen S]  (g:G) : List S := Classical.choose (exists_reduced_word S g)
 
 lemma choose_reduced_word_spec (g : G) : reduced_word (choose_reduced_word S g) ∧ g = (choose_reduced_word S g) :=
-   Classical.choose_spec (exist_reduced_word S g)
+   Classical.choose_spec (exists_reduced_word S g)
 
 
 def non_reduced_p  (L : List S) := fun k => ¬ reduced_word (L.take (k+1))
@@ -287,8 +298,8 @@ lemma reduced_take_max_reduced_word (L : List S) (H : ¬ reduced_word L) : reduc
       rw [non_reduced_p,not_not] at this
       exact this
 
-lemma max_reduced_word_index_lt (L : List S) (H : ¬ reduced_word L) : max_reduced_word_index L H < L.length := by
-   have Hlen := pos_length_of_non_reduced_word  L H
+lemma max_reduced_word_index_lt {L : List S} (H : ¬ reduced_word L) : max_reduced_word_index L H < L.length := by
+   have Hlen := pos_length_of_non_reduced_word H
    rw [max_reduced_word_index, Nat.find_lt_iff _ L.length]
    use L.length -1
    rw [non_reduced_p]
@@ -299,13 +310,31 @@ lemma max_reduced_word_index_lt (L : List S) (H : ¬ reduced_word L) : max_reduc
      rw [this,List.take_length]
      exact H
 
-noncomputable def max_reduced_word_index' (L : List S) (H : ¬ reduced_word L) : Fin L.length:= ⟨max_reduced_word_index  L H, max_reduced_word_index_lt  L H⟩
+noncomputable def max_reduced_word_index' (L : List S) (H : ¬ reduced_word L) : Fin L.length:= ⟨max_reduced_word_index  L H, max_reduced_word_index_lt  H⟩
 
-lemma length_lt_iff_non_reduced (L : List S) : ℓ(L) < L.length ↔ ¬ reduced_word L := by {
+lemma length_lt_iff_non_reduced {L : List S} : ℓ(L) < L.length ↔ ¬ reduced_word L := by {
    rw [iff_not_comm,not_lt]
-   exact length_le_iff  L
+   exact length_le_iff
 }
 
-lemma tail_reduced : reduced_word (L : List S) → reduced_word L.tail := sorry
+lemma tail_reduced : reduced_word (L : List S) → reduced_word L.tail :=
+ match L with
+  | [] => by simp
+  | hd::tail =>  by {
+    simp only [List.length_cons, List.tail_cons]
+    intro h
+    have len1:= (length_eq_iff).1 h
+    by_contra H
+    have H:= length_lt_iff_non_reduced.2 H
+    have :tail.length +1 < tail.length + 1 := by {
+      calc
+      tail.length + 1 = _ := by simp
+      _ = _ := len1
+      _ ≤  ℓ(tail)+1 := length_cons
+      _ < tail.length +1 := by linarith
+    }
+    linarith
+  }
 
-end reduced_word
+
+end OrderTwoGen
