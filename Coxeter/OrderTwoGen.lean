@@ -317,7 +317,7 @@ lemma length_lt_iff_non_reduced {L : List S} : ℓ(L) < L.length ↔ ¬ reduced_
    exact length_le_iff
 }
 
-lemma tail_reduced : reduced_word (L : List S) → reduced_word L.tail :=
+lemma reduced_imp_tail_reduced : reduced_word (L : List S) → reduced_word L.tail :=
  match L with
   | [] => by simp
   | hd::tail =>  by {
