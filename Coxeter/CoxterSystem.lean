@@ -33,15 +33,19 @@ lemma exchange'_if_exchange : ExchangeProp S →  ExchangeProp' S:= by {
    rw [<-gprod_cons] at Hp
    let j : Fin L.length:= ⟨L.length -1 - i.1, by {
       have : (0:ℕ)  < L.length := by {
-         calc
+      sorry
+      /- calc
          (0:ℕ)  ≤ i := by simp
          _ < Lr.length := i.2
          _ = L.length := by simp
          }
       calc
       _ ≤  L.length - 1 := by sorry
-      _ < _ := by sorry
-   }⟩
+      _ < _ := by sorry -/
+
+      }
+      sorry
+    }⟩
    use j
 
    sorry
