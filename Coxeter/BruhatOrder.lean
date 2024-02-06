@@ -2,14 +2,13 @@ import Coxeter.CoxeterSystem
 
 import Mathlib.Data.Set.Card
 
+variable {G : Type _} [Group G] {S :Set G} [OrderTwoGen S]
 
-variable {G : Type _} [Group G] {S :Set G} [orderTwoGen S] [CoxeterSystem G S]
-
-
-local notation :max "ℓ(" g ")" => (@length G  _ S _ g)
+local notation :max "ℓ(" g ")" => (S.length g)
 
 
 
+abbrev
 
 def ltone (u w: G) := ∃ t: T S, w = u * t ∧ ℓ(u) < ℓ(w)
 
