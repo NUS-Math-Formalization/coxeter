@@ -2,13 +2,98 @@ import Coxeter.CoxeterSystem
 
 import Mathlib.Data.Set.Card
 
-variable {G : Type _} [Group G] {S :Set G} [OrderTwoGen S]
+section SimpleReflections
 
-local notation :max "ℓ(" g ")" => (S.length g)
+@[ext]
+class SimpleRefl (G: Type*) [Group G] where
+  carrier : Set G
+  order_two :  ∀ (x:G) , x ∈ carrier →  x * x = (1 :G) ∧  x ≠ (1 :G)
+  expression : ∀ (x:G) , ∃ (L : List carrier),  x = L.gprod
 
 
 
-abbrev
+instance SimpleRefl.setlike [Group G]: SetLike (SimpleRefl G) G where
+  coe := fun S => S.carrier
+  coe_injective' p q h:= by
+    cases p
+    cases q
+    congr
+
+
+@[simp] lemma mem_carrier {p : MySubobject X} : x ∈ p.carrier ↔ x ∈ (p : Set X) := Iff.rfl
+
+end SimpleReflections
+
+class CoxeterGroup (G: Type*) extends Group G where
+  S : Set G
+  hS : CoxeterSystem S
+
+namespace CoxterGroup
+
+variable {G:Type*} [CoxeterGroup G]
+
+def T [S: SimpleRefl G] : Set G:= {x:G| ∃ (w:G)(s : h.S) , x = w*s*w⁻¹}
+
+variable {G : Type*} [Group G] {S :Set G} [hS:OrderTwoGen S]
+
+local notation :max "ℓ(" g ")" => (OrderTwoGen.length S g)
+
+
+def ltone (u w: G) := ∃ t: T S, w = u * t ∧ ℓ(u) < ℓ(w)
+
+def lt (u w:G):= ∃ L:List G, List.Forall₂ (@ltone G _ S _) (u::L) (L++[w])
+
+def le (u w:G):= u=w ∨ @lt G _ S _ u w
+
+instance Bruhat.LT : LT G where
+  lt:=@lt G _ S _
+
+instance Bruhat.LE : LE G where
+  le:=@le G _ S _
+
+variable (u v:G)
+#check u≤v
+
+instance Bruhat.poset : PartialOrder G where
+le := @le G _ S _
+lt := @lt G _ S _
+le_refl  := fun x => Or.inl (refl x)
+le_trans := fun (x y z:G) => by{
+  intros lxy lyz
+  sorry
+}
+lt_iff_le_not_le  := sorry
+le_antisymm:= fun (x y:G) => sorry
+local notation :max "ℓ(" g ")" => (OrderTwoGen.length S g)
+
+
+local notation : max "TT" => (@T G _ S)
+
+-- The adjacent relation in the Bruhat Order
+-- u < w if ∃ t ∈ T such that w = u * t ∧  ℓ(u) < ℓ(w)
+def Bruhat.lt_adj (u w:G) := ∃ t ∈ TT  , w = u * t ∧ ℓ(u) < ℓ(w)
+
+def Bruhat.lt (u w:G):= Relation.TransGen (Bruhat.lt_adj S) u w
+
+def Bruhat.le (u w:G):= Relation.ReflTransGen (Bruhat.lt_adj S) u w
+
+
+instance Bruhat.LT : LT G where
+  lt := Relation.TransGen (Bruhat.lt_adj S)
+
+instance Bruhat.LE : LE G where
+  le:= Relation.TransGen (@Bruhat.lt_adj G _ S _)
+
+
+--  @le G _ S _
+
+
+instance Bruhat.poset : Preorder G where
+  le := Relation.ReflTransGen (@Bruhat.lt_adj G _ S _)
+  lt :=
+  le_refl  := by intro _; simp [Relation.ReflTransGen.refl]
+  le_trans := fun _ _ _ => Relation.ReflTransGen.trans
+
 
 def ltone (u w: G) := ∃ t: T S, w = u * t ∧ ℓ(u) < ℓ(w)
 
