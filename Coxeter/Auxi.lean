@@ -28,7 +28,37 @@ lemma coe_eq_coe  {hd : ↑S} {tail :   List ↑S} : (hd :: tail : List G) = hd.
 
 
 namespace  List
-variable {α : Type _}
+variable {α : Type _} [BEq α] [Inhabited α]
+
+lemma append_singleton_ne_nil (L : List α) (a : α) : L ++ [a] ≠ [] := by {
+  induction L with
+  | nil => {simp}
+  | cons hd tail ih => {simp}
+}
+
+lemma eq_last_index_of_get_last_singleton (a : α) {n : ℕ} {h : n < (L ++ [a]).length}:
+   (L ++ [a]).get ⟨n, h⟩ = a ↔ n = L.length := by sorry
+  --  intro h_eq
+  --  have h : a = getLast (L ++ [a]) (append_singleton_ne_nil _ _) := by simp
+  --  have h' : n = (indexOf a (L ++ [a])) := by
+  --   sorry
+  --  sorry
+
+lemma eq_self_of_append_removeNth (a : α) {n : ℕ} :
+  (n = L.length) ↔ ((L ++ [a]).removeNth n) = L := by sorry
+
+lemma eq_self_of_append_removeNth' (a : α) {n : ℕ} {h : n < (L ++ [a]).length} :
+  ((L ++ [a]).get ⟨n, h⟩) = a ↔ ((L ++ [a]).removeNth n) = L := by
+  rw [eq_last_index_of_get_last_singleton a]
+  exact eq_self_of_append_removeNth a
+
+lemma length_append_singleton (L : List α) (a : α) : (L ++ [a]).length = L.length + 1 := by
+  induction L with
+  | nil => simp
+  | cons hd tail ih => simp
+
+#check length_removeNth
+
 
 lemma take_le_length (L : List α) (h : n ≤ L.length)  : (L.take n).length = n := by
   simp only [length_take,ge_iff_le, h, min_eq_left]
@@ -49,13 +79,13 @@ by {
    }
 }
 
-lemma sub_one_lt_self (n: ℕ) (h :0 < n) : n-1 < n := match n with
+lemma sub_one_lt_self (n: ℕ) (h : 0 < n) : n - 1 < n := match n with
 | 0 => by {contradiction}
 | n+1 => by {simp}
 
 
 lemma take_drop_get {α : Type _} (L: List α) (n : ℕ) (h : n < L.length):
-  L = L.take n ++ [L.get ⟨n,h⟩ ] ++ L.drop (n+1) := by {
+  L = L.take n ++ [L.get ⟨n,h⟩] ++ L.drop (n+1) := by {
   have Hn :=  List.take_append_drop n L
   have Hd := List.drop_eq_get_cons h
   rw [Hd] at Hn
@@ -69,8 +99,10 @@ lemma drop_take_nil {α : Type _} {L : List α} {n : ℕ} : (L.take n).drop n = 
   exact h
 }
 
-lemma take_get_lt {α : Type _} (L: List α) (n : ℕ) (h : n < L.length): L.take (n+1) = L.take n ++ [L.get ⟨n,h⟩ ] := by {
-  have H1 : (L.take (n+1)).length = n+1 := by {rw [List.length_take]; simp only [ge_iff_le, min_eq_left_iff];linarith }
+lemma take_get_lt {α : Type _} (L: List α) (n : ℕ) (h : n < L.length) :
+  L.take (n+1) = L.take n ++ [L.get ⟨n,h⟩ ] := by
+  have H1 : (L.take (n+1)).length = n+1 := by
+    rw [List.length_take]; simp only [ge_iff_le, min_eq_left_iff]; linarith
   have Hn := take_drop_get (L.take (n+1)) n (by linarith)
   sorry
   -- have nn1 : min n (n+1) = n := by simp only [ge_iff_le, le_add_iff_nonneg_right, min_eq_left]
@@ -78,10 +110,10 @@ lemma take_get_lt {α : Type _} (L: List α) (n : ℕ) (h : n < L.length): L.tak
   -- have nn2 : n < n+1 := by simp only [lt_add_iff_pos_right]
   -- have Hgt := get_take L h nn2
   -- rw [Hn,Hgt]
-}
 
 
-lemma get_eq_nthLe {α : Type _} {L: List α} {n : ℕ} {h : n < L.length} : L.get ⟨n,h⟩ = L.nthLe n h := by rfl
+lemma get_eq_nthLe {α : Type _} {L: List α} {n : ℕ} {h : n < L.length} :
+  L.get ⟨n, h⟩ = L.nthLe n h := by rfl
 
 
 /-
@@ -94,15 +126,17 @@ lemma take_drop_nth_le {α : Type _} (L: List α) (n : ℕ) (h : n < L.length): 
 -/
 
 lemma removeNth_append_lt {α : Type _} (L1 L2: List α) (n : ℕ) (h : n < L1.length) :
-(L1 ++ L2).removeNth n = L1.removeNth n ++ L2 := by {
-  rw [remove_nth_eq_take_drop,remove_nth_eq_take_drop,List.take_append_of_le_length (le_of_lt h)]
-  have : (L1 ++ L2).drop (n+1) = L1.drop (n+1) ++ L2 := drop_append_of_le_length (by linarith)
-  rw [this,append_assoc]
-}
+  (L1 ++ L2).removeNth n = L1.removeNth n ++ L2 := by
+  rw [remove_nth_eq_take_drop, remove_nth_eq_take_drop]
+  rw [List.take_append_of_le_length (le_of_lt h)]
+  have : (L1 ++ L2).drop (n + 1) = L1.drop (n + 1) ++ L2 :=
+    drop_append_of_le_length (by linarith)
+  rw [this, append_assoc]
+
 
 #check dropLast_concat
 
-lemma removeNth_length_sub_one (L:List α) : removeNth L (L.length-1) = dropLast L :=by sorry
+lemma removeNth_length_sub_one (L:List α) : removeNth L (L.length - 1) = dropLast L :=by sorry
 
 lemma removeNth_concat {a:α} (L:List α) : removeNth (concat L a) L.length = L:=by sorry
 

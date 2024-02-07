@@ -1,10 +1,11 @@
-import Coxeter.Basic
+import Coxeter.OrderTwoGen
 
 import Mathlib.Data.Set.Card
 
 
-variable {G : Type _} [Group G] {S :Set G} [orderTwoGen S] [CoxeterSystem G S]
+variable {G : Type _} [Group G] {S :Set G} [OrderTwoGen S] [CoxeterSystem G S]
 
+open OrderTwoGen
 
 local notation :max "ℓ(" g ")" => (@length G  _ S _ g)
 
