@@ -1,4 +1,4 @@
-import Coxeter.Basic
+import Coxeter.OrderTwoGen
 import Coxeter.Bruhat
 import Coxeter.Auxi
 
@@ -9,8 +9,9 @@ import Std.Data.Nat.Lemmas
 
 open Classical
 
+open OrderTwoGen
 
-variable {G: Type _} [Group G] {S : Set G} [orderTwoGen S] [CoxeterSystem G S]
+variable {G: Type _} [Group G] {S : Set G} [OrderTwoGen S] [CoxeterSystem G S]
 local notation:max "ℓ(" g ")" => (@length G _ S _ g)
 
 
@@ -45,7 +46,7 @@ lemma singleton {s:S}: reduced_word [s]:= by
    have : List.length L = 0:=by{linarith}
    have h1 :=List.length_eq_zero.1 this
    rw [h1,gprod_nil,gprod_singleton]
-   exact non_one s.1 s.2
+   exact gen_ne_one s.1 s.2
 
 lemma pos_length_of_non_reduced_word (L : List S): ¬ reduced_word L → 1 ≤  L.length := by
    contrapose
@@ -61,7 +62,7 @@ lemma length_le_iff (L: List S) : reduced_word L ↔ L.length ≤ ℓ(L.gprod):=
       contrapose hm
       rw [not_not] at hm
       let ⟨L', HL'⟩ := hm
-      rw [not_lt,<-HL'.1]
+      rw [not_lt,←HL'.1]
       exact h L'  HL'.2
    .  intro H
       rw [reduced_word]
@@ -70,7 +71,7 @@ lemma length_le_iff (L: List S) : reduced_word L ↔ L.length ≤ ℓ(L.gprod):=
       rw [not_le] at H
       rw [not_forall]
       use L'.length
-      rw [<-not_and,not_not]
+      rw [←not_and,not_not]
       constructor
       . exact H
       . use L'
@@ -108,10 +109,10 @@ noncomputable def max_reduced_word_index (L : List S) (H : ¬ reduced_word L):= 
 lemma nonreduced_succ_take_max_reduced_word (L : List S) (H : ¬ reduced_word L) : ¬ reduced_word (L.take ((max_reduced_word_index  L H)+1)) := by
    let j:= max_reduced_word_index  L H
    have Hj : j = max_reduced_word_index  L H := rfl
-   rw [<-Hj]
+   rw [←Hj]
    rw [max_reduced_word_index]  at Hj
    have HH:= (Nat.find_eq_iff _).1 Hj
-   rw [<-Hj,non_reduced_p] at HH
+   rw [←Hj,non_reduced_p] at HH
    exact HH.1
 
 lemma reduced_take_max_reduced_word (L : List S) (H : ¬ reduced_word L) : reduced_word (L.take (max_reduced_word_index L H)) := by
@@ -119,10 +120,10 @@ lemma reduced_take_max_reduced_word (L : List S) (H : ¬ reduced_word L) : reduc
    have Hj : j = max_reduced_word_index  L H := rfl
    match j with
    | 0 =>
-      rw [<-Hj,List.take_zero]
+      rw [←Hj,List.take_zero]
       exact nil
    | n+1 =>
-      rw [<-Hj]
+      rw [←Hj]
       have := (Nat.le_find_iff _ _).1 (le_of_eq Hj) n (Nat.lt_succ_self n)
       rw [non_reduced_p,not_not] at this
       exact this
@@ -135,7 +136,7 @@ lemma max_reduced_word_index_lt (L : List S) (H : ¬ reduced_word L) : max_reduc
    have Hlen' : 0<L.length := by linarith
    constructor
    . exact Nat.sub_lt Hlen' (by simp)
-   . have : L.length -1 +1  = L.length := by rw [<-Nat.sub_add_comm Hlen,Nat.add_sub_cancel]
+   . have : L.length -1 +1  = L.length := by rw [←Nat.sub_add_comm Hlen,Nat.add_sub_cancel]
      rw [this,List.take_length]
      exact H
 
@@ -165,10 +166,12 @@ lemma lr_symm {motive: (ℕ → ℕ → Prop)}  (s:S) (w:G) (h : ∀ (s : S), �
    rw [←length_inv,←length_inv (w*s),mul_generator_inv]
    assumption
 
-@[simp]lemma length_one_eq_zero : ℓ((1 : G)) = 0 := by {
-   have h:= (reduced_word.length_eq_iff  []).1 (@nil G _ S _)
+@[simp]
+lemma length_one_eq_zero : ℓ((1 : G)) = 0 := by {
+   have h := (length_eq_iff []).1 (@nil G _ S)
    simp at h
-   rw [h]
+   apply symm
+   assumption
 }
 
 lemma eq_one_of_length_eq_zero (w:G) : ℓ(w)=0 → w =1 := by{
@@ -177,7 +180,6 @@ lemma eq_one_of_length_eq_zero (w:G) : ℓ(w)=0 → w =1 := by{
    rcases h with ⟨L,⟨hL,hLL⟩⟩
    have : L = []:= List.eq_nil_of_length_eq_zero hL
    rw [this] at hLL
-   simp at hLL
    assumption
 }
 
@@ -187,8 +189,8 @@ lemma length_neq_zero_of_neq_one {w:G} : ¬w=1 →¬ℓ(w)=0:= mt (eq_one_of_len
 
 lemma ne_one_of_length_ne_zero {w:G} :  ¬ℓ(w)=0 → ¬w=1 :=fun h => fun hw =>h (length_eq_zero_of_eq_one hw)
 
-lemma length_generator_eq_one (s:S) : ℓ(s) = 1:= by{
-   apply (Nat.find_eq_iff (length_aux s.1)).2
+lemma length_generator_eq_one (s : S) : ℓ(s) = 1 := by{
+   apply (Nat.find_eq_iff (length_aux S s)).2
    constructor
    .  {
       use [s]
@@ -202,7 +204,7 @@ lemma length_generator_eq_one (s:S) : ℓ(s) = 1:= by{
       rw [hn'] at hL
       have :=List.eq_nil_of_length_eq_zero hL
       rw [this, gprod_nil]
-      exact non_one s.1 s.2
+      exact gen_ne_one s.1 s.2
    }
 }
 
@@ -215,11 +217,11 @@ lemma length_lt_not_nil (L : List S) (s : S) : ℓ(L.gprod * s) < ℓ(L.gprod) �
 }
 
 lemma reduced_nonreduced_length_le  (L : List S) (s : S) (H1: reduced_word L) (H2: ¬ reduced_word (L ++ [s])) :ℓ(L.gprod * s) ≤ ℓ(L.gprod) := by {
-    rw [<-(length_eq_iff L).1 H1]
+    rw [←(length_eq_iff L).1 H1]
     contrapose H2
     have Hs :[s].gprod = s := gprod_singleton
     have Hlen : (L++[s]).length = Nat.succ L.length := by rw [List.length_append, List.length_singleton]
-    rw [not_le,←gprod_singleton,←gprod_append,<-Nat.succ_le_iff,<-Hlen] at H2
+    rw [not_le,←gprod_singleton,←gprod_append,←Nat.succ_le_iff,←Hlen] at H2
     rw [not_not,length_le_iff (L++[s])]
     exact H2
 }
@@ -238,16 +240,16 @@ lemma length_mul_le_sum  (u v:G): ℓ(u*v) ≤ ℓ(u) + ℓ(v):= by{
       rw [hu2,hv2]
       exact eq_comm.1 gprod_append
    }
-   have hlu: Lu.length = length u:=by{
+   have hlu: Lu.length = length S u:=by{
       rw [hu2]
       exact (length_eq_iff Lu).1 hu1
    }
-   have hlv:Lv.length = length v:=by{
+   have hlv:Lv.length = length S v:=by{
       rw [hv2]
       exact (length_eq_iff Lv).1 hv1
    }
    rw [this]
-   have H:length (List.gprod (Lu ++ Lv)) ≤ Lu.length + Lv.length:= by{
+   have H:length S (List.gprod (Lu ++ Lv)) ≤ Lu.length + Lv.length:= by{
       have :=length_le (Lu ++ Lv)
       rw [List.length_append] at this
       assumption
@@ -260,7 +262,7 @@ lemma length_mul_ge_sub (u v :G) : ℓ(u) - ℓ(v) ≤ ℓ(u*v) :=by{
    if h:ℓ(u) ≤ ℓ(v) then {
       have := Nat.sub_eq_zero_iff_le.2 h
       rw [this]
-      exact Nat.zero_le (length (u * v))
+      exact Nat.zero_le (length S (u * v))
    }
    else{
       have := length_mul_le_sum (u*v) v⁻¹
@@ -274,7 +276,7 @@ lemma length_mul_ge_sub' (u v :G) : ℓ(v) - ℓ(u) ≤ ℓ(u*v) := by{
    have :=length_mul_le_sum (v⁻¹*u⁻¹) u
    rw [mul_assoc] at this
    simp at this
-   rw [length_inv,←mul_inv_rev,length_inv] at this
+   rw [←mul_inv_rev,length_inv] at this
    exact Nat.sub_le_of_le_add this
 }
 
@@ -285,18 +287,23 @@ section  generator_mul
 lemma generator_mul_eq_one (s:S) (w:G) : s*w=1 → w=s:=by{
    intro h
    rw [mul_eq_one_iff_inv_eq]at h
-   rw [generator_inv,h]
+   rw [←inv_eq_self'',h]
 }
 
 lemma mul_generator_eq_one (w:G) (s:S) : w*s=1 → w=s:=by{
    intro h
    rw [mul_eq_one_iff_eq_inv]at h
-   rw [generator_inv,h]
+   rw [←inv_eq_self'',h]
 }
 
-lemma eq_generator_mul_of_generator_mul_eq {s:S} {w u:G} : s*w=u → w=s*u :=fun h =>(by rw [←h,←mul_assoc,generator_square,one_mul])
+lemma eq_generator_mul_of_generator_mul_eq {s:S} {w u:G} : s*w=u → w=s*u := by
+   intro h
+   rw [←h, ←mul_assoc, gen_square_eq_one', one_mul]
 
-lemma generator_mul_eq_iff (s:S) (w u:G)  : s*w=u ↔ w=s*u :=⟨eq_generator_mul_of_generator_mul_eq,fun h=>(by rw [h,←mul_assoc,generator_square,one_mul])⟩
+
+lemma generator_mul_eq_iff (s : S) (w u : G) :
+   s * w = u ↔ w = s * u :=
+   ⟨eq_generator_mul_of_generator_mul_eq, fun h => (by rw [h,←mul_assoc,gen_square_eq_one',one_mul])⟩
 
 lemma length_generator_mul_le_sum (s:S) (w:G) : ℓ(s*w) ≤ 1+ℓ(w) := by {
    have :=length_mul_le_sum s.val w
@@ -304,9 +311,9 @@ lemma length_generator_mul_le_sum (s:S) (w:G) : ℓ(s*w) ≤ 1+ℓ(w) := by {
    assumption
 }
 
-@[simp] lemma generator_mul_twice (w:G) (s:S): s*s*w=w:=by rw [generator_square,one_mul]
+@[simp] lemma generator_mul_twice (w:G) (s:S): s*s*w=w:=by rw [gen_square_eq_one',one_mul]
 
-@[simp] lemma mul_generator_twice (w:G) (s:S): w*s*s=w:=by rw [mul_assoc,generator_square,mul_one]
+@[simp] lemma mul_generator_twice (w:G) (s:S): w*s*s=w:=by rw [mul_assoc,gen_square_eq_one',mul_one]
 
 lemma length_generator_mul_le_sub (s:S) (w:G) : ℓ(w) - 1 ≤ ℓ(s*w):=by{
    have :=length_mul_ge_sub' s.1 w
@@ -376,7 +383,7 @@ lemma length_mul_generator (w:G) (s:S) : ℓ(w*s) = ℓ(w)+1 ∨ ℓ(w*s) = ℓ(
    .  intro h
       have h1:=length_generator_mul s w
       exact Or.elim h1 (fun h2=> (by{
-         have : length (↑s * w) > length w:= by linarith
+         have : length S (↑s * w) > length S w:= by linarith
          have hlt_self : ℓ(w)<ℓ(w):= by linarith
          exact byContradiction (fun _ => (LT.lt.false hlt_self))
       })) (fun h2 =>h2)
@@ -477,7 +484,7 @@ lemma length_lt_S_mul_of_length_S_mul_S_lt (s t :S) (w:G) : ℓ(s*w*t) < ℓ(w) 
 
 lemma length_S_mul_lt_of_length_S_mul_S_lt (s t :S) (w:G) : ℓ(s*w*t) < ℓ(w) → ℓ(s*w) <ℓ(w) :=by{
    intro hlt
-   have hsub: length (s * w * t) = length (↑s * w) - 1:=(length_mul_generator_of_length_lt (s*w) t).1 (length_lt_S_mul_of_length_S_mul_S_lt s t w hlt)
+   have hsub: length S (s * w * t) = length S (↑s * w) - 1:=(length_mul_generator_of_length_lt (s*w) t).1 (length_lt_S_mul_of_length_S_mul_S_lt s t w hlt)
    have h1:=length_generator_mul s w
    rcases h1 with hadd'|hsub'
    {
@@ -529,7 +536,7 @@ lemma S_mul_eq_mul_S_of_length_eq_aux {s t:S} (w:G) (h_1:ℓ(s*w*t) = ℓ(w)) (h
       rw [List.removeNth_append_lt,mul_assoc] at hi
       have h3:=(generator_mul_eq_iff s (w*t) _).1 hi
       have h4:=mul_generator_twice w t
-      rw [h3,gprod_append,gprod_singleton,mul_assoc,mul_assoc,generator_square,mul_one] at h4
+      rw [h3,gprod_append,gprod_singleton,mul_assoc,mul_assoc,gen_square_eq_one',mul_one] at h4
       have h5 :=(generator_mul_eq_iff ..).1 h4
       have h6:= h5 ▸ (length_le (List.removeNth L ↑i))
       rw [List.length_removeNth,(length_eq_iff L).1 hL.1,←hL.2] at h6
@@ -591,7 +598,7 @@ lemma eps_s_mul (s:S) (u:G) : eps (s*u) = eps s.1 * eps u := by{
             rw [h2,length_generator_eq_one,←pow_add]
             conv =>
                lhs
-               rw [←mul_one ((-1) ^ (length u - 1))]
+               rw [←mul_one ((-1) ^ (length S u - 1))]
                arg 2
                rw [ ←neg_one_pow_two]
             rw [←pow_add,←@Nat.sub_add_comm,add_comm]

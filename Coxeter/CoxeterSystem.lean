@@ -30,7 +30,7 @@ lemma exchange'_if_exchange : ExchangeProp S →  ExchangeProp' S:= by {
       _ =  ℓ(L.reverse) := by simp only [reverse_length_eq_length]
    }
    let ⟨i, Hp⟩  := EP Lr s HLr Hlenr
-   rw [<-gprod_cons] at Hp
+   rw [←gprod_cons] at Hp
    let j : Fin L.length:= ⟨L.length -1 - i.1, by {
       have : (0:ℕ)  < L.length := by {
       sorry
@@ -67,17 +67,17 @@ lemma exchange_imp_deletion : ExchangeProp S →  DeletionProp S := by {
    have red_L1 : reduced_word L1 := reduced_take_max_reduced_word HL'
    let s := L.get j
    have nonred_L1p : ¬ reduced_word (L1++[s]) := by {
-        rw [<-List.take_get_lt L j.1 j.2]
+        rw [←List.take_get_lt L j.1 j.2]
         have := nonreduced_succ_take_max_reduced_word  HL'
         exact this
    }
    have non_red_L1_s: ℓ((L1 * s)) ≤  ℓ(L1) := reduced_nonreduced_length_le red_L1 nonred_L1p
    -- have ⟨i,HL1s⟩  := EP L1 s red_L1 non_red_L1_s
-   -- use ⟨i,(by {rw [<-Hj]; exact i.2})⟩
+   -- use ⟨i,(by {rw [←Hj]; exact i.2})⟩
    -- rw [List.remove_nth_eq_take_drop L j]
    -- have L1_ri : List.removeNth (L1 ++ L.drop (j+1)) i = L1.removeNth i ++ L.drop (j+1) := List.removeNth_append_lt L1 (L.drop (j+1)) i i.2
-   -- rw [L1_ri,Subgroup.gprod_append,<-HL1s,<-Subgroup.gprod_append_singleton, <-Subgroup.gprod_append]
-   -- rw [<-List.take_drop_get L j]
+   -- rw [L1_ri,Subgroup.gprod_append,←HL1s,←Subgroup.gprod_append_singleton, ←Subgroup.gprod_append]
+   -- rw [←List.take_drop_get L j]
    sorry
  }
 
