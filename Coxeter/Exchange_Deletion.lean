@@ -56,15 +56,13 @@ lemma take_drop_get' (L: List S) (n : ℕ) (h : n < L.length):
 
 
 
-lemma exchange_of_deletion : @ExchangeProp G _ S _ →  @DeletionProp G _ S _ := by
+lemma exchange_imp_deletion : @ExchangeProp G _ S _ →  @DeletionProp G _ S _ := by
   rw [exchange_iff]
   rw [ExchangeProp', DeletionProp]
   intro EP' L HL
   have HL' := (length_lt_iff_non_reduced L).1 HL
-  let j := max_reduced_word_index' L HL'
-  use j
-  let L1 := L.take j
-  let s := L.get j
+  let j := max_reduced_word_index' L HL'; use j
+  let L1 := L.take j; let s := L.get j
   have Hj : L1.length = j := List.take_le_length L (le_of_lt j.2)
   have red_L1 : reduced_word L1 := reduced_take_max_reduced_word L HL'
   have non_red_L1p : ¬ reduced_word (L1 ++ [s]) := by
@@ -74,15 +72,11 @@ lemma exchange_of_deletion : @ExchangeProp G _ S _ →  @DeletionProp G _ S _ :=
   have non_red_L1_s: ℓ((L1.gprod * s)) ≤ ℓ(L1.gprod) := by
     apply reduced_nonreduced_length_le L1 s red_L1 non_red_L1p
   let ⟨i, Hp⟩ := EP' red_L1 non_red_L1_s
-  have Hlen : i < j.1 := by
-    rw [←Hj]
-    exact i.2
-  let i_fin_j : Fin j := ⟨i, Hlen⟩
-  use i_fin_j
+  have Hlen : i < j.1 := by rw [←Hj]; exact i.2
+  let i_fin_j : Fin j := ⟨i, Hlen⟩; use i_fin_j
   have h_L_decomp : (List.removeNth (List.removeNth L j) i) =
     (List.removeNth L1 i).gprod * (List.drop (j+1) L) := by
-    rw [←gprod_append]
-    apply congr_arg
+    rw [←gprod_append]; apply congr_arg
     rw [←List.removeNth_append_lt, ←List.remove_nth_eq_take_drop]
     exact i.2
   rw [h_L_decomp, ←Hp, ←gprod_singleton]
@@ -90,7 +84,7 @@ lemma exchange_of_deletion : @ExchangeProp G _ S _ →  @DeletionProp G _ S _ :=
 
 
 
-lemma deletion_of_exchange : @DeletionProp G _ S _ → @ExchangeProp G _ S _ := by
+lemma deletion_imp_exchange : @DeletionProp G _ S _ → @ExchangeProp G _ S _ := by
   rw [exchange_iff]
   rw [ExchangeProp', DeletionProp]
   intro DP L s red_L h_len
@@ -149,6 +143,8 @@ lemma deletion_of_exchange : @DeletionProp G _ S _ → @ExchangeProp G _ S _ := 
     have : L.gprod = (L.removeNth j).removeNth i := by
       rw [gprod_append_singleton, gprod_append_singleton] at this
       exact mul_right_cancel this
+
+    -- Automatically simplify?
     have len_l_lt: ℓ(L) < List.length L := by
       rw [this]
       calc
@@ -157,6 +153,7 @@ lemma deletion_of_exchange : @DeletionProp G _ S _ → @ExchangeProp G _ S _ := 
         _ = List.length L - 1 - 1 := by
           rw [List.length_removeNth, List.length_removeNth]
           assumption; assumption
+        _ ≤ List.length L - 1 := by apply Nat.sub_le
         _ < List.length L := by sorry
 
     have : ℓ(L) = List.length L := by
@@ -167,7 +164,7 @@ lemma deletion_of_exchange : @DeletionProp G _ S _ → @ExchangeProp G _ S _ := 
   . push_neg at hs
     by_cases h_s_eq_j : s = (L ++ [s]).get j
 
-     -- Automatically simplify?
+    -- Automatically simplify?
     . have : (L ++ [s]).gprod = (L.removeNth i') := by
         calc
           (L ++ [s]).gprod = (((L ++ [s]).removeNth j).removeNth i').gprod := by exact h_dp
