@@ -36,21 +36,17 @@ lemma append_singleton_ne_nil (L : List α) (a : α) : L ++ [a] ≠ [] := by {
   | cons hd tail ih => {simp}
 }
 
-lemma eq_last_index_of_get_last_singleton (a : α) {n : ℕ} {h : n < (L ++ [a]).length}:
-   (L ++ [a]).get ⟨n, h⟩ = a ↔ n = L.length := by sorry
-  --  intro h_eq
-  --  have h : a = getLast (L ++ [a]) (append_singleton_ne_nil _ _) := by simp
-  --  have h' : n = (indexOf a (L ++ [a])) := by
-  --   sorry
-  --  sorry
+lemma length_hd_tail_eq_succ_length (L : List α) (a : α) : (a :: L).length = L.length + 1 := by
+  simp
 
-lemma eq_self_of_append_removeNth (a : α) {n : ℕ} :
-  (n = L.length) ↔ ((L ++ [a]).removeNth n) = L := by sorry
 
-lemma eq_self_of_append_removeNth' (a : α) {n : ℕ} {h : n < (L ++ [a]).length} :
-  ((L ++ [a]).get ⟨n, h⟩) = a ↔ ((L ++ [a]).removeNth n) = L := by
-  rw [eq_last_index_of_get_last_singleton a]
-  exact eq_self_of_append_removeNth a
+lemma append_remove_cancel_of_eq_last_index {a : α} {n : ℕ} (h : n = L.length) :
+  (L ++ [a]).removeNth n = L := by
+  induction L generalizing n with
+  | nil => simp at h; simp [h]
+  | cons hd tail ih => simp at h; simp [h, ih]
+
+
 
 lemma length_append_singleton (L : List α) (a : α) : (L ++ [a]).length = L.length + 1 := by
   induction L with
