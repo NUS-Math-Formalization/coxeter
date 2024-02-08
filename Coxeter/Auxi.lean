@@ -166,3 +166,18 @@ lemma LinearEquiv_invFun_comp_Fun (R:Type u) [Semiring R][AddCommMonoid M] [AddC
   apply Function.LeftInverse.id
   exact e.left_inv
 }
+
+
+namespace Nat
+
+lemma pos_of_lt {i n: Nat} (h : i < n) : 0 < n := by
+  calc
+  0 ≤ i := zero_le _
+  _ < _ := h
+
+lemma sub_one_sub_lt_self {i n: Nat} (h : 0 < n) : n - 1 -i < n := by
+  calc
+  _ ≤ n-1 := by simp
+  _ < _ := Nat.pred_lt <| pos_iff_ne_zero.1 h
+
+end Nat

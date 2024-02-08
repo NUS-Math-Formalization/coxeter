@@ -167,9 +167,8 @@ lemma deletion_imp_exchange : @DeletionProp G _ S _ → @ExchangeProp G _ S _ :=
     have h_i_lt_k' : i < (L.removeNth j).length := by
       rw [List.length_removeNth];
       have := i.2
-      have j_le_km1 : j.1 ≤ L.length - 1 := by
-        apply Nat.le_sub_one_of_lt
-        exact h_j_lt_k;
+      have j_le_km1 : j.1 ≤ L.length - 1 :=
+        Nat.le_sub_one_of_lt h_j_lt_k
       linarith; assumption
 
     have : (L ++ [s]).gprod = ((L.removeNth j).removeNth i) ++ [s] := by
@@ -191,16 +190,14 @@ lemma deletion_imp_exchange : @DeletionProp G _ S _ → @ExchangeProp G _ S _ :=
         ℓ((L.removeNth j).removeNth i) ≤ ((L.removeNth j).removeNth i).length := by
           apply length_le_list_length
         _ = List.length L - 1 - 1 := by
-          rw [List.length_removeNth, List.length_removeNth]
-          assumption; assumption
-        _ ≤ List.length L - 1 := by apply Nat.sub_le
-        _ < List.length L := by sorry
-
-    have : ℓ(L) = List.length L := by
-      rw [length_eq_iff] at red_L
-      apply symm; assumption
-    rw [this] at len_l_lt
-    exact lt_irrefl _ len_l_lt
+          repeat rw [List.length_removeNth]
+          repeat assumption
+        --_ ≤ List.length L - 1 := by apply Nat.sub_le
+        _ < List.length L := Nat.sub_one_sub_lt_self <| Nat.pos_of_lt h_i_lt_k
+    --have : ℓ(L) = List.length L := Eq.symm <| length_eq_iff.1 red_L
+    rw [length_eq_iff.1 red_L] at len_l_lt
+    linarith
+    --exact lt_irrefl _ len_l_lt
   . push_neg at hs
     by_cases h_s_eq_j : s = (L ++ [s]).get j
 
