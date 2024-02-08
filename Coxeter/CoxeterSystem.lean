@@ -97,6 +97,7 @@ lemma exchange_imp_deletion : ExchangeProp S →  DeletionProp S:= by
 
 
 
+
 lemma deletion_imp_exchange : @DeletionProp G _ S _ → @ExchangeProp G _ S _ := by
   rw [exchange_iff_exchange']
   rw [ExchangeProp', DeletionProp]
@@ -107,7 +108,6 @@ lemma deletion_imp_exchange : @DeletionProp G _ S _ → @ExchangeProp G _ S _ :=
     linarith; assumption
   let ⟨j, i, h_dp⟩ := DP (L ++ [s]) h_len'
 
-  -- To be simplified?
   have h_i_lt_kp1 : i < List.length (L ++ [s]) := by
     apply LT.lt.trans i.2 j.2
   have h_i_lt_k : i < L.length := by
@@ -119,28 +119,19 @@ lemma deletion_imp_exchange : @DeletionProp G _ S _ → @ExchangeProp G _ S _ :=
     linarith
 
   let i' : Fin (L ++ [s]).length := ⟨i, h_i_lt_kp1⟩
-  by_cases hs : s ≠ (L ++ [s]).get j ∧ s ≠ (L ++ [s]).get i'
+  by_cases hs : j.1 ≠ L.length ∧ i.1 ≠ L.length
   . exfalso
-
-    -- To be simplified?
     have h_j_lt_k : j < L.length := by
-      have j_le_k : j.1 ≤ L.length := by
+      have h_j_le_k : j ≤ L.length := by
         apply Nat.le_of_lt_succ
         rw [Nat.succ_eq_add_one, ←List.length_append_singleton]
         exact j.2
-      have j_ne_k : j.1 ≠ L.length := by
-        intro h; rw [←List.eq_last_index_of_get_last_singleton s] at h
-        swap; exact j.2
-        let hhh := hs.left
-        have h' : s = List.get (L ++ [s]) j := by exact symm h
-        exact hhh h'
-      exact lt_of_le_of_ne j_le_k j_ne_k
+      exact lt_of_le_of_ne h_j_le_k hs.left
 
-     -- Automatically simplify?
-    have h_i_lt_k' : i < (L.removeNth j).length := by
+    have h_i_lt_km1 : i < (L.removeNth j).length := by
       rw [List.length_removeNth];
       have := i.2
-      have j_le_km1 : j.1 ≤ L.length - 1 :=
+      have h_j_le_km1 : j ≤ L.length - 1 :=
         Nat.le_sub_one_of_lt h_j_lt_k
       linarith; assumption
 
@@ -150,13 +141,12 @@ lemma deletion_imp_exchange : @DeletionProp G _ S _ → @ExchangeProp G _ S _ :=
         _ = (L.removeNth j ++ [s]).removeNth i := by
           rw [List.removeNth_append_lt L [s] j.1 h_j_lt_k]
         _ = (L.removeNth j).removeNth i ++ [s] := by
-          rw [List.removeNth_append_lt (L.removeNth j) [s] i'.1 h_i_lt_k']
+          rw [List.removeNth_append_lt (L.removeNth j) [s] i'.1 h_i_lt_km1]
 
     have : L.gprod = (L.removeNth j).removeNth i := by
       rw [gprod_append_singleton, gprod_append_singleton] at this
       exact mul_right_cancel this
 
-    -- Automatically simplify?
     have len_l_lt: ℓ(L) < List.length L := by
       rw [this]
       calc
@@ -165,29 +155,26 @@ lemma deletion_imp_exchange : @DeletionProp G _ S _ → @ExchangeProp G _ S _ :=
         _ = List.length L - 1 - 1 := by
           repeat rw [List.length_removeNth]
           repeat assumption
-        --_ ≤ List.length L - 1 := by apply Nat.sub_le
         _ < List.length L := Nat.sub_one_sub_lt_self <| Nat.pos_of_lt h_i_lt_k
-    --have : ℓ(L) = List.length L := Eq.symm <| length_eq_iff.1 red_L
+
     rw [length_eq_iff.1 red_L] at len_l_lt
     linarith
-    --exact lt_irrefl _ len_l_lt
-  . push_neg at hs
-    by_cases h_s_eq_j : s = (L ++ [s]).get j
 
-    -- Automatically simplify?
-    . have : (L ++ [s]).gprod = (L.removeNth i') := by
+  . push_neg at hs
+    by_cases h_s_eq_j : ↑j = List.length L
+    . have : (L ++ [s]).gprod = (L.removeNth i) := by
         calc
-          (L ++ [s]).gprod = (((L ++ [s]).removeNth j).removeNth i').gprod := by exact h_dp
-          _ = (L.removeNth i') := by rw [(List.eq_self_of_append_removeNth' s).mp (symm h_s_eq_j)]
+          (L ++ [s]).gprod = (((L ++ [s]).removeNth j).removeNth i).gprod := by exact h_dp
+          _ = (L.removeNth i') := by
+            rw [List.append_remove_cancel_of_eq_last_index h_s_eq_j]
       let i'' : Fin L.length := ⟨i, h_i_lt_k⟩; use i''
       rw [←gprod_append_singleton, this]
     . exfalso; push_neg at h_s_eq_j
       let h_s_eq_i' := hs h_s_eq_j
-      have : i'.1  = L.length := by
-        apply (List.eq_last_index_of_get_last_singleton s).mp
-        exact symm h_s_eq_i'
-      rw [this] at h_i_lt_k
+      rw [h_s_eq_i'] at h_i_lt_k
       exact lt_irrefl _ h_i_lt_k
+
+
 
 end OrderTwoGen
 
