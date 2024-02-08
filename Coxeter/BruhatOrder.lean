@@ -89,15 +89,17 @@ lemma lt_of_le_of_lenght_lt  {u w :G} : le u w → ℓ(u) < ℓ(w) → lt u w:= 
 lemma eq_of_le_of_lenght_ge  {u w :G} : le u w → ℓ(u) ≥  ℓ(w) → u = w := by sorry
 
 
-instance preorder: Preorder G where
+instance particalorder: PartialOrder G where
 le := le
 lt := lt
 le_refl  := by intro _; simp [Relation.ReflTransGen.refl]
 le_trans := fun _ _ _ => Relation.ReflTransGen.trans
-lt_iff_le_not_le  := by sorry
-
-instance particalorder: PartialOrder G where
+lt_iff_le_not_le  := by
+    -- use length_le_of_le to prove -> direction
+    -- use lt_of_le_of_length_lt and eq_of_le_of_lenght_ge
+    sorry
 le_antisymm:= fun (x y:G) => by sorry
+
 
 
 def Interval (x y : G) : Set G := Set.Icc x y
