@@ -96,7 +96,7 @@ lemma take_drop_get' (L: List S) (n : ℕ) (h : n < L.length):
 
 
 
-lemma exchange_imp_deletion : @ExchangeProp G _ S _ →  @DeletionProp G _ S _ := by
+lemma exchange_imp_deletion : ExchangeProp S →  DeletionProp S:= by
   rw [exchange_iff_exchange']
   rw [ExchangeProp', DeletionProp]
   intro EP' L HL
@@ -124,14 +124,13 @@ lemma exchange_imp_deletion : @ExchangeProp G _ S _ →  @DeletionProp G _ S _ :
 
 
 
-lemma deletion_imp_exchange : @DeletionProp G _ S _ → @ExchangeProp G _ S _ := by sorry
-/-
+lemma deletion_imp_exchange : @DeletionProp G _ S _ → @ExchangeProp G _ S _ := by
   rw [exchange_iff_exchange']
   rw [ExchangeProp', DeletionProp]
   intro DP L s red_L h_len
   have h_len' : ℓ(L ++ [s]) < List.length (L ++ [s]) := by
     simp only [List.length_append, List.length_singleton]
-    rw [gprod_append_singleton, (reduced_word.length_eq_iff L).mp]
+    rw [gprod_append_singleton, (length_eq_iff).mp]
     linarith; assumption
   let ⟨j, i, h_dp⟩ := DP (L ++ [s]) h_len'
 
@@ -190,7 +189,7 @@ lemma deletion_imp_exchange : @DeletionProp G _ S _ → @ExchangeProp G _ S _ :=
       rw [this]
       calc
         ℓ((L.removeNth j).removeNth i) ≤ ((L.removeNth j).removeNth i).length := by
-          apply reduced_word.length_le
+          apply length_le_list_length
         _ = List.length L - 1 - 1 := by
           rw [List.length_removeNth, List.length_removeNth]
           assumption; assumption
@@ -198,7 +197,7 @@ lemma deletion_imp_exchange : @DeletionProp G _ S _ → @ExchangeProp G _ S _ :=
         _ < List.length L := by sorry
 
     have : ℓ(L) = List.length L := by
-      rw [reduced_word.length_eq_iff] at red_L
+      rw [length_eq_iff] at red_L
       apply symm; assumption
     rw [this] at len_l_lt
     exact lt_irrefl _ len_l_lt
@@ -219,14 +218,15 @@ lemma deletion_imp_exchange : @DeletionProp G _ S _ → @ExchangeProp G _ S _ :=
         exact symm h_s_eq_i'
       rw [this] at h_i_lt_k
       exact lt_irrefl _ h_i_lt_k
--/
 
 end OrderTwoGen
 
+open OrderTwoGen
+
 class CoxeterSystem {G : Type*} [Group G] (S : Set G) extends OrderTwoGen S where
   exchange : OrderTwoGen.ExchangeProp S
-  exchange' : OrderTwoGen.ExchangeProp' S
-  deletion : OrderTwoGen.DeletionProp S
+  exchange' : OrderTwoGen.ExchangeProp' S := (exchange_iff_exchange' S).1 exchange
+  deletion : OrderTwoGen.DeletionProp S := exchange_imp_deletion S exchange
 
 -- namespace CoxeterSystem
 
