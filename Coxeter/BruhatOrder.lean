@@ -66,15 +66,6 @@ lemma lenght_le_of_le  {u w :G} : lt u w → ℓ(u) < ℓ(w) := by sorry
 abbrev le (u w:G):= Relation.ReflTransGen (Bruhat.lt_adj) u w
 
 
--- instance Bruhat.LT {G:Type*} [CoxeterGroup G] : LT G where
---   --lt := Relation.TransGen (Bruhat.lt_adj)
---   lt := Bruhat.lt
-
-
--- instance Bruhat.LE {G:Type*} [CoxeterGroup G] : LE G where
---   le:= Bruhat.le
-
-
 instance poset: PartialOrder G where
 le := le
 lt := lt
@@ -163,3 +154,12 @@ variable (u v:G)
 #check u < v
 
 end test
+
+
+-- instance Bruhat.LT {G:Type*} [CoxeterGroup G] : LT G where
+--   --lt := Relation.TransGen (Bruhat.lt_adj)
+--   lt := Bruhat.lt
+
+
+-- instance Bruhat.LE {G:Type*} [CoxeterGroup G] : LE G where
+--   le:= Bruhat.le
