@@ -194,9 +194,9 @@ end OrderTwoGen
 open OrderTwoGen
 
 class CoxeterSystem {G : Type*} [Group G] (S : Set G) extends OrderTwoGen S where
-  exchange : OrderTwoGen.ExchangeProp S
-  exchange' : OrderTwoGen.ExchangeProp' S := (exchange_iff_exchange' S).1 exchange
-  deletion : OrderTwoGen.DeletionProp S := exchange_imp_deletion S exchange
+  exchange : ExchangeProp S
+  exchange' : ExchangeProp' S := (exchange_iff_exchange' S).1 exchange
+  deletion : DeletionProp S := exchange_imp_deletion S exchange
 
 -- namespace CoxeterSystem
 
