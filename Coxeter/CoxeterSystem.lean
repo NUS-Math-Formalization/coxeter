@@ -6,12 +6,12 @@ variable {G : Type*} [Group G] (S : Set G) [OrderTwoGen S]
 local notation:max "ℓ(" g ")" => (length S g)
 
 @[simp]
-abbrev ExchangeProp := ∀ (L:List S) (s:S) ,reduced_word L →
+abbrev ExchangeProp := ∀ {L:List S} {s:S} ,reduced_word L →
       ℓ(s * L) ≤ ℓ(L) → ∃ (i: Fin L.length), (s :G) * L= (L.removeNth i)
 
 @[simp]
 abbrev  ExchangeProp' :=
-   ∀ (L : List S) (s : S ),
+   ∀ {L : List S} {s : S},
    reduced_word L → ℓ(( L * s)) ≤ ℓ(L) → ∃ (i: Fin L.length) ,(L:G) * s= (L.removeNth i)
 
 
@@ -31,7 +31,7 @@ lemma exchange_iff_exchange' : ExchangeProp S ↔   ExchangeProp' S:= by {
       _ ≤  ℓ(L) := Hlen
       _ =  ℓ(L.reverse) := by simp only [reverse_length_eq_length]
    }
-   let ⟨i, Hp⟩  := EP Lr s HLr Hlenr
+   let ⟨i, Hp⟩  := EP HLr Hlenr
    rw [←gprod_cons] at Hp
    let j : Fin L.length:= ⟨L.length -1 - i.1, by {
       have : (0:ℕ)  < L.length := by {
@@ -96,22 +96,21 @@ lemma take_drop_get' (L: List S) (n : ℕ) (h : n < L.length):
 
 
 
-lemma exchange_imp_deletion : @ExchangeProp G _ S _ →  @DeletionProp G _ S _ := by sorry
-/-
+lemma exchange_imp_deletion : @ExchangeProp G _ S _ →  @DeletionProp G _ S _ := by
   rw [exchange_iff_exchange']
   rw [ExchangeProp', DeletionProp]
   intro EP' L HL
-  have HL' := (length_lt_iff_non_reduced L).1 HL
-  let j := max_reduced_word_index' L HL'; use j
+  have HL' := (length_lt_iff_non_reduced).1 HL
+  let j := max_reduced_word_index' HL'; use j
   let L1 := L.take j; let s := L.get j
   have Hj : L1.length = j := List.take_le_length L (le_of_lt j.2)
-  have red_L1 : reduced_word L1 := reduced_take_max_reduced_word L HL'
+  have red_L1 : reduced_word L1 := reduced_take_max_reduced_word HL'
   have non_red_L1p : ¬ reduced_word (L1 ++ [s]) := by
     rw [← List.take_get_lt L j.1 j.2]
-    have := nonreduced_succ_take_max_reduced_word L HL'
+    have := nonreduced_succ_take_max_reduced_word HL'
     exact this
   have non_red_L1_s: ℓ((L1.gprod * s)) ≤ ℓ(L1.gprod) := by
-    apply reduced_nonreduced_length_le L1 s red_L1 non_red_L1p
+    apply reduced_nonreduced_length_le red_L1 non_red_L1p
   let ⟨i, Hp⟩ := EP' red_L1 non_red_L1_s
   have Hlen : i < j.1 := by rw [←Hj]; exact i.2
   let i_fin_j : Fin j := ⟨i, Hlen⟩; use i_fin_j
@@ -122,7 +121,6 @@ lemma exchange_imp_deletion : @ExchangeProp G _ S _ →  @DeletionProp G _ S _ :
     exact i.2
   rw [h_L_decomp, ←Hp, ←gprod_singleton]
   apply take_drop_get'
-  -/
 
 
 
