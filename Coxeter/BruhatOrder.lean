@@ -3,123 +3,97 @@ import Coxeter.CoxeterSystem
 import Mathlib.Data.Set.Card
 
 section SimpleReflections
+open OrderTwoGen
 
-@[ext]
-class SimpleRefl (G: Type*) [Group G] where
-  carrier : Set G
-  order_two :  ∀ (x:G) , x ∈ carrier →  x * x = (1 :G) ∧  x ≠ (1 :G)
-  expression : ∀ (x:G) , ∃ (L : List carrier),  x = L.gprod
+class HOrderTwoGenGroup (G: Type*) extends Group G where
+  S: Set G
+  order_two :  ∀ (x:G) , x ∈ S →  x * x = (1 :G) ∧  x ≠ (1 :G)
+  expression : ∀ (x:G) , ∃ (L : List S),  x = L.gprod
+
+namespace HOrderTwoGenGroup
+variable (G :Type*) [hG: HOrderTwoGenGroup G]
+variable {H :Type*} [hH: HOrderTwoGenGroup H]
+
+@[simp]
+def SimpleRefls := hG.S
+
+#check SimpleRefls G
+
+instance SimpleRefls.toOrderTwoGen  : @OrderTwoGen H _ (SimpleRefls H) where
+  order_two := hH.order_two
+  expression := hH.expression
 
 
+instance SimpleRefls.toOrderTwoGen'  : @OrderTwoGen H _ (hH.S) where
+  order_two := hH.order_two
+  expression := hH.expression
 
-instance SimpleRefl.setlike [Group G]: SetLike (SimpleRefl G) G where
-  coe := fun S => S.carrier
-  coe_injective' p q h:= by
-    cases p
-    cases q
-    congr
+noncomputable def length  (g :H) := OrderTwoGen.length (hH.S) g
+
+notation:100 "ℓ(" g:101 ")" => (length g)
+
+end HOrderTwoGenGroup
+
+class CoxeterGroup (G:Type*) extends HOrderTwoGenGroup G where
+  exchange : ∀ (L:List S) (s: S), reduced_word L →
+      (length S (s * L)) ≤ (length S (L)) → ∃ (i: Fin L.length), (s :G) * L= (L.removeNth i)
+  exchange' : ∀ (L:List S) (s: S), reduced_word L →
+      (length S (L * s)) ≤ (length S (L)) → ∃ (i: Fin L.length), L * (s:G)= (L.removeNth i)
+  deletion: ∀ (L:List S), (length S L) < L.length → ∃ (j: Fin L.length), ∃ (i:Fin j), (L:G)= ((L.removeNth j).removeNth i)
+
+namespace CoxeterGroup
+open HOrderTwoGenGroup
+
+instance SimpleRefl_isCoxeterSystem  {G:Type*} [hG:CoxeterGroup G]: @CoxeterSystem G _ (hG.S) where
+  exchange := hG.exchange
+  exchange' := hG.exchange'
+  deletion := hG.deletion
 
 
-@[simp] lemma mem_carrier {p : MySubobject X} : x ∈ p.carrier ↔ x ∈ (p : Set X) := Iff.rfl
+def Refls (G:Type*) [CoxeterGroup G]: Set G:= {x:G| ∃ (w:G)(s : SimpleRefls G) , x = w*s*w⁻¹}
 
-end SimpleReflections
-
-class CoxeterGroup (G: Type*) extends Group G where
-  S : Set G
-  hS : CoxeterSystem S
-
-namespace CoxterGroup
-
+namespace Bruhat
 variable {G:Type*} [CoxeterGroup G]
 
-def T [S: SimpleRefl G] : Set G:= {x:G| ∃ (w:G)(s : h.S) , x = w*s*w⁻¹}
 
-variable {G : Type*} [Group G] {S :Set G} [hS:OrderTwoGen S]
-
-local notation :max "ℓ(" g ")" => (OrderTwoGen.length S g)
+def lt_adj  (u w:G) := ∃ t ∈ Refls G, w = u * t ∧ ℓ(u) < ℓ(w)
 
 
-def ltone (u w: G) := ∃ t: T S, w = u * t ∧ ℓ(u) < ℓ(w)
+abbrev lt  (u w:G):= Relation.TransGen (Bruhat.lt_adj) u w
 
-def lt (u w:G):= ∃ L:List G, List.Forall₂ (@ltone G _ S _) (u::L) (L++[w])
+lemma lenght_le_of_le  {u w :G} : lt u w → ℓ(u) < ℓ(w) := by sorry
 
-def le (u w:G):= u=w ∨ @lt G _ S _ u w
-
-instance Bruhat.LT : LT G where
-  lt:=@lt G _ S _
-
-instance Bruhat.LE : LE G where
-  le:=@le G _ S _
-
-variable (u v:G)
-#check u≤v
-
-instance Bruhat.poset : PartialOrder G where
-le := @le G _ S _
-lt := @lt G _ S _
-le_refl  := fun x => Or.inl (refl x)
-le_trans := fun (x y z:G) => by{
-  intros lxy lyz
-  sorry
-}
-lt_iff_le_not_le  := sorry
-le_antisymm:= fun (x y:G) => sorry
-local notation :max "ℓ(" g ")" => (OrderTwoGen.length S g)
+abbrev le (u w:G):= Relation.ReflTransGen (Bruhat.lt_adj) u w
 
 
-local notation : max "TT" => (@T G _ S)
-
--- The adjacent relation in the Bruhat Order
--- u < w if ∃ t ∈ T such that w = u * t ∧  ℓ(u) < ℓ(w)
-def Bruhat.lt_adj (u w:G) := ∃ t ∈ TT  , w = u * t ∧ ℓ(u) < ℓ(w)
-
-def Bruhat.lt (u w:G):= Relation.TransGen (Bruhat.lt_adj S) u w
-
-def Bruhat.le (u w:G):= Relation.ReflTransGen (Bruhat.lt_adj S) u w
+-- instance Bruhat.LT {G:Type*} [CoxeterGroup G] : LT G where
+--   --lt := Relation.TransGen (Bruhat.lt_adj)
+--   lt := Bruhat.lt
 
 
-instance Bruhat.LT : LT G where
-  lt := Relation.TransGen (Bruhat.lt_adj S)
-
-instance Bruhat.LE : LE G where
-  le:= Relation.TransGen (@Bruhat.lt_adj G _ S _)
+-- instance Bruhat.LE {G:Type*} [CoxeterGroup G] : LE G where
+--   le:= Bruhat.le
 
 
---  @le G _ S _
+instance poset: PartialOrder G where
+le := le
+lt := lt
+le_refl  := by intro _; simp [Relation.ReflTransGen.refl]
+le_trans := fun _ _ _ => Relation.ReflTransGen.trans
+lt_iff_le_not_le  := by sorry
+le_antisymm:= fun (x y:G) => by sorry
 
 
-instance Bruhat.poset : Preorder G where
-  le := Relation.ReflTransGen (@Bruhat.lt_adj G _ S _)
-  lt :=
-  le_refl  := by intro _; simp [Relation.ReflTransGen.refl]
-  le_trans := fun _ _ _ => Relation.ReflTransGen.trans
+def Interval (x y : G) : Set G := Set.Icc x y
+
+end Bruhat
+
+end CoxeterGroup
 
 
-def ltone (u w: G) := ∃ t: T S, w = u * t ∧ ℓ(u) < ℓ(w)
+/-
 
-def lt (u w:G):= ∃ L:List G, List.Forall₂ (@ltone G _ S _) (u::L) (L++[w])
 
-def le (u w:G):= u=w ∨ @lt G _ S _ u w
-
-instance Bruhat.LT : LT G where
-  lt:=@lt G _ S _
-
-instance Bruhat.LE : LE G where
-  le:=@le G _ S _
-
-variable (u v:G)
-#check u≤v
-
-instance Bruhat.poset : PartialOrder G where
-le := @le G _ S _
-lt := @lt G _ S _
-le_refl  := fun x => Or.inl (refl x)
-le_trans := fun (x y z:G) => by{
-  intros lxy lyz
-  sorry
-}
-lt_iff_le_not_le  := sorry
-le_antisymm:= fun (x y:G) => sorry
 
 lemma ltone_is_lt {u w:G}  : ltone u w → u < w := by{
   intro H
@@ -128,7 +102,6 @@ lemma ltone_is_lt {u w:G}  : ltone u w → u < w := by{
   assumption
 }
 
-def BruhatInte (x y : G) : Set G := {a | x ≤ a ∧ a ≤ y }
 
 #check Set.ncard
 #check length
@@ -177,3 +150,16 @@ lemma Bruhat'Congr' (x y :G) (t:T S) (hlt: x < x*t) (hlt: y < (t:G)*y) : x * y <
   -- --have hf' := @le_of_not_lt G _ (x * t * y) (x * y) hf
   -- let ⟨L1,hL1⟩ := hredx
   -- let ⟨L2,hL2⟩ := hredy
+-/
+
+section test
+variable (G:Type*) [hG:CoxeterGroup G]
+
+variable  (g:G)
+
+#check ℓ(g)
+
+variable (u v:G)
+#check u < v
+
+end test

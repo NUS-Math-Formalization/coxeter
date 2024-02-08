@@ -1,8 +1,7 @@
 import Coxeter.OrderTwoGen
-import Coxeter.Length_reduced_word
-import Coxeter.Auxi
+--import Coxeter.Length_reduced_word
 
-variable {G : Type _} [Group G] {S :Set G} [OrderTwoGen S] [CoxeterSystem G S]
+variable {G : Type _} [Group G] {S :Set G}  [CoxeterSystem S]
 
 open OrderTwoGen
 

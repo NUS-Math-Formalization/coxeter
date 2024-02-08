@@ -112,7 +112,7 @@ end list_properties
 
 
 
-class OrderTwoGen {G : Type*} [Group G] (S: outParam (Set G)) where
+class OrderTwoGen {G : Type*} [Group G] (S: Set G) where
   order_two :  ∀ (x:G) , x ∈ S →  x * x = (1 :G) ∧  x ≠ (1 :G)
   expression : ∀ (x:G) , ∃ (L : List S),  x = L.gprod
 
@@ -396,45 +396,32 @@ lemma reduced_nonreduced_length_le  {L : List S} {s : S} (H1: reduced_word L) (H
 
 end OrderTwoGen
 
-open OrderTwoGen
 
+
+/-
+open OrderTwoGen
+section Bruhat
 variable {G : Type _} [Group G]
-variable {S: Set G} [OrderTwoGen S]
+variable (S: Set G) [OrderTwoGen S]
 
 local notation :max "ℓ(" g ")" => (@length G  _ S _ g)
 
 def T (S : Set G) := {x : G | ∃ (w : G) (s : S) , x = w * (s : G) * w⁻¹}
 
-def T_L (w : G) := {t ∈ T S | ℓ(t * w) < ℓ(w)}
-def T_R (w : G) := {t ∈ T S | ℓ(w * t) < ℓ(w)}
 
-def D_L (w : G) := T_L w ∩ S
-def D_R (w : G) := T_R w ∩ S
+def Bruhat.lt_adj  [OrderTwoGen S] (u w:G) := ∃ t ∈ T S, w = u * t ∧ (length S u) < (length S w)
 
-def T_w_i (L : List S) (i : Fin L.length) [OrderTwoGen S]:= List.toReflection_i L i
-def T_w (L : List S) := List.toReflection L
+abbrev Bruhat.lt (u w:G):= Relation.TransGen (@Bruhat.lt_adj G _ S _) u w
 
-lemma T_w_i_mul (L : List S) (i : Fin L.length) : (T_w_i L i).gprod * L.gprod = (L.removeNth i).gprod :=sorry
+abbrev Bruhat.le  (u w:G):= Relation.ReflTransGen (@Bruhat.lt_adj G _ S _) u w
 
-lemma S_subset_T : S ⊆ T S :=sorry
+def Bruhat.poset (S: Set G) [hS : OrderTwoGen S] : PartialOrder G where
+le := @Bruhat.le G _ S _
+lt := @Bruhat.lt G _ S _
+le_refl  := by intro _; simp [Relation.ReflTransGen.refl]
+le_trans := fun _ _ _ => Relation.ReflTransGen.trans
+lt_iff_le_not_le  := by sorry
+le_antisymm:= fun (x y:G) => by sorry
 
-lemma nonemptyD_L(v:G) (h:v ≠ 1) :Nonempty (D_L v):=sorry
-
-lemma nonemptyD_R(v:G) (h:v ≠ 1) :Nonempty (D_R v):=sorry
-
-def StrongExchangeProp:= ∀ (L:List S) (t: T S) ,ℓ(t*L.gprod) < ℓ(L.gprod) → ∃ (i:Fin L.length), t * L.gprod = (L.removeNth i).gprod
-
-def StrongExchangeProp':= ∀ (L:List S) (t: T S) ,ℓ(L.gprod * t) < ℓ(L.gprod) → ∃ (i:Fin L.length), L.gprod * t = (L.removeNth i).gprod
-
-def ExchangeProp := ∀ (L:List S) (s:S) ,reduced_word L →
-      ℓ((s * L.gprod)) ≤ ℓ(L.gprod) → ∃ (i: Fin L.length) ,s * L.gprod = (L.removeNth i).gprod
-
-def DeletionProp := ∀ (L:List S),ℓ(L.gprod) < L.length → ∃ (j: Fin L.length), ∃ (i:Fin j), L.gprod = ((L.removeNth j).removeNth i).gprod
-
-class CoxeterSystem (G : Type _) (S : Set G) [Group G] [OrderTwoGen S] where
-  exchange : @ExchangeProp G _ S _
-  deletion : @DeletionProp G _ S _
-
-variable (L:List S)
-
-lemma mul_generator_inv {s:S} {w:G} [OrderTwoGen S]: (w*s)⁻¹ = s*w⁻¹:=sorry
+end Bruhat
+-/

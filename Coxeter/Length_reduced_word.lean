@@ -1,6 +1,6 @@
 import Coxeter.OrderTwoGen
-import Coxeter.Bruhat
-import Coxeter.Auxi
+--import Coxeter.Bruhat
+--import Coxeter.Auxi
 
 import Mathlib.GroupTheory.Subgroup.Basic
 import Mathlib.Tactic.Simps.Basic
