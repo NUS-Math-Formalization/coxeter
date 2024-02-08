@@ -104,6 +104,14 @@ le_antisymm:= fun (x y:G) => by sorry
 
 def Interval (x y : G) : Set G := Set.Icc x y
 
+-- Formulate the theorem on subword property
+
+-- Show that Bruhat interval is finite
+
+instance Interval.fintype {x y : G} : Fintype (Interval x y) where
+  elems := by sorry
+  complete := by sorry
+
 end Bruhat
 
 end CoxeterGroup
