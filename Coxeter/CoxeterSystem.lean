@@ -3,60 +3,72 @@ import Coxeter.OrderTwoGen
 namespace OrderTwoGen
 variable {G : Type*} [Group G] (S : Set G) [OrderTwoGen S]
 
-local notation:max "ℓ(" g ")" => (length S g)
+local notation : max "ℓ(" g ")" => (length S g)
 
 @[simp]
-abbrev ExchangeProp := ∀ {L:List S} {s:S} ,reduced_word L →
-      ℓ(s * L) ≤ ℓ(L) → ∃ (i: Fin L.length), (s :G) * L= (L.removeNth i)
+abbrev ExchangeProp  := ∀ {L : List S} {s : S}, reduced_word L →
+  ℓ(s * L) ≤ ℓ(L) → ∃ (i: Fin L.length), (s : G) * L = L.removeNth i
 
 @[simp]
-abbrev  ExchangeProp' :=
-   ∀ {L : List S} {s : S},
-   reduced_word L → ℓ(( L * s)) ≤ ℓ(L) → ∃ (i: Fin L.length) ,(L:G) * s= (L.removeNth i)
+abbrev ExchangeProp' := ∀ {L : List S} {s : S}, reduced_word L →
+  ℓ(L * s) ≤ ℓ(L) → ∃ (i: Fin L.length), (L : G) * s = L.removeNth i
+
+@[simp]
+abbrev DeletionProp := ∀ (L:List S),
+  ℓ( L ) < L.length →
+  ∃ (j: Fin L.length), ∃ (i : Fin j), (L : G) = (L.removeNth j).removeNth i
 
 
-lemma exchange_iff_exchange' : ExchangeProp S ↔   ExchangeProp' S:= by {
-   constructor
-   rw [ExchangeProp,ExchangeProp']
-   intro EP L s HL Hlen
-   let Lr := L.reverse
-   have HLr := reverse_is_reduced  HL
-   have Hlenr :ℓ(s * L.reverse)≤ ℓ(L.reverse) := by {
+lemma exchange_iff_exchange' : ExchangeProp S ↔ ExchangeProp' S:= by
+  constructor
+  · rw [ExchangeProp, ExchangeProp']
+    intro EP L s h_red_L h_len
+    have h_red_L_rev := reverse_is_reduced h_red_L
+    have h_len_r :ℓ(s * L.reverse) ≤ ℓ(L.reverse) := by
       calc
       _ =  ℓ((s * L.reverse)⁻¹) := length_eq_inv_length
-      _ =  ℓ(L * s) := by {
-         congr 1
-         nth_rewrite 1 [gprod_reverse,inv_eq_self' s]
-         group }
-      _ ≤  ℓ(L) := Hlen
+      _ =  ℓ(L * s) := by
+        congr 1
+        nth_rewrite 1 [gprod_reverse, inv_eq_self' s]
+        group
+      _ ≤  ℓ(L) := h_len
       _ =  ℓ(L.reverse) := by simp only [reverse_length_eq_length]
-   }
-   let ⟨i, Hp⟩  := EP HLr Hlenr
-   rw [←gprod_cons] at Hp
-   let j : Fin L.length:= ⟨L.length -1 - i.1, by {
-      have : (0:ℕ)  < L.length := by {
-      sorry
-      /- calc
-         (0:ℕ)  ≤ i := by simp
-         _ < Lr.length := i.2
-         _ = L.length := by simp
-         }
-      calc
-      _ ≤  L.length - 1 := by sorry
-      _ < _ := by sorry -/
-
-      }
-      sorry
-    }⟩
-   use j
-
-   sorry
-   sorry
-}
-
-
-
-def DeletionProp := ∀ (L:List S), ℓ( L ) < L.length → ∃ (j: Fin L.length), ∃ (i:Fin j), (L:G)= ((L.removeNth j).removeNth i)
+    let ⟨i, Hp⟩  := EP h_red_L_rev h_len_r
+    rw [←gprod_cons] at Hp
+    have h_i_lt_k : i < L.length := by have := i.2; simp only [List.length_reverse] at this; exact this
+    let j := L.length - i - 1
+    have h_j_lt_k : j < L.length := by apply Nat.sub_sub_one_lt_self; exact Nat.pos_of_lt h_i_lt_k
+    let j' : Fin L.length := ⟨j, h_j_lt_k⟩
+    use j'
+    rw [←gprod_append_singleton]
+    apply eq_of_one_div_eq_one_div
+    rw [←inv_eq_one_div, ←inv_eq_one_div, ←OrderTwoGen.gprod_reverse, ←OrderTwoGen.gprod_reverse, List.reverse_cons'']
+    rw [List.removeNth_reverse L i h_i_lt_k] at Hp
+    rw [Hp];
+  rw [ExchangeProp, ExchangeProp']
+  intro EP' L s h_red_L h_len
+  have h_red_L_rev := reverse_is_reduced h_red_L
+  have h_len_r : ℓ(L.reverse * s) ≤ ℓ(L.reverse) := by
+    calc
+    _ = ℓ((L.reverse * s)⁻¹) := length_eq_inv_length
+    _ = ℓ(s * L) := by
+      congr 1
+      nth_rewrite 1 [gprod_reverse, inv_eq_self' s]
+      group
+    _ ≤ ℓ(L) := h_len
+    _ = ℓ(L.reverse) := by simp only [reverse_length_eq_length]
+  let ⟨i, Hp⟩ := EP' h_red_L_rev h_len_r
+  rw [←gprod_append_singleton] at Hp
+  have h_i_lt_k : i < L.length := by have := i.2; simp only [List.length_reverse] at this; exact this
+  let j := L.length - i - 1
+  have h_j_lt_k : j < L.length := by apply Nat.sub_sub_one_lt_self; exact Nat.pos_of_lt h_i_lt_k
+  let j' : Fin L.length := ⟨j, h_j_lt_k⟩
+  use j'
+  rw [←gprod_cons]
+  apply eq_of_one_div_eq_one_div
+  rw [←inv_eq_one_div, ←inv_eq_one_div, ←OrderTwoGen.gprod_reverse, ←OrderTwoGen.gprod_reverse, List.reverse_cons]
+  rw [List.removeNth_reverse L i h_i_lt_k] at Hp
+  rw [Hp]
 
 /-
 We now prove that ExchangeProp and DeletionProperty are equivalent

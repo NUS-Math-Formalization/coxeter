@@ -92,15 +92,17 @@ lemma gprod_cons (hd : S)  (tail : List S) : (hd::tail :G) = hd * (tail :G) := b
 lemma gprod_append {l1 l2: List S} : (l1 ++ l2 : G) = l1 * l2 := by {
   rw [←List.prod_append]
   congr
-  simp [List.gprod,Lean.Internal.coeM]
+  simp [List.gprod, Lean.Internal.coeM]
 }
 
 lemma gprod_append_singleton {l1 : List S} {s : S}: (l1 ++ [s] : G) = l1 * s := by {
-  rw [←gprod_singleton,gprod_append]
+  rw [←gprod_singleton, gprod_append]
 }
 
+
+
 @[simp]
-abbrev inv_reverse (L : List S) : List G :=  (List.map (fun x => (x:G)⁻¹ ) L).reverse
+abbrev inv_reverse (L : List S) : List G := (List.map (fun x => (x:G)⁻¹) L).reverse
 
 lemma gprod_inv_eq_inv_reverse (L: List S) : (L :G)⁻¹ = inv_reverse L   := by rw [List.prod_inv_reverse]
 
@@ -113,7 +115,7 @@ end list_properties
 
 
 class OrderTwoGen {G : Type*} [Group G] (S: Set G) where
-  order_two :  ∀ (x:G) , x ∈ S →  x * x = (1 :G) ∧  x ≠ (1 :G)
+  order_two :  ∀ (x:G) , x ∈ S →  x * x = (1 : G) ∧ x ≠ (1 :G)
   expression : ∀ (x:G) , ∃ (L : List S),  x = L.gprod
 
 namespace OrderTwoGen

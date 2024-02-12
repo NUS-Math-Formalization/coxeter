@@ -36,8 +36,7 @@ lemma append_singleton_ne_nil (L : List α) (a : α) : L ++ [a] ≠ [] := by {
   | cons hd tail ih => {simp}
 }
 
-lemma length_hd_tail_eq_succ_length (L : List α) (a : α) : (a :: L).length = L.length + 1 := by
-  simp
+lemma length_hd_tail_eq_succ_length (L : List α) (a : α) : (a :: L).length = L.length + 1 := by simp
 
 
 lemma append_remove_cancel_of_eq_last_index {a : α} {n : ℕ} (h : n = L.length) :
@@ -45,7 +44,6 @@ lemma append_remove_cancel_of_eq_last_index {a : α} {n : ℕ} (h : n = L.length
   induction L generalizing n with
   | nil => simp at h; simp [h]
   | cons hd tail ih => simp at h; simp [h, ih]
-
 
 
 lemma length_append_singleton (L : List α) (a : α) : (L ++ [a]).length = L.length + 1 := by
@@ -58,6 +56,8 @@ lemma length_append_singleton (L : List α) (a : α) : (L ++ [a]).length = L.len
 
 lemma take_le_length (L : List α) (h : n ≤ L.length)  : (L.take n).length = n := by
   simp only [length_take,ge_iff_le, h, min_eq_left]
+
+
 
 lemma remove_nth_eq_take_drop {α : Type _} (L: List α) (n : ℕ) : L.removeNth n = L.take n ++ L.drop (n+1) :=
 by {
@@ -96,7 +96,7 @@ lemma drop_take_nil {α : Type _} {L : List α} {n : ℕ} : (L.take n).drop n = 
 }
 
 lemma take_get_lt {α : Type _} (L: List α) (n : ℕ) (h : n < L.length) :
-  L.take (n+1) = L.take n ++ [L.get ⟨n,h⟩ ] := by
+  L.take (n+1) = L.take n ++ [L.get ⟨n,h⟩] := by
   have H1 : (L.take (n+1)).length = n+1 := by
     rw [List.length_take]; simp only [ge_iff_le, min_eq_left_iff]; linarith
   have Hn := take_drop_get (L.take (n+1)) n (by linarith)
@@ -120,7 +120,7 @@ lemma take_drop_nth_le {α : Type _} (L: List α) (n : ℕ) (h : n < L.length): 
   exact this
 }
 -/
-
+@[simp]
 lemma removeNth_append_lt {α : Type _} (L1 L2: List α) (n : ℕ) (h : n < L1.length) :
   (L1 ++ L2).removeNth n = L1.removeNth n ++ L2 := by
   rw [remove_nth_eq_take_drop, remove_nth_eq_take_drop]
@@ -129,6 +129,42 @@ lemma removeNth_append_lt {α : Type _} (L1 L2: List α) (n : ℕ) (h : n < L1.l
     drop_append_of_le_length (by linarith)
   rw [this, append_assoc]
 
+-- lemma removeNth_append_ge {α : Type _} (L1 L2: List α) (n : ℕ) (h : n ≥ L1.length) :
+--   (L1 ++ L2).removeNth n = L1 ++ L2.removeNth (n - L1.length) := by
+--   rw [remove_nth_eq_take_drop, remove_nth_eq_take_drop]
+--   rw [List.take_append_of_le_length (le_of_ge h)]
+
+
+
+lemma removeNth_reverse (L : List α) (n : ℕ) (h : n < L.length) :
+  (L.reverse).removeNth n = (L.removeNth (L.length - n - 1)).reverse := by
+  rw [remove_nth_eq_take_drop, remove_nth_eq_take_drop]
+  rw [List.reverse_append, List.reverse_take n (Nat.le_of_lt h), Nat.sub_sub]
+  nth_rw 6 [←List.reverse_reverse L]; nth_rw 7 [←List.reverse_reverse L]
+  rw [List.length_reverse L.reverse]
+  rw [List.reverse_take (length (reverse L) - (n + 1)) (Nat.sub_le L.reverse.length (n+1)),
+    List.reverse_reverse, List.length_reverse]
+  rw [←Nat.sub_sub L.length n 1, Nat.sub_add_cancel (by
+    apply Nat.le_of_add_le_add_right; swap; exact n;
+    rw [Nat.sub_add_cancel]; rw [Nat.add_comm]; exact Nat.succ_le_of_lt h;
+    exact Nat.le_of_lt h), Nat.sub_sub]
+  have : length L - (length L - (n + 1)) = n + 1 := by
+    apply Nat.add_right_cancel
+    swap; exact (length L - (n + 1))
+    rw [Nat.sub_add_cancel, Nat.add_sub_of_le]
+    . linarith
+    exact Nat.sub_le L.length (n+1);
+  rw [this];
+
+lemma reverse_cons'' (L : List α) (a : α) : (L ++ [a]).reverse = a :: L.reverse := by
+  rw [List.reverse_append, List.reverse_singleton]; simp;
+
+lemma eq_iff_reverse_eq (L1 L2 : List α) : L1.reverse = L2.reverse ↔ L1 = L2 := by
+  constructor
+  . intro h; rw [←List.reverse_reverse L1, ←List.reverse_reverse L2, h, List.reverse_reverse]
+  . intro h; rw [h]
+
+#check reverse_append
 
 #check dropLast_concat
 
@@ -171,9 +207,13 @@ lemma pos_of_lt {i n: Nat} (h : i < n) : 0 < n := by
   0 ≤ i := zero_le _
   _ < _ := h
 
-lemma sub_one_sub_lt_self {i n: Nat} (h : 0 < n) : n - 1 -i < n := by
+lemma sub_one_sub_lt_self {i n: Nat} (h : 0 < n) : n - 1 - i < n := by
   calc
   _ ≤ n-1 := by simp
   _ < _ := Nat.pred_lt <| pos_iff_ne_zero.1 h
+
+lemma sub_sub_one_lt_self {i n: Nat} (h : 0 < n) : n - i - 1 < n := by
+  rw [Nat.sub_sub, Nat.add_comm, ←Nat.sub_sub]
+  exact sub_one_sub_lt_self h
 
 end Nat
