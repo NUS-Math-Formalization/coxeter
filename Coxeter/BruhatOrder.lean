@@ -35,11 +35,9 @@ notation:100 "ℓ(" g:101 ")" => (length g)
 end HOrderTwoGenGroup
 
 class CoxeterGroup (G:Type*) extends HOrderTwoGenGroup G where
-  exchange : ∀ (L:List S) (s: S), reduced_word L →
-      (length S (s * L)) ≤ (length S (L)) → ∃ (i: Fin L.length), (s :G) * L= (L.removeNth i)
-  exchange' : ∀ (L:List S) (s: S), reduced_word L →
-      (length S (L * s)) ≤ (length S (L)) → ∃ (i: Fin L.length), L * (s:G)= (L.removeNth i)
-  deletion: ∀ (L:List S), (length S L) < L.length → ∃ (j: Fin L.length), ∃ (i:Fin j), (L:G)= ((L.removeNth j).removeNth i)
+  exchange : OrderTwoGen.ExchangeProp S
+  exchange': OrderTwoGen.ExchangeProp' S
+  deletion: OrderTwoGen.DeletionProp S
 
 namespace CoxeterGroup
 open HOrderTwoGenGroup
