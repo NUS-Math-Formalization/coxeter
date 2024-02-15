@@ -30,7 +30,7 @@ open Classical
 namespace CoxeterMatrix
 variable {α} (m : Matrix α α ℕ) [hm: CoxeterMatrix m]
 
-variable (m' : Matrix α α ℕ) [hm': CoxeterMatrix m']
+--variable {m' : Matrix α α ℕ} [hm': CoxeterMatrix m']
 
 
 lemma one_iff :∀ (a b:α), m a b = 1 ↔ a=b := hm.oneIff
@@ -95,12 +95,14 @@ lemma of_square_eq_one' : s ∈ SimpleRefl m → s * s = 1 := by
 lemma of_inv_eq_of {x : α} :  (of m x)⁻¹ =  of m x  :=
   inv_eq_of_mul_eq_one_left (@of_square_eq_one α m x)
 
-lemma toGroup_surj : ∀ x :G, ∃ L : List S,  L.gprod  = x := by sorry
+lemma toGroup_expression : ∀ x :G, ∃ L : List S,  x = L.gprod := by sorry
 
 
 noncomputable section GeometricRepresentation
 --variable {α : Type*} [DecidableEq α]
-variable (m : Matrix α  α ℕ) [CoxeterMatrix m]
+--variable (m : Matrix α  α ℕ) [CoxeterMatrix m]
+
+
 
 class Splitting (k : Matrix α α ℝ) where
   m_eq_one : ∀ s s': α, m s s' = 1 → k s s' = -2
@@ -128,9 +130,6 @@ local notation:130 "V⋆" => α → ℝ
 local notation "k" => kk m
 --local notation:120 a:121 "⋆" => Pi.single a 1
 
-variable (a :α)
-
-
 noncomputable def sigma_star  (s:α) : (V⋆) →ₗ[ℝ] (V⋆) where
   toFun := fun p s' =>  p s' + (p s) *  (k s s')
   map_add' := by sorry
@@ -157,9 +156,22 @@ lemma sigma_star_mul_apply_s'_eq_two  {p : V⋆} (h: m s s' = 2) : ((σ⋆ s) * 
 -- The final goal is
 lemma order_sigma_star_mul : orderOf ((σ⋆ s) * (σ⋆ s')) = m s s' := by sorry
 
-lemma order_generator_mul [CoxeterMatrix m] (s t :α) : orderOf (CoxeterMatrix.of m s * CoxeterMatrix.of m t) = m s t := sorry
+lemma order_generator_mul (s t :α) : orderOf (CoxeterMatrix.of m s * CoxeterMatrix.of m t) = m s t := by sorry
+
+lemma generator_ne_one  (s: α) : of m s ≠ 1 :=  by sorry
+lemma generator_ne_one'  {x: G} : x ∈ S → x ≠ 1 :=  by
+  rintro ⟨s, hs⟩
+  rw [← hs]
+  exact generator_ne_one m s
+
+lemma order_two :  ∀ (x: G) , x ∈ S →  x * x = (1 : G) ∧ x ≠ 1 :=  by
+  rintro x ⟨s, hs⟩
+  rw [← hs]
+  exact ⟨of_square_eq_one m, generator_ne_one m s⟩
+
 
 end GeometricRepresentation
+
 
 end CoxeterMatrix
 
@@ -175,34 +187,30 @@ lemma of_injective (a b :α) : of m a = of m b ↔ a = b:= by
 
 end CoxeterMatrix
 
+namespace CoxeterMatrix
+open OrderTwoGen
+
+variable {α : Type*} [DecidableEq α] {m : Matrix α α ℕ} [CoxeterMatrix m]
+
+instance ofOrderTwoGen : OrderTwoGen (SimpleRefl m)  where
+  order_two := order_two m
+  expression := toGroup_expression m
 
 
-lemma Coxeter_matrix_of_group.isSymm [CoxeterSystem G S] (s₁ s₂ : S) : orderOf (s₁ * s₂:G) = orderOf (s₂ * s₁:G) := by
-  rw [←orderOf_inv (s₁*s₂:G),mul_inv_rev,←inv_eq_self _ s₁.2,←inv_eq_self _ s₂.2]
-
-lemma Coxeter_matrix_of_group.oneIff [CoxeterSystem G S] (s₁ s₂ : S) : orderOf (s₁ * s₂:G) = 1 ↔ s₁ = s₂ := sorry
-
-noncomputable def CoxeterMatrixOfCoxeterGroup (S : Set G) [orderTwoGen S] [CoxeterSystem G S]: @CoxeterMatrix S where
-  m      := fun s₁ s₂ => orderOf (s₁ * s₂:G)
-  isSymm := by intros a b; dsimp; exact @Coxeter_matrix_of_group.isSymm G _ S _ _ a b
-  oneIff := by apply Coxeter_matrix_of_group.oneIff
-
-instance (m : @CoxeterMatrix α): @orderTwoGen m.toGroup _ (m.SS) :=sorry
-
-instance CoxeterGroupOfCoxeterMatrix (m : @CoxeterMatrix α) : CoxeterSystem m.toGroup m.SS where
-  exchange :=sorry
-  deletion :=sorry
-
--- noncomputable def freeGroupOfStoCoxeter (x : FreeGroup S) : G := List.gprod <| (List.unzip <| FreeGroup.toWord x).1
-
--- instance : Setoid (FreeGroup S)  where
---   r := fun x y => (freeGroupOfStoCoxeter x = freeGroupOfStoCoxeter y)
---   iseqv :=sorry
+-- We will covert the lean3 proof to lean4
+lemma deletion_prop : DeletionProp (SimpleRefl m) := by sorry
 
 
+instance ofCoxeterSystem : CoxeterSystem (SimpleRefl m) where
+  order_two := order_two m
+  expression := toGroup_expression m
+  exchange := deletion_imp_exchange (SimpleRefl m) deletion_prop
 
 
--- def CoxeterGroupLiftisHom {G : Type _} [Group G] {S :Set G} [orderTwoGen S] [CoxeterSystem G S] {A : Type _} [Group A] (f : S → A) ( h : ∀ (s : S × S), (f s.1 * f s.2)^( (CoxeterMatrixOfCoxeterGroup S).m s.1 s.2) = 1 ) : G →* A where
---   toFun := Quotient.lift  (FreeGroup.lift f) _
---   map_one' :=sorry
---   map_mul' :=sorry
+instance ofCoxeterGroup : CoxeterGroup  (toGroup m)  where
+  S := SimpleRefl m
+  order_two := order_two m
+  expression := toGroup_expression m
+  exchange := deletion_imp_exchange (SimpleRefl m) deletion_prop
+
+end CoxeterMatrix

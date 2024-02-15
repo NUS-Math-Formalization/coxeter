@@ -197,6 +197,57 @@ class CoxeterSystem {G : Type*} [Group G] (S : Set G) extends OrderTwoGen S wher
   exchange' : ExchangeProp' S := (exchange_iff_exchange' S).1 exchange
   deletion : DeletionProp S := exchange_imp_deletion S exchange
 
+
+section
+class HOrderTwoGenGroup (G: Type*) extends Group G where
+  S: Set G
+  order_two :  ∀ (x:G) , x ∈ S →  x * x = (1 :G) ∧  x ≠ (1 :G)
+  expression : ∀ (x:G) , ∃ (L : List S),  x = L.gprod
+
+namespace HOrderTwoGenGroup
+variable (G :Type*) [hG: HOrderTwoGenGroup G]
+variable {H :Type*} [hH: HOrderTwoGenGroup H]
+
+@[simp]
+def SimpleRefls := hG.S
+
+#check SimpleRefls G
+
+instance SimpleRefls.toOrderTwoGen  : @OrderTwoGen H _ (SimpleRefls H) where
+  order_two := hH.order_two
+  expression := hH.expression
+
+
+instance SimpleRefls.toOrderTwoGen'  : @OrderTwoGen H _ (hH.S) where
+  order_two := hH.order_two
+  expression := hH.expression
+
+noncomputable def length  (g :H) := OrderTwoGen.length (hH.S) g
+
+notation:100 "ℓ(" g:101 ")" => (length g)
+
+end HOrderTwoGenGroup
+
+class CoxeterGroup (G:Type*) extends HOrderTwoGenGroup G where
+  exchange : OrderTwoGen.ExchangeProp S
+  exchange': OrderTwoGen.ExchangeProp' S := (OrderTwoGen.exchange_iff_exchange' S).1 exchange
+  deletion: OrderTwoGen.DeletionProp S := OrderTwoGen.exchange_imp_deletion S exchange
+
+namespace CoxeterGroup
+open HOrderTwoGenGroup
+
+instance SimpleRefl_isCoxeterSystem  {G:Type*} [hG:CoxeterGroup G]: @CoxeterSystem G _ (hG.S) where
+  exchange := hG.exchange
+  exchange' := hG.exchange'
+  deletion := hG.deletion
+
+
+def Refls (G:Type*) [CoxeterGroup G]: Set G:= {x:G| ∃ (w:G)(s : SimpleRefls G) , x = w*s*w⁻¹}
+
+end CoxeterGroup
+
+end
+
 -- namespace CoxeterSystem
 
 -- variable {G: Type*} [Group G] (S : Set G) [CoxeterSystem S]
