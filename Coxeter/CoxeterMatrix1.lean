@@ -7,6 +7,8 @@ import Mathlib.GroupTheory.PresentedGroup
 import Mathlib.LinearAlgebra.Matrix.Symmetric
 import Mathlib.Analysis.SpecialFunctions.Trigonometric.Basic
 import Mathlib.Data.Complex.Exponential
+import Mathlib.RingTheory.RootsOfUnity.Basic
+
 
 import Coxeter.CoxeterSystem
 
@@ -75,7 +77,25 @@ instance coe_simple_refl: Coe α (SimpleRefl m) where
 
 
 -- Lift homomorphism from map to Coxeter map
-def liftHom {A : Type _} [Group A] {f : α → A}  (h : ∀ (s t: α ), (f s * f t)^(m s t) = 1) : G →* A := QuotientGroup.lift N (FreeGroup.lift f) (by sorry)
+def liftHom {A : Type _} [Group A] (f : α → A)  (h : ∀ (s t: α ), (f s * f t)^(m s t) = 1) : G →* A := QuotientGroup.lift N (FreeGroup.lift f) (by sorry)
+
+lemma liftHom.of {A : Type _} [Group A] (f : α → A) (h : ∀ (s t: α ), (f s * f t)^(m s t) = 1) (s : α) : liftHom m f h (of m s) = f s := by
+  rw [liftHom,CoxeterMatrix.of]
+  sorry
+
+abbrev μ₂ := rootsOfUnity 2 ℤ
+@[simp]
+abbrev μ₂.gen :μ₂ := ⟨-1,by norm_cast⟩
+
+lemma μ₂.gen_ne_one : μ₂.gen ≠ 1 := by rw [μ₂.gen]; norm_cast
+
+@[simp]
+def epsilon : G →* μ₂  := liftHom m (fun _=> μ₂.gen) (by intro s t; ext;simp)
+
+lemma epsilon_of (s : α) : epsilon m (of m s) = μ₂.gen := by
+  simp only [epsilon, liftHom.of m]
+
+
 
 --@[simp] lemma of_mul (x y: α) : (of m x) * (of m y) =
 --QuotientGroup.mk' _  (FreeGroup.mk [(x,tt), (y,tt)]):= by rw [of];
@@ -96,6 +116,26 @@ lemma of_inv_eq_of {x : α} :  (of m x)⁻¹ =  of m x  :=
   inv_eq_of_mul_eq_one_left (@of_square_eq_one α m x)
 
 lemma toGroup_expression : ∀ x :G, ∃ L : List S,  x = L.gprod := by sorry
+
+
+lemma generator_ne_one  (s: α) : of m s ≠ 1 :=  by
+  intro h
+  have h1 :epsilon m (of m s) = 1 := by rw [h];simp
+  have h2 :epsilon m (of m s) = μ₂.gen := by rw [epsilon_of]
+  rw [h2] at h1; exact μ₂.gen_ne_one h1
+
+
+lemma generator_ne_one'  {x: G} : x ∈ S → x ≠ 1 :=  by
+  rintro ⟨s, hs⟩
+  rw [← hs]
+  exact generator_ne_one m s
+
+lemma order_two :  ∀ (x: G) , x ∈ S →  x * x = (1 : G) ∧ x ≠ 1 :=  by
+  rintro x ⟨s, hs⟩
+  rw [← hs]
+  exact ⟨of_square_eq_one m, generator_ne_one m s⟩
+
+
 
 
 noncomputable section GeometricRepresentation
@@ -158,16 +198,6 @@ lemma order_sigma_star_mul : orderOf ((σ⋆ s) * (σ⋆ s')) = m s s' := by sor
 
 lemma order_generator_mul (s t :α) : orderOf (CoxeterMatrix.of m s * CoxeterMatrix.of m t) = m s t := by sorry
 
-lemma generator_ne_one  (s: α) : of m s ≠ 1 :=  by sorry
-lemma generator_ne_one'  {x: G} : x ∈ S → x ≠ 1 :=  by
-  rintro ⟨s, hs⟩
-  rw [← hs]
-  exact generator_ne_one m s
-
-lemma order_two :  ∀ (x: G) , x ∈ S →  x * x = (1 : G) ∧ x ≠ 1 :=  by
-  rintro x ⟨s, hs⟩
-  rw [← hs]
-  exact ⟨of_square_eq_one m, generator_ne_one m s⟩
 
 
 end GeometricRepresentation
