@@ -157,7 +157,7 @@ lemma sigma_star_mul_apply_s'_eq_two  {p : V⋆} (h: m s s' = 2) : ((σ⋆ s) * 
 -- The final goal is
 lemma order_sigma_star_mul : orderOf ((σ⋆ s) * (σ⋆ s')) = m s s' := by sorry
 
-lemma order_of_generator_mul [CoxeterMatrix m] (s t :α) : orderOf (CoxeterMatrix.of m s * CoxeterMatrix.of m t) = m s t := sorry
+lemma order_generator_mul [CoxeterMatrix m] (s t :α) : orderOf (CoxeterMatrix.of m s * CoxeterMatrix.of m t) = m s t := sorry
 
 end GeometricRepresentation
 
@@ -165,6 +165,7 @@ end CoxeterMatrix
 
 namespace CoxeterMatrix
 
+#check order_generator_mul
 
 -- This is non-trivial, one have to compute the order of the product of two generators.
 lemma of_injective (a b :α) : of m a = of m b ↔ a = b:= by
