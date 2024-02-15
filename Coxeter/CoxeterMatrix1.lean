@@ -100,7 +100,7 @@ lemma toGroup_surj : ∀ x :G, ∃ L : List S,  L.gprod  = x := by sorry
 
 noncomputable section GeometricRepresentation
 --variable {α : Type*} [DecidableEq α]
---variable (m : Matrix α  α ℕ) [CoxeterMatrix m]
+variable (m : Matrix α  α ℕ) [CoxeterMatrix m]
 
 class Splitting (k : Matrix α α ℝ) where
   m_eq_one : ∀ s s': α, m s s' = 1 → k s s' = -2
@@ -117,23 +117,47 @@ abbrev kk_aux : ℕ → ℝ
 | (n + 3) => 2 * Real.cos ( Real.pi / (n+3))
 
 
-def kk : Matrix α α ℝ := fun s s': α => kk_aux <| m s s'
+def kk [CoxeterMatrix m] : Matrix α α ℝ := fun s s': α => kk_aux <| m s s'
 
 instance kk.split : Splitting m (kk m) := by sorry
 
-local notation:130 "V⋆" => α →₀ ℝ
+--variable {m : Matrix α  α ℕ} [CoxeterMatrix m]
 
-local notation:110 "k" => kk m
-local notation:120 a:121 "⋆" => Finsupp.single a 1
+local notation:130 "V⋆" => α → ℝ
+
+local notation "k" => kk m
+--local notation:120 a:121 "⋆" => Pi.single a 1
 
 variable (a :α)
-#check a⋆
 
 
-noncomputable def sigma_star  (s : α) := fun p:V⋆ => p + (p s) • (fun (s': α) => k s s'))
+noncomputable def sigma_star  (s:α) : (V⋆) →ₗ[ℝ] (V⋆) where
+  toFun := fun p s' =>  p s' + (p s) *  (k s s')
+  map_add' := by sorry
+  map_smul' := by sorry
 
--- α_star
+local notation "σ⋆" => sigma_star m
 
+@[simp]
+lemma sigma_star_one  {s s': α} {p : V⋆} : m s s' = 1 →  (σ⋆ s p) s' = - (p s) := by sorry
+
+@[simp]
+lemma sigma_star_two  : ∀ (s s': α) (p : V⋆), m s s' = 2 → (σ⋆ s p) s' = p s' := by sorry
+
+
+@[simp]
+lemma sigma_star_gt_tree  : ∀ (s s': α) (p : V⋆), 3 ≤ m s s' ∨ m s s' = 0 → (σ⋆ s p) s' = p s'+ p s * (k s s') := by sorry
+
+lemma sigma_star_order_two : (σ⋆ s)^2 = 1:= by sorry
+
+lemma sigma_star_mul_apply_s'_eq_two  {p : V⋆} (h: m s s' = 2) : ((σ⋆ s) * (σ⋆ s')) p s' = - p s' := by sorry
+
+
+-- add some other lemmas
+-- The final goal is
+lemma order_sigma_star_mul : orderOf ((σ⋆ s) * (σ⋆ s')) = m s s' := by sorry
+
+lemma order_of_generator_mul [CoxeterMatrix m] (s t :α) : orderOf (CoxeterMatrix.of m s * CoxeterMatrix.of m t) = m s t := sorry
 
 end GeometricRepresentation
 
