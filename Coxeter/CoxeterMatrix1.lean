@@ -20,8 +20,6 @@ variable {α : Type*} [DecidableEq α]
 
 variable (m : Matrix α  α ℕ)
 
-/-- A matrix `IsCoxeter` if it is a symmetric matrix with diagonal entries equal to one
-and off-diagonal entries distinct from one. -/
 class CoxeterMatrix : Prop where
   symmetric : ∀ (a b : α ), m a b = m b a := by aesop
   oneIff: ∀  (a b : α), m a b = 1 ↔ a=b := by aesop

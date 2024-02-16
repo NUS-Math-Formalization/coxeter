@@ -185,7 +185,7 @@ def length_aux (g : G) : ∃ (n:ℕ) , ∃ (L : List S), L.length = n ∧ g = L 
   let ⟨(L : List S), hL⟩ := exists_prod g
   use L.length,L
 
-noncomputable def length  (x : G): ℕ := Nat.find (length_aux S x)
+noncomputable def length (x : G): ℕ := Nat.find (length_aux S x)
 
 
 --scoped notation: max "ℓ" S " (" g ")" => (length S g)
@@ -230,6 +230,8 @@ lemma singleton_is_reduced {s:S}: reduced_word [s]:= by
    rw [h1,gprod_nil,gprod_singleton]
    exact gen_ne_one s.1 s.2
 
+
+
 lemma pos_length_of_non_reduced_word {L : List S}: ¬ reduced_word L → 1 ≤  L.length := by
    contrapose
    simp_rw [not_le,not_not,Nat.lt_one_iff]
@@ -237,7 +239,27 @@ lemma pos_length_of_non_reduced_word {L : List S}: ¬ reduced_word L → 1 ≤  
    intro H
    simp only [H,nil_is_reduced]
 
-lemma length_le_iff {L: List S} : reduced_word L ↔ L.length ≤ ℓ(L.gprod):= by
+
+-- make the statement stronger (2 ≤ L.length)
+lemma pos_length_of_non_reduced_word' {L : List S}: ¬ reduced_word L → 2 ≤ L.length := by
+  sorry; /-{
+  contrapose
+  simp_rw [not_le, not_not]
+  intro h
+  set n := L.length with ndef
+  interval_cases hn : n using
+  match n with
+  | 0 =>
+    rw [List.length_eq_zero];
+    intro H
+    simp only [H,nil_is_reduced]
+  | 1 =>
+    rw [List.length_eq_one];
+  | n+2 =>
+  apply Nat.le
+  }-/
+
+lemma length_le_iff {L: List S} : reduced_word L ↔ L.length ≤ ℓ(L):= by
    rw [length, (Nat.le_find_iff _)]
    apply Iff.intro
    .  intro h m hm
@@ -261,7 +283,7 @@ lemma length_le_iff {L: List S} : reduced_word L ↔ L.length ≤ ℓ(L.gprod):=
 lemma length_eq_iff {L: List S} : reduced_word L ↔ L.length = ℓ(L.gprod) := by
    constructor
    . intro H
-     exact ge_antisymm  (length_le_list_length )  ((length_le_iff ).1 H)
+     exact ge_antisymm length_le_list_length (length_le_iff.1 H)
    . intro H
      exact (length_le_iff).2 (le_of_eq H)
 
