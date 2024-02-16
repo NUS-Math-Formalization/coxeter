@@ -2,6 +2,7 @@ import Mathlib.GroupTheory.PresentedGroup
 import Mathlib.GroupTheory.OrderOfElement
 import Mathlib.GroupTheory.Subgroup.Basic
 import Mathlib.Tactic.Linarith.Frontend
+import Mathlib.Tactic.IntervalCases
 
 import Coxeter.Auxi
 open Classical
@@ -230,12 +231,24 @@ lemma singleton_is_reduced {s:S}: reduced_word [s]:= by
    rw [h1,gprod_nil,gprod_singleton]
    exact gen_ne_one s.1 s.2
 
-lemma pos_length_of_non_reduced_word {L : List S}: ¬ reduced_word L → 1 ≤  L.length := by
-   contrapose
-   simp_rw [not_le,not_not,Nat.lt_one_iff]
-   rw [List.length_eq_zero];
-   intro H
-   simp only [H,nil_is_reduced]
+lemma pos_length_of_non_reduced_word {L : List S} : ¬reduced_word L → 1 ≤ L.length := by
+  contrapose
+  simp_rw [not_le, not_not, Nat.lt_one_iff]
+  rw [List.length_eq_zero]
+  intro H
+  simp only [H, nil_is_reduced]
+
+lemma two_le_length_of_non_reduced_word {L : List S} : ¬reduced_word L → 2 ≤ L.length := by
+  contrapose
+  simp_rw [not_le, not_not]
+  intro h
+  interval_cases hL : L.length
+  · rw [List.length_eq_zero] at hL
+    simp only [hL, nil_is_reduced]
+  · rw [List.length_eq_one] at hL
+    rcases hL with ⟨s, hs⟩
+    rw [hs]
+    exact singleton_is_reduced
 
 lemma length_le_iff {L: List S} : reduced_word L ↔ L.length ≤ ℓ(L.gprod):= by
    rw [length, (Nat.le_find_iff _)]
