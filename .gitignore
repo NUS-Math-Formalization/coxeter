@@ -3,4 +3,4 @@
 /.lake/*
 lakefile.olean
 *.olean
-
+.lake/
