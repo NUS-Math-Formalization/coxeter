@@ -90,25 +90,54 @@ lemma eq_of_le_of_length_ge {u w : G} : le u w → ℓ(u) ≥ ℓ(w) → u = w :
 instance PartialOrder : PartialOrder G where
   le := le
   lt := lt
-  le_refl  := by intro _; simp [Relation.ReflTransGen.refl]
+  le_refl := fun _ => Relation.ReflTransGen.refl
   le_trans := fun _ _ _ => Relation.ReflTransGen.trans
-  lt_iff_le_not_le  := by
-      -- use length_le_of_le to prove -> direction
-      -- use lt_of_le_of_length_lt and eq_of_le_of_length_ge
-      sorry
-  le_antisymm := fun (x y : G) => by sorry
-
-
+  lt_iff_le_not_le := by
+    intro u w
+    constructor
+    · intro ultw
+      constructor
+      · apply Relation.TransGen.to_reflTransGen ultw
+      · intro wleu
+        have lultw : ℓ(u) < ℓ(w) := length_lt_of_lt ultw
+        have lwleu : ℓ(w) ≤ ℓ(u) := length_le_of_le wleu
+        have lwltw : ℓ(w) < ℓ(w) := lt_of_le_of_lt lwleu lultw
+        exact lt_irrefl (ℓ(w)) lwltw
+    · rintro ⟨ulew, nwleu⟩
+      apply lt_of_le_of_length_lt ulew
+      contrapose! nwleu
+      have ueqw : u = w := eq_of_le_of_length_ge ulew nwleu
+      rw [ueqw]
+      exact Relation.ReflTransGen.refl
+  le_antisymm := fun (u w : G) ulew wleu =>
+    eq_of_le_of_length_ge ulew (length_le_of_le wleu)
 
 def Interval (x y : G) : Set G := Set.Icc x y
 
--- Formulate the theorem on subword property
+-- Theorem 1.4.3 (Strong Exchange Property)
+theorem strong_exchange (w : List HOrderTwoGenGroup.S) {t : G} (trfl : t ∈ Refls G) : ℓ((t * w.gprod)) < ℓ(w.gprod) → ∃i, t * w = (List.eraseIdx w i).gprod := by
+  sorry
 
--- Show that Bruhat interval is finite
+-- Lemma 2.2.1
+lemma exists_intermediate_subword (u w : List HOrderTwoGenGroup.S) (unew : u ≠ w) (usubw : List.Sublist u w) : ∃(v : List (@HOrderTwoGenGroup.S G _)), u.gprod < v.gprod ∧ ℓ(u.gprod) + 1 = ℓ(v.gprod) ∧ List.Sublist v w := by
+  sorry
 
+-- Theorem 2.2.2
+theorem le_iff_subword (u : G) (w : List HOrderTwoGenGroup.S) : u ≤ w.gprod ↔ ∃(u' : List HOrderTwoGenGroup.S), List.Sublist u' w ∧ reduced_word u' := by
+  constructor
+  · sorry
+  · sorry
+
+-- Show that Bruhat interval is finite (Cor 2.2.4)
 instance Interval.fintype {x y : G} : Fintype (Interval x y) where
-  elems := by sorry
-  complete := by sorry
+  elems := by
+    -- everything in it must be a subsequence of y
+    -- rcases @OrderTwoGen.expression G _ _ _ y with ⟨l, hl⟩
+    -- List.sublists l
+    sorry
+  complete := by
+    --subword_property
+    sorry
 
 end Bruhat
 
