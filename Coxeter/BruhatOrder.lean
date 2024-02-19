@@ -8,52 +8,95 @@ open OrderTwoGen
 namespace CoxeterGroup
 namespace Bruhat
 
-variable {G:Type*} [CoxeterGroup G]
+variable {G : Type*} [CoxeterGroup G]
 
 @[simp]
-abbrev lt_adj  (u w:G) := ∃ t ∈ Refls G, w = u * t ∧ ℓ(u) < ℓ(w)
+abbrev lt_adj (u w : G) := ∃ t ∈ Refls G, w = u * t ∧ ℓ(u) < ℓ(w)
 
 @[simp]
-abbrev lt_adj'  (u w:G) := ∃ t ∈ Refls G, w = t * u  ∧ ℓ(u) < ℓ(w)
+abbrev lt_adj' (u w : G) := ∃ t ∈ Refls G, w = t * u ∧ ℓ(u) < ℓ(w)
 
+lemma lt_adj_iff_lt_adj' {u w : G} : lt_adj u w ↔ lt_adj' u w := by
+  constructor
+  · rintro ⟨t, ⟨trfl, wut, ulew⟩⟩
+    use u * t * u⁻¹
+    have uturfl : u * t * u⁻¹ ∈ Refls G := by
+      rw [Refls] at trfl ⊢
+      rcases trfl with ⟨v, s, vsv⟩
+      use u * v, s
+      rw [vsv]
+      group
+    have wexp : w = u * t * u⁻¹ * u := by
+      rw [wut]
+      group
+    exact ⟨uturfl, wexp, ulew⟩
+  · rintro ⟨t, ⟨trfl, wtu, ulew⟩⟩
+    use u⁻¹ * t * u
+    have uturfl : u⁻¹ * t * u ∈ Refls G := by
+      rw [Refls] at trfl ⊢
+      rcases trfl with ⟨v, s, vsv⟩
+      use u⁻¹ * v, s
+      rw [vsv]
+      group
+    have wexp : w = u * (u⁻¹ * t * u) := by
+      rw [wtu]
+      group
+    exact ⟨uturfl, wexp, ulew⟩
 
-lemma lt_adj_iff_lt_adj' {u w:G} : lt_adj u v ↔ lt_adj' u v := by sorry
+abbrev lt (u w : G) := Relation.TransGen Bruhat.lt_adj u w
 
+abbrev le (u w : G) := Relation.ReflTransGen Bruhat.lt_adj u w
 
-abbrev lt  (u w:G):= Relation.TransGen (Bruhat.lt_adj) u w
-
-abbrev le (u w:G):= Relation.ReflTransGen (Bruhat.lt_adj) u w
-
-/-
-instance Bruhat.LT {G:Type*} [CoxeterGroup G] : LT G where
+/-instance Bruhat.LT {G:Type*} [CoxeterGroup G] : LT G where
   lt := lt
 
 instance Bruhat.LE {G:Type*} [CoxeterGroup G] : LE G where
-  le:= le
- -/
+  le := le-/
 
+lemma length_le_of_le {u w : G} : le u w → ℓ(u) ≤ ℓ(w) := by
+  rw [le]
+  intro trans
+  induction trans with
+  | refl => exact le_rfl
+  | tail _ bltc uleb =>
+    rcases bltc with ⟨_, ⟨_, _, bltc⟩⟩
+    exact le_of_lt (lt_of_le_of_lt uleb bltc)
 
-lemma lenght_le_of_le  {u w :G} : le u w → ℓ(u) ≤ ℓ(w) := by sorry
+lemma length_lt_of_lt {u w : G} : lt u w → ℓ(u) < ℓ(w) := by
+  rw [lt]
+  intro trans
+  induction trans with
+  | single ultb =>
+    rcases ultb with ⟨_, ⟨_, _, ultb⟩⟩
+    exact ultb
+  | tail _ bltc ultb =>
+    rcases bltc with ⟨_, ⟨_, _, bltc⟩⟩
+    exact lt_trans ultb bltc
 
+lemma lt_of_le_of_length_lt {u w : G} : le u w → ℓ(u) < ℓ(w) → lt u w := by
+  intro ulew ultw
+  induction ulew with
+  | refl => by_contra; exact lt_irrefl _ ultw
+  | tail hyp bltc _ =>
+    refine Relation.TransGen.tail'_iff.mpr ?tail.intro.intro.intro.a
+    exact ⟨_, hyp, bltc⟩
 
-lemma lenght_lt_of_lt  {u w :G} : lt u w → ℓ(u) < ℓ(w) := by sorry
+lemma eq_of_le_of_length_ge {u w : G} : le u w → ℓ(u) ≥ ℓ(w) → u = w := by
+  intro ulew ugew
+  rcases ulew with (_ | ⟨uleb, b, ⟨_, _, bltw⟩⟩)
+  · rfl
+  · by_contra; linarith [length_le_of_le uleb, bltw, ugew]
 
-lemma lt_of_le_of_lenght_lt  {u w :G} : le u w → ℓ(u) < ℓ(w) → lt u w:= by sorry
-
-
-lemma eq_of_le_of_lenght_ge  {u w :G} : le u w → ℓ(u) ≥  ℓ(w) → u = w := by sorry
-
-
-instance particalorder: PartialOrder G where
-le := le
-lt := lt
-le_refl  := by intro _; simp [Relation.ReflTransGen.refl]
-le_trans := fun _ _ _ => Relation.ReflTransGen.trans
-lt_iff_le_not_le  := by
-    -- use length_le_of_le to prove -> direction
-    -- use lt_of_le_of_length_lt and eq_of_le_of_lenght_ge
-    sorry
-le_antisymm:= fun (x y:G) => by sorry
+instance PartialOrder : PartialOrder G where
+  le := le
+  lt := lt
+  le_refl  := by intro _; simp [Relation.ReflTransGen.refl]
+  le_trans := fun _ _ _ => Relation.ReflTransGen.trans
+  lt_iff_le_not_le  := by
+      -- use length_le_of_le to prove -> direction
+      -- use lt_of_le_of_length_lt and eq_of_le_of_length_ge
+      sorry
+  le_antisymm := fun (x y : G) => by sorry
 
 
 

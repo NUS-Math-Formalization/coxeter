@@ -45,25 +45,20 @@ lemma gprod_nil : @List.gprod G _ S [] = (1:G ):=by {exact List.prod_nil}
 lemma gprod_singleton {s:S}: [s].gprod = s:=by rw [List.gprod,coe_cons, nil_eq_nil, List.prod_cons, List.prod_nil, mul_one]
 
 lemma gprod_cons (hd : S)  (tail : List S) : (hd::tail).gprod = hd * (tail.gprod) := by {
-  rw [List.gprod,List.gprod,←List.prod_cons]
+  rw [List.gprod,List.gprod,<-List.prod_cons]
   congr
 }
 
 lemma gprod_append {l1 l2: List S} : (l1 ++ l2).gprod = l1.gprod * l2.gprod := by {
-  rw [List.gprod,List.gprod,List.gprod,←List.prod_append]
+  rw [List.gprod,List.gprod,List.gprod,<-List.prod_append]
   congr
   simp [Lean.Internal.coeM]
 }
 
 lemma gprod_append_singleton {l1 : List S} {s : S}: (l1 ++ [s]).gprod = l1.gprod * s := by {
-  rw [←gprod_singleton,gprod_append]
+  rw [<-gprod_singleton,gprod_append]
 }
 
-@[simp]
-abbrev inv_reverse (L : List S) : List G :=  (List.map (fun x => (x:G)⁻¹ ) L).reverse
-
-
-lemma reverse_prod_prod_eq_one {L: List S}  : L.reverse.gprod * L.gprod = 1:=sorry
 
 lemma gprod_reverse (L: List S) : L.reverse.gprod = (L.gprod)⁻¹ := by {
    simp only[List.gprod]
@@ -80,7 +75,10 @@ class orderTwoGen {G : Type _}[Group G] (S: outParam (Set G))where
   order_two :  ∀ (x:G) , x ∈ S →  x * x = (1 :G) ∧  x ≠ (1 :G)
   expression : ∀ (x:G) , ∃ (L : List S),  x = L.gprod
 
-variable {G : Type _} [Group G] {S: Set G} [h1:orderTwoGen S]
+variable {G : Type _} [Group G] {S: Set G} [orderTwoGen S]
+
+
+lemma reverse_prod_prod_eq_one [orderTwoGen S] {L: List S}  : L.reverse.gprod * L.gprod = 1:=sorry
 
 @[simp]
 lemma generator_square (s:S): s.1 * s.1 = 1:=by{exact (orderTwoGen.order_two s.1 s.2).1}
@@ -91,18 +89,16 @@ fun x hx => mul_eq_one_iff_eq_inv.1 (orderTwoGen.order_two x hx).1
 lemma non_one [orderTwoGen S]: ∀ x:G,  x∈S → x ≠ 1 :=
 fun x hx => (orderTwoGen.order_two x hx).2
 @[simp]
-lemma generator_inv  [orderTwoGen S]: ∀ x:S,  x = (x:G)⁻¹ :=
-by {
+lemma generator_inv  [orderTwoGen S]: ∀ x:S,  x = (x:G)⁻¹ := by
    intro x
    nth_rw 1 [inv_eq_self x.1 x.2]
-}
+
 
 def expressionSet (g:G) := {L:List S| g = L.gprod}
 
-lemma eqSubsetProd  (g : G): ∃ (L : List S),  g = L.gprod := by {
+lemma eqSubsetProd  (g : G): ∃ (L : List S),  g = L.gprod := by
     have H:= @orderTwoGen.expression G  _ S _ g
     exact H
-   }
 
 @[simp]
 def reduced_word [orderTwoGen S] (L : List S) := ∀ (L' : List S),  L.gprod =  L'.gprod →  L.length ≤ L'.length
@@ -114,8 +110,6 @@ def length_aux (g : G) : ∃ (n:ℕ) , ∃ (L : List S), L.length = n ∧ g = L.
 noncomputable def length (x : G): ℕ := Nat.find (@length_aux G _ S  _ x)
 
 local notation :max "ℓ(" g ")" => (@length G  _ S _ g)
-
-
 
 def T (S:Set G) [orderTwoGen S]:= {x:G| ∃ (w:G)(s:S) , x = w*(s:G)*w⁻¹}
 
@@ -140,12 +134,12 @@ def StrongExchangeProp:= ∀ (L:List S) (t: T S) ,ℓ(t*L.gprod) < ℓ(L.gprod) 
 
 def StrongExchangeProp':= ∀ (L:List S) (t: T S) ,ℓ(L.gprod * t) < ℓ(L.gprod) → ∃ (i:Fin L.length), L.gprod * t = (L.removeNth i).gprod
 
-def ExchangeProp := ∀ (L:List S) (s:S), reduced_word L →
+def ExchangeProp := ∀ (L:List S) (s:S) ,reduced_word L →
       ℓ((s * L.gprod)) ≤ ℓ(L.gprod) → ∃ (i: Fin L.length) ,s * L.gprod = (L.removeNth i).gprod
 
 def DeletionProp := ∀ (L:List S),ℓ(L.gprod) < L.length → ∃ (j: Fin L.length), ∃ (i:Fin j), L.gprod = ((L.removeNth j).removeNth i).gprod
 
-class CoxeterSystem (G : Type _) (S : Set G) [Group G] [orderTwoGen S] where
+class CoxeterSystem (G : Type _) (S : Set G) [Group G]  [orderTwoGen S] where
   exchange : @ExchangeProp G _ S _
   deletion : @DeletionProp G _ S _
 
