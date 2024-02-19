@@ -64,6 +64,8 @@ def Icc : Set G := Set.Icc u w
 
 def Iic : Set G := Set.Iic w
 
+lemma Iic_one : Iic (1:G) = {1} := sorry
+
 lemma Icc_is_fin : Set.ncard (Icc u w) ≠ 0 := by
   simp [Icc]
   sorry

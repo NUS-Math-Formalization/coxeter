@@ -2,6 +2,7 @@ import Mathlib.GroupTheory.PresentedGroup
 import Mathlib.GroupTheory.OrderOfElement
 import Mathlib.GroupTheory.Subgroup.Basic
 import Mathlib.Tactic.Linarith.Frontend
+import Mathlib.Tactic.IntervalCases
 
 import Coxeter.Auxi
 open Classical
@@ -10,17 +11,18 @@ section CoeM
 universe u
 variable {α β : Type u}  [(a :α) -> CoeT α a β]
 
-lemma coeM_nil_eq_nil  : (([] : List α) : List β) = ([]:List β)  := by rfl
+lemma coeM_nil_eq_nil : (([] : List α) : List β) = ([]:List β)  := by rfl
 
 
 @[simp]
-lemma coeM_cons {hd : α}  {tail : List α} : ( (hd::tail : List α) : List β) = (hd : β) :: (tail : List β) := by {
-  rfl
-}
+lemma coeM_cons {hd : α} {tail : List α} :
+  ( (hd::tail : List α) : List β) = (hd : β) :: (tail : List β) := by rfl
 
 
 @[simp]
-lemma coeM_append  {l1 l2: List α} : ((l1 ++ l2): List β) = (l1 : List β ) ++ (l2 : List β ):= by simp only [Lean.Internal.coeM, List.bind_eq_bind, List.append_bind]
+lemma coeM_append {l1 l2: List α} :
+  ((l1 ++ l2): List β) = (l1 : List β ) ++ (l2 : List β ) := by
+  simp only [Lean.Internal.coeM, List.bind_eq_bind, List.append_bind]
 
 
 @[simp]
@@ -30,7 +32,7 @@ lemma coeM_reverse {l: List α} : (l.reverse: List β) = (l: List β ).reverse :
   | cons hd tail ih => simp; congr
 
 @[simp]
-lemma mem_subtype_list {x : α}  {S : Set α} {L : List S}: x ∈ (L : List α) → x ∈ S := by {
+lemma mem_subtype_list {x : α} {S : Set α} {L : List S}: x ∈ (L : List α) → x ∈ S := by {
   intro H
   induction L with
   | nil => trivial
@@ -52,6 +54,9 @@ section list_properties
 
 variable {G : Type _} [Group G] {S: Set G}
 
+noncomputable instance HasBEq : BEq S where
+  beq := fun s1 s2 => (s1:G) = s2
+
 @[coe]
 abbrev List.gprod {S : Set G} (L : List S) := (L : List G).prod
 
@@ -61,45 +66,57 @@ instance List.ListGtoGroup : CoeOut (List G) G where
 instance List.ListStoGroup : CoeOut (List S) G where
   coe := fun L => L.gprod
 
-lemma gprod_nil : ([]: List S) = (1:G ):=by {exact List.prod_nil}
+lemma gprod_nil : ([]: List S) = (1 : G):=by exact List.prod_nil
 
-
-lemma gprod_singleton {s:S}: ([s]:G) = s:= by
+lemma gprod_singleton {s : S}: ([s] : G) = s := by
   calc
    _ = List.prod [(s:G)] := by congr
    _ = ↑s := by simp
 
---  simp [coe_cons, nil_eq_nil, List.prod_cons, List.prod_nil, mul_one]
+lemma gprod_eq_of_list_eq {L1 L2 : List S} (h : L1 = L2) : (L1 : G) = (L2 : G) := by rw [h]
+
+-- Some automation regarding List S
+instance HasHMulListList : HMul (List S) (List S) (List S) where
+  hMul := fun L1 L2 => (L1 ++ L2 : List S)
+
+instance HasHMulListS : HMul (List S) S G where
+  hMul := fun L g => (L : G) * g
+
+instance HasHMulGList : HMul G (List S) G where
+  hMul := fun g L => g * (L : G)
 
 lemma gprod_cons (hd : S)  (tail : List S) : (hd::tail :G) = hd * (tail :G) := by {
-  simp_rw [<-List.prod_cons]
+  simp_rw [←List.prod_cons]
   congr
 }
 
-lemma gprod_append {l1 l2: List S} : (l1 ++ l2 : G) = (l1 :G)*( l2:G) := by {
-  rw [<-List.prod_append]
+lemma gprod_append {l1 l2: List S} : (l1 ++ l2 : G) = l1 * l2 := by {
+  rw [←List.prod_append]
   congr
-  simp [List.gprod,Lean.Internal.coeM]
+  simp [List.gprod, Lean.Internal.coeM]
 }
 
-lemma gprod_append_singleton {l1 : List S} {s : S}: (l1 ++ [s] :G )= l1 * s := by {
-  rw [<-gprod_singleton,gprod_append]
+lemma gprod_append_singleton {l1 : List S} {s : S}: (l1 ++ [s] : G) = l1 * s := by {
+  rw [←gprod_singleton, gprod_append]
 }
+
+
 
 @[simp]
-abbrev  inv_reverse (L : List S) : List G :=  (List.map (fun x => (x:G)⁻¹ ) L).reverse
+abbrev inv_reverse (L : List S) : List G := (List.map (fun x => (x:G)⁻¹) L).reverse
 
 lemma gprod_inv_eq_inv_reverse (L: List S) : (L :G)⁻¹ = inv_reverse L   := by rw [List.prod_inv_reverse]
 
 
-lemma inv_reverse_prod_prod_eq_one {L: List S}  : inv_reverse L  * (L :G) = 1 := by simp [<-gprod_inv_eq_inv_reverse]
+lemma inv_reverse_prod_prod_eq_one {L: List S}  : inv_reverse L * (L :G) = 1 :=
+  by simp [←gprod_inv_eq_inv_reverse]
 
 end list_properties
 
 
 
 class OrderTwoGen {G : Type*} [Group G] (S: Set G) where
-  order_two :  ∀ (x:G) , x ∈ S →  x * x = (1 :G) ∧  x ≠ (1 :G)
+  order_two :  ∀ (x:G) , x ∈ S →  x * x = (1 : G) ∧ x ≠ (1 :G)
   expression : ∀ (x:G) , ∃ (L : List S),  x = L.gprod
 
 namespace OrderTwoGen
@@ -113,14 +130,14 @@ lemma gen_square_eq_one : ∀ x∈S, x * x = 1:=fun x hx => (h.order_two x hx).1
 lemma gen_square_eq_one' (s:S): (s:G) * s = 1:= by simp [gen_square_eq_one s.1 s.2]
 
 @[simp]
-lemma inv_eq_self  [h: OrderTwoGen S]: ∀ x:G,  x∈S → x = x⁻¹ :=
+lemma inv_eq_self [h : OrderTwoGen S]: ∀ x : G,  x ∈ S → x = x⁻¹ :=
 fun x hx => mul_eq_one_iff_eq_inv.1 (h.order_two x hx).1
 
 @[simp]
 lemma inv_eq_self' : ∀ (x : S),  x = (x:G)⁻¹ := fun x =>  inv_eq_self x.1 x.2
 
 @[simp]
-lemma inv_eq_self'' : ∀ (x : S),  (x:G)⁻¹ = x := fun x =>  Eq.symm (inv_eq_self x.1 x.2)
+lemma inv_eq_self'' : ∀ (x : S), (x:G)⁻¹ = x := fun x =>  Eq.symm (inv_eq_self x.1 x.2)
 
 -- The lemma was called non_one
 lemma gen_ne_one : ∀ x∈S, x ≠ 1 :=
@@ -141,7 +158,7 @@ lemma inv_reverse_eq_reverse (L : List S) :  (L.reverse : List G) = inv_reverse 
 
 lemma reverse_prod_prod_eq_one {L: List S}  : (L.reverse :G) * L = 1:= by {
   calc
-    _ =  (inv_reverse L : G) * L := by rw [<-inv_reverse_eq_reverse L]
+    _ =  (inv_reverse L : G) * L := by rw [←inv_reverse_eq_reverse L]
     _ = _ := inv_reverse_prod_prod_eq_one
 }
 
@@ -214,12 +231,24 @@ lemma singleton_is_reduced {s:S}: reduced_word [s]:= by
    rw [h1,gprod_nil,gprod_singleton]
    exact gen_ne_one s.1 s.2
 
-lemma pos_length_of_non_reduced_word {L : List S}: ¬ reduced_word L → 1 ≤  L.length := by
-   contrapose
-   simp_rw [not_le,not_not,Nat.lt_one_iff]
-   rw [List.length_eq_zero];
-   intro H
-   simp only [H,nil_is_reduced]
+lemma pos_length_of_non_reduced_word {L : List S} : ¬reduced_word L → 1 ≤ L.length := by
+  contrapose
+  simp_rw [not_le, not_not, Nat.lt_one_iff]
+  rw [List.length_eq_zero]
+  intro H
+  simp only [H, nil_is_reduced]
+
+lemma two_le_length_of_non_reduced_word {L : List S} : ¬reduced_word L → 2 ≤ L.length := by
+  contrapose
+  simp_rw [not_le, not_not]
+  intro h
+  interval_cases hL : L.length
+  · rw [List.length_eq_zero] at hL
+    simp only [hL, nil_is_reduced]
+  · rw [List.length_eq_one] at hL
+    rcases hL with ⟨s, hs⟩
+    rw [hs]
+    exact singleton_is_reduced
 
 lemma length_le_iff {L: List S} : reduced_word L ↔ L.length ≤ ℓ(L.gprod):= by
    rw [length, (Nat.le_find_iff _)]
@@ -228,7 +257,7 @@ lemma length_le_iff {L: List S} : reduced_word L ↔ L.length ≤ ℓ(L.gprod):=
       contrapose hm
       rw [not_not] at hm
       let ⟨L', HL'⟩ := hm
-      rw [not_lt,<-HL'.1]
+      rw [not_lt,←HL'.1]
       exact h L'  HL'.2
    .  intro H
       rw [reduced_word]
@@ -237,7 +266,7 @@ lemma length_le_iff {L: List S} : reduced_word L ↔ L.length ≤ ℓ(L.gprod):=
       rw [not_le] at H
       rw [not_forall]
       use L'.length
-      rw [<-not_and,not_not]
+      rw [←not_and,not_not]
       constructor
       . exact H
       . use L'
@@ -264,7 +293,7 @@ lemma length_eq_inv_length: ℓ(g) = ℓ(g⁻¹) := by {
   obtain ⟨L,HL1,HL2⟩ := exists_reduced_word S g
   repeat rw [HL2]
   calc
-  _ = L.length := by rw [<-length_eq_iff.1 HL1]
+  _ = L.length := by rw [←length_eq_iff.1 HL1]
   _ = L.reverse.length :=  by simp
   _ = ℓ(L.reverse) := length_eq_iff.1 (reverse_is_reduced HL1)
   _=_ := by simp [gprod_reverse]
@@ -311,10 +340,10 @@ noncomputable def max_reduced_word_index {L : List S} (H : ¬ reduced_word L):= 
 lemma nonreduced_succ_take_max_reduced_word {L : List S} (H : ¬ reduced_word L) : ¬ reduced_word (L.take ((max_reduced_word_index  H)+1)) := by
    let j:= max_reduced_word_index  H
    have Hj : j = max_reduced_word_index H := rfl
-   rw [<-Hj]
+   rw [←Hj]
    rw [max_reduced_word_index]  at Hj
    have HH:= (Nat.find_eq_iff _).1 Hj
-   rw [<-Hj,non_reduced_p] at HH
+   rw [←Hj,non_reduced_p] at HH
    exact HH.1
 
 lemma reduced_take_max_reduced_word {L : List S} (H : ¬ reduced_word L) : reduced_word (L.take (max_reduced_word_index H)) := by
@@ -322,10 +351,10 @@ lemma reduced_take_max_reduced_word {L : List S} (H : ¬ reduced_word L) : reduc
    have Hj : j = max_reduced_word_index H := rfl
    match j with
    | 0 =>
-      rw [<-Hj,List.take_zero]
+      rw [←Hj,List.take_zero]
       exact nil_is_reduced
    | n+1 =>
-      rw [<-Hj]
+      rw [←Hj]
       have := (Nat.le_find_iff _ _).1 (le_of_eq Hj) n (Nat.lt_succ_self n)
       rw [non_reduced_p,not_not] at this
       exact this
@@ -338,7 +367,7 @@ lemma max_reduced_word_index_lt {L : List S} (H : ¬ reduced_word L) : max_reduc
    have Hlen' : 0<L.length := by linarith
    constructor
    . exact Nat.sub_lt Hlen' (by simp)
-   . have : L.length -1 +1  = L.length := by rw [<-Nat.sub_add_comm Hlen,Nat.add_sub_cancel]
+   . have : L.length -1 +1  = L.length := by rw [←Nat.sub_add_comm Hlen,Nat.add_sub_cancel]
      rw [this,List.take_length]
      exact H
 
@@ -371,13 +400,43 @@ lemma reduced_imp_tail_reduced : reduced_word (L : List S) → reduced_word L.ta
 
 
 lemma reduced_nonreduced_length_le  {L : List S} {s : S} (H1: reduced_word L) (H2: ¬ reduced_word (L ++ [s])) :ℓ(L.gprod * s) ≤ ℓ(L.gprod) := by {
-    rw [<-(length_eq_iff).1 H1]
+    rw [←(length_eq_iff).1 H1]
     contrapose H2
     have Hs :[s].gprod = s := gprod_singleton
     have Hlen : (L++[s]).length = Nat.succ L.length := by rw [List.length_append, List.length_singleton]
-    rw [not_le,←gprod_singleton,←gprod_append,<-Nat.succ_le_iff,<-Hlen] at H2
+    rw [not_le,←gprod_singleton,←gprod_append,←Nat.succ_le_iff,←Hlen] at H2
     rw [not_not,length_le_iff]
     exact H2
 }
 
 end OrderTwoGen
+
+
+
+/-
+open OrderTwoGen
+section Bruhat
+variable {G : Type _} [Group G]
+variable (S: Set G) [OrderTwoGen S]
+
+local notation :max "ℓ(" g ")" => (@length G  _ S _ g)
+
+def T (S : Set G) := {x : G | ∃ (w : G) (s : S) , x = w * (s : G) * w⁻¹}
+
+
+def Bruhat.lt_adj  [OrderTwoGen S] (u w:G) := ∃ t ∈ T S, w = u * t ∧ (length S u) < (length S w)
+
+abbrev Bruhat.lt (u w:G):= Relation.TransGen (@Bruhat.lt_adj G _ S _) u w
+
+abbrev Bruhat.le  (u w:G):= Relation.ReflTransGen (@Bruhat.lt_adj G _ S _) u w
+
+def Bruhat.poset (S: Set G) [hS : OrderTwoGen S] : PartialOrder G where
+le := @Bruhat.le G _ S _
+lt := @Bruhat.lt G _ S _
+le_refl  := by intro _; simp [Relation.ReflTransGen.refl]
+le_trans := fun _ _ _ => Relation.ReflTransGen.trans
+lt_iff_le_not_le  := by sorry
+le_antisymm:= fun (x y:G) => by sorry
+
+end Bruhat
+-/

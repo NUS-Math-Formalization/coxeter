@@ -20,72 +20,68 @@ open Classical Hecke
 --   eq: u = v → R_ploy = 1
 --   sMemD_Ru: ∀ s ∈ D_R v, s∈D_R u → R_ploy = R
 #check eps
-@[ext]
-structure Rpoly where
-  R: G → G → Polynomial ℤ
+
+
+class Rpoly' where
+  R : G → G → LaurentPolynomial ℤ
   not_le:∀(u v:G), ¬ (u ≤ v) → R u v = 0
-  eq:∀(u v:G), u = v → R u v = 1
+
+#check Rpoly'.R
+@[ext]
+structure Rpoly extends Rpoly' where
+  eq:∀(u :G), R u u = 1
   sMemD_Ru: ∀(u v:G),s ∈ D_R v → s ∈ D_R u → R u v = R (u*s) (v*s)
   sNotMemD_Ru: ∀(u v:G),s ∈ D_R v → s ∉ D_R u → R u v = X*R (u*s) (v*s) + (X-1) * R u (v*s)
 
-#check Rpoly
+-- @[ext]
+-- class Rpoly1 extends (CoxeterSystem G S) where
+--   R : G → G → Polynomial ℤ
+--   not_le:∀(u v:G), ¬ (u ≤ v) → R u v = 0
+--   eq:∀(u :G),  R u u = 1
+--   sMemD_Ru: ∀(u v:G),s ∈ D_R v → s ∈ D_R u → R u v = R (u*s) (v*s)
+--   sNotMemD_Ru: ∀(u v:G),s ∈ D_R v → s ∉ D_R u → R u v = X*R (u*s) (v*s) + (X-1) * R u (v*s)
 
-theorem Hecke_invG_repr : ∃ R : G → G → LaurentPolynomial ℤ, ∀ w : G, TTInv w⁻¹ = ( eps w * q ^ ℓ(w) ) • Finset.sum (Set.toFinset <| Bruhat.Iic w) (fun x => (eps x * R x w) • TT x) := by
-  -- induction' ℓ(w) with n hn
+#check (Rpoly.toRpoly')
+
+def inv_repr (R : G → G → LaurentPolynomial ℤ) := ∀ w : G, TTInv w⁻¹ = ( eps w * q ^ ℓ(w) ) • Finset.sum (Set.toFinset <| Bruhat.Iic w) (fun x => (eps x * R x w) • TT x)
+
+def R' : G → G → Polynomial ℤ := sorry
+
+theorem Hecke_invG_repr_aux : ∀ l, ∃ R : Rpoly',  ∀ w : G, l =ℓ(w) → TTInv w⁻¹ = ( eps w * q ^ ℓ(w) ) • Finset.sum (Set.toFinset <| Bruhat.Iic w) (fun x => (eps x * R.R x w) • TT x) := by
+  intro l
+  induction' l with n hn
+  · sorry
+  · rcases hn with ⟨R',hR'⟩
+
+
+
+theorem Hecke_invG_repr : ∃ R : G → G → LaurentPolynomial ℤ, inv_repr R := by
+  --induction' ℓ(w) with n hn
   sorry
 
-lemma Rpoly_prop (R : G → G → LaurentPolynomial ℤ) :  ∀ w : G, TTInv w⁻¹ = ( eps w * q ^ ℓ(w) ) • Finset.sum (Set.toFinset <| Bruhat.Iic w) (fun x => (eps x * R x w) • TT x) → ∀(u v:G), u = v → R u v = 1 := sorry
+lemma Rpoly_not_le (R : G → G → LaurentPolynomial ℤ) :  inv_repr R → ∀(u v:G), ¬ (u ≤ v) → R u v = 0 := sorry
+
+lemma Rpoly_eq (R : G → G → LaurentPolynomial ℤ) :  inv_repr R → ∀(u :G),  R u u = 1 := by
+  intro h
+  sorry
+
+lemma Rpoly_sMemD_Ru (R : G → G → LaurentPolynomial ℤ) :  inv_repr R → ∀(u v:G),s ∈ D_R v →
+  s ∈ D_R u → R u v = R (u*s) (v*s) := sorry
+
+lemma Rpoly_sNotMemD_Ru (R : G → G → LaurentPolynomial ℤ) :  inv_repr R → ∀(u v:G),s ∈ D_R v → s ∉ D_R u →
+  R u v = X*R (u*s) (v*s) + (X-1) * R u (v*s) := sorry
+
+
+-- lemma monic_R_poly (u v: G) (h: u ≤ v) (R:@Rpoly G _ S _): Polynomial.Monic (R.R u v) ∧ Polynomial.degree (R.R u v)  = ℓ(v)-ℓ(u) ∧ Polynomial.constantCoeff (R.R u v) = (-1)^(ℓ(v)-ℓ(u)):=sorry
+
+instance : Rpoly (G := G) where
+  R := @Classical.choose (G → G → LaurentPolynomial ℤ) inv_repr Hecke_invG_repr
+  not_le := Rpoly_not_le (@Classical.choose (G → G → LaurentPolynomial ℤ) inv_repr Hecke_invG_repr) (Classical.choose_spec _)
+  eq := Rpoly_eq (@Classical.choose (G → G → LaurentPolynomial ℤ) inv_repr Hecke_invG_repr) (Classical.choose_spec _)
+  sMemD_Ru := _
+  sNotMemD_Ru := _
 
 variable {R:@Rpoly G _ S _}
-lemma monic_R_poly (u v: G) (h: u ≤ v) (R:@Rpoly G _ S _): Polynomial.Monic (R.R u v) ∧ Polynomial.degree (R.R u v)  = ℓ(v)-ℓ(u) ∧ Polynomial.constantCoeff (R.R u v) = (-1)^(ℓ(v)-ℓ(u)):=sorry
-
--- structure KLpoly where
--- P: G → G → Polynomial ℤ
--- not_le:∀(u v:G), ¬ (u ≤ v) → P u v = 0
--- eq:∀(u v:G), u = v → P u v = 1
--- deg_le_of_lt: ∀(u v:G), u < v → Polynomial.degree (P u v) ≤ ((ℓ(v)-ℓ(u)-1)/2:ℕ)
--- le:∀(u v:G), u ≤ v → X^(ℓ(v)-ℓ(u))* Polynomial.reverse (P u v) = (Finset.sum (BruhatInte u v) (fun a => R.R u a * P a v))* X^(Polynomial.natDegree (P u v))
-
-
--- lemma constant_eq_one_of_KL (u v :G) (h : u ≤ v) (KL:@KLpoly G _ S _ R): Polynomial.constantCoeff (KL.P u v) = 1:=sorry
-
--- def rr  (y x :G) := ∃ s∈D_R x, y*s = x
-
--- def rrv (v:G) (y x :{ z:G// z ≤ v}):= ∃ s,s∉ D_R (x:G)∧ y = (x:G)*s
-
--- theorem well_founded_rrv : WellFounded (@rrv G _ S _ v) :=sorry
--- theorem well_founded_rr : WellFounded (@rr G _ S _) := sorry
-
--- def Rv.F (v:G) (u:{ z:G// z ≤ v}) (F:(x : { z:G// z ≤ v}) → ((y : { z:G// z ≤ v}) → rrv v y x → Polynomial ℤ) → Polynomial ℤ) : Polynomial ℤ := if H:u=v then 1 else {
---   sorry
--- }
-
--- def Rv (v:G) :fun (u:{ z:G// z ≤ v}) => Polynomial ℤ:= WellFounded.Fix well_founded_rrv Rv.F
-
-
-
--- noncomputable def RF  (v:G) (F: (y : G) → rr y v → (G→ Polynomial ℤ)) : G → Polynomial ℤ:=
---  if hv:v=1 then
---  (fun u:G =>if u=1 then 1 else 0)
---  else (
---   let s:= Classical.choice (nonemptyD_R v hv)
---   fun u => if v < u then 0 else (
---     if v = u then 1 else (
---       if s.val ∈D_R u then (
---         F (v*(s.val)) (sorry) (u*(s.val))
-
---       )
---       else(
---          --(F (u*s) (sorry) (v*s) ) *Polynomial.X + (Polynomial.X-1) * (F u (sorry) (v*s))
---         (F (v*s) (sorry) (u*s) ) *Polynomial.X + (Polynomial.X-1) * (F (v*s) (sorry) u)
---       )
---     )
---   )
---  )
-
--- noncomputable def defaultR := @WellFounded.fix G (fun g => G → Polynomial ℤ) rr (well_founded_rr) (RF)
-#check Rpoly
-
 instance : Unique (@Rpoly G _ S _) where
   default:= R
   uniq := by
