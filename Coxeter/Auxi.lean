@@ -6,71 +6,84 @@ import Mathlib.GroupTheory.Subgroup.Basic
 import Mathlib.GroupTheory.Submonoid.Membership
 import Mathlib.Data.List.Range
 import Mathlib.Algebra.Module.Equiv
-
--- set_option trace.Meta.Tactic.simp.rewrite true
-/-
-variable {G : Type _} {S : Set G}
-
-#check Coe (List ↑S) (List G)
-
-def mapList : List (↑S) → List G
-| []    => []
-| a:: as => a.val :: mapList as
-
-instance (priority := low) list_coe {G : Type _} {S : Set G} : CoeTC (List (↑S)) (List G) where
-coe (L : List ↑S) := @mapList G S L
-
-lemma coe_eq_coe  {hd : ↑S} {tail :   List ↑S} : (hd :: tail : List G) = hd.1 :: (tail : List G) := by {
-  simp
-}
--/
+import Mathlib.Data.List.Palindrome
 
 
+#check List.eraseDups
+#check List.eraseReps
+#check List.groupBy
+
+-- @[specialize] def groupBy (R : α → α → Bool) : List α → List (List α)
+--   | []    => []
+--   | a::as => loop as a [] []
+-- where
+--   @[specialize] loop : List α → α → List α → List (List α) → List (List α)
+--   | a::as, ag, g, gs => match R ag a with
+--     | true  => loop as a (ag::g) gs
+--     | false => loop as a [] ((ag::g).reverse::gs)
+--   | [], ag, g, gs => ((ag::g).reverse::gs).reverse
 
 namespace  List
-variable {α : Type _}
+variable {α : Type _} {L : List α}
+
+def cancel_twice [BEq α]: List α → List α
+  | [] => []
+  | a :: as => loop a as []
+where
+  loop : α → List α → List α → List α
+    | a, [], bl => (a :: bl).reverse
+    | a, x :: [], bl => match a == x with
+      | true =>  bl.reverse
+      | false => (x :: a :: bl).reverse
+    | a, x :: (y :: xs), bl => match a == x with
+      | true => loop y xs bl
+      | false => loop x (y :: xs) (a::bl)
+
+#eval cancel_twice [1,1]
+#eval cancel_twice [1,1,1,1]
+#eval cancel_twice  [1, 1, 2, 2, 2, 3, 2]
+#eval cancel_twice  [1, 2, 5, 5, 1, 4]
+
 
 lemma take_le_length (L : List α) (h : n ≤ L.length)  : (L.take n).length = n := by
   simp only [length_take,ge_iff_le, h, min_eq_left]
 
 lemma remove_nth_eq_take_drop {α : Type _} (L: List α) (n : ℕ) : L.removeNth n = L.take n ++ L.drop (n+1) :=
-by {
+by
   revert n
   induction L with
   | nil => {intro n; simp only [removeNth, take_nil, drop, append_nil]}
-  | cons hd tail ih => {
+  | cons hd tail ih =>
       intro n
       match n with
       | 0 => {simp only [removeNth, take, drop, nil_append]}
-      | k+1 => {
+      | k+1 =>
         simp only [removeNth, Nat.add_eq, add_zero, take, drop, cons_append, cons.injEq, true_and]
         exact ih k
-      }
-   }
-}
 
-lemma sub_one_lt_self (n: ℕ) (h :0 < n) : n-1 < n := match n with
+lemma sub_one_lt_self (n: ℕ) ( _ : 0 < n) : n-1 < n := match n with
 | 0 => by {contradiction}
 | n+1 => by {simp}
 
 
 lemma take_drop_get {α : Type _} (L: List α) (n : ℕ) (h : n < L.length):
-  L = L.take n ++ [L.get ⟨n,h⟩ ] ++ L.drop (n+1) := by {
+  L = L.take n ++ [L.get ⟨n,h⟩ ] ++ L.drop (n+1) := by
   have Hn :=  List.take_append_drop n L
   have Hd := List.drop_eq_get_cons h
   rw [Hd] at Hn
   simp only [append_assoc, singleton_append, Hn]
-}
 
 @[simp]
-lemma drop_take_nil {α : Type _} {L : List α} {n : ℕ} : (L.take n).drop n = [] := by {
+lemma drop_take_nil {α : Type _} {L : List α} {n : ℕ} : (L.take n).drop n = [] := by
   have h:= drop_take n 0 L
   simp only [add_zero, take] at h
   exact h
-}
 
 lemma take_get_lt {α : Type _} (L: List α) (n : ℕ) (h : n < L.length): L.take (n+1) = L.take n ++ [L.get ⟨n,h⟩ ] := by {
-  have H1 : (L.take (n+1)).length = n+1 := by {rw [List.length_take]; simp only [ge_iff_le, min_eq_left_iff];linarith }
+  have H1 : (L.take (n+1)).length = n+1 := by
+    rw [List.length_take]
+    simp only [ge_iff_le, min_eq_left_iff]
+    linarith
   have Hn := take_drop_get (L.take (n+1)) n (by linarith)
   sorry
   -- have nn1 : min n (n+1) = n := by simp only [ge_iff_le, le_add_iff_nonneg_right, min_eq_left]
@@ -109,6 +122,12 @@ lemma removeNth_concat {a:α} (L:List α) : removeNth (concat L a) L.length = L:
 def toReflection_i  (L : List S) (i : Fin L.length) := (List.take i.val L) ++ [List.get L i] ++ (List.reverse (List.take i.val L))
 
 def toReflection (L : List S) : Set (List S):= (toReflection_i L)'' Set.univ
+
+def palindrome := {L : List α // Palindrome L}
+
+def palindrome.mk (L : List α) : @palindrome α := sorry
+
+#check Palindrome
 end List
 
 

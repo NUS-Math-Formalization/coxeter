@@ -33,19 +33,19 @@ lemma exchange'_if_exchange : ExchangeProp S →  ExchangeProp' S:= by {
    rw [<-gprod_cons] at Hp
    let j : Fin L.length:= ⟨L.length -1 - i.1, by {
       have : (0:ℕ)  < L.length := by {
-      sorry
-      /- calc
+
+      calc
          (0:ℕ)  ≤ i := by simp
          _ < Lr.length := i.2
          _ = L.length := by simp
          }
       calc
-      _ ≤  L.length - 1 := by sorry
-      _ < _ := by sorry -/
+      _ ≤  L.length - 1 := by linarith
+      _ < _ := by simp [this]
 
       }
-      sorry
-    }⟩
+   sorry
+   }⟩
    use j
 
    sorry
@@ -89,6 +89,7 @@ end OrderTwoGen
 
 class CoxeterSystem {G : Type _} [Group G] (S : Set G) extends OrderTwoGen S where
   exchange : OrderTwoGen.ExchangeProp S
+  exchange' : OrderTwoGen.ExchangeProp' S := OrderTwoGen.exchange'_if_exchange S exchange
   deletion : OrderTwoGen.DeletionProp S
 
 namespace CoxeterSystem

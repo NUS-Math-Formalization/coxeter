@@ -59,7 +59,6 @@ lemma gprod_append_singleton {l1 : List S} {s : S}: (l1 ++ [s]).gprod = l1.gprod
   rw [<-gprod_singleton,gprod_append]
 }
 
-lemma reverse_prod_prod_eq_one {L: List S}  : L.reverse.gprod * L.gprod = 1:=sorry
 
 lemma gprod_reverse (L: List S) : L.reverse.gprod = (L.gprod)⁻¹ := by {
    simp only[List.gprod]
@@ -76,7 +75,10 @@ class orderTwoGen {G : Type _}[Group G] (S: outParam (Set G))where
   order_two :  ∀ (x:G) , x ∈ S →  x * x = (1 :G) ∧  x ≠ (1 :G)
   expression : ∀ (x:G) , ∃ (L : List S),  x = L.gprod
 
-variable {G : Type _} [Group G] {S: Set G} [h1:orderTwoGen S]
+variable {G : Type _} [Group G] {S: Set G} [orderTwoGen S]
+
+
+lemma reverse_prod_prod_eq_one [orderTwoGen S] {L: List S}  : L.reverse.gprod * L.gprod = 1:=sorry
 
 @[simp]
 lemma generator_square (s:S): s.1 * s.1 = 1:=by{exact (orderTwoGen.order_two s.1 s.2).1}
@@ -87,18 +89,16 @@ fun x hx => mul_eq_one_iff_eq_inv.1 (orderTwoGen.order_two x hx).1
 lemma non_one [orderTwoGen S]: ∀ x:G,  x∈S → x ≠ 1 :=
 fun x hx => (orderTwoGen.order_two x hx).2
 @[simp]
-lemma generator_inv  [orderTwoGen S]: ∀ x:S,  x = (x:G)⁻¹ :=
-by {
+lemma generator_inv  [orderTwoGen S]: ∀ x:S,  x = (x:G)⁻¹ := by
    intro x
    nth_rw 1 [inv_eq_self x.1 x.2]
-}
+
 
 def expressionSet (g:G) := {L:List S| g = L.gprod}
 
-lemma eqSubsetProd  (g : G): ∃ (L : List S),  g = L.gprod := by {
+lemma eqSubsetProd  (g : G): ∃ (L : List S),  g = L.gprod := by
     have H:= @orderTwoGen.expression G  _ S _ g
     exact H
-   }
 
 @[simp]
 def reduced_word [orderTwoGen S] (L : List S) := ∀ (L' : List S),  L.gprod =  L'.gprod →  L.length ≤ L'.length
