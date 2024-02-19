@@ -236,7 +236,12 @@ class CoxeterGroup (G:Type*) extends HOrderTwoGenGroup G where
 namespace CoxeterGroup
 open HOrderTwoGenGroup
 
-instance SimpleRefl_isCoxeterSystem  {G:Type*} [hG:CoxeterGroup G]: @CoxeterSystem G _ (hG.S) where
+instance SimpleRefl_isCoxeterSystem  {G:Type*} [hG:CoxeterGroup G]: CoxeterSystem (SimpleRefls G) where
+  exchange := hG.exchange
+  exchange' := hG.exchange'
+  deletion := hG.deletion
+
+instance SimpleRefl_isCoxeterSystem'  {G:Type*} [hG:CoxeterGroup G]: CoxeterSystem (hG.S) where
   exchange := hG.exchange
   exchange' := hG.exchange'
   deletion := hG.deletion
