@@ -117,7 +117,7 @@ def Interval (x y : G) : Set G := Set.Icc x y
 local notation "S" => (SimpleRefls G)
 
 --  Bjorner, Brenti, Lemma 2.2.1
-lemma SubwordAux {L L' : List S} (hred: reduced_word L) (red₁: reduced_word L') (hsub: List.Sublist L' L) : ∃ (L'' : List S), reduced_word L'' ∧ (L' :G) < L₂'' ∧ ℓ((L'':G)) = ℓ((L':G)) + 1 ∧ List.Sublist L'' L :=by
+lemma SubwordAux {L L' : List S} (hne: (L:G) ≠ L') (hred: reduced_word L) (hred': reduced_word L') (hsub: List.Sublist L' L) : ∃ (L'' : List S), reduced_word L'' ∧ (L' :G) < L'' ∧ ℓ((L'':G)) = ℓ((L':G)) + 1 ∧ List.Sublist L'' L :=by
   sorry
 
 
