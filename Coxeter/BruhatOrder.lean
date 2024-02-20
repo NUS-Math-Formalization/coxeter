@@ -2,8 +2,7 @@ import Coxeter.CoxeterSystem
 
 import Mathlib.Data.Set.Card
 
-open OrderTwoGen
-
+open OrderTwoGen HOrderTwoGenGroup
 
 namespace CoxeterGroup
 namespace Bruhat
@@ -114,6 +113,19 @@ instance PartialOrder : PartialOrder G where
 
 
 def Interval (x y : G) : Set G := Set.Icc x y
+
+local notation "S" => (SimpleRefls G)
+
+--  Bjorner, Brenti, Lemma 2.2.1
+lemma SubwordAux {L L' : List S} (hred: reduced_word L) (red₁: reduced_word L') (hsub: List.Sublist L' L) : ∃ (L'' : List S), reduced_word L'' ∧ (L' :G) < L₂'' ∧ ℓ((L'':G)) = ℓ((L':G)) + 1 ∧ List.Sublist L'' L :=by
+  sorry
+
+
+theorem subwordProp {L: List S} (hred : reduced_word L) : u ≤ L ↔ ∃ (L': List S), reduced_word L' ∧ List.Sublist L' L ∧ u = L'.gprod where
+  mp := by sorry
+  mpr := fun
+    | .intro w h => by
+      sorry
 
 -- Formulate the theorem on subword property
 
