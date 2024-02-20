@@ -2,8 +2,7 @@ import Coxeter.CoxeterSystem
 
 import Mathlib.Data.Set.Card
 
-open OrderTwoGen
-
+open OrderTwoGen HOrderTwoGenGroup
 
 namespace CoxeterGroup
 namespace Bruhat
@@ -112,11 +111,23 @@ instance PartialOrder : PartialOrder G where
   le_antisymm := fun (u w : G) ulew wleu =>
     eq_of_le_of_length_ge ulew (length_le_of_le wleu)
 
+
 def Interval (x y : G) : Set G := Set.Icc x y
 
--- Theorem 1.4.3 (Strong Exchange Property)
-theorem strong_exchange (w : List HOrderTwoGenGroup.S) {t : G} (trfl : t ∈ Refls G) : ℓ((t * w.gprod)) < ℓ(w.gprod) → ∃i, t * w = (List.eraseIdx w i).gprod := by
+local notation "S" => (SimpleRefls G)
+
+--  Bjorner, Brenti, Lemma 2.2.1
+lemma SubwordAux {L L' : List S} (hred: reduced_word L) (red₁: reduced_word L') (hsub: List.Sublist L' L) : ∃ (L'' : List S), reduced_word L'' ∧ (L' :G) < L₂'' ∧ ℓ((L'':G)) = ℓ((L':G)) + 1 ∧ List.Sublist L'' L :=by
   sorry
+
+
+theorem subwordProp {L: List S} (hred : reduced_word L) : u ≤ L ↔ ∃ (L': List S), reduced_word L' ∧ List.Sublist L' L ∧ u = L'.gprod where
+  mp := by sorry
+  mpr := fun
+    | .intro w h => by
+      sorry
+
+-- Formulate the theorem on subword property
 
 -- Lemma 2.2.1
 lemma exists_intermediate_subword (u w : List HOrderTwoGenGroup.S) (unew : u ≠ w) (usubw : List.Sublist u w) : ∃(v : List (@HOrderTwoGenGroup.S G _)), u.gprod < v.gprod ∧ ℓ(u.gprod) + 1 = ℓ(v.gprod) ∧ List.Sublist v w := by

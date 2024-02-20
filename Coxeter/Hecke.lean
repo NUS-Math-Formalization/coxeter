@@ -20,13 +20,21 @@ variable {s : S} {w : G}
 
 local notation :max "ℓ(" g ")" => (@length G  _ S _ g)
 
+
+open Classical reduced_word List
+
 noncomputable def q :=@LaurentPolynomial.T ℤ _ 1
 
 local notation : max "q⁻¹" => @LaurentPolynomial.T ℤ _ (-1)
 
-open Classical
-open reduced_word
-open List
+@[simp] lemma q_inv_mul : q⁻¹ * q = 1 := by
+  simp only [q,←LaurentPolynomial.T_add]
+  apply LaurentPolynomial.T_zero
+
+@[simp] lemma mul_q_inv : q * q⁻¹ = 1 := by
+  simp only [q,←LaurentPolynomial.T_add]
+  apply LaurentPolynomial.T_zero
+
 
 def Hecke {G :(Type _)} [Group G] (S : (Set G)) [orderTwoGen S] [CoxeterSystem G S] := G →₀ (LaurentPolynomial ℤ)
 
@@ -525,28 +533,28 @@ lemma Hecke.one_mul : ∀ (a : Hecke S), HeckeMul (TT 1) a = a := by
   rw [←LinearEquiv.invFun_eq_symm,@subalg.id_eq G _ S _]
   simp
 
-lemma Hecke.mul_one : ∀ (a : Hecke S), HeckeMul a (TT 1) = a := by{
+lemma Hecke.mul_one : ∀ (a : Hecke S), HeckeMul a (TT 1) = a := by
   intro a
   simp[HeckeMul]
   rw [←LinearEquiv.invFun_eq_symm,@subalg.id_eq G _ S _]
   simp
-}
+
 
 #check DirectSum.add_apply
 
-lemma Hecke.left_distrib : ∀ (a b c : Hecke S), HeckeMul a (b + c) = HeckeMul a b + HeckeMul a c := by{
+lemma Hecke.left_distrib : ∀ (a b c : Hecke S), HeckeMul a (b + c) = HeckeMul a b + HeckeMul a c := by
   intro a b c
   simp[HeckeMul]
   rw [NonUnitalNonAssocSemiring.left_distrib]
   congr
-}
 
-lemma Hecke.right_distrib : ∀ (a b c : Hecke S),  HeckeMul (a + b)  c =  HeckeMul a c + HeckeMul b c :=by{
+
+lemma Hecke.right_distrib : ∀ (a b c : Hecke S),  HeckeMul (a + b)  c =  HeckeMul a c + HeckeMul b c :=by
   intro a b c
   simp[HeckeMul]
   rw [NonUnitalNonAssocSemiring.right_distrib]
   congr
-}
+
 
 noncomputable instance Hecke.Semiring : Semiring (Hecke S) where
   mul:=HeckeMul
@@ -587,9 +595,12 @@ lemma HeckeMul.gt : ℓ(w) < ℓ(s*w) → TT (S := S) s * TT w = TT (s*w) := by
 
 lemma HeckeMul.lt : ℓ(s*w) < ℓ(w) → TT (S := S) s * TT w = (q-1) • (TT w) + q • (TT (s*w)) := sorry
 
-lemma Ts_square : TT (S := S) s * TT (S := S) s = (q - 1) • TT (S := S) s + 1 := sorry
+@[simp]
+lemma Ts_square : TT (S := S) s * TT (S := S) s = (q - 1) • TT (S := S) s + q • 1 := sorry
 
 noncomputable def listToHecke : List S → Hecke S := fun L => (List.map (TT (S := S)) L).prod
+
+noncomputable def TT' : G → Hecke S := fun g => listToHecke (reduced_word.choose g)
 
 @[simp]
 lemma listToHecke_cons : listToHecke (s :: L) = TT (S := S) s * listToHecke L :=by
@@ -618,8 +629,9 @@ noncomputable def TT_inv_s (s:S) := q⁻¹ • (TT s.val) - (1-q⁻¹) • 1
 @[simp]
 lemma TT_inv_mul {s:S}:  TT s.1 * (TT_inv_s s) = 1 := by
   dsimp [TT_inv_s]
-  rw [mul_sub (TT (S := S) s),mul_smul_comm,Ts_square,smul_add,smul_smul]
-  sorry
+  set qinv := @LaurentPolynomial.T ℤ _ (-1)
+  simp_rw [mul_sub (TT (S := S) s),mul_smul_comm,Ts_square,smul_add,smul_smul,mul_sub,mul_one,q_inv_mul,add_sub_right_comm,sub_self]
+  simp
 
 noncomputable def listToHeckeInv : List S → Hecke S := fun L => (List.map (TT_inv_s (S := S)) L.reverse).prod
 
@@ -655,9 +667,6 @@ lemma TTInv_mul {w : G} : TTInv w * TT w = 1 := by
   exact is_inv_aux' (reduced_word.choose_spec w).1
 
 
-#check NonUnitalSemiring.toNonUnitalNonAssocSemiring (α := Hecke S)
-
-
 -- noncomputable def TT_invG.F (u:G) (F: (w:G) → llr w u → Hecke S): Hecke S:= if h:u=1 then TT 1
 -- else (
 --    let s:= Classical.choice (nonemptyD_L u h)
@@ -665,10 +674,6 @@ lemma TTInv_mul {w : G} : TTInv w * TT w = 1 := by
 --   )
 
 -- noncomputable def TT_invG : G → Hecke S := @WellFounded.fix G (fun _ => Hecke S) llr well_founded_llr TT_invG.F
-
-noncomputable def TT' : G → Hecke S :=fun g => List.prod (List.map TT (reduced_word.choose g))
-
-def length_le_set (w:G) := {x:G| ℓ(x) ≤ ℓ(w)}
 
 
 
