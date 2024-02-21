@@ -253,25 +253,6 @@ lemma two_le_length_of_non_reduced_word {L : List S} : ¬reduced_word L → 2 �
     exact singleton_is_reduced
 
 
--- make the statement stronger (2 ≤ L.length)
-lemma pos_length_of_non_reduced_word' {L : List S}: ¬ reduced_word L → 2 ≤ L.length := by
-  sorry; /-{
-  contrapose
-  simp_rw [not_le, not_not]
-  intro h
-  set n := L.length with ndef
-  interval_cases hn : n using
-  match n with
-  | 0 =>
-    rw [List.length_eq_zero];
-    intro H
-    simp only [H,nil_is_reduced]
-  | 1 =>
-    rw [List.length_eq_one];
-  | n+2 =>
-  apply Nat.le
-  }-/
-
 lemma length_le_iff {L: List S} : reduced_word L ↔ L.length ≤ ℓ(L):= by
    rw [length, (Nat.le_find_iff _)]
    apply Iff.intro
