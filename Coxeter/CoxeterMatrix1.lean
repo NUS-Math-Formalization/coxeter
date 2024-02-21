@@ -79,11 +79,11 @@ def liftHom_aux {A:Type*} [Group A] (f : α → A)  (h : ∀ (s t: α ), (f s * 
   simp only [toRelation', toRelation] at hst
   simp only [<- hst, map_pow, map_mul, FreeGroup.lift.of, h]
 
--- Lift homomorphism from map to Coxeter map
-def liftHom {A : Type _} [Group A] (f : α → A)  (h : ∀ (s t: α ), (f s * f t)^(m s t) = 1) : G →* A := PresentedGroup.toGroup <| liftHom_aux m f h
+-- Lift map from α→ A to Coxeter group → A
+def lift {A : Type _} [Group A] (f : α → A)  (h : ∀ (s t: α ), (f s * f t)^(m s t) = 1) : G →* A := PresentedGroup.toGroup <| liftHom_aux m f h
 
 
-lemma liftHom.of {A : Type _} [Group A] (f : α → A) (h : ∀ (s t: α ), (f s * f t)^(m s t) = 1) (s : α) : liftHom m f h (of m s) = f s := by
+lemma lift.of {A : Type _} [Group A] (f : α → A) (h : ∀ (s t: α ), (f s * f t)^(m s t) = 1) (s : α) : lift m f h (of m s) = f s := by
   apply PresentedGroup.toGroup.of
 
 
@@ -94,10 +94,10 @@ abbrev μ₂.gen :μ₂ := ⟨-1,by norm_cast⟩
 lemma μ₂.gen_ne_one : μ₂.gen ≠ 1 := by rw [μ₂.gen]; norm_cast
 
 @[simp]
-def epsilon : G →* μ₂  := liftHom m (fun _=> μ₂.gen) (by intro s t; ext;simp)
+def epsilon : G →* μ₂  := lift m (fun _=> μ₂.gen) (by intro s t; ext;simp)
 
 lemma epsilon_of (s : α) : epsilon m (of m s) = μ₂.gen := by
-  simp only [epsilon, liftHom.of m]
+  simp only [epsilon, lift.of m]
 
 
 
