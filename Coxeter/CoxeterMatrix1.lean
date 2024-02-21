@@ -73,13 +73,19 @@ instance coe_group: Coe α (toGroup m) where
 instance coe_simple_refl: Coe α (SimpleRefl m) where
   coe := toSimpleRefl m
 
+def liftHom_aux {A:Type*} [Group A] (f : α → A)  (h : ∀ (s t: α ), (f s * f t)^(m s t) = 1) : ∀ r ∈ toRelationSet m, (FreeGroup.lift f) r = 1 := by
+  intro r hr
+  obtain ⟨⟨s,t⟩,hst⟩ := hr
+  simp only [toRelation', toRelation] at hst
+  simp only [<- hst, map_pow, map_mul, FreeGroup.lift.of, h]
 
 -- Lift homomorphism from map to Coxeter map
-def liftHom {A : Type _} [Group A] (f : α → A)  (h : ∀ (s t: α ), (f s * f t)^(m s t) = 1) : G →* A := QuotientGroup.lift N (FreeGroup.lift f) (by sorry)
+def liftHom {A : Type _} [Group A] (f : α → A)  (h : ∀ (s t: α ), (f s * f t)^(m s t) = 1) : G →* A := PresentedGroup.toGroup <| liftHom_aux m f h
+
 
 lemma liftHom.of {A : Type _} [Group A] (f : α → A) (h : ∀ (s t: α ), (f s * f t)^(m s t) = 1) (s : α) : liftHom m f h (of m s) = f s := by
-  rw [liftHom,CoxeterMatrix.of]
-  sorry
+  apply PresentedGroup.toGroup.of
+
 
 abbrev μ₂ := rootsOfUnity 2 ℤ
 @[simp]
