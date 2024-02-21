@@ -62,7 +62,19 @@ def of (x : α) : G := QuotientGroup.mk' N (FreeGroup.of x)
 @[simp]
 abbrev SimpleRefl := Set.range (of m)
 
+
 local notation "S" => (SimpleRefl m)
+
+@[simp]
+abbrev  Refl : Set G := Set.range <| fun ((g,s): G×S) => g * s * g⁻¹
+
+local notation "T" => (Refl m)
+
+@[simp]
+lemma SimpleRefl_subset_Refl : ∀ {g : G}, g ∈ S → g ∈ T := by
+  rintro g ⟨s, hs⟩
+  use ⟨1, ⟨g, by rw [Set.mem_range]; use s⟩⟩
+  simp
 
 @[simp]
 def toSimpleRefl (a : α) : SimpleRefl m := ⟨of m a, by  simp⟩
@@ -140,30 +152,69 @@ lemma order_two :  ∀ (x: G) , x ∈ S →  x * x = (1 : G) ∧ x ≠ 1 :=  by
   exact ⟨of_square_eq_one m, generator_ne_one m s⟩
 
 
-
-
+instance ofOrderTwoGen : OrderTwoGen (SimpleRefl m)  where
+  order_two := order_two m
+  expression := toGroup_expression m
 
 end CoxeterMatrix
+
 
 namespace CoxeterMatrix
+open OrderTwoGen
+
+variable {α} {m : Matrix α α ℕ} [hm: CoxeterMatrix m]
+
+local notation "G" => toGroup m
+local notation "S" => SimpleRefl m
+local notation "T" => Refl m
 
 
--- This is non-trivial, one have to compute the order of the product of two generators.
-lemma of_injective (a b :α) : of m a = of m b ↔ a = b:= by
-  constructor
-  . sorry
-  . intro ;congr
+local notation : max "ℓ(" g ")" => (OrderTwoGen.length S g)
+
+lemma epsilon_length  {g : G} : epsilon m g = (μ₂.gen)^(ℓ(g)) := by
+  sorry
+
+
+lemma length_smul_neq {g : G} {s:S} : ℓ(g) ≠ ℓ(s*g) := by
+  sorry
+
+lemma length_muls_neq {g : G} {s:S} : ℓ(g) ≠ ℓ(g*s) := by
+  sorry
+
+lemma length_diff_one  {g : G} {s:S} : ℓ(s*g) = ℓ(g) + 1  ∨ ℓ(g) = ℓ(s*g) + 1 := by
+  by_cases h : ℓ(s*g) > ℓ(g)
+  . left
+    have : ℓ(s*g) ≤ ℓ(g) + 1:= length_smul_le_length_add_one
+    linarith
+  . right
+    have : ℓ(g) ≤ ℓ(s*g) + 1 := sorry--length_smul_le_length_add_one
+    have : ℓ(g) ≠ ℓ(s*g) := by sorry
+    sorry
+
+lemma length_smul_lt_of_le {g : G} {s : S} (hlen : ℓ(s * g) ≤ ℓ(g)) : ℓ(s * g) < ℓ(g):= by
+  sorry
+
+def strong_exchange : ∀ (L : List S) ( t : T) , ℓ((t:G) * L) < ℓ(L) → ∃ (i:Fin L.length), (t:G) * L = (L.removeNth i) := by
+  sorry
+
+
+
+def exchange: OrderTwoGen.ExchangeProp S:= by
+  intro L t _ h2
+  obtain ⟨i, hi⟩ := strong_exchange L ⟨t.val, (SimpleRefl_subset_Refl m t.prop)⟩ (length_smul_lt_of_le h2)
+  exact ⟨i, hi⟩
+
+
 
 end CoxeterMatrix
+
+
 
 namespace CoxeterMatrix
 open OrderTwoGen
 
 variable {α : Type*} [DecidableEq α] {m : Matrix α α ℕ} [CoxeterMatrix m]
 
-instance ofOrderTwoGen : OrderTwoGen (SimpleRefl m)  where
-  order_two := order_two m
-  expression := toGroup_expression m
 
 
 -- We will covert the lean3 proof to lean4
