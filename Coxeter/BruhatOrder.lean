@@ -117,27 +117,21 @@ def Interval (x y : G) : Set G := Set.Icc x y
 local notation "S" => (SimpleRefls G)
 
 --  Bjorner, Brenti, Lemma 2.2.1
-lemma SubwordAux {L L' : List S} (hne: (L:G) ≠ L') (hred: reduced_word L) (hred': reduced_word L') (hsub: List.Sublist L' L) : ∃ (L'' : List S), reduced_word L'' ∧ (L' :G) < L'' ∧ ℓ((L'':G)) = ℓ((L':G)) + 1 ∧ List.Sublist L'' L :=by
+lemma exists_intermediate_reduced_subword {L L' : List S} (hne: (L : G) ≠ L')
+    (hred : reduced_word L) (hred' : reduced_word L') (hsub: List.Sublist L' L) :
+    ∃ (L'' : List S), reduced_word L'' ∧ (L' : G) < L'' ∧
+    ℓ((L'' : G)) = ℓ((L' : G)) + 1 ∧ List.Sublist L'' L := by
   sorry
 
-
-theorem subwordProp {L: List S} (hred : reduced_word L) : u ≤ L ↔ ∃ (L': List S), reduced_word L' ∧ List.Sublist L' L ∧ u = L'.gprod where
+-- Theorem 2.2.2
+theorem le_iff_exists_reduced_subword {L : List S} (hred : reduced_word L) :
+    u ≤ L ↔ ∃ (L': List S), reduced_word L' ∧ List.Sublist L' L ∧ u = L'.gprod where
   mp := by sorry
   mpr := fun
     | .intro w h => by
       sorry
 
 -- Formulate the theorem on subword property
-
--- Lemma 2.2.1
-lemma exists_intermediate_subword (u w : List HOrderTwoGenGroup.S) (unew : u ≠ w) (usubw : List.Sublist u w) : ∃(v : List (@HOrderTwoGenGroup.S G _)), u.gprod < v.gprod ∧ ℓ(u.gprod) + 1 = ℓ(v.gprod) ∧ List.Sublist v w := by
-  sorry
-
--- Theorem 2.2.2
-theorem le_iff_subword (u : G) (w : List HOrderTwoGenGroup.S) : u ≤ w.gprod ↔ ∃(u' : List HOrderTwoGenGroup.S), List.Sublist u' w ∧ reduced_word u' := by
-  constructor
-  · sorry
-  · sorry
 
 -- Show that Bruhat interval is finite (Cor 2.2.4)
 instance Interval.fintype {x y : G} : Fintype (Interval x y) where
