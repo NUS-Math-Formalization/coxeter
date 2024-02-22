@@ -153,9 +153,6 @@ lemma removeNth_length_sub_one (L:List α) : removeNth L (L.length - 1) = dropLa
 
 lemma removeNth_concat {a:α} (L:List α) : removeNth (concat L a) L.length = L:=by sorry
 
-
-
-#check Palindrome
 end List
 
 

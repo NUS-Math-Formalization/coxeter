@@ -1,7 +1,7 @@
 import Mathlib.Data.Matrix.Basic
 import Mathlib.GroupTheory.OrderOfElement
 import Mathlib.GroupTheory.PresentedGroup
---import Coxeter.Basic
+import Mathlib.GroupTheory.Perm.Basic
 import Mathlib.Data.Matrix.Notation
 import Mathlib.GroupTheory.PresentedGroup
 import Mathlib.LinearAlgebra.Matrix.Symmetric
@@ -9,11 +9,9 @@ import Mathlib.Analysis.SpecialFunctions.Trigonometric.Basic
 import Mathlib.Data.Complex.Exponential
 import Mathlib.RingTheory.RootsOfUnity.Basic
 
+open Classical
 
 import Coxeter.CoxeterSystem
-
-
---open Real
 
 section
 variable {α : Type*} [DecidableEq α]
@@ -162,12 +160,18 @@ end CoxeterMatrix
 namespace CoxeterMatrix
 open OrderTwoGen
 
-variable {α} {m : Matrix α α ℕ} [hm: CoxeterMatrix m]
+variable {α} {m : Matrix α α ℕ} --[hm: CoxeterMatrix m]
 
 local notation "G" => toGroup m
 local notation "S" => SimpleRefl m
 local notation "T" => Refl m
 
+lemma Refl.conjugate_closed {s : α} {t : T} : (s:G) * t * (s:G)⁻¹ ∈ T := by
+  sorry
+
+@[simp]
+lemma Refl.conjugate_closed' [CoxeterMatrix m ] {s : α} {t : T} : (s:G) * t * (s:G) ∈ T := by
+  sorry
 
 local notation : max "ℓ(" g ")" => (OrderTwoGen.length S g)
 
@@ -195,10 +199,10 @@ lemma length_smul_lt_of_le {g : G} {s : S} (hlen : ℓ(s * g) ≤ ℓ(g)) : ℓ(
   sorry
 
 -- In the following section, we prove the strong exchange property
-section ReflRepresentation
+namespace ReflRepresentation
 
 variable {β:Type*}
--- For a list L := [b₁, b₂, ..., bₙ], we define the Palindrome of L as [b₁, b₂, ..., bₙ, bₙ₋₁, ..., b₁]
+-- For a list L := [b₀, b₁, b₂, ..., bₙ], we define the Palindrome of L as [b₀, b₁, b₂, ..., bₙ, bₙ₋₁, ..., b₁, b₀]
 @[simp]
 abbrev toPalindrome   (L : List β) : List β := L ++ L.reverse.tail
 
@@ -214,9 +218,38 @@ lemma toPalindrome_length {L : List β} : (toPalindrome L).length = 2 * L.length
 lemma toPalindrome_in_T [CoxeterMatrix m] {L:List S} (hL : L ≠ []) : (toPalindrome L:G) ∈ T := by
   sorry
 
-def toReflection_i  (L : List S) (i : Fin L.length) := toPalindrome (L.take (i.val+1))
+-- Our index starts from 0
+def toPalindrome_i  (L : List S) (i : ℕ) := toPalindrome (L.take (i+1))
 
-def toReflection (L : List S) : Set (List S):= (toReflection_i L)'' Set.univ
+--def toPalindrome_i  {L : List S} (hL : L≠ [] ) (i : Fin L.length) := toPalindrome (L.take (i.val+1))
+
+--def toPalindromeList (L : List S) : Set (List S):= List.image (toPalindrome_i L)'' Set.univ
+
+lemma distinct_toPalindrome_i  [CoxeterMatrix m] {L : List S} {i j: Fin L.length} (hij : i ≠ j): (toPalindrome_i L i) ≠ (toPalindrome_i L i) := by
+  sorry
+
+noncomputable def eta (s : α) (t:T) : μ₂ := if s = t.val then μ₂.gen else 1
+
+-- The definition of the function nn may not be useful
+noncomputable def nn (L : List S) (t : T) : ℕ := List.length <| List.filter  (fun i=> (toPalindrome_i L i:G) = t) <| (List.range L.length)
+
+
+local notation "R" => T × μ₂
+
+noncomputable def pi_aux (s : α) (r : R) : R :=
+  ⟨⟨(s:G) * r.1 * (s:G)⁻¹, Refl.conjugate_closed⟩ , r.2 * eta s r.1⟩
+
+lemma pi_aux_square_identity [CoxeterMatrix m] (s : α) (r : R) : pi_aux s (pi_aux s r) = r := by sorry
+
+noncomputable def pi_aux'  [CoxeterMatrix m] (s:α) : Equiv.Perm R where
+  toFun r := pi_aux s r
+  invFun r := pi_aux s r
+  left_inv := by intro r; simp [pi_aux_square_identity]
+  right_inv := by intro r; simp [pi_aux_square_identity]
+
+lemma pi_relation [CoxeterMatrix m] (s t : α) : ((pi_aux' s) * (pi_aux' t))^ (m s t) = 1 := by sorry
+
+lemma pi [CoxeterMatrix m] : G →* Equiv.Perm R := lift m (fun s => pi_aux' s) (by sorry)
 
 
 

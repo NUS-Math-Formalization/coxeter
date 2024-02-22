@@ -5,7 +5,7 @@ import Mathlib.Topology.MetricSpace.Basic
 import Mathlib.Tactic.Linarith.Frontend
 import Mathlib.Tactic.IntervalCases
 
-import Coxeter.Aux
+import Coxeter.Aux_
 open Classical
 
 section CoeM
