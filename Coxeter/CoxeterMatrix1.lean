@@ -21,8 +21,8 @@ variable {α : Type*} [DecidableEq α]
 variable (m : Matrix α  α ℕ)
 
 class CoxeterMatrix : Prop where
-  symmetric : ∀ (a b : α ), m a b = m b a := by aesop
-  oneIff: ∀  (a b : α), m a b = 1 ↔ a=b := by aesop
+  symmetric : ∀ (a b : α ), m a b = m b a
+  oneIff: ∀  (a b : α), m a b = 1 ↔ a=b
 end
 
 open Classical
