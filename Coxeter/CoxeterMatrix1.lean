@@ -8,10 +8,12 @@ import Mathlib.LinearAlgebra.Matrix.Symmetric
 import Mathlib.Analysis.SpecialFunctions.Trigonometric.Basic
 import Mathlib.Data.Complex.Exponential
 import Mathlib.RingTheory.RootsOfUnity.Basic
-
-open Classical
-
 import Coxeter.CoxeterSystem
+
+open BigOperators
+
+--open Classical
+
 
 section
 variable {α : Type*} [DecidableEq α]
@@ -114,9 +116,14 @@ lemma epsilon_of (s : α) : epsilon m (of m s) = μ₂.gen := by
 --@[simp] lemma of_mul (x y: α) : (of m x) * (of m y) =
 --QuotientGroup.mk' _  (FreeGroup.mk [(x,tt), (y,tt)]):= by rw [of];
 
+
+-- DLevel 1
 @[simp]
 lemma of_relation (s t: α) : ((of m s) * (of m t))^(m s t) = 1  :=  by sorry
 
+
+
+-- DLevel 1
 @[simp]
 lemma of_square_eq_one {s : α} : (of m s) * (of m s) = 1  :=  by sorry
 
@@ -129,6 +136,8 @@ lemma of_square_eq_one' : s ∈ SimpleRefl m → s * s = 1 := by
 lemma of_inv_eq_of {x : α} :  (of m x)⁻¹ =  of m x  :=
   inv_eq_of_mul_eq_one_left (@of_square_eq_one α m x)
 
+
+-- DLevel 1
 lemma toGroup_expression : ∀ x :G, ∃ L : List S,  x = L.gprod := by sorry
 
 
@@ -160,31 +169,40 @@ end CoxeterMatrix
 namespace CoxeterMatrix
 open OrderTwoGen
 
-variable {α} {m : Matrix α α ℕ} --[hm: CoxeterMatrix m]
+variable {α} {m : Matrix α α ℕ} [hm: CoxeterMatrix m]
 
 local notation "G" => toGroup m
 local notation "S" => SimpleRefl m
 local notation "T" => Refl m
 
+-- DLevel 1
+@[simp]
 lemma Refl.conjugate_closed {s : α} {t : T} : (s:G) * t * (s:G)⁻¹ ∈ T := by
   sorry
 
+
+
+-- DLevel 1
 @[simp]
 lemma Refl.conjugate_closed' [CoxeterMatrix m ] {s : α} {t : T} : (s:G) * t * (s:G) ∈ T := by
   sorry
 
 local notation : max "ℓ(" g ")" => (OrderTwoGen.length S g)
 
+-- DLevel 1
 lemma epsilon_length  {g : G} : epsilon m g = (μ₂.gen)^(ℓ(g)) := by
   sorry
 
 
+-- DLevel 1
 lemma length_smul_neq {g : G} {s:S} : ℓ(g) ≠ ℓ(s*g) := by
   sorry
 
+-- DLevel 1
 lemma length_muls_neq {g : G} {s:S} : ℓ(g) ≠ ℓ(g*s) := by
   sorry
 
+-- DLevel 1
 lemma length_diff_one  {g : G} {s:S} : ℓ(s*g) = ℓ(g) + 1  ∨ ℓ(g) = ℓ(s*g) + 1 := by
   by_cases h : ℓ(s*g) > ℓ(g)
   . left
@@ -195,11 +213,12 @@ lemma length_diff_one  {g : G} {s:S} : ℓ(s*g) = ℓ(g) + 1  ∨ ℓ(g) = ℓ(s
     have : ℓ(g) ≠ ℓ(s*g) := by sorry
     sorry
 
+-- DLevel 1
 lemma length_smul_lt_of_le {g : G} {s : S} (hlen : ℓ(s * g) ≤ ℓ(g)) : ℓ(s * g) < ℓ(g):= by
   sorry
 
 -- In the following section, we prove the strong exchange property
-namespace ReflRepresentation
+section ReflRepresentation
 
 variable {β:Type*}
 -- For a list L := [b₀, b₁, b₂, ..., bₙ], we define the Palindrome of L as [b₀, b₁, b₂, ..., bₙ, bₙ₋₁, ..., b₁, b₀]
@@ -215,30 +234,54 @@ lemma toPalindrome_length {L : List β} : (toPalindrome L).length = 2 * L.length
     zify; ring_nf
     apply Nat.pos_of_ne_zero h
 
-lemma toPalindrome_in_T [CoxeterMatrix m] {L:List S} (hL : L ≠ []) : (toPalindrome L:G) ∈ T := by
+-- DLevel 2
+lemma toPalindrome_in_Refl [CoxeterMatrix m] {L:List S} (hL : L ≠ []) : (toPalindrome L:G) ∈ T := by
   sorry
 
 -- Our index starts from 0
 def toPalindrome_i  (L : List S) (i : ℕ) := toPalindrome (L.take (i+1))
-
---def toPalindrome_i  {L : List S} (hL : L≠ [] ) (i : Fin L.length) := toPalindrome (L.take (i.val+1))
+local notation:210 "t(" L:211 "," i:212 ")" => toPalindrome_i L i
 
 --def toPalindromeList (L : List S) : Set (List S):= List.image (toPalindrome_i L)'' Set.univ
 
+--DLevel 3
+lemma mul_Palindrome_i_cancel_i [CoxeterMatrix m] {L : List S} (i : Fin L.length) : (t(L, i):G) * L = (L.removeNth i) := by sorry
+
+
+-- DLevel 3
 lemma distinct_toPalindrome_i  [CoxeterMatrix m] {L : List S} {i j: Fin L.length} (hij : i ≠ j): (toPalindrome_i L i) ≠ (toPalindrome_i L i) := by
   sorry
 
-noncomputable def eta (s : α) (t:T) : μ₂ := if s = t.val then μ₂.gen else 1
+noncomputable def eta_aux (s : α) (t:T) : μ₂ := if s = t.val then μ₂.gen else 1
+
+noncomputable def eta_aux' (s : S) (t:T) : μ₂ := if s.val = t.val then μ₂.gen else 1
+
+@[simp]
+lemma eta_aux_aux'  (s : α ) (t:T) : eta_aux s t = eta_aux' s t := by congr
+
 
 -- The definition of the function nn may not be useful
 noncomputable def nn (L : List S) (t : T) : ℕ := List.length <| List.filter  (fun i=> (toPalindrome_i L i:G) = t) <| (List.range L.length)
 
+-- DLevel 5
+-- [BB] (1.15)
+-- lemma nn_prod_eta_aux [CoxeterMatrix m] (L: List S) (t:T) : ∏ i:Fin L.length, eta_aux'  (L.nthLe i.1 i.2) ⟨((L.take (i.1+1)).reverse:G) * t * L.take (i.1+1),by sorry⟩ := by sorry
+
+-- DLevel 2
+lemma nn_prod_eta_aux_aux {i:ℕ} (L : List S) (t:T) : ((L.take i).reverse:G) * t * L.take i ∈ T := by sorry
+
+-- DLevel 4
+lemma nn_prod_eta_aux [CoxeterMatrix m] (L: List S) (t:T) : (μ₂.gen)^ (nn L t) =  ∏ i:Fin L.length, eta_aux'  (L.nthLe i.1 i.2) ⟨((L.take i.1).reverse:G) * t * L.take i.1,by apply nn_prod_eta_aux_aux⟩ := by sorry
+
+
 
 local notation "R" => T × μ₂
 
+namespace ReflRepn
 noncomputable def pi_aux (s : α) (r : R) : R :=
-  ⟨⟨(s:G) * r.1 * (s:G)⁻¹, Refl.conjugate_closed⟩ , r.2 * eta s r.1⟩
+  ⟨⟨(s:G) * r.1 * (s:G)⁻¹, Refl.conjugate_closed⟩ , r.2 * eta_aux s r.1⟩
 
+-- DLevel 3
 lemma pi_aux_square_identity [CoxeterMatrix m] (s : α) (r : R) : pi_aux s (pi_aux s r) = r := by sorry
 
 noncomputable def pi_aux'  [CoxeterMatrix m] (s:α) : Equiv.Perm R where
@@ -247,20 +290,41 @@ noncomputable def pi_aux'  [CoxeterMatrix m] (s:α) : Equiv.Perm R where
   left_inv := by intro r; simp [pi_aux_square_identity]
   right_inv := by intro r; simp [pi_aux_square_identity]
 
-lemma pi_relation [CoxeterMatrix m] (s t : α) : ((pi_aux' s) * (pi_aux' t))^ (m s t) = 1 := by sorry
+-- DLevel 5
+lemma pi_relation (s t : α) : ((pi_aux' s : Equiv.Perm R ) * (pi_aux' t : Equiv.Perm R)) = 1 := by
+  sorry
 
-lemma pi [CoxeterMatrix m] : G →* Equiv.Perm R := lift m (fun s => pi_aux' s) (by sorry)
+noncomputable def pi  : G →* Equiv.Perm R := lift m (fun s => pi_aux' s) (by simp [pi_relation])
 
+-- DLevel 2
+-- Use MonoidHom.ker_eq_bot_iff
+lemma pi_inj : Function.Injective (pi : G→ Equiv.Perm R) := by sorry
+
+end ReflRepn
+
+noncomputable def eta (g : G) (t:T) : μ₂  := (ReflRepn.pi g⁻¹ ⟨t, 1⟩).2
+
+-- DLevel 1
+lemma eta_lift_eta_aux {s :α} {t : T } : eta_aux s t = eta s t := by sorry
+
+
+-- DLevel 4
+lemma eta_equiv_nn {g:G} {t:T} : ∀ {L : List S}, g = L → eta g t = (μ₂.gen)^(nn L t) := by  sorry
 
 
 end ReflRepresentation
 
-def strong_exchange : ∀ (L : List S) ( t : T) , ℓ((t:G) * L) < ℓ(L) → ∃ (i:Fin L.length), (t:G) * L = (L.removeNth i) := by
+-- DLevel 4
+
+lemma lt_iff_eta_eq_gen (g:G) (t :T) : ℓ(t * g) < ℓ(t) ↔ eta g t = μ₂.gen := by sorry
+
+-- DLevel 4
+lemma strong_exchange : ∀ (L : List S) ( t : T) , ℓ((t:G) * L) < ℓ(L) → ∃ (i:Fin L.length), (t:G) * L = (L.removeNth i) := by
   sorry
 
 
 
-def exchange: OrderTwoGen.ExchangeProp S:= by
+lemma exchange: OrderTwoGen.ExchangeProp S:= by
   intro L t _ h2
   obtain ⟨i, hi⟩ := strong_exchange L ⟨t.val, (SimpleRefl_subset_Refl m t.prop)⟩ (length_smul_lt_of_le h2)
   exact ⟨i, hi⟩
@@ -278,19 +342,17 @@ variable {α : Type*} [DecidableEq α] {m : Matrix α α ℕ} [CoxeterMatrix m]
 
 
 -- We will covert the lean3 proof to lean4
-lemma deletion_prop : DeletionProp (SimpleRefl m) := by sorry
-
 
 instance ofCoxeterSystem : CoxeterSystem (SimpleRefl m) where
   order_two := order_two m
   expression := toGroup_expression m
-  exchange := deletion_imp_exchange (SimpleRefl m) deletion_prop
+  exchange :=  exchange
 
 
 instance ofCoxeterGroup : CoxeterGroup  (toGroup m)  where
   S := SimpleRefl m
   order_two := order_two m
   expression := toGroup_expression m
-  exchange := deletion_imp_exchange (SimpleRefl m) deletion_prop
+  exchange := exchange
 
 end CoxeterMatrix
