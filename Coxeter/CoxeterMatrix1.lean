@@ -101,9 +101,23 @@ lemma lift.of {A : Type _} [Group A] (f : α → A) (h : ∀ (s t: α ), (f s * 
 
 abbrev μ₂ := rootsOfUnity 2 ℤ
 @[simp]
-abbrev μ₂.gen :μ₂ := ⟨-1,by norm_cast⟩
+abbrev μ₂.gen :μ₂ := ⟨-1, by norm_cast⟩
 
 lemma μ₂.gen_ne_one : μ₂.gen ≠ 1 := by rw [μ₂.gen]; norm_cast
+
+lemma μ₂.not_iff_not : ∀ (z : μ₂), ¬(z = 1) ↔ z = μ₂.gen := by sorry
+
+lemma μ₂.gen_square : μ₂.gen * μ₂.gen = 1 := by rw [μ₂.gen]; norm_cast
+
+lemma μ₂.gen_inv : μ₂.gen⁻¹ = μ₂.gen := by rw [μ₂.gen]; norm_cast
+
+lemma μ₂.gen_order_two : orderOf μ₂.gen = 2 := by sorry
+
+lemma μ₂.even_pow_iff_eq_one {n : ℕ} : μ₂.gen ^ n = 1 ↔ Even n := by
+  rw [even_iff_two_dvd, ← μ₂.gen_order_two, orderOf_dvd_iff_pow_eq_one]
+
+lemma μ₂.odd_pow_iff_eq_gen {n : ℕ} : μ₂.gen ^ n = μ₂.gen ↔ Odd n := by
+  rw [Nat.odd_iff_not_even, ← μ₂.even_pow_iff_eq_one, not_iff_not]
 
 @[simp]
 def epsilon : G →* μ₂  := lift m (fun _=> μ₂.gen) (by intro s t; ext;simp)
@@ -315,21 +329,37 @@ lemma eta_lift_eta_aux {s :α} {t : T } : eta_aux s t = eta s t := by sorry
 -- DLevel 4
 lemma eta_equiv_nn {g:G} {t:T} : ∀ {L : List S}, g = L → eta g t = (μ₂.gen)^(nn L t) := by  sorry
 
-
+lemma eta_equiv_nn' {L : List S} {t : T} : eta L t = (μ₂.gen) ^ (nn L t) := by sorry
 
 end ReflRepresentation
 
 -- DLevel 4
-lemma lt_iff_eta_eq_gen (g:G) (t :T) : ℓ(t * g) < ℓ(t) ↔ eta g t = μ₂.gen := by sorry
+lemma lt_iff_eta_eq_gen (g : G) (t : T) : ℓ(t * g) < ℓ(g) ↔ eta g t = μ₂.gen := by sorry
 
 
 -- DLevel 2
-lemma lt_iff_eta_eq_gen' (g:G) (t :T) : ℓ(t * g) ≤  ℓ(t) ↔ eta g t = μ₂.gen := by sorry
+lemma lt_iff_eta_eq_gen' (g : G) (t : T) : ℓ(t * g) ≤ ℓ(g) ↔ eta g t = μ₂.gen := by
+  sorry
 
+-- DLevel 1
+lemma removeNth_of_palindrome_prod (L : List S) (n : Fin L.length) :
+  (toPalindrome_i L n:G) * L = (L.removeNth n) := by sorry
 
 -- DLevel 4
-lemma strong_exchange : ∀ (L : List S) ( t : T) , ℓ((t:G) * L) < ℓ(L) → ∃ (i:Fin L.length), (t:G) * L = (L.removeNth i) := by
-  sorry
+lemma strong_exchange : ∀ (L : List S) (t : T) , ℓ((t:G) * L) < ℓ(L) →
+  ∃ (i : Fin L.length), (t : G) * L = (L.removeNth i) := by
+  intro L t h
+  have eta_eq_gen : eta L t = μ₂.gen := (lt_iff_eta_eq_gen L t).mp h
+  have h1 : nn L t > 0 := by
+    have : (μ₂.gen)^(nn L t) = μ₂.gen := by
+      rw [← eta_equiv_nn']; assumption
+    have : Odd (nn L t) := by sorry
+    exact Odd.pos this
+  have : ∃ i : Fin L.length, (toPalindrome_i L i:G) = t := by sorry
+  obtain ⟨i, hi⟩ := this
+  use i
+  rw [← hi]
+  exact removeNth_of_palindrome_prod L i
 
 
 def ReflSet (g:G) : Set T := { t | ℓ(t*g)≤ ℓ(g)}
