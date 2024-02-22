@@ -19,7 +19,7 @@ variable {α : Type _} [BEq α] [Inhabited α]
 lemma append_singleton_ne_nil (L : List α) (a : α) : L ++ [a] ≠ [] := by {
   induction L with
   | nil => {simp}
-  | cons hd tail ih => {simp}
+  | cons hd tail _ => {simp}
 }
 
 lemma length_hd_tail_eq_succ_length (L : List α) (a : α) : (a :: L).length = L.length + 1 := by simp
@@ -35,7 +35,7 @@ lemma append_remove_cancel_of_eq_last_index {a : α} {n : ℕ} (h : n = L.length
 lemma length_append_singleton (L : List α) (a : α) : (L ++ [a]).length = L.length + 1 := by
   induction L with
   | nil => simp
-  | cons hd tail ih => simp
+  | cons _ tail _ => simp
 
 #check length_removeNth
 
@@ -58,7 +58,7 @@ by
         simp only [removeNth, Nat.add_eq, add_zero, take, drop, cons_append, cons.injEq, true_and]
         exact ih k
 
-lemma sub_one_lt_self (n: ℕ) (h : 0 < n) : n - 1 < n := match n with
+lemma sub_one_lt_self (n: ℕ) (_ : 0 < n) : n - 1 < n := match n with
 | 0 => by {contradiction}
 | n+1 => by {simp}
 
@@ -76,6 +76,7 @@ lemma drop_take_nil {α : Type _} {L : List α} {n : ℕ} : (L.take n).drop n = 
   simp only [add_zero, take] at h
   exact h
 
+-- DLevel 2
 lemma take_get_lt {α : Type _} (L: List α) (n : ℕ) (h : n < L.length) :
   L.take (n+1) = L.take n ++ [L.get ⟨n,h⟩] := by
   have H1 : (L.take (n+1)).length = n+1 := by
@@ -149,9 +150,11 @@ lemma eq_iff_reverse_eq (L1 L2 : List α) : L1.reverse = L2.reverse ↔ L1 = L2 
 
 #check dropLast_concat
 
+/-
 lemma removeNth_length_sub_one (L:List α) : removeNth L (L.length - 1) = dropLast L :=by sorry
 
 lemma removeNth_concat {a:α} (L:List α) : removeNth (concat L a) L.length = L:=by sorry
+-/
 
 end List
 

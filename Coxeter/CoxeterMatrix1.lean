@@ -248,9 +248,13 @@ local notation:210 "t(" L:211 "," i:212 ")" => toPalindrome_i L i
 lemma mul_Palindrome_i_cancel_i [CoxeterMatrix m] {L : List S} (i : Fin L.length) : (t(L, i):G) * L = (L.removeNth i) := by sorry
 
 
--- DLevel 3
-lemma distinct_toPalindrome_i  [CoxeterMatrix m] {L : List S} {i j: Fin L.length} (hij : i ≠ j): (toPalindrome_i L i) ≠ (toPalindrome_i L i) := by
-  sorry
+-- DLevel 4
+lemma reduce_iff_distinct_toPalindrome_i  [CoxeterMatrix m] {L : List S} :  reduced_word L ↔ (∀ (i j : Fin L.length),  (hij : i ≠ j) → (toPalindrome_i L i) ≠ (toPalindrome_i L i)) := by
+  constructor
+  . sorry
+  . sorry
+
+
 
 noncomputable def eta_aux (s : α) (t:T) : μ₂ := if s = t.val then μ₂.gen else 1
 
@@ -312,15 +316,29 @@ lemma eta_lift_eta_aux {s :α} {t : T } : eta_aux s t = eta s t := by sorry
 lemma eta_equiv_nn {g:G} {t:T} : ∀ {L : List S}, g = L → eta g t = (μ₂.gen)^(nn L t) := by  sorry
 
 
+
 end ReflRepresentation
 
 -- DLevel 4
-
 lemma lt_iff_eta_eq_gen (g:G) (t :T) : ℓ(t * g) < ℓ(t) ↔ eta g t = μ₂.gen := by sorry
+
+
+-- DLevel 2
+lemma lt_iff_eta_eq_gen' (g:G) (t :T) : ℓ(t * g) ≤  ℓ(t) ↔ eta g t = μ₂.gen := by sorry
+
 
 -- DLevel 4
 lemma strong_exchange : ∀ (L : List S) ( t : T) , ℓ((t:G) * L) < ℓ(L) → ∃ (i:Fin L.length), (t:G) * L = (L.removeNth i) := by
   sorry
+
+
+def ReflSet (g:G) : Set T := { t | ℓ(t*g)≤ ℓ(g)}
+
+-- DLevel 3
+instance ReflSet.fintype : Fintype (ReflSet g) := sorry
+
+-- DLevel 3
+lemma length_eq_card_reflset  [CoxeterMatrix m] : ℓ(g) = Fintype.card (ReflSet g) := by sorry
 
 
 
