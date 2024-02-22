@@ -336,16 +336,20 @@ lemma length_mul_le_length_sum  {w1 w2 : G} : ℓ(w1 * w2) ≤ ℓ(w1) + ℓ(w2)
   _ = L1.length + L2.length := by simp
   _ = _ := by simp [h2,h4,length_eq_iff.1 h1,length_eq_iff.1 h3]
 
+-- DLevel 1
 lemma length_smul_le_length_add_one {w:G} : ℓ(s*w) ≤ ℓ(w) + 1 := by
   sorry
 
+-- DLevel 1
 lemma length_le_length_smul_add_one {w:G} : ℓ(w) ≤ ℓ(s*w) + 1 := by
   sorry
 
 
+-- DLevel 1
 lemma length_muls_le_length_add_one {w:G} : ℓ(w*s) ≤ ℓ(w) + 1 := by
   sorry
 
+-- DLevel 1
 lemma length_le_length_muls_add_one {w:G} : ℓ(w) ≤ ℓ(w*s) + 1 := by
   sorry
 
@@ -355,13 +359,16 @@ lemma length_bound  {w1 w2 : G} : ℓ(w1)  - ℓ(w2) ≤ ℓ(w1 * w2 ⁻¹) := b
   simp only [tsub_le_iff_right, ge_iff_le,this]
 
 
+-- DLevel 1
 lemma length_zero_iff_one {w:G} : ℓ(w) = 0 ↔ w = 1 := by
   sorry
 
 
+-- DLevel 2
 lemma reduced_take_of_reduced {S: Set G} [OrderTwoGen S] {L: List S} (H : reduced_word L) (n:ℕ) : reduced_word (L.take n) := by sorry
 
 
+-- DLevel 1
 lemma reduced_drop_of_reduced {S: Set G} [OrderTwoGen S] {L: List S} (H : reduced_word L) (n:ℕ) : reduced_word (L.drop n) := by sorry
 
 
@@ -466,33 +473,3 @@ lemma reduced_nonreduced_length_le  {L : List S} {s : S} (H1: reduced_word L) (H
 }
 
 end OrderTwoGen
-
-
-
-/-
-open OrderTwoGen
-section Bruhat
-variable {G : Type _} [Group G]
-variable (S: Set G) [OrderTwoGen S]
-
-local notation :max "ℓ(" g ")" => (@length G  _ S _ g)
-
-def T (S : Set G) := {x : G | ∃ (w : G) (s : S) , x = w * (s : G) * w⁻¹}
-
-
-def Bruhat.lt_adj  [OrderTwoGen S] (u w:G) := ∃ t ∈ T S, w = u * t ∧ (length S u) < (length S w)
-
-abbrev Bruhat.lt (u w:G):= Relation.TransGen (@Bruhat.lt_adj G _ S _) u w
-
-abbrev Bruhat.le  (u w:G):= Relation.ReflTransGen (@Bruhat.lt_adj G _ S _) u w
-
-def Bruhat.poset (S: Set G) [hS : OrderTwoGen S] : PartialOrder G where
-le := @Bruhat.le G _ S _
-lt := @Bruhat.lt G _ S _
-le_refl  := by intro _; simp [Relation.ReflTransGen.refl]
-le_trans := fun _ _ _ => Relation.ReflTransGen.trans
-lt_iff_le_not_le  := by sorry
-le_antisymm:= fun (x y:G) => by sorry
-
-end Bruhat
--/
