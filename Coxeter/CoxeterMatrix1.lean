@@ -279,7 +279,7 @@ lemma eta_aux_aux'  (s : α ) (t:T) : eta_aux s t = eta_aux' s t := by congr
 
 
 -- The definition of the function nn may not be useful
-noncomputable def nn (L : List S) (t : T) : ℕ := List.length <| List.filter  (fun i=> (toPalindrome_i L i:G) = t) <| (List.range L.length)
+noncomputable def nn (L : List S) (t : T) : ℕ := List.length <| List.filter  (fun i => (toPalindrome_i L i:G) = t) <| (List.range L.length)
 
 -- DLevel 5
 -- [BB] (1.15)
@@ -289,8 +289,13 @@ noncomputable def nn (L : List S) (t : T) : ℕ := List.length <| List.filter  (
 lemma nn_prod_eta_aux_aux {i:ℕ} (L : List S) (t:T) : ((L.take i).reverse:G) * t * L.take i ∈ T := by sorry
 
 -- DLevel 4
-lemma nn_prod_eta_aux [CoxeterMatrix m] (L: List S) (t:T) : (μ₂.gen)^ (nn L t) =  ∏ i:Fin L.length, eta_aux'  (L.nthLe i.1 i.2) ⟨((L.take i.1).reverse:G) * t * L.take i.1,by apply nn_prod_eta_aux_aux⟩ := by sorry
+lemma nn_prod_eta_aux [CoxeterMatrix m] (L: List S) (t:T) : (μ₂.gen) ^ (nn L t) =  ∏ i:Fin L.length, eta_aux'  (L.nthLe i.1 i.2) ⟨((L.take i.1).reverse:G) * t * L.take i.1,by apply nn_prod_eta_aux_aux⟩ := by sorry
 
+lemma exists_of_nn_ne_zero [CoxeterMatrix m] (L : List S) (t:T) : nn L t > 0 →
+  ∃ i:Fin L.length, (toPalindrome_i L i:G) = t := by
+  intro h
+  unfold nn at h
+  sorry
 
 
 local notation "R" => T × μ₂
@@ -353,9 +358,9 @@ lemma strong_exchange : ∀ (L : List S) (t : T) , ℓ((t:G) * L) < ℓ(L) →
   have h1 : nn L t > 0 := by
     have : (μ₂.gen)^(nn L t) = μ₂.gen := by
       rw [← eta_equiv_nn']; assumption
-    have : Odd (nn L t) := by sorry
+    have : Odd (nn L t) := by exact μ₂.odd_pow_iff_eq_gen.mp this
     exact Odd.pos this
-  have : ∃ i : Fin L.length, (toPalindrome_i L i:G) = t := by sorry
+  have : ∃ i : Fin L.length, (toPalindrome_i L i:G) = t := exists_of_nn_ne_zero L t h1
   obtain ⟨i, hi⟩ := this
   use i
   rw [← hi]
