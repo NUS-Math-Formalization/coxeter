@@ -62,7 +62,19 @@ def of (x : α) : G := QuotientGroup.mk' N (FreeGroup.of x)
 @[simp]
 abbrev SimpleRefl := Set.range (of m)
 
+
 local notation "S" => (SimpleRefl m)
+
+@[simp]
+abbrev  Refl : Set G := Set.range <| fun ((g,s): G×S) => g * s * g⁻¹
+
+local notation "T" => (Refl m)
+
+@[simp]
+lemma SimpleRefl_subset_Refl : ∀ {g : G}, g ∈ S → g ∈ T := by
+  rintro g ⟨s, hs⟩
+  use ⟨1, ⟨g, by rw [Set.mem_range]; use s⟩⟩
+  simp
 
 @[simp]
 def toSimpleRefl (a : α) : SimpleRefl m := ⟨of m a, by  simp⟩
@@ -79,11 +91,11 @@ def liftHom_aux {A:Type*} [Group A] (f : α → A)  (h : ∀ (s t: α ), (f s * 
   simp only [toRelation', toRelation] at hst
   simp only [<- hst, map_pow, map_mul, FreeGroup.lift.of, h]
 
--- Lift homomorphism from map to Coxeter map
-def liftHom {A : Type _} [Group A] (f : α → A)  (h : ∀ (s t: α ), (f s * f t)^(m s t) = 1) : G →* A := PresentedGroup.toGroup <| liftHom_aux m f h
+-- Lift map from α→ A to Coxeter group → A
+def lift {A : Type _} [Group A] (f : α → A)  (h : ∀ (s t: α ), (f s * f t)^(m s t) = 1) : G →* A := PresentedGroup.toGroup <| liftHom_aux m f h
 
 
-lemma liftHom.of {A : Type _} [Group A] (f : α → A) (h : ∀ (s t: α ), (f s * f t)^(m s t) = 1) (s : α) : liftHom m f h (of m s) = f s := by
+lemma lift.of {A : Type _} [Group A] (f : α → A) (h : ∀ (s t: α ), (f s * f t)^(m s t) = 1) (s : α) : lift m f h (of m s) = f s := by
   apply PresentedGroup.toGroup.of
 
 
@@ -94,10 +106,10 @@ abbrev μ₂.gen :μ₂ := ⟨-1,by norm_cast⟩
 lemma μ₂.gen_ne_one : μ₂.gen ≠ 1 := by rw [μ₂.gen]; norm_cast
 
 @[simp]
-def epsilon : G →* μ₂  := liftHom m (fun _=> μ₂.gen) (by intro s t; ext;simp)
+def epsilon : G →* μ₂  := lift m (fun _=> μ₂.gen) (by intro s t; ext;simp)
 
 lemma epsilon_of (s : α) : epsilon m (of m s) = μ₂.gen := by
-  simp only [epsilon, liftHom.of m]
+  simp only [epsilon, lift.of m]
 
 
 
@@ -140,95 +152,69 @@ lemma order_two :  ∀ (x: G) , x ∈ S →  x * x = (1 : G) ∧ x ≠ 1 :=  by
   exact ⟨of_square_eq_one m, generator_ne_one m s⟩
 
 
-
-
-noncomputable section GeometricRepresentation
---variable {α : Type*} [DecidableEq α]
---variable (m : Matrix α  α ℕ) [CoxeterMatrix m]
-
-
-
-class Splitting (k : Matrix α α ℝ) where
-  m_eq_one : ∀ s s': α, m s s' = 1 → k s s' = -2
-  m_eq_two : ∀ s s' : α , m s s' = 2 → k s s' = 0
-  m_gt_three : ∀ s s' : α, 3 ≤ m s s' → k s s' * k s' s = 4 * (Real.cos (Real.pi / m s s'))^2 ∧ (0 < k s s')
-  m_eq_zero : ∀ s s' :α, m s s' = 0 → 4 ≤ k s s' * k s' s ∧ (0 < k s s')
-
-#check Splitting
-@[simp]
-abbrev kk_aux : ℕ → ℝ
-| 0 => 3
-| 1 => -2
-| 2 => 0
-| (n + 3) => 2 * Real.cos ( Real.pi / (n+3))
-
-
-def kk [CoxeterMatrix m] : Matrix α α ℝ := fun s s': α => kk_aux <| m s s'
-
-instance kk.split : Splitting m (kk m) := by sorry
-
---variable {m : Matrix α  α ℕ} [CoxeterMatrix m]
-
-local notation:130 "V⋆" => α → ℝ
-
-local notation "k" => kk m
---local notation:120 a:121 "⋆" => Pi.single a 1
-
-noncomputable def sigma_star  (s:α) : (V⋆) →ₗ[ℝ] (V⋆) where
-  toFun := fun p s' =>  p s' + (p s) *  (k s s')
-  map_add' := by sorry
-  map_smul' := by sorry
-
-local notation "σ⋆" => sigma_star m
-
-@[simp]
-lemma sigma_star_one  {s s': α} {p : V⋆} : m s s' = 1 →  (σ⋆ s p) s' = - (p s) := by sorry
-
-@[simp]
-lemma sigma_star_two  : ∀ (s s': α) (p : V⋆), m s s' = 2 → (σ⋆ s p) s' = p s' := by sorry
-
-
-@[simp]
-lemma sigma_star_gt_tree  : ∀ (s s': α) (p : V⋆), 3 ≤ m s s' ∨ m s s' = 0 → (σ⋆ s p) s' = p s'+ p s * (k s s') := by sorry
-
-lemma sigma_star_order_two : (σ⋆ s)^2 = 1:= by sorry
-
-lemma sigma_star_mul_apply_s'_eq_two  {p : V⋆} (h: m s s' = 2) : ((σ⋆ s) * (σ⋆ s')) p s' = - p s' := by sorry
-
-
--- add some other lemmas
--- The final goal is
-lemma order_sigma_star_mul : orderOf ((σ⋆ s) * (σ⋆ s')) = m s s' := by sorry
-
-lemma order_generator_mul (s t :α) : orderOf (CoxeterMatrix.of m s * CoxeterMatrix.of m t) = m s t := by sorry
-
-
-
-end GeometricRepresentation
-
+instance ofOrderTwoGen : OrderTwoGen (SimpleRefl m)  where
+  order_two := order_two m
+  expression := toGroup_expression m
 
 end CoxeterMatrix
+
 
 namespace CoxeterMatrix
+open OrderTwoGen
 
-#check order_generator_mul
+variable {α} {m : Matrix α α ℕ} [hm: CoxeterMatrix m]
 
--- This is non-trivial, one have to compute the order of the product of two generators.
-lemma of_injective (a b :α) : of m a = of m b ↔ a = b:= by
-  constructor
-  . sorry
-  . intro ;congr
+local notation "G" => toGroup m
+local notation "S" => SimpleRefl m
+local notation "T" => Refl m
+
+
+local notation : max "ℓ(" g ")" => (OrderTwoGen.length S g)
+
+lemma epsilon_length  {g : G} : epsilon m g = (μ₂.gen)^(ℓ(g)) := by
+  sorry
+
+
+lemma length_smul_neq {g : G} {s:S} : ℓ(g) ≠ ℓ(s*g) := by
+  sorry
+
+lemma length_muls_neq {g : G} {s:S} : ℓ(g) ≠ ℓ(g*s) := by
+  sorry
+
+lemma length_diff_one  {g : G} {s:S} : ℓ(s*g) = ℓ(g) + 1  ∨ ℓ(g) = ℓ(s*g) + 1 := by
+  by_cases h : ℓ(s*g) > ℓ(g)
+  . left
+    have : ℓ(s*g) ≤ ℓ(g) + 1:= length_smul_le_length_add_one
+    linarith
+  . right
+    have : ℓ(g) ≤ ℓ(s*g) + 1 := sorry--length_smul_le_length_add_one
+    have : ℓ(g) ≠ ℓ(s*g) := by sorry
+    sorry
+
+lemma length_smul_lt_of_le {g : G} {s : S} (hlen : ℓ(s * g) ≤ ℓ(g)) : ℓ(s * g) < ℓ(g):= by
+  sorry
+
+def strong_exchange : ∀ (L : List S) ( t : T) , ℓ((t:G) * L) < ℓ(L) → ∃ (i:Fin L.length), (t:G) * L = (L.removeNth i) := by
+  sorry
+
+
+
+def exchange: OrderTwoGen.ExchangeProp S:= by
+  intro L t _ h2
+  obtain ⟨i, hi⟩ := strong_exchange L ⟨t.val, (SimpleRefl_subset_Refl m t.prop)⟩ (length_smul_lt_of_le h2)
+  exact ⟨i, hi⟩
+
+
 
 end CoxeterMatrix
+
+
 
 namespace CoxeterMatrix
 open OrderTwoGen
 
 variable {α : Type*} [DecidableEq α] {m : Matrix α α ℕ} [CoxeterMatrix m]
 
-instance ofOrderTwoGen : OrderTwoGen (SimpleRefl m)  where
-  order_two := order_two m
-  expression := toGroup_expression m
 
 
 -- We will covert the lean3 proof to lean4

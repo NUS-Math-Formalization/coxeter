@@ -4,7 +4,7 @@ import Mathlib.GroupTheory.Subgroup.Basic
 import Mathlib.Tactic.Linarith.Frontend
 import Mathlib.Tactic.IntervalCases
 
-import Coxeter.Auxi
+import Coxeter.Aux
 open Classical
 
 section CoeM
@@ -76,8 +76,8 @@ lemma gprod_singleton {s : S}: ([s] : G) = s := by
 lemma gprod_eq_of_list_eq {L1 L2 : List S} (h : L1 = L2) : (L1 : G) = (L2 : G) := by rw [h]
 
 -- Some automation regarding List S
-instance HasHMulListList : HMul (List S) (List S) (List S) where
-  hMul := fun L1 L2 => (L1 ++ L2 : List S)
+--instance HasHMulListList : HMul (List S) (List S) (List S) where
+--  hMul := fun L1 L2 => (L1 ++ L2 : List S)
 
 instance HasHMulListS : HMul (List S) S G where
   hMul := fun L g => (L : G) * g
@@ -90,12 +90,14 @@ lemma gprod_cons (hd : S)  (tail : List S) : (hd::tail :G) = hd * (tail :G) := b
   congr
 }
 
+@[simp]
 lemma gprod_append {l1 l2: List S} : (l1 ++ l2 : G) = l1 * l2 := by {
   rw [←List.prod_append]
   congr
   simp [List.gprod, Lean.Internal.coeM]
 }
 
+@[simp]
 lemma gprod_append_singleton {l1 : List S} {s : S}: (l1 ++ [s] : G) = l1 * s := by {
   rw [←gprod_singleton, gprod_append]
 }
@@ -319,6 +321,8 @@ lemma length_eq_inv_length: ℓ(g) = ℓ(g⁻¹) := by {
   _=_ := by simp [gprod_reverse]
 }
 
+
+
 @[simp]
 lemma inv_length_eq_length: ℓ(g⁻¹) = ℓ(g) := Eq.symm length_eq_inv_length
 
@@ -331,7 +335,6 @@ lemma length_eq_reverse_length (L:List S): ℓ(L) = ℓ(L.reverse) := by {
 @[simp]
 lemma reverse_length_eq_length (L:List S): ℓ(L.reverse)=ℓ(L)  := Eq.symm (length_eq_reverse_length L)
 
-
 lemma length_cons {hd : S} {tail : List S} : ℓ(hd::tail) ≤ ℓ(tail) + 1 := by {
   obtain ⟨rtail, h1, h2⟩ := exists_reduced_word S tail
   calc
@@ -342,10 +345,39 @@ lemma length_cons {hd : S} {tail : List S} : ℓ(hd::tail) ≤ ℓ(tail) + 1 := 
 }
 
 
+lemma length_mul_le_length_sum  {w1 w2 : G} : ℓ(w1 * w2) ≤ ℓ(w1) + ℓ(w2) := by
+  obtain ⟨L1, h1, h2⟩ := exists_reduced_word S w1
+  obtain ⟨L2, h3, h4⟩ := exists_reduced_word S w2
+  calc
+  _ = ℓ(L1 ++ L2) := by congr; simp only [h2, h4, gprod_append]
+  _ ≤  (L1 ++ L2).length := length_le_list_length
+  _ = L1.length + L2.length := by simp
+  _ = _ := by simp [h2,h4,length_eq_iff.1 h1,length_eq_iff.1 h3]
+
+lemma length_smul_le_length_add_one {w:G} : ℓ(s*w) ≤ ℓ(w) + 1 := by
+  sorry
+
+lemma length_le_length_smul_add_one {w:G} : ℓ(w) ≤ ℓ(s*w) + 1 := by
+  sorry
+
+
+lemma length_muls_le_length_add_one {w:G} : ℓ(w*s) ≤ ℓ(w) + 1 := by
+  sorry
+
+lemma length_le_length_muls_add_one {w:G} : ℓ(w) ≤ ℓ(w*s) + 1 := by
+  sorry
+
+lemma length_bound  {w1 w2 : G} : ℓ(w1)  - ℓ(w2) ≤ ℓ(w1 * w2 ⁻¹) := by
+  have := @length_mul_le_length_sum _ _ S _ (w1 * w2⁻¹) w2
+  simp only [inv_mul_cancel_right] at this
+  simp only [tsub_le_iff_right, ge_iff_le,this]
+
+
 noncomputable def choose_reduced_word (S : Set G) [OrderTwoGen S]  (g:G) : List S := Classical.choose (exists_reduced_word S g)
 
 lemma choose_reduced_word_spec (g : G) : reduced_word (choose_reduced_word S g) ∧ g = (choose_reduced_word S g) :=
    Classical.choose_spec (exists_reduced_word S g)
+
 
 
 def non_reduced_p  (L : List S) := fun k => ¬ reduced_word (L.take (k+1))
