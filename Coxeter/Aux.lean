@@ -153,9 +153,6 @@ lemma removeNth_length_sub_one (L:List α) : removeNth L (L.length - 1) = dropLa
 
 lemma removeNth_concat {a:α} (L:List α) : removeNth (concat L a) L.length = L:=by sorry
 
-def toReflection_i  (L : List S) (i : Fin L.length) := (List.take i.val L) ++ [List.get L i] ++ (List.reverse (List.take i.val L))
-
-def toReflection (L : List S) : Set (List S):= (toReflection_i L)'' Set.univ
 
 
 #check Palindrome

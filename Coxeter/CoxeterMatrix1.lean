@@ -194,7 +194,33 @@ lemma length_diff_one  {g : G} {s:S} : ℓ(s*g) = ℓ(g) + 1  ∨ ℓ(g) = ℓ(s
 lemma length_smul_lt_of_le {g : G} {s : S} (hlen : ℓ(s * g) ≤ ℓ(g)) : ℓ(s * g) < ℓ(g):= by
   sorry
 
+-- In the following section, we prove the strong exchange property
+section ReflRepresentation
 
+variable {β:Type*}
+-- For a list L := [b₁, b₂, ..., bₙ], we define the Palindrome of L as [b₁, b₂, ..., bₙ, bₙ₋₁, ..., b₁]
+@[simp]
+abbrev toPalindrome   (L : List β) : List β := L ++ L.reverse.tail
+
+-- Note that 0-1 = 0
+lemma toPalindrome_length {L : List β} : (toPalindrome L).length = 2 * L.length - 1 := by
+  simp only [toPalindrome, List.length_append, List.length_reverse, List.length_tail]
+  by_cases h: L.length=0
+  . simp [h]
+  . rw [<-Nat.add_sub_assoc]
+    zify; ring_nf
+    apply Nat.pos_of_ne_zero h
+
+lemma toPalindrome_in_T [CoxeterMatrix m] {L:List S} (hL : L ≠ []) : (toPalindrome L:G) ∈ T := by
+  sorry
+
+def toReflection_i  (L : List S) (i : Fin L.length) := toPalindrome (L.take (i.val+1))
+
+def toReflection (L : List S) : Set (List S):= (toReflection_i L)'' Set.univ
+
+
+
+end ReflRepresentation
 
 def strong_exchange : ∀ (L : List S) ( t : T) , ℓ((t:G) * L) < ℓ(L) → ∃ (i:Fin L.length), (t:G) * L = (L.removeNth i) := by
   sorry
@@ -209,7 +235,6 @@ def exchange: OrderTwoGen.ExchangeProp S:= by
 
 
 end CoxeterMatrix
-
 
 
 namespace CoxeterMatrix

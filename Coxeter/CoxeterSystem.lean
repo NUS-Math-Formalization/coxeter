@@ -249,6 +249,9 @@ instance SimpleRefl_isCoxeterSystem'  {G:Type*} [hG:CoxeterGroup G]: CoxeterSyst
 
 def Refls (G:Type*) [CoxeterGroup G]: Set G:= {x:G| ∃ (w:G)(s : SimpleRefls G) , x = w*s*w⁻¹}
 
+-- The length function defines a metric on the Coxeter group
+noncomputable instance metric [CoxeterGroup G]: MetricSpace G := OrderTwoGen.metric <| SimpleRefls G
+
 end CoxeterGroup
 
 end

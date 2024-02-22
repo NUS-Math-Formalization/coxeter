@@ -1,6 +1,7 @@
 import Mathlib.GroupTheory.PresentedGroup
 import Mathlib.GroupTheory.OrderOfElement
 import Mathlib.GroupTheory.Subgroup.Basic
+import Mathlib.Topology.MetricSpace.Basic
 import Mathlib.Tactic.Linarith.Frontend
 import Mathlib.Tactic.IntervalCases
 
@@ -352,6 +353,28 @@ lemma length_bound  {w1 w2 : G} : ℓ(w1)  - ℓ(w2) ≤ ℓ(w1 * w2 ⁻¹) := b
   have := @length_mul_le_length_sum _ _ S _ (w1 * w2⁻¹) w2
   simp only [inv_mul_cancel_right] at this
   simp only [tsub_le_iff_right, ge_iff_le,this]
+
+
+lemma length_zero_iff_one {w:G} : ℓ(w) = 0 ↔ w = 1 := by
+  sorry
+
+
+lemma reduced_take_of_reduced {S: Set G} [OrderTwoGen S] {L: List S} (H : reduced_word L) (n:ℕ) : reduced_word (L.take n) := by sorry
+
+
+lemma reduced_drop_of_reduced {S: Set G} [OrderTwoGen S] {L: List S} (H : reduced_word L) (n:ℕ) : reduced_word (L.drop n) := by sorry
+
+
+
+-- Cannot define the metric as an instance as there are various choices of S for a fixed G
+-- On the other hand, the metric is well defined for Coxeter Group
+noncomputable def metric {G :Type*} [Group G] (S : Set G) [@OrderTwoGen G _ S] : MetricSpace G where
+  dist := fun x y => length S (x * y⁻¹)
+  dist_self := by sorry
+  dist_comm := by sorry
+  dist_triangle := by sorry
+  eq_of_dist_eq_zero := by sorry
+  edist_dist := by sorry
 
 
 noncomputable def choose_reduced_word (S : Set G) [OrderTwoGen S]  (g:G) : List S := Classical.choose (exists_reduced_word S g)
