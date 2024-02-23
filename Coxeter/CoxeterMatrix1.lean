@@ -141,8 +141,8 @@ lemma of_relation (s t: α) : ((of m s) * (of m t))^(m s t) = 1  :=  by sorry
 -- DLevel 1
 @[simp]
 lemma of_square_eq_one {s : α} : (of m s) * (of m s) = 1  :=  by
-  have : m s s = 1 := by exact diagonal_one fun {s} => m s
-  rw [← pow_one ((of m s) * (of m s)), ← this]
+  have : m s s = 1 := diagonal_one m
+  rw [← pow_one ((of m s) * (of m s)), ←this]
   apply of_relation m s s
 
 @[simp]
