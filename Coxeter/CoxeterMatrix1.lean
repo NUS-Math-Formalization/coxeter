@@ -9,6 +9,7 @@ import Mathlib.Analysis.SpecialFunctions.Trigonometric.Basic
 import Mathlib.Data.Complex.Exponential
 import Mathlib.RingTheory.RootsOfUnity.Basic
 import Coxeter.CoxeterSystem
+import Coxeter.OrderTwoGen
 
 open BigOperators
 
@@ -369,15 +370,11 @@ lemma strong_exchange : ∀ (L : List S) (t : T) , ℓ((t:G) * L) < ℓ(L) →
   rw [← hi]
   exact removeNth_of_palindrome_prod L i
 
-
-def ReflSet (g:G) : Set T := { t | ℓ(t*g)≤ ℓ(g)}
-
--- DLevel 3
-instance ReflSet.fintype : Fintype (ReflSet g) := sorry
+  -- DLevel 3
+instance ReflSet.fintype : Fintype (Set G) := sorry
 
 -- DLevel 3
-lemma length_eq_card_reflset  [CoxeterMatrix m] : ℓ(g) = Fintype.card (ReflSet g) := by sorry
-
+lemma length_eq_card_reflset  [CoxeterMatrix m] : ℓ(g) = Fintype.card (Set G) := by sorry
 
 
 lemma exchange: OrderTwoGen.ExchangeProp S:= by
@@ -394,8 +391,6 @@ namespace CoxeterMatrix
 open OrderTwoGen
 
 variable {α : Type*} [DecidableEq α] {m : Matrix α α ℕ} [CoxeterMatrix m]
-
-
 
 -- We will covert the lean3 proof to lean4
 

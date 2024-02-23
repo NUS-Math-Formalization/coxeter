@@ -479,5 +479,7 @@ abbrev Refl (S:Set G) [OrderTwoGen S]: Set G:= {x:G| ∃ (w:G) (s : S) , x = w*s
 -- TODO add some lemmes about conj of Refl is in Refl
 -- DLevel1
 
+def ReflSet (g:G) : Set (Refl S) := { t | ℓ(t * g)≤ ℓ(g)}
+
 
 end OrderTwoGen
