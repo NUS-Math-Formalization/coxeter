@@ -376,12 +376,11 @@ lemma exchange: OrderTwoGen.ExchangeProp S:= by
   obtain ⟨i, hi⟩ := strong_exchange L ⟨t.val, (SimpleRefl_subset_Refl m t.prop)⟩ (length_smul_lt_of_le h2)
   exact ⟨i, hi⟩
 
--- TODO: fix the error
 -- DLevel 3
-instance ReflSet.fintype : Fintype (@ReflSet g) := sorry
+instance ReflSet.fintype : Fintype (ReflSet S g) := sorry
 
 -- DLevel 3
-lemma length_eq_card_reflset  [OrderTwoGen S] : ℓ(g) = Fintype.card (@ReflSet g) := by sorry
+lemma length_eq_card_reflset  [OrderTwoGen S] : ℓ(g) = Fintype.card (ReflSet S g) := by sorry
 
 end CoxeterMatrix
 
