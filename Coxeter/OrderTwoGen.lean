@@ -479,5 +479,15 @@ abbrev Refl (S:Set G) [OrderTwoGen S]: Set G:= {x:G| ∃ (w:G) (s : S) , x = w*s
 -- TODO add some lemmes about conj of Refl is in Refl
 -- DLevel1
 
+lemma sq_refl_eq_one [OrderTwoGen S] {t : Refl S} : (t : G) ^ 2 = 1 := by
+  rcases t with ⟨t, g, s, teqgsg⟩
+  simp only []
+  rw [sq, teqgsg]
+  group
+  have hs : s * s = (1 : G) := by
+    apply @gen_square_eq_one G _ S
+    exact Subtype.mem s
+  rw [mul_assoc g s, hs]
+  group
 
 end OrderTwoGen

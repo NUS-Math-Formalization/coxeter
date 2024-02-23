@@ -201,6 +201,17 @@ lemma Refl.conjugate_closed {s : α} {t : T} : (s:G) * t * (s:G)⁻¹ ∈ T := b
 lemma Refl.conjugate_closed' [CoxeterMatrix m ] {s : α} {t : T} : (s:G) * t * (s:G) ∈ T := by
   sorry
 
+lemma sq_refl_eq_one [CoxeterMatrix m] {t : T} : (t : G) ^ 2 = 1 := by
+  rcases t with ⟨t, ⟨g, s⟩, feqt⟩
+  simp only [feqt]
+  have gsgeqt : g * s * g⁻¹ = t := feqt
+  rw [← gsgeqt, sq]
+  group
+  have hs : s * s = (1 : G) :=
+    of_square_eq_one' m (Subtype.mem s)
+  rw [mul_assoc g s, hs]
+  group
+
 local notation : max "ℓ(" g ")" => (OrderTwoGen.length S g)
 
 -- DLevel 1
@@ -257,18 +268,61 @@ def toPalindrome_i  (L : List S) (i : ℕ) := toPalindrome (L.take (i+1))
 local notation:210 "t(" L:211 "," i:212 ")" => toPalindrome_i L i
 
 --def toPalindromeList (L : List S) : Set (List S):= List.image (toPalindrome_i L)'' Set.univ
+lemma toPalindrome_i_in_Refl [CoxeterMatrix m] {L : List S} (i : Fin L.length) :
+    (toPalindrome_i L i : G) ∈ T := by
+  rw [toPalindrome_i]
+  have tklen : (L.take (i+1)).length = i + 1 :=
+    List.take_le_length L (by linarith [i.prop] : i + 1 ≤ L.length)
+  have tkpos : (L.take (i+1)).length ≠ 0 := by
+    linarith
+  have h : List.take (i + 1) L ≠ [] := by
+    contrapose! tkpos
+    exact List.length_eq_zero.mpr tkpos
+  exact toPalindrome_in_Refl h
 
 --DLevel 3
 lemma mul_Palindrome_i_cancel_i [CoxeterMatrix m] {L : List S} (i : Fin L.length) : (t(L, i):G) * L = (L.removeNth i) := by sorry
 
 
 -- DLevel 4
-lemma reduce_iff_distinct_toPalindrome_i  [CoxeterMatrix m] {L : List S} :  reduced_word L ↔ (∀ (i j : Fin L.length),  (hij : i ≠ j) → (toPalindrome_i L i) ≠ (toPalindrome_i L i)) := by
-  constructor
-  . sorry
-  . sorry
-
-
+lemma distinct_toPalindrome_i_of_reduced [CoxeterMatrix m] {L : List S} : reduced_word L →
+    (∀ (i j : Fin L.length),  (hij : i ≠ j) → (toPalindrome_i L i) ≠ (toPalindrome_i L j)) := by
+  intro rl
+  by_contra! eqp
+  rcases eqp with ⟨i, j, ⟨inej, eqp⟩⟩
+  wlog ilej : i < j
+  · have jlei : j ≤ i := by
+      push_neg at ilej
+      exact ilej
+    have ilej : i ≤ j := by
+      have njlei : ¬j < i :=
+        @this α m hm β _ L rl j i inej.symm eqp.symm
+      push_neg at njlei
+      exact njlei
+    exact inej (le_antisymm ilej jlei)
+  · have h : (toPalindrome_i L i).gprod * (toPalindrome_i L j) = 1 := by
+      calc
+        _ = (toPalindrome_i L i).gprod * (toPalindrome_i L i).gprod := by
+          rw [← eqp]
+        _ = 1 := by
+          have tklen : (L.take (i+1)).length = i + 1 :=
+            List.take_le_length L (by linarith [i.prop] : i + 1 ≤ L.length)
+          have pl : (toPalindrome (L.take (i+1))).length = 2 * i.val + 1 := by
+            rw [toPalindrome_length, tklen]
+            calc
+              _ = 2 * i.val + 2 - 1 := by
+                rw [Nat.mul_add]
+              _ = 2 * i.val + 1 := by congr
+          have tirefl := toPalindrome_i_in_Refl i
+          have ist := (t(L, i)).gprod
+          have almost : (t(L, i)).gprod ^ 2 = 1 := by
+            --apply @sq_refl_eq_one α m _ (t(L, i))
+            sorry
+          sorry
+    -- Idea:
+    -- multiply that into L, mul_Palindrome_i_cancel_i
+    -- have sub_palin : (toPalindrome_i L i) = (toPalindrome_i (toPalindrome_i L j) i) := by
+    sorry -- Lemma 1.3.1
 
 noncomputable def eta_aux (s : α) (t:T) : μ₂ := if s = t.val then μ₂.gen else 1
 
