@@ -10,17 +10,17 @@ namespace Bruhat
 variable {G : Type*} [CoxeterGroup G]
 
 @[simp]
-abbrev lt_adj (u w : G) := ∃ t ∈ Refls G, w = u * t ∧ ℓ(u) < ℓ(w)
+abbrev lt_adj (u w : G) := ∃ t ∈ Refl G, w = u * t ∧ ℓ(u) < ℓ(w)
 
 @[simp]
-abbrev lt_adj' (u w : G) := ∃ t ∈ Refls G, w = t * u ∧ ℓ(u) < ℓ(w)
+abbrev lt_adj' (u w : G) := ∃ t ∈ Refl G, w = t * u ∧ ℓ(u) < ℓ(w)
 
 lemma lt_adj_iff_lt_adj' {u w : G} : lt_adj u w ↔ lt_adj' u w := by
   constructor
   · rintro ⟨t, ⟨trfl, wut, ulew⟩⟩
     use u * t * u⁻¹
-    have uturfl : u * t * u⁻¹ ∈ Refls G := by
-      rw [Refls] at trfl ⊢
+    have uturfl : u * t * u⁻¹ ∈ Refl G := by
+      --simp [Refl] at trfl ⊢
       rcases trfl with ⟨v, s, vsv⟩
       use u * v, s
       rw [vsv]
@@ -31,8 +31,8 @@ lemma lt_adj_iff_lt_adj' {u w : G} : lt_adj u w ↔ lt_adj' u w := by
     exact ⟨uturfl, wexp, ulew⟩
   · rintro ⟨t, ⟨trfl, wtu, ulew⟩⟩
     use u⁻¹ * t * u
-    have uturfl : u⁻¹ * t * u ∈ Refls G := by
-      rw [Refls] at trfl ⊢
+    have uturfl : u⁻¹ * t * u ∈ Refl G := by
+      --rw [Refls] at trfl ⊢
       rcases trfl with ⟨v, s, vsv⟩
       use u⁻¹ * v, s
       rw [vsv]

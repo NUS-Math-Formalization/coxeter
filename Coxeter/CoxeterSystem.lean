@@ -209,11 +209,18 @@ variable (G :Type*) [hG: HOrderTwoGenGroup G]
 variable {H :Type*} [hH: HOrderTwoGenGroup H]
 
 @[simp]
-def SimpleRefls := hG.S
+abbrev SimpleRefl := hG.S
+@[simp,deprecated SimpleRefl]
+abbrev SimpleRefls := hG.S
 
-#check SimpleRefls G
 
-instance SimpleRefls.toOrderTwoGen  : @OrderTwoGen H _ (SimpleRefls H) where
+
+abbrev Refl (G:Type*) [HOrderTwoGenGroup G]: Set G:= {x:G| ∃ (w:G)(s : SimpleRefl G) , x = w*s*w⁻¹}
+
+@[deprecated Refl]
+abbrev Refls (G:Type*) [HOrderTwoGenGroup G]: Set G:= {x:G| ∃ (w:G)(s : SimpleRefl G) , x = w*s*w⁻¹}
+
+instance SimpleRefls.toOrderTwoGen  : @OrderTwoGen H _ (SimpleRefl H) where
   order_two := hH.order_two
   expression := hH.expression
 
@@ -236,7 +243,7 @@ class CoxeterGroup (G:Type*) extends HOrderTwoGenGroup G where
 namespace CoxeterGroup
 open HOrderTwoGenGroup
 
-instance SimpleRefl_isCoxeterSystem  {G:Type*} [hG:CoxeterGroup G]: CoxeterSystem (SimpleRefls G) where
+instance SimpleRefl_isCoxeterSystem  {G:Type*} [hG:CoxeterGroup G]: CoxeterSystem (SimpleRefl G) where
   exchange := hG.exchange
   exchange' := hG.exchange'
   deletion := hG.deletion
@@ -247,14 +254,58 @@ instance SimpleRefl_isCoxeterSystem'  {G:Type*} [hG:CoxeterGroup G]: CoxeterSyst
   deletion := hG.deletion
 
 
-def Refls (G:Type*) [CoxeterGroup G]: Set G:= {x:G| ∃ (w:G)(s : SimpleRefls G) , x = w*s*w⁻¹}
 
 -- The length function defines a metric on the Coxeter group
-noncomputable instance metric [CoxeterGroup G]: MetricSpace G := OrderTwoGen.metric <| SimpleRefls G
+noncomputable instance metric [CoxeterGroup G]: MetricSpace G := OrderTwoGen.metric <| SimpleRefl G
 
 end CoxeterGroup
 
 end
+
+
+
+-- Palindrome words is moved here
+section Palindrome
+@[simp]
+abbrev toPalindrome   (L : List β) : List β := L ++ L.reverse.tail
+
+-- Note that 0-1 = 0
+lemma toPalindrome_length {L : List β} : (toPalindrome L).length = 2 * L.length - 1 := by
+  simp only [toPalindrome, List.length_append, List.length_reverse, List.length_tail]
+  by_cases h: L.length=0
+  . simp [h]
+  . rw [<-Nat.add_sub_assoc]
+    zify; ring_nf
+    apply Nat.pos_of_ne_zero h
+
+variable {G:Type*} [Group G] {S : Set G} [OrderTwoGen S]
+
+local notation "T" => (OrderTwoGen.Refl S)
+
+-- DLevel 2
+lemma toPalindrome_in_Refl [OrderTwoGen S] {L:List S} (hL : L ≠ []) : (toPalindrome L:G) ∈ T := by
+  sorry
+
+-- Our index starts from 0
+def toPalindrome_i  (L : List S) (i : ℕ) := toPalindrome (L.take (i+1))
+local notation:210 "t(" L:211 "," i:212 ")" => toPalindrome_i L i
+
+--def toPalindromeList (L : List S) : Set (List S):= List.image (toPalindrome_i L)'' Set.univ
+
+--DLevel 3
+lemma mul_Palindrome_i_cancel_i [OrderTwoGen S] {L : List S} (i : Fin L.length) : (t(L, i):G) * L = (L.removeNth i) := by sorry
+
+
+-- DLevel 4
+lemma distinct_toPalindrome_i_of  [OrderTwoGen S] {L : List S} :  reduced_word L → (∀ (i j : Fin L.length),  (hij : i ≠ j) → (toPalindrome_i L i) ≠ (toPalindrome_i L i)) := by
+   sorry
+
+
+lemma reduce_of_distinct_toPalindrome_i  [OrderTwoGen S] {L : List S} (hdel: DeletionProp S): ( ∀ i j:Fin L.length, (hij : i ≠ j) → (toPalindrome_i L i) ≠ (toPalindrome_i L i)) → reduced_word L := by sorry
+
+
+end Palindrome
+
 
 -- namespace CoxeterSystem
 

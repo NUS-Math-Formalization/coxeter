@@ -472,4 +472,12 @@ lemma reduced_nonreduced_length_le  {L : List S} {s : S} (H1: reduced_word L) (H
     exact H2
 }
 
+abbrev SimpleRefl (S:Set G) [OrderTwoGen S]: Set G:= S
+
+abbrev Refl (S:Set G) [OrderTwoGen S]: Set G:= {x:G| ∃ (w:G) (s : S) , x = w*s*w⁻¹}
+
+-- TODO add some lemmes about conj of Refl is in Refl
+-- DLevel1
+
+
 end OrderTwoGen
