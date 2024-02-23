@@ -9,6 +9,7 @@ import Mathlib.Analysis.SpecialFunctions.Trigonometric.Basic
 import Mathlib.Data.Complex.Exponential
 import Mathlib.RingTheory.RootsOfUnity.Basic
 import Coxeter.CoxeterSystem
+import Coxeter.OrderTwoGen
 
 open BigOperators
 
@@ -148,7 +149,10 @@ lemma of_relation (s t: α) : ((of m s) * (of m t))^(m s t) = 1  :=  by
 
 -- DLevel 1
 @[simp]
-lemma of_square_eq_one {s : α} : (of m s) * (of m s) = 1  :=  by sorry
+lemma of_square_eq_one {s : α} : (of m s) * (of m s) = 1  :=  by
+  have : m s s = 1 := diagonal_one m
+  rw [← pow_one ((of m s) * (of m s)), ←this]
+  apply of_relation m s s
 
 @[simp]
 lemma of_square_eq_one' : s ∈ SimpleRefl m → s * s = 1 := by
@@ -157,7 +161,7 @@ lemma of_square_eq_one' : s ∈ SimpleRefl m → s * s = 1 := by
   simp_all only [← h, of_square_eq_one]
 
 lemma of_inv_eq_of {x : α} :  (of m x)⁻¹ =  of m x  :=
-  inv_eq_of_mul_eq_one_left (@of_square_eq_one α m x)
+  inv_eq_of_mul_eq_one_left (@of_square_eq_one α m hm x)
 
 
 -- DLevel 1
@@ -376,22 +380,16 @@ lemma strong_exchange : ∀ (L : List S) (t : T) , ℓ((t:G) * L) < ℓ(L) →
   exact removeNth_of_palindrome_prod L i
 
 
-def ReflSet (g:G) : Set T := { t | ℓ(t*g)≤ ℓ(g)}
-
--- DLevel 3
-instance ReflSet.fintype : Fintype (ReflSet g) := sorry
-
--- DLevel 3
-lemma length_eq_card_reflset  [CoxeterMatrix m] : ℓ(g) = Fintype.card (ReflSet g) := by sorry
-
-
-
 lemma exchange: OrderTwoGen.ExchangeProp S:= by
   intro L t _ h2
   obtain ⟨i, hi⟩ := strong_exchange L ⟨t.val, (SimpleRefl_subset_Refl m t.prop)⟩ (length_smul_lt_of_le h2)
   exact ⟨i, hi⟩
 
+-- DLevel 3
+instance ReflSet.fintype : Fintype (ReflSet S g) := sorry
 
+-- DLevel 3
+lemma length_eq_card_reflset  [OrderTwoGen S] : ℓ(g) = Fintype.card (ReflSet S g) := by sorry
 
 end CoxeterMatrix
 
@@ -400,8 +398,6 @@ namespace CoxeterMatrix
 open OrderTwoGen
 
 variable {α : Type*} [DecidableEq α] {m : Matrix α α ℕ} [CoxeterMatrix m]
-
-
 
 -- We will covert the lean3 proof to lean4
 
