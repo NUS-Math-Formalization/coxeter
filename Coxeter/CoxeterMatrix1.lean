@@ -133,9 +133,18 @@ lemma epsilon_of (s : α) : epsilon m (of m s) = μ₂.gen := by
 
 -- DLevel 1
 @[simp]
-lemma of_relation (s t: α) : ((of m s) * (of m t))^(m s t) = 1  :=  by sorry
-
-
+lemma of_relation (s t: α) : ((of m s) * (of m t))^(m s t) = 1  :=  by
+  set M := toRelationSet m
+  set k := ((FreeGroup.of s) * (FreeGroup.of t))^(m s t)
+  have kM : (k ∈ M) := by exact Exists.intro (s, t) rfl
+  have MN : (M ⊆ N) := by exact Subgroup.subset_normalClosure
+  have kN : (k ∈ N) := by exact MN kM
+  rw [of, of]
+  have : (((QuotientGroup.mk' N) (FreeGroup.of s) * (QuotientGroup.mk' N) (FreeGroup.of t)) ^ (m s t)
+    = (QuotientGroup.mk' N) ((FreeGroup.of (s) * FreeGroup.of (t)) ^ (m s t))) := by rfl
+  rw [this]
+  apply (QuotientGroup.eq_one_iff k).2
+  exact kN
 
 -- DLevel 1
 @[simp]
