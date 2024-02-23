@@ -150,9 +150,18 @@ lemma of_square_eq_one' : s ∈ SimpleRefl m → s * s = 1 := by
 lemma of_inv_eq_of {x : α} :  (of m x)⁻¹ =  of m x  :=
   inv_eq_of_mul_eq_one_left (@of_square_eq_one α m x)
 
+def getS (L: List (α × Bool)) := L.map (fun (a, b) => toSimpleRefl m a)
 
 -- DLevel 1
-lemma toGroup_expression : ∀ x :G, ∃ L : List S,  x = L.gprod := by sorry
+lemma toGroup_expression : ∀ x :G, ∃ L : List S,  x = L.gprod := by
+  intro x
+  have k : ∃ y : F, QuotientGroup.mk y = x := by exact Quot.exists_rep x
+  rcases k with ⟨y, rep⟩
+  set a := getS m y.toWord
+  use a
+  have : x = a.gprod := by sorry
+  apply this
+
 
 
 lemma generator_ne_one  (s: α) : of m s ≠ 1 :=  by
