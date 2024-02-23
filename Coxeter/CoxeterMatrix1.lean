@@ -370,19 +370,18 @@ lemma strong_exchange : ∀ (L : List S) (t : T) , ℓ((t:G) * L) < ℓ(L) →
   rw [← hi]
   exact removeNth_of_palindrome_prod L i
 
-  -- DLevel 3
-instance ReflSet.fintype : Fintype (Set G) := sorry
-
--- DLevel 3
-lemma length_eq_card_reflset  [CoxeterMatrix m] : ℓ(g) = Fintype.card (Set G) := by sorry
-
 
 lemma exchange: OrderTwoGen.ExchangeProp S:= by
   intro L t _ h2
   obtain ⟨i, hi⟩ := strong_exchange L ⟨t.val, (SimpleRefl_subset_Refl m t.prop)⟩ (length_smul_lt_of_le h2)
   exact ⟨i, hi⟩
 
+-- TODO: fix the error
+-- DLevel 3
+instance ReflSet.fintype : Fintype (@ReflSet g) := sorry
 
+-- DLevel 3
+lemma length_eq_card_reflset  [OrderTwoGen S] : ℓ(g) = Fintype.card (@ReflSet g) := by sorry
 
 end CoxeterMatrix
 
