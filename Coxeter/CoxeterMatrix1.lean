@@ -151,7 +151,7 @@ lemma of_square_eq_one' : s ∈ SimpleRefl m → s * s = 1 := by
   simp_all only [← h, of_square_eq_one]
 
 lemma of_inv_eq_of {x : α} :  (of m x)⁻¹ =  of m x  :=
-  inv_eq_of_mul_eq_one_left (@of_square_eq_one α m x)
+  inv_eq_of_mul_eq_one_left (@of_square_eq_one α m hm x)
 
 
 -- DLevel 1
