@@ -86,6 +86,8 @@ lemma removeNth_length {α : Type _} (L: List α) (n : Fin L.length) : (L.remove
       rw [removeNth, length, length]
       rw [ih ⟨m, (add_lt_add_iff_right 1).mp nprop⟩]
 
+
+
 lemma sub_one_lt_self (n: ℕ) (_ : 0 < n) : n - 1 < n := match n with
 | 0 => by {contradiction}
 | n+1 => by {simp}
@@ -100,22 +102,18 @@ lemma take_drop_get {α : Type _} (L: List α) (n : ℕ) (h : n < L.length):
 
 @[simp]
 lemma drop_take_nil {α : Type _} {L : List α} {n : ℕ} : (L.take n).drop n = [] := by
-  have h:= drop_take n 0 L
+  have h := drop_take n 0 L
   simp only [add_zero, take] at h
   exact h
 
+
 -- DLevel 2
 lemma take_get_lt {α : Type _} (L: List α) (n : ℕ) (h : n < L.length) :
-  L.take (n+1) = L.take n ++ [L.get ⟨n,h⟩] := by
-  have H1 : (L.take (n+1)).length = n+1 := by
-    rw [List.length_take]; simp only [ge_iff_le, min_eq_left_iff]; linarith
-  have Hn := take_drop_get (L.take (n+1)) n (by linarith)
-  sorry
-  -- have nn1 : min n (n+1) = n := by simp only [ge_iff_le, le_add_iff_nonneg_right, min_eq_left]
-  -- simp only [drop_take_nil, append_nil,take_take,nn1] at Hn
-  -- have nn2 : n < n+1 := by simp only [lt_add_iff_pos_right]
-  -- have Hgt := get_take L h nn2
-  -- rw [Hn,Hgt]
+  L.take (n+1) = L.take n ++ [L.get ⟨n, h⟩] := by
+  have h1 : L = L.take n ++ [L.get ⟨n, h⟩] ++ L.drop (n+1) := take_drop_get L n h
+  have h2 : L = L.take (n+1) ++ L.drop (n+1) := symm (take_append_drop (n+1) L)
+  nth_rw 1 [h2] at h1
+  exact (append_left_inj (drop (n+1) L)).mp h1
 
 
 lemma get_eq_nthLe {α : Type _} {L: List α} {n : ℕ} {h : n < L.length} :
@@ -144,7 +142,11 @@ lemma removeNth_append_lt {α : Type _} (L1 L2: List α) (n : ℕ) (h : n < L1.l
 --   rw [removeNth_eq_take_drop, removeNth_eq_take_drop]
 --   rw [List.take_append_of_le_length (le_of_ge h)]
 
-
+-- DLevel 2
+lemma take_eq_of_removeNth (L : List α) {i j : ℕ} (h : i ≤ j) :
+    L.take i = (L.removeNth j).take i := by
+  -- try induction?
+  sorry
 
 lemma removeNth_reverse (L : List α) (n : ℕ) (h : n < L.length) :
   (L.reverse).removeNth n = (L.removeNth (L.length - n - 1)).reverse := by

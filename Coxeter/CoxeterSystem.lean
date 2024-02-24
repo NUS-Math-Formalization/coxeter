@@ -1,4 +1,5 @@
 import Coxeter.OrderTwoGen
+import Coxeter.Aux_
 
 namespace OrderTwoGen
 variable {G : Type*} [Group G] (S : Set G) [OrderTwoGen S]
@@ -102,7 +103,7 @@ lemma exchange_imp_deletion : ExchangeProp S →  DeletionProp S:= by
   have h_L_decomp : (List.removeNth (List.removeNth L j) i) =
     (List.removeNth L1 i).gprod * (List.drop (j+1) L) := by
     rw [←gprod_append]; apply congr_arg
-    rw [←List.removeNth_append_lt, ←removeNth_eq_take_drop]
+    rw [←List.removeNth_append_lt, ←List.removeNth_eq_take_drop]
     exact i.2
   rw [h_L_decomp, ←Hp, ←gprod_singleton]
   apply take_drop_get'
