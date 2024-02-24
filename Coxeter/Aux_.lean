@@ -43,10 +43,7 @@ lemma length_append_singleton (L : List α) (a : α) : (L ++ [a]).length = L.len
 lemma take_le_length (L : List α) (h : n ≤ L.length)  : (L.take n).length = n := by
   simp only [length_take,ge_iff_le, h, min_eq_left]
 
-
-
-lemma remove_nth_eq_take_drop {α : Type _} (L: List α) (n : ℕ) : L.removeNth n = L.take n ++ L.drop (n+1) :=
-by
+lemma removeNth_eq_take_drop {α : Type _} (L: List α) (n : ℕ) : L.removeNth n = L.take n ++ L.drop (n+1) := by
   revert n
   induction L with
   | nil => {intro n; simp only [removeNth, take_nil, drop, append_nil]}
@@ -57,6 +54,37 @@ by
       | k+1 =>
         simp only [removeNth, Nat.add_eq, add_zero, take, drop, cons_append, cons.injEq, true_and]
         exact ih k
+
+@[deprecated removeNth_eq_take_drop]
+lemma remove_nth_eq_take_drop {α : Type _} (L: List α) (n : ℕ) : L.removeNth n = L.take n ++ L.drop (n+1) := by
+  revert n
+  induction L with
+  | nil => {intro n; simp only [removeNth, take_nil, drop, append_nil]}
+  | cons hd tail ih =>
+      intro n
+      match n with
+      | 0 => {simp only [removeNth, take, drop, nil_append]}
+      | k+1 =>
+        simp only [removeNth, Nat.add_eq, add_zero, take, drop, cons_append, cons.injEq, true_and]
+        exact ih k
+
+lemma removeNth_length {α : Type _} (L: List α) (n : Fin L.length) : (L.removeNth n).length + 1 = L.length := by
+  revert n
+  induction L with
+  | nil =>
+    intro n
+    rw [length] at n
+    rcases n with ⟨v, h⟩
+    by_contra
+    exact (not_le.mpr h) (Nat.zero_le v)
+  | cons hd tail ih =>
+    intro n
+    match n.val, n.prop with
+    | 0, _ => rw [removeNth, length]
+    | m + 1, nprop =>
+      rw [length] at nprop
+      rw [removeNth, length, length]
+      rw [ih ⟨m, (add_lt_add_iff_right 1).mp nprop⟩]
 
 lemma sub_one_lt_self (n: ℕ) (_ : 0 < n) : n - 1 < n := match n with
 | 0 => by {contradiction}
