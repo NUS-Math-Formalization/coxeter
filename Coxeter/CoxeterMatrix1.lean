@@ -237,16 +237,52 @@ local notation "S" => SimpleRefl m
 local notation "T" => Refl m
 
 -- DLevel 1
+-- Moving to OrderTwoGen?
+@[simp]
+lemma Refl.simplify {t:G}: t ∈ T ↔ ∃ g : G,∃ s : S, g * s * g⁻¹=t := by
+  constructor
+  · intro h1
+    dsimp at h1
+    have h3: ∃ x: G × S, x.1 * ↑x.2 * x.1⁻¹=t := by
+      apply Set.mem_range.mpr h1
+    rcases h3 with ⟨x,h4⟩
+    use x.1,x.2
+
+  · intro h2
+    dsimp
+    apply Set.mem_range.mpr
+    rcases h2 with ⟨g,s,h3⟩
+    use (g,s)
+
 @[simp]
 lemma Refl.conjugate_closed {s : α} {t : T} : (s:G) * t * (s:G)⁻¹ ∈ T := by
-  sorry
-
-
+  dsimp
+  apply Set.mem_range.mpr
+  have h1: ∃ g1 : G,∃ s1: S, (g1:G) * (s1:G) * (g1:G)⁻¹=(t:G) := by
+    apply Refl.simplify.mp
+    apply Subtype.mem
+  rcases h1 with ⟨g1,s1,h2⟩
+  have h3: (of m s* g1) * ↑s1 * (of m s*g1)⁻¹=of m s * ↑t * (of m s)⁻¹:= by
+    rw[← h2]
+    group
+  use (of m s* g1,s1)
 
 -- DLevel 1
 @[simp]
 lemma Refl.conjugate_closed' [CoxeterMatrix m ] {s : α} {t : T} : (s:G) * t * (s:G) ∈ T := by
-  sorry
+  dsimp
+  have h4: (of m s)⁻¹=of m s := by
+    apply of_inv_eq_of
+  nth_rw 2 [← h4]
+  apply Set.mem_range.mpr
+  have h1: ∃ g1 : G,∃ s1: S, (g1:G) * (s1:G) * (g1:G)⁻¹=(t:G) := by
+    apply Refl.simplify.mp
+    apply Subtype.mem
+  rcases h1 with ⟨g1,s1,h2⟩
+  have h3: (of m s* g1) * ↑s1 * (of m s*g1)⁻¹=of m s * ↑t * (of m s)⁻¹:= by
+    rw[← h2]
+    group
+  use (of m s* g1,s1)
 
 lemma sq_refl_eq_one [CoxeterMatrix m] {t : T} : (t : G) ^ 2 = 1 := by
   rcases t with ⟨t, ⟨g, s⟩, feqt⟩
