@@ -86,6 +86,8 @@ lemma removeNth_length {α : Type _} (L: List α) (n : Fin L.length) : (L.remove
       rw [removeNth, length, length]
       rw [ih ⟨m, (add_lt_add_iff_right 1).mp nprop⟩]
 
+
+
 lemma sub_one_lt_self (n: ℕ) (_ : 0 < n) : n - 1 < n := match n with
 | 0 => by {contradiction}
 | n+1 => by {simp}

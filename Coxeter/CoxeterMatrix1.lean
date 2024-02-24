@@ -67,9 +67,28 @@ abbrev SimpleRefl := Set.range (of m)
 local notation "S" => (SimpleRefl m)
 
 @[simp]
-abbrev  Refl : Set G := Set.range <| fun ((g,s): G×S) => g * s * g⁻¹
+abbrev Refl : Set G := Set.range <| fun ((g, s) : G × S) => g * s * g⁻¹
 
 local notation "T" => (Refl m)
+
+@[simp]
+lemma mem_Refl_iff : t ∈ T ↔ ∃ (g : G) (s : S), t = g * s * g⁻¹ := by
+  sorry
+
+@[simp]
+def toRefl (t : G) (h : ∃ (g : G) (s : S), t = g * s * g⁻¹) : T where
+  val := t
+  property := by exact (mem_Refl_iff m).mpr h
+
+lemma mem_Refl_iff' (t : T) (g : G) : t' ∈ T ↔ t' = g⁻¹ * t * g := by
+  sorry
+
+@[simp]
+def toRefl' (t' : G) (t : T) (g : G) (h : t' = g⁻¹ * t * g) : T where
+  val := t'
+  property := by exact (mem_Refl_iff' m t g).mpr h
+
+
 
 @[simp]
 lemma SimpleRefl_subset_Refl : ∀ {g : G}, g ∈ S → g ∈ T := by
@@ -78,7 +97,7 @@ lemma SimpleRefl_subset_Refl : ∀ {g : G}, g ∈ S → g ∈ T := by
   simp
 
 @[simp]
-def toSimpleRefl (a : α) : SimpleRefl m := ⟨of m a, by  simp⟩
+def toSimpleRefl (a : α) : SimpleRefl m := ⟨of m a, by simp⟩
 
 instance coe_group: Coe α (toGroup m) where
   coe := of m
@@ -106,7 +125,13 @@ abbrev μ₂.gen :μ₂ := ⟨-1, by norm_cast⟩
 
 lemma μ₂.gen_ne_one : μ₂.gen ≠ 1 := by rw [μ₂.gen]; norm_cast
 
-lemma μ₂.not_iff_not : ∀ (z : μ₂), ¬(z = 1) ↔ z = μ₂.gen := by sorry
+lemma μ₂.not_iff_not : ∀ (z : μ₂), ¬ z = 1 ↔ z = μ₂.gen := by sorry
+
+lemma μ₂.not_iff_not' : ∀ (z : μ₂), ¬ z = μ₂.gen ↔ z = 1 := by
+  intro z
+  constructor
+  . contrapose; rw [not_not]; exact (μ₂.not_iff_not z).mp
+  contrapose; rw [not_not]; exact (μ₂.not_iff_not z).mpr
 
 lemma μ₂.gen_square : μ₂.gen * μ₂.gen = 1 := by rw [μ₂.gen]; norm_cast
 
@@ -429,7 +454,7 @@ noncomputable def pi_aux'  [CoxeterMatrix m] (s:α) : Equiv.Perm R where
 lemma pi_relation (s t : α) : ((pi_aux' s : Equiv.Perm R ) * (pi_aux' t : Equiv.Perm R)) = 1 := by
   sorry
 
-noncomputable def pi  : G →* Equiv.Perm R := lift m (fun s => pi_aux' s) (by simp [pi_relation])
+noncomputable def pi : G →* Equiv.Perm R := lift m (fun s => pi_aux' s) (by simp [pi_relation])
 
 -- DLevel 2
 -- Use MonoidHom.ker_eq_bot_iff
@@ -450,13 +475,49 @@ lemma eta_equiv_nn' {L : List S} {t : T} : eta L t = (μ₂.gen) ^ (nn L t) := b
 
 end ReflRepresentation
 
+
 -- DLevel 4
-lemma lt_iff_eta_eq_gen (g : G) (t : T) : ℓ(t * g) < ℓ(g) ↔ eta g t = μ₂.gen := by sorry
+lemma lt_iff_eta_eq_gen (g : G) (t : T) : ℓ(t * g) < ℓ(g) ↔ eta g t = μ₂.gen := by
+  have mpr (g : G) (t : T) : eta g t = μ₂.gen → ℓ(t * g) < ℓ(g) := by
+    intro h
+    obtain ⟨L, hL⟩ := exists_reduced_word S g
+    have h1 : nn L t > 0 := by
+      have : (μ₂.gen)^(nn L t) = μ₂.gen := by rw [← eta_equiv_nn']; rw [← hL.right]; assumption
+      exact Odd.pos (μ₂.odd_pow_iff_eq_gen.mp this)
+    have : ∃ i : Fin L.length, (toPalindrome_i L i:G) = t := exists_of_nn_ne_zero L t h1
+    obtain ⟨i, hi⟩ := this;
+    rw [← hi, hL.right, removeNth_of_palindrome_prod L i]
+    have h2 : (L.removeNth i).length < L.length := by
+      rw [List.length_removeNth i.2]
+      exact Nat.pred_lt' i.2
+    rw [←OrderTwoGen.length_eq_iff.mp hL.left]
+    exact lt_of_le_of_lt length_le_list_length h2
+
+  have mp (g : G) (t : T) : ℓ(t * g) < ℓ(g) → eta g t = μ₂.gen := by
+    contrapose
+    intro h
+    rw [μ₂.not_iff_not'] at h
+    let g_inv_t_g := toRefl' m (g⁻¹ * t * g) t g rfl
+    have eq1 : ReflRepn.pi ((t : G) * g)⁻¹ (t, μ₂.gen) = (g_inv_t_g, μ₂.gen * eta ((t : G) * g) t) := by sorry
+    have eq2 : ReflRepn.pi ((t : G) * g)⁻¹ (t, μ₂.gen) = (g_inv_t_g, 1) := by sorry
+    have : eta ((t : G) * g) t = μ₂.gen := by
+      rw [eq1] at eq2
+      have : μ₂.gen * eta ((t : G) * g) t = 1 := (Prod.eq_iff_fst_eq_snd_eq.mp eq2).right
+      apply (@mul_left_cancel_iff _ _ _ μ₂.gen).mp
+      rw [μ₂.gen_square]; assumption;
+    let hh := mpr (t * g) t this
+    rw [←mul_assoc, ←pow_two, sq_refl_eq_one, one_mul] at hh
+    rw [not_lt]
+    exact le_of_lt hh
+  exact Iff.intro (mp g t) (mpr g t)
+
 
 
 -- DLevel 2
 lemma lt_iff_eta_eq_gen' (g : G) (t : T) : ℓ(t * g) ≤ ℓ(g) ↔ eta g t = μ₂.gen := by
   sorry
+
+
 
 -- DLevel 4
 lemma strong_exchange : ∀ (L : List S) (t : T) , ℓ((t:G) * L) < ℓ(L) →
@@ -464,14 +525,10 @@ lemma strong_exchange : ∀ (L : List S) (t : T) , ℓ((t:G) * L) < ℓ(L) →
   intro L t h
   have eta_eq_gen : eta L t = μ₂.gen := (lt_iff_eta_eq_gen L t).mp h
   have h1 : nn L t > 0 := by
-    have : (μ₂.gen)^(nn L t) = μ₂.gen := by
-      rw [← eta_equiv_nn']; assumption
-    have : Odd (nn L t) := by exact μ₂.odd_pow_iff_eq_gen.mp this
-    exact Odd.pos this
+    have : (μ₂.gen)^(nn L t) = μ₂.gen := by rw [← eta_equiv_nn']; assumption
+    exact Odd.pos (μ₂.odd_pow_iff_eq_gen.mp this)
   have : ∃ i : Fin L.length, (toPalindrome_i L i:G) = t := exists_of_nn_ne_zero L t h1
-  obtain ⟨i, hi⟩ := this
-  use i
-  rw [← hi]
+  obtain ⟨i, hi⟩ := this; use i; rw [← hi]
   exact removeNth_of_palindrome_prod L i
 
 
