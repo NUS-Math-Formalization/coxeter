@@ -100,22 +100,18 @@ lemma take_drop_get {α : Type _} (L: List α) (n : ℕ) (h : n < L.length):
 
 @[simp]
 lemma drop_take_nil {α : Type _} {L : List α} {n : ℕ} : (L.take n).drop n = [] := by
-  have h:= drop_take n 0 L
+  have h := drop_take n 0 L
   simp only [add_zero, take] at h
   exact h
 
+
 -- DLevel 2
 lemma take_get_lt {α : Type _} (L: List α) (n : ℕ) (h : n < L.length) :
-  L.take (n+1) = L.take n ++ [L.get ⟨n,h⟩] := by
-  have H1 : (L.take (n+1)).length = n+1 := by
-    rw [List.length_take]; simp only [ge_iff_le, min_eq_left_iff]; linarith
-  have Hn := take_drop_get (L.take (n+1)) n (by linarith)
-  sorry
-  -- have nn1 : min n (n+1) = n := by simp only [ge_iff_le, le_add_iff_nonneg_right, min_eq_left]
-  -- simp only [drop_take_nil, append_nil,take_take,nn1] at Hn
-  -- have nn2 : n < n+1 := by simp only [lt_add_iff_pos_right]
-  -- have Hgt := get_take L h nn2
-  -- rw [Hn,Hgt]
+  L.take (n+1) = L.take n ++ [L.get ⟨n, h⟩] := by
+  have h1 : L = L.take n ++ [L.get ⟨n, h⟩] ++ L.drop (n+1) := take_drop_get L n h
+  have h2 : L = L.take (n+1) ++ L.drop (n+1) := symm (take_append_drop (n+1) L)
+  nth_rw 1 [h2] at h1
+  exact (append_left_inj (drop (n+1) L)).mp h1
 
 
 lemma get_eq_nthLe {α : Type _} {L: List α} {n : ℕ} {h : n < L.length} :
