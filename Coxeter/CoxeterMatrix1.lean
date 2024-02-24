@@ -305,6 +305,9 @@ lemma toPalindrome_i_in_Refl [CoxeterMatrix m] {L : List S} (i : Fin L.length) :
 --DLevel 3
 lemma mul_Palindrome_i_cancel_i [CoxeterMatrix m] {L : List S} (i : Fin L.length) : (t(L, i):G) * L = (L.removeNth i) := by sorry
 
+-- DLevel 1
+lemma removeNth_of_palindrome_prod (L : List S) (n : Fin L.length) :
+  (toPalindrome_i L n:G) * L = (L.removeNth n) := by sorry
 
 -- DLevel 4
 lemma distinct_toPalindrome_i_of_reduced [CoxeterMatrix m] {L : List S} : reduced_word L →
@@ -312,13 +315,13 @@ lemma distinct_toPalindrome_i_of_reduced [CoxeterMatrix m] {L : List S} : reduce
   intro rl
   by_contra! eqp
   rcases eqp with ⟨i, j, ⟨inej, eqp⟩⟩
-  wlog ilej : i < j
+  wlog iltj : i < j generalizing i j
   · have jlei : j ≤ i := by
-      push_neg at ilej
-      exact ilej
+      push_neg at iltj
+      exact iltj
     have ilej : i ≤ j := by
       have njlei : ¬j < i :=
-        @this α m hm β _ L rl j i inej.symm eqp.symm
+        this j i inej.symm eqp.symm
       push_neg at njlei
       exact njlei
     exact inej (le_antisymm ilej jlei)
@@ -336,15 +339,48 @@ lemma distinct_toPalindrome_i_of_reduced [CoxeterMatrix m] {L : List S} : reduce
                 rw [Nat.mul_add]
               _ = 2 * i.val + 1 := by congr
           have tirefl := toPalindrome_i_in_Refl i
-          have ist := (t(L, i)).gprod
-          have almost : (t(L, i)).gprod ^ 2 = 1 := by
-            --apply @sq_refl_eq_one α m _ (t(L, i))
-            sorry
-          sorry
-    -- Idea:
-    -- multiply that into L, mul_Palindrome_i_cancel_i
-    -- have sub_palin : (toPalindrome_i L i) = (toPalindrome_i (toPalindrome_i L j) i) := by
-    sorry -- Lemma 1.3.1
+          set ti : T := ⟨(t(L, i)).gprod, tirefl⟩
+          have tisq : (ti.val : G) ^ 2 = 1 := sq_refl_eq_one
+          rw [sq] at tisq
+          exact tisq
+    have lenremNj : (L.removeNth j).length = L.length - 1 :=
+      List.length_removeNth j.prop
+    have lenremNjp : (L.removeNth j).length + 1 = L.length := by
+      rw [List.removeNth_length]
+    have hi : i < (L.removeNth j).length := by
+      have jlelm1 : j ≤ L.length - 1 := by
+        have : j < L.length - 1 + 1 := by
+          have : 1 ≤ L.length := by
+            rw [← lenremNjp]
+            exact le_add_left (le_refl 1)
+          rw [Nat.sub_add_cancel this]
+          exact j.prop
+        exact Nat.lt_add_one_iff.mp this
+      rw [lenremNj]
+      exact lt_of_lt_of_le iltj jlelm1
+    have h2 : L.gprod = ((L.removeNth j).removeNth i) := by
+      calc
+        _ = (toPalindrome_i L i).gprod * (toPalindrome_i L j) * L := by
+          rw [h]
+          group
+        _ = (toPalindrome_i L i).gprod * (L.removeNth j) := by
+          rw [mul_assoc, removeNth_of_palindrome_prod]
+        _ = (toPalindrome_i (L.removeNth j) i).gprod * (L.removeNth j) := by
+          repeat rw [toPalindrome_i]
+          congr 3
+          apply List.take_eq_of_removeNth L (Nat.add_one_le_iff.mpr iltj)
+        _ = ((L.removeNth j).removeNth i) := by
+          rw [removeNth_of_palindrome_prod (L.removeNth j) ⟨i.val, hi⟩]
+    have h3 : L.length ≤ ((L.removeNth j).removeNth i).length :=
+      rl ((L.removeNth j).removeNth i) h2
+    have h4 : ((L.removeNth j).removeNth i).length + 2 = L.length := by
+      have lenremNip : ((L.removeNth j).removeNth i).length + 1 = (L.removeNth j).length := by
+        rw [List.removeNth_length (L.removeNth j) ⟨i.val, hi⟩]
+      calc
+        _ = ((L.removeNth j).removeNth i).length + 1 + 1 := by ring
+        _ = (L.removeNth j).length + 1 := by rw [lenremNip]
+        _ = L.length := by rw [lenremNjp]
+    linarith [h3, h4]
 
 noncomputable def eta_aux (s : α) (t:T) : μ₂ := if s = t.val then μ₂.gen else 1
 
@@ -421,10 +457,6 @@ lemma lt_iff_eta_eq_gen (g : G) (t : T) : ℓ(t * g) < ℓ(g) ↔ eta g t = μ�
 -- DLevel 2
 lemma lt_iff_eta_eq_gen' (g : G) (t : T) : ℓ(t * g) ≤ ℓ(g) ↔ eta g t = μ₂.gen := by
   sorry
-
--- DLevel 1
-lemma removeNth_of_palindrome_prod (L : List S) (n : Fin L.length) :
-  (toPalindrome_i L n:G) * L = (L.removeNth n) := by sorry
 
 -- DLevel 4
 lemma strong_exchange : ∀ (L : List S) (t : T) , ℓ((t:G) * L) < ℓ(L) →

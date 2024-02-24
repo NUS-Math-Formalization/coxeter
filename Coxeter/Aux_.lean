@@ -144,7 +144,11 @@ lemma removeNth_append_lt {α : Type _} (L1 L2: List α) (n : ℕ) (h : n < L1.l
 --   rw [removeNth_eq_take_drop, removeNth_eq_take_drop]
 --   rw [List.take_append_of_le_length (le_of_ge h)]
 
-
+-- DLevel 2
+lemma take_eq_of_removeNth (L : List α) {i j : ℕ} (h : i ≤ j) :
+    L.take i = (L.removeNth j).take i := by
+  -- try induction?
+  sorry
 
 lemma removeNth_reverse (L : List α) (n : ℕ) (h : n < L.length) :
   (L.reverse).removeNth n = (L.removeNth (L.length - n - 1)).reverse := by
