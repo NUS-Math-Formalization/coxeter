@@ -133,7 +133,7 @@ lemma take_drop_nth_le {α : Type _} (L: List α) (n : ℕ) (h : n < L.length): 
 @[simp]
 lemma removeNth_append_lt {α : Type _} (L1 L2: List α) (n : ℕ) (h : n < L1.length) :
   (L1 ++ L2).removeNth n = L1.removeNth n ++ L2 := by
-  rw [remove_nth_eq_take_drop, remove_nth_eq_take_drop]
+  rw [removeNth_eq_take_drop, removeNth_eq_take_drop]
   rw [List.take_append_of_le_length (le_of_lt h)]
   have : (L1 ++ L2).drop (n + 1) = L1.drop (n + 1) ++ L2 :=
     drop_append_of_le_length (by linarith)
@@ -141,14 +141,14 @@ lemma removeNth_append_lt {α : Type _} (L1 L2: List α) (n : ℕ) (h : n < L1.l
 
 -- lemma removeNth_append_ge {α : Type _} (L1 L2: List α) (n : ℕ) (h : n ≥ L1.length) :
 --   (L1 ++ L2).removeNth n = L1 ++ L2.removeNth (n - L1.length) := by
---   rw [remove_nth_eq_take_drop, remove_nth_eq_take_drop]
+--   rw [removeNth_eq_take_drop, removeNth_eq_take_drop]
 --   rw [List.take_append_of_le_length (le_of_ge h)]
 
 
 
 lemma removeNth_reverse (L : List α) (n : ℕ) (h : n < L.length) :
   (L.reverse).removeNth n = (L.removeNth (L.length - n - 1)).reverse := by
-  rw [remove_nth_eq_take_drop, remove_nth_eq_take_drop]
+  rw [removeNth_eq_take_drop, removeNth_eq_take_drop]
   rw [List.reverse_append, List.reverse_take n (Nat.le_of_lt h), Nat.sub_sub]
   nth_rw 6 [←List.reverse_reverse L]; nth_rw 7 [←List.reverse_reverse L]
   rw [List.length_reverse L.reverse]
