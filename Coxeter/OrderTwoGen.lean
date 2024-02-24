@@ -490,4 +490,6 @@ lemma sq_refl_eq_one [OrderTwoGen S] {t : Refl S} : (t : G) ^ 2 = 1 := by
   rw [mul_assoc g s, hs]
   group
 
+def ReflSet (S:Set G) [OrderTwoGen S] (g:G) : Set (Refl S) := { t | length S (t * g)≤ length S (g)}
+
 end OrderTwoGen
