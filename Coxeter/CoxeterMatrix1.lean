@@ -343,7 +343,15 @@ lemma toPalindrome_length {L : List β} : (toPalindrome L).length = 2 * L.length
 
 -- DLevel 2
 lemma toPalindrome_in_Refl [CoxeterMatrix m] {L:List S} (hL : L ≠ []) : (toPalindrome L:G) ∈ T := by
+  apply Set.mem_range.mpr
+  apply Refl.simplify.mpr
+  have : L.length > 0 := List.length_pos.mpr hL
+  set i := L.length - 1
+  set g := L.take i
+  set s := L[0]
+  use g, s
   sorry
+  -- waiting for clarence's lemma lol
 
 -- Our index starts from 0
 def toPalindrome_i  (L : List S) (i : ℕ) := toPalindrome (L.take (i+1))
