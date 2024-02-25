@@ -375,10 +375,7 @@ lemma lrtr_eq_ldl {L : List S} (hL : L ≠ []) : L.reverse.tail.reverse = L.drop
 
 lemma rtr_append {L : List S} (hL : L ≠ []) :
   L.reverse.tail.reverse ++ [L.getLast hL] = L := by
-  set n := L.length
-  have : n > 0 := List.length_pos.mpr hL
-  have : L.reverse.tail.reverse = L.dropLast := lrtr_eq_ldl hL
-  rw [this]
+  rw [lrtr_eq_ldl hL]
   exact List.dropLast_append_getLast hL
 
 -- DLevel 2
