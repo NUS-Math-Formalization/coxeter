@@ -350,33 +350,34 @@ lemma reverseList_nonEmpty {L : List S} (hL : L ≠ []) : L.reverse ≠ [] := by
   apply (List.length_pos).2
   exact hL
 
+lemma lrtr_eq_ldl {L : List S} (hL : L ≠ []) : L.reverse.tail.reverse = L.dropLast := by
+  induction L with
+  | nil => contradiction
+  | cons hd tail ih =>
+    by_cases k : tail = []
+    . rw [k]
+      simp
+    . push_neg at k
+      have htd : (hd :: tail).dropLast = hd :: (tail.dropLast) := by
+        exact List.dropLast_cons_of_ne_nil k
+      rw [htd]
+      have trht : (tail.reverse ++ [hd]).tail = (tail.reverse.tail) ++ [hd] := by
+        apply List.tail_append_of_ne_nil
+        apply reverseList_nonEmpty k
+      have : (hd :: tail).reverse.tail = (hd :: tail).dropLast.reverse := by
+        rw [htd]
+        simp
+        rw [trht]
+        apply (List.append_left_inj [hd]).2
+        apply (List.reverse_eq_iff).1
+        apply ih k
+      rw [this, List.reverse_reverse, htd]
+
 lemma rtr_append {L : List S} (hL : L ≠ []) :
   L.reverse.tail.reverse ++ [L.getLast hL] = L := by
   set n := L.length
-  have : n > 0 := by exact List.length_pos.mpr hL
-  have : L.reverse.tail.reverse = L.dropLast := by
-    induction L with
-    | nil => contradiction
-    | cons hd tail ih =>
-      by_cases k : tail = []
-      . rw [k]
-        simp
-      . push_neg at k
-        have htd : (hd :: tail).dropLast = hd :: (tail.dropLast) := by
-          exact List.dropLast_cons_of_ne_nil k
-        rw [htd]
-        have trht : (tail.reverse ++ [hd]).tail = (tail.reverse.tail) ++ [hd] := by
-          apply List.tail_append_of_ne_nil
-          apply reverseList_nonEmpty k
-        have : (hd :: tail).reverse.tail = (hd :: tail).dropLast.reverse := by
-          rw [htd]
-          simp
-          rw [trht]
-          apply (List.append_left_inj [hd]).2
-          apply (List.reverse_eq_iff).1
-          apply ih k
-          exact List.length_pos.2 k
-        rw [this, List.reverse_reverse, htd]
+  have : n > 0 := List.length_pos.mpr hL
+  have : L.reverse.tail.reverse = L.dropLast := lrtr_eq_ldl hL
   rw [this]
   exact List.dropLast_append_getLast hL
 
