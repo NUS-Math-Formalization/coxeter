@@ -419,8 +419,7 @@ lemma distinct_toPalindrome_i_of_reduced [CoxeterMatrix m] {L : List S} : reduce
         _ = (toPalindrome_i (L.removeNth j) i).gprod * (L.removeNth j) := by
           repeat rw [toPalindrome_i]
           congr 3
-          apply List.take_eq_of_removeNth L (Nat.add_one_le_iff.mpr iltj)
-          apply List.take_of_removeNth.symm L (Nat.add_one_le_iff.mpr iltj)
+          apply (List.take_of_removeNth L (Nat.add_one_le_iff.mpr iltj)).symm
         _ = ((L.removeNth j).removeNth i) := by
           rw [removeNth_of_palindrome_prod (L.removeNth j) ⟨i.val, hi⟩]
     have h3 : L.length ≤ ((L.removeNth j).removeNth i).length :=
