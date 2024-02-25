@@ -498,22 +498,92 @@ lemma nn_prod_eta_aux [CoxeterMatrix m] (L : List S) (t : T) : μ₂.gen ^ (nn L
       rw [List.length]
       exact Nat.lt_add_left tail.length (by norm_num)
     have zerof : Fin (hd :: tail).length := ⟨0, hzero⟩
-    have h2 (x : Fin (Nat.succ (List.length tail))) (hx : x.1 ≠ 0) : x.1 - 1 < tail.length :=
+    have h2 (x : Fin (Nat.succ (List.length tail))) (hx : x.1 ≠ 0) : x.1 - 1 < tail.length := by
       have h : 1 ≤ x.1 := Nat.one_le_iff_ne_zero.mpr hx
-      --apply lt_sub
-      sorry --lt_trans x.prop
-    sorry
-    /-calc
-      _ = μ₂.gen ^ (List.filter (fun i => ((toPalindrome_i (hd :: tail) i) : G) = t) (List.range (Nat.succ tail.length))).length := by
+      have h3 : x.1 - 1 + 1 < tail.length + 1 := by
+        rw [Nat.sub_add_cancel h]
+        rw [← Nat.succ_eq_add_one]
+        exact x.prop
+      linarith [h3]
+    set casesFn : ℕ → G := fun i => if i = 0 then (hd : G) else (t(tail, (i - 1)) : G)
+    calc
+      _ = μ₂.gen ^ ((List.range (Nat.succ tail.length)).map (fun i => (t((hd :: tail), i) : G))).count (t : G) := by rfl
+      _ = μ₂.gen ^ ((List.range (Nat.succ tail.length)).map (fun i => hd * (t((hd :: tail), i) : G) * hd)).count ((hd : G) * t * hd) := by
+        congr 1
+        let hxh : G → G := fun (x : G) ↦ (hd : G) * x * hd
+        have h : ((List.range (Nat.succ tail.length)).map (fun i => (t((hd :: tail), i) : G))).count (t : G)
+            = (((List.range (Nat.succ tail.length)).map (fun i => (t((hd :: tail), i) : G))).map hxh).count ((hd : G) * t * hd) := by
+          have hxhinj : Function.Injective hxh := by
+            intro a b hab
+            simp only [hxh] at hab
+            exact mul_left_cancel (mul_right_cancel hab)
+          rw [List.count_map_of_injective ((List.range (Nat.succ tail.length)).map (fun i => (t((hd :: tail), i) : G))) hxh hxhinj]
+        rw [h, ← List.comp_map]
         congr
-      _ = μ₂.gen ^ (List.filter (fun i => if i = 0 then (hd : G) = t else ((toPalindrome_i tail (i - 1)) : G) = hd * t * hd) (List.range (Nat.succ tail.length))).length := by
-        sorry
+      _ = μ₂.gen ^ ((List.range (Nat.succ tail.length)).map casesFn).count ((hd : G) * t * hd) := by
+        simp only [casesFn]
+        rcases tail with (_ | ⟨th, ttail⟩)
+        · congr 2
+          rw [List.length_nil, List.range, List.range.loop, List.range.loop]
+          simp only [toPalindrome_i, List.take, toPalindrome, List.take_nil, List.reverse_singleton, List.map_singleton]
+          congr 1
+          rw [if_pos (by trivial)]
+          simp only [List.tail, List.append_nil, gprod_singleton]
+          rcases hd with ⟨hd, hhd⟩
+          rw [gen_square_eq_one hd hhd, one_mul]
+        · congr
+          ext i
+          rcases i with (_ | i)
+          · repeat rw [h]
+            rw [if_pos (by rfl)]
+            simp only [toPalindrome_i, List.take, toPalindrome, List.reverse_singleton, List.tail, List.append_nil, gprod_singleton]
+            rcases hd with ⟨hd, hhd⟩
+            rw [gen_square_eq_one hd hhd, one_mul]
+          · rw [if_neg (Nat.succ_ne_zero i)]
+            rw [Nat.succ_sub_one, Nat.succ_eq_add_one]
+            simp only [toPalindrome_i, toPalindrome, List.take, Nat.add, List.reverse_cons, List.reverse_append]
+            rw [List.tail_append_of_ne_nil, gprod_append, gprod_cons, gprod_append, gprod_singleton]
+            group
+            rcases hd with ⟨hd, hhd⟩
+            rw [mul_assoc _ hd hd, gen_square_eq_one hd hhd, one_mul, mul_one, gprod_append]
+            apply List.append_ne_nil_of_ne_nil_right
+            norm_num
+      _ = μ₂.gen ^ (((List.range' 0 1 1) ++ (List.range' 1 tail.length 1)).map casesFn).count ((hd : G) * t * hd) := by
+        congr
+        rw [Nat.succ_eq_add_one, List.range_eq_range']
+        exact List.range'_append 0 1 tail.length 1
+      _ = μ₂.gen ^ ((List.range' 0 1 1).map casesFn).count ((hd : G) * t * hd)
+          * μ₂.gen ^ ((List.range' 1 tail.length 1).map casesFn).count ((hd : G) * t * hd) := by
+        rw [List.map_append, List.count_append, pow_add]
+      _ = μ₂.gen ^ [(hd : G)].count ((hd : G) * t * hd) * μ₂.gen ^ ((List.range tail.length).map (fun i => (t(tail, i) : G))).count ((hd : G) * t * hd) := by
+        congr 3
+        rw [List.range'_eq_map_range, ← List.comp_map]
+        congr
+        ext x
+        dsimp
+        rw [add_comm 1 x, Nat.add_sub_cancel, ← Nat.succ_eq_add_one, if_neg (Nat.succ_ne_zero x)]
+      _ = eta_aux' hd t * ∏ i : Fin (List.length tail), eta_aux' (List.get tail i) ⟨((tail.take i.1).reverse : G) * sts * tail.take i.1, by apply Refl_palindrome_in_Refl⟩ := by
+        have h := ih sts
+        rw [nn] at h
+        rw [h]
+        congr
+        simp only [eta_aux']
+        by_cases h : (hd : G) = t
+        · rw [if_pos h, h, ← sq, sq_refl_eq_one, one_mul]
+          rw [List.count_singleton]
+          group
+        · rw [if_neg h, List.count_singleton']
+          have nif : (hd : G) * t * hd ≠ hd := by
+            contrapose! h
+            nth_rw 3 [← mul_one (hd : G)] at h
+            rw [mul_assoc, (of_square_eq_one' m (Subtype.mem hd)).symm] at h
+            exact mul_right_cancel (mul_left_cancel h.symm)
+          rw [if_neg nif, pow_zero]
       _ = ∏ i : Fin (Nat.succ (List.length tail)), if hi : i.1 = 0 then eta_aux' hd t
           else eta_aux' (tail.get ⟨i.1 - 1, h2 i hi⟩) ⟨(tail.take (i.1 - 1)).reverse * sts * (tail.take (i.1 - 1)), by apply Refl_palindrome_in_Refl⟩ := by
-        have h := ih sts
         sorry --rw [List.]
-      _ = ∏ i : Fin (Nat.succ (List.length tail)), eta_aux' ((hd :: tail).get i) ⟨((hd :: tail).take i.1).reverse * ↑t * ((hd :: tail).take i.1), by apply Refl_palindrome_in_Refl⟩ := by
-        sorry-/
+      _ = ∏ i : Fin (Nat.succ (List.length tail)), eta_aux' ((hd :: tail).get i) ⟨((hd :: tail).take i.1).reverse * t * ((hd :: tail).take i.1), by apply Refl_palindrome_in_Refl⟩ := by
+        sorry
 
 lemma exists_of_nn_ne_zero [CoxeterMatrix m] (L : List S) (t:T) : nn L t > 0 →
   ∃ i:Fin L.length, (toPalindrome_i L i:G) = t := by
