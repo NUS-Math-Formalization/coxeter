@@ -479,6 +479,42 @@ lemma Refl_palindrome_in_Refl {i : ℕ} (L : List S) (t : T) : ((L.take i).rever
       rw [h]
       exact hi
 
+-- DLevel 4 (1.15)
+lemma nn_prod_eta_aux [CoxeterMatrix m] (L : List S) (t : T) : μ₂.gen ^ (nn L t) =  ∏ i : Fin L.length,
+    eta_aux' (L.get i) ⟨((L.take i.1).reverse : G) * t * L.take i.1, by apply Refl_palindrome_in_Refl⟩ := by
+  revert t
+  induction L with
+  | nil =>
+    simp only [nn]
+    dsimp
+    intro t
+    norm_num
+  | cons hd tail ih =>
+    intro t
+    set sts : T := ⟨hd * t * hd, SimpleRefl_Refl_SimpleRefl_in_Refl hd t⟩
+    simp only [nn]
+    dsimp
+    have hzero : 0 < (hd :: tail).length := by
+      rw [List.length]
+      exact Nat.lt_add_left tail.length (by norm_num)
+    have zerof : Fin (hd :: tail).length := ⟨0, hzero⟩
+    have h2 (x : Fin (Nat.succ (List.length tail))) (hx : x.1 ≠ 0) : x.1 - 1 < tail.length :=
+      have h : 1 ≤ x.1 := Nat.one_le_iff_ne_zero.mpr hx
+      --apply lt_sub
+      sorry --lt_trans x.prop
+    sorry
+    /-calc
+      _ = μ₂.gen ^ (List.filter (fun i => ((toPalindrome_i (hd :: tail) i) : G) = t) (List.range (Nat.succ tail.length))).length := by
+        congr
+      _ = μ₂.gen ^ (List.filter (fun i => if i = 0 then (hd : G) = t else ((toPalindrome_i tail (i - 1)) : G) = hd * t * hd) (List.range (Nat.succ tail.length))).length := by
+        sorry
+      _ = ∏ i : Fin (Nat.succ (List.length tail)), if hi : i.1 = 0 then eta_aux' hd t
+          else eta_aux' (tail.get ⟨i.1 - 1, h2 i hi⟩) ⟨(tail.take (i.1 - 1)).reverse * sts * (tail.take (i.1 - 1)), by apply Refl_palindrome_in_Refl⟩ := by
+        have h := ih sts
+        sorry --rw [List.]
+      _ = ∏ i : Fin (Nat.succ (List.length tail)), eta_aux' ((hd :: tail).get i) ⟨((hd :: tail).take i.1).reverse * ↑t * ((hd :: tail).take i.1), by apply Refl_palindrome_in_Refl⟩ := by
+        sorry-/
+
 lemma exists_of_nn_ne_zero [CoxeterMatrix m] (L : List S) (t:T) : nn L t > 0 →
   ∃ i:Fin L.length, (toPalindrome_i L i:G) = t := by
   intro h
