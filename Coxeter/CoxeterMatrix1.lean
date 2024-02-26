@@ -643,8 +643,7 @@ lemma nn_prod_eta_aux [CoxeterMatrix m] (L : List S) (t : T) : μ₂.gen ^ (nn L
           ext x
           constructor
           · rintro ⟨_, hx⟩
-            let xv := x.val
-            have hxv : xv = x.val := by rfl
+            set! xv := x.val with hxv
             have : xv ≠ 0 := (Fin.ne_iff_vne x 0).mp hx
             rcases xv with (_ | x')
             · exact (this rfl).elim
@@ -677,7 +676,7 @@ lemma nn_prod_eta_aux [CoxeterMatrix m] (L : List S) (t : T) : μ₂.gen ^ (nn L
             have : x.1 + 1 ≠ 0 := by
               rw [← Nat.succ_eq_add_one x.1]
               exact Nat.succ_ne_zero x.1
-            simp only [this, if_neg, Nat.add_sub_cancel x.1 1]
+            simp only [this, Nat.add_sub_cancel x.1 1]
             congr
           _ = ∏ᶠ (i : Fin (Nat.succ tail.length)) (_ : i ∈ Set.univ), finprodFn i := by rw [fp1]
           _ = ∏ i : Fin (Nat.succ tail.length), finprodFn i := by
