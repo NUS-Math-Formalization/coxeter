@@ -1,10 +1,11 @@
 import Mathlib.GroupTheory.PresentedGroup
 import Mathlib.GroupTheory.OrderOfElement
 import Mathlib.GroupTheory.Subgroup.Basic
+import Mathlib.Topology.MetricSpace.Basic
 import Mathlib.Tactic.Linarith.Frontend
 import Mathlib.Tactic.IntervalCases
 
-import Coxeter.Auxi
+import Coxeter.Aux_
 open Classical
 
 section CoeM
@@ -76,8 +77,8 @@ lemma gprod_singleton {s : S}: ([s] : G) = s := by
 lemma gprod_eq_of_list_eq {L1 L2 : List S} (h : L1 = L2) : (L1 : G) = (L2 : G) := by rw [h]
 
 -- Some automation regarding List S
-instance HasHMulListList : HMul (List S) (List S) (List S) where
-  hMul := fun L1 L2 => (L1 ++ L2 : List S)
+--instance HasHMulListList : HMul (List S) (List S) (List S) where
+--  hMul := fun L1 L2 => (L1 ++ L2 : List S)
 
 instance HasHMulListS : HMul (List S) S G where
   hMul := fun L g => (L : G) * g
@@ -90,12 +91,14 @@ lemma gprod_cons (hd : S)  (tail : List S) : (hd::tail :G) = hd * (tail :G) := b
   congr
 }
 
+@[simp]
 lemma gprod_append {l1 l2: List S} : (l1 ++ l2 : G) = l1 * l2 := by {
   rw [←List.prod_append]
   congr
   simp [List.gprod, Lean.Internal.coeM]
 }
 
+@[simp]
 lemma gprod_append_singleton {l1 : List S} {s : S}: (l1 ++ [s] : G) = l1 * s := by {
   rw [←gprod_singleton, gprod_append]
 }
@@ -186,7 +189,7 @@ def length_aux (g : G) : ∃ (n:ℕ) , ∃ (L : List S), L.length = n ∧ g = L 
   let ⟨(L : List S), hL⟩ := exists_prod g
   use L.length,L
 
-noncomputable def length  (x : G): ℕ := Nat.find (length_aux S x)
+noncomputable def length (x : G): ℕ := Nat.find (length_aux S x)
 
 
 --scoped notation: max "ℓ" S " (" g ")" => (length S g)
@@ -250,7 +253,8 @@ lemma two_le_length_of_non_reduced_word {L : List S} : ¬reduced_word L → 2 �
     rw [hs]
     exact singleton_is_reduced
 
-lemma length_le_iff {L: List S} : reduced_word L ↔ L.length ≤ ℓ(L.gprod):= by
+
+lemma length_le_iff {L: List S} : reduced_word L ↔ L.length ≤ ℓ(L):= by
    rw [length, (Nat.le_find_iff _)]
    apply Iff.intro
    .  intro h m hm
@@ -274,7 +278,7 @@ lemma length_le_iff {L: List S} : reduced_word L ↔ L.length ≤ ℓ(L.gprod):=
 lemma length_eq_iff {L: List S} : reduced_word L ↔ L.length = ℓ(L.gprod) := by
    constructor
    . intro H
-     exact ge_antisymm  (length_le_list_length )  ((length_le_iff ).1 H)
+     exact ge_antisymm length_le_list_length (length_le_iff.1 H)
    . intro H
      exact (length_le_iff).2 (le_of_eq H)
 
@@ -299,6 +303,8 @@ lemma length_eq_inv_length: ℓ(g) = ℓ(g⁻¹) := by {
   _=_ := by simp [gprod_reverse]
 }
 
+
+
 @[simp]
 lemma inv_length_eq_length: ℓ(g⁻¹) = ℓ(g) := Eq.symm length_eq_inv_length
 
@@ -311,7 +317,6 @@ lemma length_eq_reverse_length (L:List S): ℓ(L) = ℓ(L.reverse) := by {
 @[simp]
 lemma reverse_length_eq_length (L:List S): ℓ(L.reverse)=ℓ(L)  := Eq.symm (length_eq_reverse_length L)
 
-
 lemma length_cons {hd : S} {tail : List S} : ℓ(hd::tail) ≤ ℓ(tail) + 1 := by {
   obtain ⟨rtail, h1, h2⟩ := exists_reduced_word S tail
   calc
@@ -322,10 +327,68 @@ lemma length_cons {hd : S} {tail : List S} : ℓ(hd::tail) ≤ ℓ(tail) + 1 := 
 }
 
 
+lemma length_mul_le_length_sum  {w1 w2 : G} : ℓ(w1 * w2) ≤ ℓ(w1) + ℓ(w2) := by
+  obtain ⟨L1, h1, h2⟩ := exists_reduced_word S w1
+  obtain ⟨L2, h3, h4⟩ := exists_reduced_word S w2
+  calc
+  _ = ℓ(L1 ++ L2) := by congr; simp only [h2, h4, gprod_append]
+  _ ≤  (L1 ++ L2).length := length_le_list_length
+  _ = L1.length + L2.length := by simp
+  _ = _ := by simp [h2,h4,length_eq_iff.1 h1,length_eq_iff.1 h3]
+
+-- DLevel 1
+lemma length_smul_le_length_add_one {w:G} : ℓ(s*w) ≤ ℓ(w) + 1 := by
+  sorry
+
+-- DLevel 1
+lemma length_le_length_smul_add_one {w:G} : ℓ(w) ≤ ℓ(s*w) + 1 := by
+  sorry
+
+
+-- DLevel 1
+lemma length_muls_le_length_add_one {w:G} : ℓ(w*s) ≤ ℓ(w) + 1 := by
+  sorry
+
+-- DLevel 1
+lemma length_le_length_muls_add_one {w:G} : ℓ(w) ≤ ℓ(w*s) + 1 := by
+  sorry
+
+lemma length_bound  {w1 w2 : G} : ℓ(w1)  - ℓ(w2) ≤ ℓ(w1 * w2 ⁻¹) := by
+  have := @length_mul_le_length_sum _ _ S _ (w1 * w2⁻¹) w2
+  simp only [inv_mul_cancel_right] at this
+  simp only [tsub_le_iff_right, ge_iff_le,this]
+
+
+-- DLevel 1
+lemma length_zero_iff_one {w:G} : ℓ(w) = 0 ↔ w = 1 := by
+  sorry
+
+
+-- DLevel 2
+lemma reduced_take_of_reduced {S: Set G} [OrderTwoGen S] {L: List S} (H : reduced_word L) (n:ℕ) : reduced_word (L.take n) := by sorry
+
+
+-- DLevel 1
+lemma reduced_drop_of_reduced {S: Set G} [OrderTwoGen S] {L: List S} (H : reduced_word L) (n:ℕ) : reduced_word (L.drop n) := by sorry
+
+
+
+-- Cannot define the metric as an instance as there are various choices of S for a fixed G
+-- On the other hand, the metric is well defined for Coxeter Group
+noncomputable def metric {G :Type*} [Group G] (S : Set G) [@OrderTwoGen G _ S] : MetricSpace G where
+  dist := fun x y => length S (x * y⁻¹)
+  dist_self := by sorry
+  dist_comm := by sorry
+  dist_triangle := by sorry
+  eq_of_dist_eq_zero := by sorry
+  edist_dist := by sorry
+
+
 noncomputable def choose_reduced_word (S : Set G) [OrderTwoGen S]  (g:G) : List S := Classical.choose (exists_reduced_word S g)
 
 lemma choose_reduced_word_spec (g : G) : reduced_word (choose_reduced_word S g) ∧ g = (choose_reduced_word S g) :=
    Classical.choose_spec (exists_reduced_word S g)
+
 
 
 def non_reduced_p  (L : List S) := fun k => ¬ reduced_word (L.take (k+1))
@@ -409,34 +472,24 @@ lemma reduced_nonreduced_length_le  {L : List S} {s : S} (H1: reduced_word L) (H
     exact H2
 }
 
+abbrev SimpleRefl (S:Set G) [OrderTwoGen S]: Set G:= S
+
+abbrev Refl (S:Set G) [OrderTwoGen S]: Set G:= {x:G| ∃ (w:G) (s : S) , x = w*s*w⁻¹}
+
+-- TODO add some lemmes about conj of Refl is in Refl
+-- DLevel1
+
+lemma sq_refl_eq_one [OrderTwoGen S] {t : Refl S} : (t : G) ^ 2 = 1 := by
+  rcases t with ⟨t, g, s, teqgsg⟩
+  simp only []
+  rw [sq, teqgsg]
+  group
+  have hs : s * s = (1 : G) := by
+    apply @gen_square_eq_one G _ S
+    exact Subtype.mem s
+  rw [mul_assoc g s, hs]
+  group
+
+def ReflSet (S:Set G) [OrderTwoGen S] (g:G) : Set (Refl S) := { t | length S (t * g)≤ length S (g)}
+
 end OrderTwoGen
-
-
-
-/-
-open OrderTwoGen
-section Bruhat
-variable {G : Type _} [Group G]
-variable (S: Set G) [OrderTwoGen S]
-
-local notation :max "ℓ(" g ")" => (@length G  _ S _ g)
-
-def T (S : Set G) := {x : G | ∃ (w : G) (s : S) , x = w * (s : G) * w⁻¹}
-
-
-def Bruhat.lt_adj  [OrderTwoGen S] (u w:G) := ∃ t ∈ T S, w = u * t ∧ (length S u) < (length S w)
-
-abbrev Bruhat.lt (u w:G):= Relation.TransGen (@Bruhat.lt_adj G _ S _) u w
-
-abbrev Bruhat.le  (u w:G):= Relation.ReflTransGen (@Bruhat.lt_adj G _ S _) u w
-
-def Bruhat.poset (S: Set G) [hS : OrderTwoGen S] : PartialOrder G where
-le := @Bruhat.le G _ S _
-lt := @Bruhat.lt G _ S _
-le_refl  := by intro _; simp [Relation.ReflTransGen.refl]
-le_trans := fun _ _ _ => Relation.ReflTransGen.trans
-lt_iff_le_not_le  := by sorry
-le_antisymm:= fun (x y:G) => by sorry
-
-end Bruhat
--/

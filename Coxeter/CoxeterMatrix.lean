@@ -9,8 +9,6 @@ open Classical
 
 variable {α: Type u1} {β: Type u2}  {G : Type _} [Group G] {S :Set G} [orderTwoGen S] [CoxeterSystem G S]
 
-
-
 @[ext,class] structure CoxeterMatrix {α : Type u1}:=
   (m : Matrix α α ℕ)
   (isSymm : ∀ (a b : α ), m a b = m b a )

@@ -1,6 +1,6 @@
-import Coxeter.Auxi
-import Coxeter.Basic
-import Coxeter.Hecke
-import Coxeter.Bruhat
+--import Coxeter.Auxi
+--import Coxeter.Basic
+--import Coxeter.Hecke
+import Coxeter.BruhatOrder
 import Coxeter.CoxeterMatrix1
-import Coxeter.Length_reduced_word
+--import Coxeter.Length_reduced_word

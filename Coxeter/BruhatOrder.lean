@@ -2,8 +2,7 @@ import Coxeter.CoxeterSystem
 
 import Mathlib.Data.Set.Card
 
-open OrderTwoGen
-
+open OrderTwoGen HOrderTwoGenGroup
 
 namespace CoxeterGroup
 namespace Bruhat
@@ -11,17 +10,17 @@ namespace Bruhat
 variable {G : Type*} [CoxeterGroup G]
 
 @[simp]
-abbrev lt_adj (u w : G) := ∃ t ∈ Refls G, w = u * t ∧ ℓ(u) < ℓ(w)
+abbrev lt_adj (u w : G) := ∃ t ∈ Refl G, w = u * t ∧ ℓ(u) < ℓ(w)
 
 @[simp]
-abbrev lt_adj' (u w : G) := ∃ t ∈ Refls G, w = t * u ∧ ℓ(u) < ℓ(w)
+abbrev lt_adj' (u w : G) := ∃ t ∈ Refl G, w = t * u ∧ ℓ(u) < ℓ(w)
 
 lemma lt_adj_iff_lt_adj' {u w : G} : lt_adj u w ↔ lt_adj' u w := by
   constructor
   · rintro ⟨t, ⟨trfl, wut, ulew⟩⟩
     use u * t * u⁻¹
-    have uturfl : u * t * u⁻¹ ∈ Refls G := by
-      rw [Refls] at trfl ⊢
+    have uturfl : u * t * u⁻¹ ∈ Refl G := by
+      --simp [Refl] at trfl ⊢
       rcases trfl with ⟨v, s, vsv⟩
       use u * v, s
       rw [vsv]
@@ -32,8 +31,8 @@ lemma lt_adj_iff_lt_adj' {u w : G} : lt_adj u w ↔ lt_adj' u w := by
     exact ⟨uturfl, wexp, ulew⟩
   · rintro ⟨t, ⟨trfl, wtu, ulew⟩⟩
     use u⁻¹ * t * u
-    have uturfl : u⁻¹ * t * u ∈ Refls G := by
-      rw [Refls] at trfl ⊢
+    have uturfl : u⁻¹ * t * u ∈ Refl G := by
+      --rw [Refls] at trfl ⊢
       rcases trfl with ⟨v, s, vsv⟩
       use u⁻¹ * v, s
       rw [vsv]
@@ -90,17 +89,43 @@ lemma eq_of_le_of_length_ge {u w : G} : le u w → ℓ(u) ≥ ℓ(w) → u = w :
 instance PartialOrder : PartialOrder G where
   le := le
   lt := lt
-  le_refl  := by intro _; simp [Relation.ReflTransGen.refl]
+  le_refl := fun _ => Relation.ReflTransGen.refl
   le_trans := fun _ _ _ => Relation.ReflTransGen.trans
-  lt_iff_le_not_le  := by
-      -- use length_le_of_le to prove -> direction
-      -- use lt_of_le_of_length_lt and eq_of_le_of_length_ge
-      sorry
-  le_antisymm := fun (x y : G) => by sorry
-
+  lt_iff_le_not_le := by
+    intro u w
+    constructor
+    · intro ultw
+      constructor
+      · apply Relation.TransGen.to_reflTransGen ultw
+      · intro wleu
+        have lultw : ℓ(u) < ℓ(w) := length_lt_of_lt ultw
+        have lwleu : ℓ(w) ≤ ℓ(u) := length_le_of_le wleu
+        have lwltw : ℓ(w) < ℓ(w) := lt_of_le_of_lt lwleu lultw
+        exact lt_irrefl (ℓ(w)) lwltw
+    · rintro ⟨ulew, nwleu⟩
+      apply lt_of_le_of_length_lt ulew
+      contrapose! nwleu
+      have ueqw : u = w := eq_of_le_of_length_ge ulew nwleu
+      rw [ueqw]
+      exact Relation.ReflTransGen.refl
+  le_antisymm := fun (u w : G) ulew wleu =>
+    eq_of_le_of_length_ge ulew (length_le_of_le wleu)
 
 
 def Interval (x y : G) : Set G := Set.Icc x y
+
+local notation "S" => (SimpleRefls G)
+
+--  Bjorner, Brenti, Lemma 2.2.1
+lemma SubwordAux {L L' : List S} (hne: (L:G) ≠ L') (hred: reduced_word L) (hred': reduced_word L') (hsub: List.Sublist L' L) : ∃ (L'' : List S), reduced_word L'' ∧ (L' :G) < L'' ∧ ℓ((L'':G)) = ℓ((L':G)) + 1 ∧ List.Sublist L'' L :=by
+  sorry
+
+
+theorem subwordProp {L: List S} (hred : reduced_word L) : u ≤ L ↔ ∃ (L': List S), reduced_word L' ∧ List.Sublist L' L ∧ u = L'.gprod where
+  mp := by sorry
+  mpr := fun
+    | .intro w h => by
+      sorry
 
 -- Formulate the theorem on subword property
 
