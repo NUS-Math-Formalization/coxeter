@@ -1,8 +1,4 @@
-<<<<<<< HEAD
 {"platform": "windows-64",
-=======
-{"platform": "linux-64",
->>>>>>> ef023ba8b9f1f86a8e09c6fa0eee26977b2512c4
  "options": {},
  "leanHash": "b614ff1d12bc38f39077f9ce9f2d48b42c003ad0",
  "configHash": "8196810973303011687"}

@@ -33,13 +33,12 @@ structure Rpoly extends Rpoly' where
   sMemD_Ru: ∀(u v:G),s ∈ D_R v → s ∈ D_R u → R u v = R (u*s) (v*s)
   sNotMemD_Ru: ∀(u v:G),s ∈ D_R v → s ∉ D_R u → R u v = X*R (u*s) (v*s) + (X-1) * R u (v*s)
 
--- @[ext]
--- class Rpoly1 extends (CoxeterSystem G S) where
---   R : G → G → Polynomial ℤ
---   not_le:∀(u v:G), ¬ (u ≤ v) → R u v = 0
---   eq:∀(u :G),  R u u = 1
---   sMemD_Ru: ∀(u v:G),s ∈ D_R v → s ∈ D_R u → R u v = R (u*s) (v*s)
---   sNotMemD_Ru: ∀(u v:G),s ∈ D_R v → s ∉ D_R u → R u v = X*R (u*s) (v*s) + (X-1) * R u (v*s)
+@[ext]
+class Rpoly1 (R : G → G → LaurentPolynomial ℤ) where
+  not_le:∀(u v:G), ¬ (u ≤ v) → R u v = 0
+  eq:∀(u :G),  R u u = 1
+  sMemD_Ru: ∀(u v:G),s ∈ D_R v → s ∈ D_R u → R u v = R (u*s) (v*s)
+  sNotMemD_Ru: ∀(u v:G),s ∈ D_R v → s ∉ D_R u → R u v = X*R (u*s) (v*s) + (X-1) * R u (v*s)
 
 #check (Rpoly.toRpoly')
 
@@ -52,8 +51,6 @@ theorem Hecke_invG_repr_aux : ∀ l, ∃ R : Rpoly',  ∀ w : G, l =ℓ(w) → T
   induction' l with n hn
   · sorry
   · rcases hn with ⟨R',hR'⟩
-
-
 
 theorem Hecke_invG_repr : ∃ R : G → G → LaurentPolynomial ℤ, inv_repr R := by
   --induction' ℓ(w) with n hn

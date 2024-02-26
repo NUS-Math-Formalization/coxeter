@@ -224,8 +224,11 @@ instance SimpleRefls.toOrderTwoGen'  : @OrderTwoGen H _ (hH.S) where
 
 noncomputable def length  (g :H) := OrderTwoGen.length (hH.S) g
 
-notation:100 "ℓ(" g:101 ")" => (length g)
-
+notation:65 "ℓ(" g:66 ")" => (length g)
+variable (s w :G)
+#check ℓ(s*w)
+#check ℓ((s*w))
+#check ℓ(s) - 1
 end HOrderTwoGenGroup
 
 class CoxeterGroup (G:Type*) extends HOrderTwoGenGroup G where
@@ -241,8 +244,30 @@ instance SimpleRefl_isCoxeterSystem  {G:Type*} [hG:CoxeterGroup G]: @CoxeterSyst
   exchange' := hG.exchange'
   deletion := hG.deletion
 
+instance {G:Type*} [hG:CoxeterGroup G]: HMul hG.S G G where
+  hMul := fun s g => s.1 * g
+
+instance {G:Type*} [hG:CoxeterGroup G]: HMul G hG.S G where
+  hMul := fun g s => g * s.1
+
+instance {G:Type*} [hG:CoxeterGroup G]: CoeOut hG.S G where
+  coe := fun s => s.1
 
 def Refls (G:Type*) [CoxeterGroup G]: Set G:= {x:G| ∃ (w:G)(s : SimpleRefls G) , x = w*s*w⁻¹}
+
+def leftAssocRefls (w : G) [CoxeterGroup G] := {t : G | t ∈ Refls G ∧ ℓ(((t:G)*w)) < ℓ(w)}
+
+def rightAssocRefls (w : G) [CoxeterGroup G] := {t : G | t ∈ Refls G ∧ ℓ((w*(t:G))) < ℓ(w)}
+
+def leftDescent (w : G) [hG:CoxeterGroup G] := leftAssocRefls w ∩ hG.S
+
+def rightDescent (w : G) [hG:CoxeterGroup G] := rightAssocRefls w ∩ hG.S
+
+--NE means nonempty
+lemma leftDescent_NE_of_ne_one {w : G} [CoxeterGroup G] (h : w ≠ 1) : Nonempty $ leftDescent w:= by
+  sorry
+
+lemma rightDescent_NE_of_ne_one {w : G} [CoxeterGroup G] (h : w ≠ 1) : Nonempty $ rightDescent w:= sorry
 
 end CoxeterGroup
 
