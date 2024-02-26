@@ -350,9 +350,9 @@ lemma reverseList_nonEmpty {L : List S} (hL : L ≠ []) : L.reverse ≠ [] := by
   apply (List.length_pos).2
   exact hL
 
-lemma lrtr_eq_ldl {L : List S} (hL : L ≠ []) : L.reverse.tail.reverse = L.dropLast := by
+lemma dropLast_eq_reverse_tail_reverse {L : List S} : L.dropLast = L.reverse.tail.reverse := by
   induction L with
-  | nil => contradiction
+  | nil => simp
   | cons hd tail ih =>
     by_cases k : tail = []
     . rw [k]
@@ -370,12 +370,12 @@ lemma lrtr_eq_ldl {L : List S} (hL : L ≠ []) : L.reverse.tail.reverse = L.drop
         rw [trht]
         apply (List.append_left_inj [hd]).2
         apply (List.reverse_eq_iff).1
-        apply ih k
+        apply Eq.symm ih
       rw [this, List.reverse_reverse, htd]
 
 lemma rtr_append {L : List S} (hL : L ≠ []) :
   L.reverse.tail.reverse ++ [L.getLast hL] = L := by
-  rw [lrtr_eq_ldl hL]
+  rw [← dropLast_eq_reverse_tail_reverse]
   exact List.dropLast_append_getLast hL
 
 -- DLevel 2
