@@ -270,20 +270,36 @@ instance {G:Type*} [hG:CoxeterGroup G]: CoeOut hG.S G where
 -- The length function defines a metric on the Coxeter group
 noncomputable instance metric [CoxeterGroup G]: MetricSpace G := OrderTwoGen.metric <| SimpleRefl G
 
-def leftAssocRefls (w : G) [CoxeterGroup G] := {t : G | t ∈ Refls G ∧ ℓ(((t:G)*w)) < ℓ(w)}
+def leftAssocRefls (w : G) [CoxeterGroup G] := {t : G | t ∈ Refl G ∧ ℓ(((t:G)*w)) < ℓ(w)}
 
-def rightAssocRefls (w : G) [CoxeterGroup G] := {t : G | t ∈ Refls G ∧ ℓ((w*(t:G))) < ℓ(w)}
+def rightAssocRefls (w : G) [CoxeterGroup G] := {t : G | t ∈ Refl G ∧ ℓ((w*(t:G))) < ℓ(w)}
 
 def leftDescent (w : G) [hG:CoxeterGroup G] := leftAssocRefls w ∩ hG.S
 
 def rightDescent (w : G) [hG:CoxeterGroup G] := rightAssocRefls w ∩ hG.S
 
---NE means nonempty
-lemma leftDescent_NE_of_ne_one {w : G} [CoxeterGroup G] (h : w ≠ 1) : Nonempty $ leftDescent w:= by
-  sorry
+section HeckeAux
+variable {G : Type*} {w : G} [hG:CoxeterGroup G]
 
-lemma rightDescent_NE_of_ne_one {w : G} [CoxeterGroup G] (h : w ≠ 1) : Nonempty $ rightDescent w:= sorry
+lemma leftDescent_NE_of_ne_one  (h : w ≠ 1) : Nonempty $ leftDescent w:= sorry
 
+lemma rightDescent_NE_of_ne_one  (h : w ≠ 1) : Nonempty $ rightDescent w:= sorry
+
+lemma length_muls_of_mem_leftDescent  (h : w ≠ 1) (s : leftDescent w) : ℓ(s*w) = ℓ(w) - 1 :=sorry
+
+lemma length_muls_of_mem_rightDescent  (h : w ≠ 1) (s : rightDescent w) : ℓ(w*s) = ℓ(w) - 1 :=sorry
+
+lemma muls_twice (w:G) (s:hG.S) : w*s*s = w := sorry
+
+lemma length_smul_neq (s:hG.S) (w:G) : ℓ(s*w) ≠ ℓ(w) := sorry
+
+lemma length_muls_neq (w:G) (t:hG.S) : ℓ(w*t) ≠ ℓ(w) := sorry
+
+lemma smul_eq_muls_of_length_eq (s t:hG.S) (w:G) :ℓ(s*w*t) = ℓ(w) ∧ ℓ(s*w)=ℓ(w*t) → s*w=w*t:= sorry
+
+lemma length_smul_eq_length_muls_of_neq (s t :hG.S) (w:G): ℓ(s*w*t) ≠ ℓ(w) → ℓ(s*w)=ℓ(w*t):= sorry
+
+end HeckeAux
 end CoxeterGroup
 
 end
