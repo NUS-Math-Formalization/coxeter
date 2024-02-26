@@ -373,7 +373,7 @@ lemma dropLast_eq_reverse_tail_reverse {L : List S} : L.dropLast = L.reverse.tai
         apply Eq.symm ih
       rw [this, List.reverse_reverse, htd]
 
-lemma rtr_append {L : List S} (hL : L ≠ []) :
+lemma reverse_tail_reverse_append {L : List S} (hL : L ≠ []) :
   L.reverse.tail.reverse ++ [L.getLast hL] = L := by
   rw [← dropLast_eq_reverse_tail_reverse]
   exact List.dropLast_append_getLast hL
@@ -386,7 +386,7 @@ lemma toPalindrome_in_Refl [CoxeterMatrix m] {L:List S} (hL : L ≠ []) : (toPal
   have : L.reverse.tail.reverse.gprod * (L.getLast hL) = L.gprod := by
     have : L = L.reverse.tail.reverse ++ [L.getLast hL] := by
       apply Eq.symm
-      apply rtr_append hL
+      apply reverse_tail_reverse_append hL
     nth_rw 3 [this]
     apply Eq.symm
     apply gprod_append_singleton
