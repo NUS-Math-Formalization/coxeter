@@ -13,8 +13,8 @@ import Coxeter.OrderTwoGen
 
 open BigOperators
 
---open Classical
--- test222224444
+-- open Classical
+-- test222
 
 section
 variable {α : Type*} [DecidableEq α]
