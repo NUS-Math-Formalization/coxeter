@@ -614,19 +614,6 @@ lemma nn_prod_eta_aux [CoxeterMatrix m] (L : List S) (t : T) : μ₂.gen ^ (nn L
             exact mul_right_cancel (mul_left_cancel h.symm)
           rw [if_neg this, pow_zero]
       _ = ∏ i : Fin (Nat.succ (List.length tail)), finprodFn i := by
-        /-let not0 : Finset (Fin (Nat.succ tail.length)) := Finset.univ.erase 0
-        have insert0 : insert 0 not0 = Finset.univ := by
-          simp only [not0]
-          ext x
-          constructor
-          · exact fun _ ↦ Finset.mem_univ x
-          · intro _
-            by_cases h : x = 0
-            · exact Finset.mem_insert.mpr (Or.inl h)
-            · exact Finset.mem_insert.mpr (Or.inr (Finset.mem_erase.mpr ⟨h, Finset.mem_univ x⟩))
-        have no0 : 0 ∉ not0 := fun h ↦ (Finset.mem_erase.mp h).1 (by rfl)
-        --let setnot0 := Set.coe_toFinset not0
-        have fp := finprod_mem_insert finprodFn no0 _ -/
         let not0 : Set (Fin (Nat.succ tail.length)) := Set.univ \ {0}
         have no0 : 0 ∉ not0 := Set.not_mem_diff_of_mem rfl
         have finnot0 : Set.Finite not0 := Set.toFinite not0
@@ -685,17 +672,20 @@ lemma nn_prod_eta_aux [CoxeterMatrix m] (L : List S) (t : T) : μ₂.gen ^ (nn L
             simp only [g, finprodFn]
             congr
             ext x
+            have : x ∈ Set.univ := Set.mem_univ x
+            simp only [this, finprod_true]
             have : x.1 + 1 ≠ 0 := by
               rw [← Nat.succ_eq_add_one x.1]
               exact Nat.succ_ne_zero x.1
-            simp only [if_neg this, Nat.add_sub_cancel x.1 1]
-            sorry --apply (Fin.eq_iff_veq _ _).mpr
+            simp only [this, if_neg, Nat.add_sub_cancel x.1 1]
+            congr
           _ = ∏ᶠ (i : Fin (Nat.succ tail.length)) (_ : i ∈ Set.univ), finprodFn i := by rw [fp1]
           _ = ∏ i : Fin (Nat.succ tail.length), finprodFn i := by
             rw [finprod_eq_prod_of_fintype]
             congr
             ext x
-            sorry
+            have : x ∈ Set.univ := Set.mem_univ x
+            simp only [this, finprod_true]
       _ = ∏ i : Fin (Nat.succ (List.length tail)), eta_aux' ((hd :: tail).get i) ⟨((hd :: tail).take i.1).reverse * t * ((hd :: tail).take i.1), by apply Refl_palindrome_in_Refl⟩ := by
         congr
         ext ⟨x, hx⟩
@@ -711,7 +701,7 @@ lemma nn_prod_eta_aux [CoxeterMatrix m] (L : List S) (t : T) : μ₂.gen ^ (nn L
           dsimp
           congr 2
           rw [List.reverse_cons, gprod_append, gprod_singleton, gprod_cons]
-          group
+          repeat rw [mul_assoc]
 
 lemma exists_of_nn_ne_zero [CoxeterMatrix m] (L : List S) (t:T) : nn L t > 0 →
   ∃ i:Fin L.length, (toPalindrome_i L i:G) = t := by
