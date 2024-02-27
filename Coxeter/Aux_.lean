@@ -142,11 +142,48 @@ lemma removeNth_append_lt {α : Type _} (L1 L2: List α) (n : ℕ) (h : n < L1.l
 --   rw [removeNth_eq_take_drop, removeNth_eq_take_drop]
 --   rw [List.take_append_of_le_length (le_of_ge h)]
 
+lemma remove_after_L_length (L : List α) {i : ℕ} (h : L.length ≤ i)
+  : L.removeNth i = L := by
+  have remove_after_L_length': L.removeNth ((i - L.length) + L.length) = L := by
+    set j := i - L.length
+    induction' j with k ih
+    . simp
+      induction L with
+      | nil => simp
+      | cons hd tail ih =>
+        simp
+        apply ih
+        exact Nat.lt_succ.1 (Nat.le.step h)
+    . induction L with
+      | nil => simp
+      | cons hd tail ih' =>
+        set L := hd :: tail
+        simp
+        apply ih'
+        exact Nat.lt_succ.1 (Nat.le.step h)
+        simp at ih
+        apply ih
+  nth_rw 2 [← remove_after_L_length']
+  rw [Nat.sub_add_cancel h]
+
 -- DLevel 2
 lemma take_of_removeNth (L : List α) {i j : ℕ} (h : i ≤ j) :
     (L.removeNth j).take i = L.take i := by
-  -- try induction?
-  sorry
+  by_cases h' : j ≥ L.length
+  . have : L.removeNth j = L := remove_after_L_length L h'
+    rw [this]
+  . rw [removeNth_eq_take_drop]
+    push_neg at h'
+    have h'' : j ≤ L.length := by linarith
+    have : (L.take j).length = j := take_le_length L h''
+    have i_le_j' : i ≤ (L.take j).length := by linarith
+    have : L.take i = (L.take j).take i := by
+      nth_rw 1 [← min_eq_left h]
+      apply Eq.symm
+      apply List.take_take i j L
+    rw [this]
+    exact take_append_of_le_length i_le_j'
+
 
 lemma removeNth_reverse (L : List α) (n : ℕ) (h : n < L.length) :
   (L.reverse).removeNth n = (L.removeNth (L.length - n - 1)).reverse := by
