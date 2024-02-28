@@ -39,4 +39,36 @@ def equiv : G' ≃ G := Equiv.ofBijective _ map_bijective
 end Presentation
 
 end CoxeterSystem
+
+namespace CoxeterGroup
+
+variable {G:Type*} [hG : CoxeterGroup G]
+
+@[simp]
+abbrev toMatrix (G:Type*) [hG : CoxeterGroup G]: Matrix hG.S hG.S ℕ := CoxeterSystem.toMatrix hG.S
+
+instance isCoxeterMatrix : CoxeterMatrix (toMatrix G) where
+  symmetric := by sorry
+  oneIff := by sorry
+
+@[simp]
+def map (G:Type*) [hG : CoxeterGroup G]: CoxeterMatrix.toGroup (toMatrix G) →* G := CoxeterMatrix.lift (toMatrix G) (fun s => s.1)
+ ( by intro s t; rw [toMatrix,pow_orderOf_eq_one])
+
+local notation "m" => (toMatrix G)
+local notation "G'" => CoxeterMatrix.toGroup m
+local notation "N" => Subgroup.normalClosure (CoxeterMatrix.toRelationSet m)
+
+lemma map_injective : Function.Injective (map G) := by sorry
+
+lemma map_surjective : Function.Surjective (map G) := by sorry
+
+lemma map_bijective : Function.Bijective (map G) := ⟨map_injective,map_surjective⟩
+
+def equiv : G' ≃ G := Equiv.ofBijective _ map_bijective
+
+variable (w:G)
+#check equiv.invFun w
+
+end CoxeterGroup
 end

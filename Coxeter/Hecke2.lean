@@ -1,5 +1,6 @@
 import Coxeter.BruhatOrder
 import Coxeter.WellFounded
+import Coxeter.Morphism
 
 import Mathlib.Data.Polynomial.Degree.Definitions
 import Mathlib.Data.Polynomial.Reverse
@@ -9,17 +10,13 @@ import Mathlib.Data.Polynomial.Laurent
 import Mathlib.Algebra.DirectSum.Basic
 import Mathlib.Algebra.Ring.Defs
 
-open Classical List CoxeterSystem OrderTwoGen CoxeterGroup HOrderTwoGenGroup
+open Classical List CoxeterSystem OrderTwoGen CoxeterGroup HOrderTwoGenGroup CoxeterMatrix
 
 variable {G :(Type _)} [hG:CoxeterGroup G]
-
-
-namespace HeckeAux
-variable {G : Type _} [Group G] {S: Set G} [h:OrderTwoGen S]
-
-lemma tail_reduced {L : List S} (h : reduced_word L) : reduced_word L.tail := sorry
-
-end HeckeAux
+variable {w:G}
+#check toMatrix hG.S
+#check CoxeterMatrix.length_smul_neq (m:=toMatrix hG.S) (g:=equiv.invFun w)
+#check Presentation.map hG.S
 
 noncomputable def q :=@LaurentPolynomial.T ℤ _ 1
 
@@ -95,7 +92,7 @@ noncomputable def mulw.F {G:Type*} [CoxeterGroup G] (u :G) (F:(w:G) → adjL w u
 if h:u =1 then v
   else(
     let s:= Classical.choice (@leftDescent_NE_of_ne_one G u _ (by rwa [ne_eq]))
-    have :s.val ∈ SimpleRefl G:= Set.mem_of_mem_inter_right s.2
+    have :s.val ∈ HOrderTwoGenGroup.SimpleRefl G:= Set.mem_of_mem_inter_right s.2
     muls ⟨s,this⟩ (F (s.val*u) (@adjL_of_mem_leftDescent G _ _ u s ) v))
 
 noncomputable def mulw {G:Type*} [CoxeterGroup G]:G → Hecke G → Hecke G := @WellFounded.fix G (fun _ => Hecke G → Hecke G) adjL well_founded_adjL (mulw.F (G:=G))
@@ -256,12 +253,13 @@ lemma opl_commute_opr : ∀ s t:hG.S, LinearMap.comp (opr' t) (opl' s) = LinearM
         by_cases h2: ℓ(w*t) < ℓ(w)
         --(c) ℓ(s*w)=ℓ(w*t) <ℓ(s*w*t) = ℓ(w)
         {
+          have wne1 := ne_one_of_length_smul_lt h1
           have h3:ℓ(s*w) < ℓ(s*w*t):=by rw [h];assumption
           have h4:ℓ(w*t) < ℓ(s*(w*t)):=by rw [←mul_assoc,h];assumption
           simp_rw[TT_muls_eq_mul_of_length_gt h1,LinearMap.map_add,LinearMap.map_smul,TT_muls_right_eq_mul_of_length_gt h2,TT_muls_right_eq_mul_of_length_lt h3,LinearMap.map_add,LinearMap.map_smul,TT_muls_eq_mul_of_length_gt h1,TT_muls_eq_mul_of_length_lt h4,←mul_assoc]
           nth_rewrite 2 [smul_eq_muls_of_length_eq s t w]
           rfl
-          exact ⟨h,(by rw[(length_generator_mul_of_length_lt s w).1 h1,(length_mul_generator_of_length_lt w t).1 h2])⟩
+          exact ⟨h,(by rw[length_smul_of_length_lt wne1 h1,length_muls_of_length_lt wne1 h2])⟩
         }
         --(e) length (↑s * w) < length w = ℓ(s*w*t) < length (w * ↑t)
         {
@@ -291,19 +289,19 @@ lemma opl_commute_opr : ∀ s t:hG.S, LinearMap.comp (opr' t) (opl' s) = LinearM
           have h2' := Ne.lt_of_le ( ne_comm.1 <| length_muls_neq w t)  h2
           have h3  := eq_comm.1 h ▸ h1'
           have h4  := eq_comm.1 h ▸ h2'
-          have h5  : ℓ(s*w) = ℓ(w*t) := by rw [(length_generator_mul_of_length_gt s w).1 h1',(length_mul_generator_of_length_gt w t).1 h2']
+          have h5  : ℓ(s*w) = ℓ(w*t) := by rw [length_smul_of_length_gt h1',length_muls_of_length_gt h2']
           rw [mul_assoc] at h4
-          simp_rw [TT_muls_eq_mul_of_length_lt h1',TT_muls_right_eq_mul_of_length_gt h3,TT_muls_right_eq_mul_of_length_lt h2',TT_muls_eq_mul_of_length_gt h4,mul_assoc,smul_eq_muls_of_length_eq ⟨h,h5⟩]
+          simp_rw [TT_muls_eq_mul_of_length_lt h1',TT_muls_right_eq_mul_of_length_gt h3,TT_muls_right_eq_mul_of_length_lt h2',TT_muls_eq_mul_of_length_gt h4,mul_assoc,smul_eq_muls_of_length_eq s t w ⟨h,h5⟩]
         }
       }
     }
     {
-      have h1:=length_smul_eq_length_muls_of_neq s t w h
+      have h1:=length_smul_eq_length_muls_of_length_neq s t w h
       rcases( Ne.lt_or_lt h) with hl|hr
       --(b) length (↑s * w * ↑t) < length (↑s * w) = length (w * ↑t)< length w
       {
-        have h2 := length_lt_S_mul_of_length_S_mul_S_lt s t w hl
-        have h3 := length_S_mul_lt_of_length_S_mul_S_lt s t w hl
+        have h2 := length_lt_of_length_smuls_lt hl
+        have h3 := length_lt_of_length_smuls_lt' hl
         have h4 := h1 ▸ h3
         have h5 : ℓ(↑s * w * ↑t) < length (w * t) := by rwa [h1] at h2
         rw [mul_assoc] at h5
@@ -320,8 +318,8 @@ lemma opl_commute_opr : ∀ s t:hG.S, LinearMap.comp (opr' t) (opl' s) = LinearM
       }
       -- (a) ℓ(w) < ℓ(wt) = ℓ(sw) < ℓ(swt)
       {
-        have h2 := length_S_mul_gt_of_length_S_mul_S_gt s t w hr
-        have h3 := length_gt_S_mul_of_length_S_mul_S_gt s t w hr
+        have h2 := length_gt_of_length_smuls_gt hr
+        have h3 := length_gt_of_length_smuls_gt' hr
         have h4 := h1 ▸ h2
         have h5 := h1 ▸ h3
         rw [mul_assoc] at h5
@@ -688,24 +686,3 @@ lemma TTInv_mul {w : G} : TTInv w * TT w = 1 := by
   exact is_inv_aux' (choose_reduced_word_spec w).1
 
 end Hecke
-
--- section involution
-
--- noncomputable def iot_A : LaurentPolynomial ℤ →  LaurentPolynomial ℤ := LaurentPolynomial.invert
-
--- noncomputable def iot_T : G → Hecke G := fun w => Hecke_invG w
-
--- noncomputable def iot :Hecke G → Hecke G := fun h => finsum (fun x:G =>iot_A (h x) • TT x)
-
--- lemma iot_mul (x y :Hecke G) : iot (x*y) = iot x * iot y:= sorry
-
--- noncomputable instance iot.AlgHom : AlgHom (LaurentPolynomial ℤ) (Hecke G) (Hecke G) where
--- toFun:=iot
--- map_one':=sorry
--- map_mul':=iot_mul
--- map_zero':=sorry
--- map_add':=sorry
--- commutes':=sorry
-
-
--- end involution

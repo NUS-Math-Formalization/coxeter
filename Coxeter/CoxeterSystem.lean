@@ -281,9 +281,30 @@ def rightDescent (w : G) [hG:CoxeterGroup G] := rightAssocRefls w ∩ hG.S
 section HeckeAux
 variable {G : Type*} {w : G} [hG:CoxeterGroup G]
 
+-- following lemmas assume G is CoxeterGroup, we can also have CoxeterMatrix version.
+-- these lemmas are needed in Hecke.lean, because the def of Hecke use [CoxeterGroup G],
+-- for convenience, the statements also use [CoxeterGroup G]
+-- some lemmas are symmetric, such as muls_twice : w*s*s = w, the symm version is s*s*w = w.
+-- this section only contain lemmas that needed in Hecke.lean, you can also formulate the symms if u want.
 lemma leftDescent_NE_of_ne_one  (h : w ≠ 1) : Nonempty $ leftDescent w:= sorry
 
 lemma rightDescent_NE_of_ne_one  (h : w ≠ 1) : Nonempty $ rightDescent w:= sorry
+
+lemma ne_one_of_length_smul_lt {s : hG.S} {w:G} (lt: ℓ(s*w) < ℓ(w)) : w ≠ 1:= sorry
+
+lemma length_smul_neq (s:hG.S) (w:G) : ℓ(s*w) ≠ ℓ(w) := sorry
+
+lemma length_muls_neq (w:G) (t:hG.S) : ℓ(w*t) ≠ ℓ(w) := sorry
+
+lemma length_diff_one {s:hG.S} {g : G} : ℓ(s*g) = ℓ(g) + 1  ∨ ℓ(g) = ℓ(s*g) + 1 :=sorry
+
+lemma length_smul_of_length_lt {s : hG.S} {w:G} (h : w ≠ 1) (lt: ℓ(s*w) < ℓ(w)) : ℓ(s*w) = ℓ(w) - 1 := sorry
+
+lemma length_muls_of_length_lt {s : hG.S} {w:G} (h : w ≠ 1) (lt: ℓ(w*s) < ℓ(w)) : ℓ(w*s) = ℓ(w) - 1 := sorry
+
+lemma length_smul_of_length_gt {s : hG.S} {w:G} (gt: ℓ(w) < ℓ(s*w)) : ℓ(s*w) = ℓ(w) + 1 := sorry
+
+lemma length_muls_of_length_gt {s : hG.S} {w:G} (gt: ℓ(w) < ℓ(w*s)) : ℓ(w*s) = ℓ(w) + 1 := sorry
 
 lemma length_muls_of_mem_leftDescent  (h : w ≠ 1) (s : leftDescent w) : ℓ(s*w) = ℓ(w) - 1 :=sorry
 
@@ -291,15 +312,23 @@ lemma length_muls_of_mem_rightDescent  (h : w ≠ 1) (s : rightDescent w) : ℓ(
 
 lemma muls_twice (w:G) (s:hG.S) : w*s*s = w := sorry
 
-lemma length_smul_neq (s:hG.S) (w:G) : ℓ(s*w) ≠ ℓ(w) := sorry
-
-lemma length_muls_neq (w:G) (t:hG.S) : ℓ(w*t) ≠ ℓ(w) := sorry
-
 lemma smul_eq_muls_of_length_eq (s t:hG.S) (w:G) :ℓ(s*w*t) = ℓ(w) ∧ ℓ(s*w)=ℓ(w*t) → s*w=w*t:= sorry
 
-lemma length_smul_eq_length_muls_of_neq (s t :hG.S) (w:G): ℓ(s*w*t) ≠ ℓ(w) → ℓ(s*w)=ℓ(w*t):= sorry
+lemma length_smul_eq_length_muls_of_length_neq (s t :hG.S) (w:G): ℓ(s*w*t) ≠ ℓ(w) → ℓ(s*w)=ℓ(w*t):= sorry
+
+-- ℓ(s*w*t) = ℓ(w) or ℓ(s*w*t) = ℓ(w) + 2 or ℓ(s*w*t) = ℓ(w) - 2
+-- ℓ(s*w*t) < ℓ(w) →  ℓ(s*w*t) < ℓ(s*w) <ℓ(w) ∧ ℓ(s*w*t) < ℓ(w*t) <ℓ(w)
+lemma length_lt_of_length_smuls_lt {s t:hG.S} {w:G} (h: ℓ(s*w*t) < ℓ(w)) : ℓ(s*w*t) < ℓ(s*w) := sorry
+
+lemma length_lt_of_length_smuls_lt' {s t:hG.S} {w:G} (h: ℓ(s*w*t) < ℓ(w)) : ℓ(s*w) < ℓ(w) := sorry
+
+lemma length_gt_of_length_smuls_gt {s t:hG.S} {w:G} (h: ℓ(w) < ℓ(s*w*t)) : ℓ(w) < ℓ(s*w) :=sorry
+
+lemma length_gt_of_length_smuls_gt' {s t:hG.S} {w:G} (h: ℓ(w) < ℓ(s*w*t)) : ℓ(s*w) <ℓ(s*w*t) :=sorry
 
 end HeckeAux
+
+
 end CoxeterGroup
 
 end
