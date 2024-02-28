@@ -350,34 +350,32 @@ lemma reverseList_nonEmpty {L : List S} (hL : L ≠ []) : L.reverse ≠ [] := by
   apply (List.length_pos).2
   exact hL
 
-lemma rtr_append {L : List S} (hL : L ≠ []) :
-  L.reverse.tail.reverse ++ [L.getLast hL] = L := by
-  set n := L.length
-  have : n > 0 := by exact List.length_pos.mpr hL
-  have : L.reverse.tail.reverse = L.dropLast := by
-    induction L with
-    | nil => contradiction
-    | cons hd tail ih =>
-      by_cases k : tail = []
-      . rw [k]
-        simp
-      . push_neg at k
-        have htd : (hd :: tail).dropLast = hd :: (tail.dropLast) := by
-          exact List.dropLast_cons_of_ne_nil k
+lemma dropLast_eq_reverse_tail_reverse {L : List S} : L.dropLast = L.reverse.tail.reverse := by
+  induction L with
+  | nil => simp
+  | cons hd tail ih =>
+    by_cases k : tail = []
+    . rw [k]
+      simp
+    . push_neg at k
+      have htd : (hd :: tail).dropLast = hd :: (tail.dropLast) := by
+        exact List.dropLast_cons_of_ne_nil k
+      rw [htd]
+      have trht : (tail.reverse ++ [hd]).tail = (tail.reverse.tail) ++ [hd] := by
+        apply List.tail_append_of_ne_nil
+        apply reverseList_nonEmpty k
+      have : (hd :: tail).reverse.tail = (hd :: tail).dropLast.reverse := by
         rw [htd]
-        have trht : (tail.reverse ++ [hd]).tail = (tail.reverse.tail) ++ [hd] := by
-          apply List.tail_append_of_ne_nil
-          apply reverseList_nonEmpty k
-        have : (hd :: tail).reverse.tail = (hd :: tail).dropLast.reverse := by
-          rw [htd]
-          simp
-          rw [trht]
-          apply (List.append_left_inj [hd]).2
-          apply (List.reverse_eq_iff).1
-          apply ih k
-          exact List.length_pos.2 k
-        rw [this, List.reverse_reverse, htd]
-  rw [this]
+        simp
+        rw [trht]
+        apply (List.append_left_inj [hd]).2
+        apply (List.reverse_eq_iff).1
+        apply Eq.symm ih
+      rw [this, List.reverse_reverse, htd]
+
+lemma reverse_tail_reverse_append {L : List S} (hL : L ≠ []) :
+  L.reverse.tail.reverse ++ [L.getLast hL] = L := by
+  rw [← dropLast_eq_reverse_tail_reverse]
   exact List.dropLast_append_getLast hL
 
 -- DLevel 2
@@ -388,7 +386,7 @@ lemma toPalindrome_in_Refl [CoxeterMatrix m] {L:List S} (hL : L ≠ []) : (toPal
   have : L.reverse.tail.reverse.gprod * (L.getLast hL) = L.gprod := by
     have : L = L.reverse.tail.reverse ++ [L.getLast hL] := by
       apply Eq.symm
-      apply rtr_append hL
+      apply reverse_tail_reverse_append hL
     nth_rw 3 [this]
     apply Eq.symm
     apply gprod_append_singleton
