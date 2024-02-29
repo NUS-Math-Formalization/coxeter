@@ -474,11 +474,37 @@ lemma reduced_nonreduced_length_le  {L : List S} {s : S} (H1: reduced_word L) (H
 
 abbrev SimpleRefl (S:Set G) [OrderTwoGen S]: Set G:= S
 
+--abbrev Refl (S:Set G) [OrderTwoGen S]: Set G:= {x:G| ∃ (w:G) (s : S) , x = w*s*w⁻¹}
+
 abbrev Refl (S:Set G) [OrderTwoGen S]: Set G:= {x:G| ∃ (w:G) (s : S) , x = w*s*w⁻¹}
 
 -- TODO add some lemmes about conj of Refl is in Refl
 -- DLevel1
 
+
+def ReflSet (S:Set G) [OrderTwoGen S] (g:G) : Set (Refl S) := { t | length S (t * g)≤ length S (g)}
+
+local notation "T" => Refl S
+
+
+lemma SimpleRefl_subset_Refl : ∀ {g : G}, g ∈ S → g ∈ T := by
+  intro g hg
+  use 1, ⟨g,hg⟩
+  simp
+
+lemma Refl.square_eq_one [OrderTwoGen S] {t : Refl S} : (t : G) ^ 2 = 1 := by
+  rcases t with ⟨t, g, s, teqgsg⟩
+  simp only []
+  rw [sq, teqgsg]
+  group
+  have hs : s * s = (1 : G) := by
+    apply @gen_square_eq_one G _ S
+    exact Subtype.mem s
+  rw [mul_assoc g s, hs]
+  group
+
+
+@[deprecated Refl.square_eq_one]
 lemma sq_refl_eq_one [OrderTwoGen S] {t : Refl S} : (t : G) ^ 2 = 1 := by
   rcases t with ⟨t, g, s, teqgsg⟩
   simp only []
@@ -490,6 +516,40 @@ lemma sq_refl_eq_one [OrderTwoGen S] {t : Refl S} : (t : G) ^ 2 = 1 := by
   rw [mul_assoc g s, hs]
   group
 
-def ReflSet (S:Set G) [OrderTwoGen S] (g:G) : Set (Refl S) := { t | length S (t * g)≤ length S (g)}
+lemma Refl.simplify {t : G} : t ∈ T ↔ ∃ g : G, ∃ s : S, g * s * g⁻¹ = t := by
+  constructor
+  · intro h1
+    dsimp at h1
+    rcases h1 with ⟨g,s,hgs⟩
+    use g,s; rw [hgs]
+  · intro h1
+    rcases h1 with ⟨g, s, hgs⟩
+    use g, s; rw [hgs]
+
+@[simp]
+lemma Refl.conjugate_closed {g : G} {t : T} : g * t * g⁻¹ ∈ T := by
+  dsimp
+  have h1 : ∃ g1 : G, ∃ s1 : S, g1 * (s1 : G) * g1⁻¹ = (t : G) := by
+    apply Refl.simplify.mp
+    apply Subtype.mem
+  rcases h1 with ⟨g1, s1, h2⟩
+  have h3 : (g * g1) * ↑s1 * (g * g1)⁻¹ = g * ↑t * g⁻¹ := by
+    rw [← h2]
+    group
+  use g * g1, s1; rw [h3]
+
+
+lemma Refl.inv_eq_self  {t : T} : (t : G)⁻¹ = t :=
+mul_eq_one_iff_inv_eq.1 (by rw [<-sq]; convert Refl.square_eq_one)
+
+@[deprecated Refl.inv_eq_self]
+lemma inv_refl_eq_self  {t : T} : (t : G)⁻¹ = t :=
+mul_eq_one_iff_inv_eq.1 (by rw [<-sq]; convert Refl.square_eq_one)
+
+
+lemma Refl.mul_SimpleRefl_in_Refl (s : S) (t : T) : (s : G) * t * (s : G) ∈ T := by
+  convert Refl.conjugate_closed
+  rw [inv_eq_self'']
+
 
 end OrderTwoGen

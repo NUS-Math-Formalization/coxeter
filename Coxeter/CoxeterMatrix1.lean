@@ -67,18 +67,13 @@ abbrev SimpleRefl := Set.range (of m)
 
 local notation "S" => (SimpleRefl m)
 
-@[simp]
-abbrev Refl : Set G := Set.range <| fun ((g, s) : G × S) => g * s * g⁻¹
+--@[simp]
+--abbrev Refl : Set G := Set.range <| fun ((g, s) : G × S) => g * s * g⁻¹
 
-local notation "T" => (Refl m)
+--local notation "T" => (Refl m)
 
 
 
-@[simp]
-lemma SimpleRefl_subset_Refl : ∀ {g : G}, g ∈ S → g ∈ T := by
-  rintro g ⟨s, hs⟩
-  use ⟨1, ⟨g, by rw [Set.mem_range]; use s⟩⟩
-  simp
 
 @[simp]
 def toSimpleRefl (a : α) : SimpleRefl m := ⟨of m a, by simp⟩
@@ -218,85 +213,42 @@ variable {α} {m : Matrix α α ℕ} [hm: CoxeterMatrix m]
 
 local notation "G" => toGroup m
 local notation "S" => SimpleRefl m
-local notation "T" => Refl m
+local notation "T" => Refl (SimpleRefl m)
+
+/-
+@[simp,deprecated ]
+lemma SimpleRefl_subset_Refl : ∀ {g : G}, g ∈ S → g ∈ T := by
+  sorry
 
 -- DLevel 1
 -- Moving to OrderTwoGen?
-@[simp]
+@[simp,deprecated OrderTwoGen.Refl.simplify]
 lemma Refl.simplify {t : G} : t ∈ T ↔ ∃ g : G, ∃ s : S, g * s * g⁻¹ = t := by
-  constructor
-  · intro h1
-    dsimp at h1
-    have h3 : ∃ x : G × S, x.1 * ↑x.2 * x.1⁻¹ = t := by
-      apply Set.mem_range.mpr h1
-    rcases h3 with ⟨x, h4⟩
-    use x.1, x.2
-  · intro h2
-    dsimp
-    apply Set.mem_range.mpr
-    rcases h2 with ⟨g, s, h3⟩
-    use (g, s)
+  sorry
 
-@[simp]
+@[simp,deprecated OrderTwoGen.Refl.conjugate_closed]
 lemma Refl.conjugate_closed {s : α} {t : T} : (s : G) * t * (s : G)⁻¹ ∈ T := by
   dsimp
-  apply Set.mem_range.mpr
-  have h1 : ∃ g1 : G, ∃ s1 : S, g1 * (s1 : G) * g1⁻¹ = (t : G) := by
-    apply Refl.simplify.mp
-    apply Subtype.mem
-  rcases h1 with ⟨g1, s1, h2⟩
-  have h3 : (of m s * g1) * ↑s1 * (of m s * g1)⁻¹ = of m s * ↑t * (of m s)⁻¹ := by
-    rw [← h2]
-    group
-  use (of m s * g1, s1)
+  sorry
 
 -- DLevel 1
-@[simp]
+@[simp,deprecated OrderTwoGen.Refl.conjugate_closed]
 lemma Refl.conjugate_closed' [CoxeterMatrix m ] {s : α} {t : T} : (s : G) * t * (s : G) ∈ T := by
   dsimp
-  have h4 : (of m s)⁻¹ = of m s := by
-    apply of_inv_eq_of
-  nth_rw 2 [← h4]
-  apply Set.mem_range.mpr
-  have h1 : ∃ g1 : G, ∃ s1 : S, g1 * (s1 : G) * g1⁻¹ = (t : G) := by
-    apply Refl.simplify.mp
-    apply Subtype.mem
-  rcases h1 with ⟨g1, s1, h2⟩
-  have h3 : (of m s* g1) * ↑s1 * (of m s * g1)⁻¹ = of m s * ↑t * (of m s)⁻¹ := by
-    rw [← h2]
-    group
-  use (of m s * g1, s1)
+  sorry
 
-@[simp]
+@[simp,deprecated OrderTwoGen.Refl.conjugate_closed]
 lemma Refl.conjugate_closed_G {g : G} {t : T} : g * t * g⁻¹ ∈ T := by
   dsimp
-  apply Set.mem_range.mpr
-  have h1 : ∃ g1 : G, ∃ s1 : S, g1 * (s1 : G) * g1⁻¹ = (t : G) := by
-    apply Refl.simplify.mp
-    apply Subtype.mem
-  rcases h1 with ⟨g1, s1, h2⟩
-  have h3 : (g * g1) * ↑s1 * (g * g1)⁻¹ = g * ↑t * g⁻¹ := by
-    rw [← h2]
-    group
-  use (g * g1, s1)
-
-
-lemma sq_refl_eq_one [CoxeterMatrix m] {t : T} : (t : G) ^ 2 = 1 := by
-  rcases t with ⟨t, ⟨g, s⟩, feqt⟩
-  simp only [feqt]
-  have gsgeqt : g * s * g⁻¹ = t := feqt
-  rw [← gsgeqt, sq]
-  group
-  have hs : s * s = (1 : G) :=
-    of_square_eq_one' m (Subtype.mem s)
-  rw [mul_assoc g s, hs]
-  group
-
-lemma inv_refl_eq_self [CoxeterMatrix m] {t : T} : (t : G)⁻¹ = t := by
-  rcases t with ⟨t, ⟨g, s⟩, feqt⟩
-  simp only [feqt]
-  have gsgeqt : g * s * g⁻¹ = t := feqt
   sorry
+
+@[deprecated OrderTwoGen.Refl.square_eq_one]
+lemma sq_refl_eq_one [CoxeterMatrix m] {t : T} : (t : G) ^ 2 = 1 := by
+  sorry
+
+@[deprecated OrderTwoGen.Refl.inv_eq_self]
+lemma inv_refl_eq_self [CoxeterMatrix m] {t : T} : (t : G)⁻¹ = t := by sorry
+-/
 
 local notation : max "ℓ(" g ")" => (OrderTwoGen.length S g)
 
@@ -381,7 +333,7 @@ lemma reverse_tail_reverse_append {L : List S} (hL : L ≠ []) :
 
 -- DLevel 2
 lemma toPalindrome_in_Refl [CoxeterMatrix m] {L:List S} (hL : L ≠ []) : (toPalindrome L:G) ∈ T := by
-  apply Refl.simplify.mpr
+  apply OrderTwoGen.Refl.simplify.mpr
   use L.reverse.tail.reverse.gprod, (L.getLast hL)
   rw [← gprod_reverse, List.reverse_reverse]
   have : L.reverse.tail.reverse.gprod * (L.getLast hL) = L.gprod := by
@@ -441,7 +393,7 @@ lemma distinct_toPalindrome_i_of_reduced [CoxeterMatrix m] {L : List S} : reduce
         _ = 1 := by
           have tirefl := toPalindrome_i_in_Refl i
           set ti : T := ⟨(t(L, i)).gprod, tirefl⟩
-          have tisq : (ti.val : G) ^ 2 = 1 := sq_refl_eq_one
+          have tisq : (ti.val : G) ^ 2 = 1 := OrderTwoGen.Refl.square_eq_one
           rw [sq] at tisq
           exact tisq
     have lenremNjp : (L.removeNth j).length + 1 = L.length := by
@@ -486,9 +438,12 @@ noncomputable def nn (L : List S) (t : T) : ℕ := List.count (t : G) <| List.ma
 -- [BB] (1.15)
 -- lemma nn_prod_eta_aux [CoxeterMatrix m] (L: List S) (t:T) : ∏ i:Fin L.length, eta_aux'  (L.nthLe i.1 i.2) ⟨((L.take (i.1+1)).reverse:G) * t * L.take (i.1+1),by sorry⟩ := by sorry
 
+/-
+@[deprecated OrderTwoGen.Refl.mul_SimpleRefl_in_Refl]
 lemma SimpleRefl_Refl_SimpleRefl_in_Refl (s : S) (t : T) : (s : G) * t * (s : G) ∈ T := by
   rcases s with ⟨_, ⟨_, hy⟩⟩
   exact hy.subst (motive := fun x : G ↦ x * t * x ∈ T) Refl.conjugate_closed'
+-/
 
 lemma Refl_palindrome_in_Refl {i : ℕ} (L : List S) (t : T) : ((L.take i).reverse : G) * t * L.take i ∈ T := by
   induction i with
@@ -508,7 +463,7 @@ lemma Refl_palindrome_in_Refl {i : ℕ} (L : List S) (t : T) : ((L.take i).rever
         rw [List.reverse_append, List.reverse_singleton, gprod_append, gprod_append, gprod_singleton]
         group
       rw [h]
-      exact SimpleRefl_Refl_SimpleRefl_in_Refl (L.get jf) ⟨_, hi⟩
+      exact Refl.mul_SimpleRefl_in_Refl (L.get jf) ⟨_, hi⟩
     · push_neg at hj
       have h : ((L.take (Nat.succ j)).reverse : G) * t * L.take (Nat.succ j) =
           ((L.take j).reverse : G) * t * L.take j := by
@@ -527,7 +482,7 @@ lemma nn_prod_eta_aux [CoxeterMatrix m] (L : List S) (t : T) : μ₂.gen ^ (nn L
     dsimp
     norm_num
   | cons hd tail ih =>
-    set sts : T := ⟨hd * t * hd, SimpleRefl_Refl_SimpleRefl_in_Refl hd t⟩
+    set sts : T := ⟨hd * t * hd, Refl.mul_SimpleRefl_in_Refl hd t⟩
     simp only [nn]
     dsimp
     have hzero : 0 < (hd :: tail).length := by
@@ -602,7 +557,7 @@ lemma nn_prod_eta_aux [CoxeterMatrix m] (L : List S) (t : T) : μ₂.gen ^ (nn L
         congr
         simp only [eta_aux']
         by_cases h : (hd : G) = t
-        · rw [if_pos h, h, ← sq, sq_refl_eq_one, one_mul, List.count_singleton]
+        · rw [if_pos h, h, ← sq, Refl.square_eq_one, one_mul, List.count_singleton]
           simp only [pow_one]
         · rw [if_neg h, List.count_singleton']
           have : (hd : G) * t * hd ≠ hd := by
@@ -711,7 +666,7 @@ local notation "R" => T × μ₂
 
 namespace ReflRepn
 noncomputable def pi_aux (s : α) (r : R) : R :=
-  ⟨⟨(s:G) * r.1 * (s:G)⁻¹, Refl.conjugate_closed⟩ , r.2 * eta_aux s r.1⟩
+  ⟨⟨(s:G) * r.1 * (s:G)⁻¹, OrderTwoGen.Refl.conjugate_closed⟩ , r.2 * eta_aux s r.1⟩
 
 -- DLevel 3
 lemma pi_aux_square_identity [CoxeterMatrix m] (s : α) (r : R) : pi_aux s (pi_aux s r) = r := by sorry
@@ -749,7 +704,7 @@ lemma eta_equiv_nn' {L : List S} {t : T} : eta L t = (μ₂.gen) ^ (nn L t) := b
 lemma eta_t (t : T) : eta (t : G) t = μ₂.gen := by sorry
   -- rw [eta_lift_eta_aux, eta_aux, if_pos rfl]
 
-lemma pi_eval (g : G) (t : T) (ε : μ₂): ReflRepn.pi g (t, ε) = (⟨(g : G) * t * (g : G)⁻¹, Refl.conjugate_closed_G⟩, ε * eta g⁻¹ t) := by
+lemma pi_eval (g : G) (t : T) (ε : μ₂): ReflRepn.pi g (t, ε) = (⟨(g : G) * t * (g : G)⁻¹, OrderTwoGen.Refl.conjugate_closed⟩, ε * eta g⁻¹ t) := by
   sorry
 
 
@@ -777,7 +732,7 @@ lemma lt_iff_eta_eq_gen (g : G) (t : T) : ℓ(t * g) < ℓ(g) ↔ eta g t = μ�
     intro h
     rw [μ₂.not_iff_not'] at h
     -- let g_inv_t_g := toRefl' m (g⁻¹ * t * g) t g rfl
-    have g_inv_t_g_in_T : g⁻¹ * t * g ∈ T := by nth_rw 2 [← (inv_inv g)]; exact Refl.conjugate_closed_G
+    have g_inv_t_g_in_T : g⁻¹ * t * g ∈ T := by nth_rw 2 [← (inv_inv g)]; exact OrderTwoGen.Refl.conjugate_closed
     let g_inv_t_g : T := ⟨(g⁻¹ * t * g), g_inv_t_g_in_T⟩
     have eq1 : ReflRepn.pi ((t : G) * g)⁻¹ (t, μ₂.gen) = (⟨(g⁻¹ * t * g), g_inv_t_g_in_T⟩, μ₂.gen * eta ((t : G) * g) t) := by
       rw [pi_eval]
@@ -786,12 +741,12 @@ lemma lt_iff_eta_eq_gen (g : G) (t : T) : ℓ(t * g) < ℓ(g) ↔ eta g t = μ�
       . simp only [Refl, SimpleRefl, mul_inv_rev, inv_mul_cancel_right, inv_inv, Subtype.mk.injEq, ←mul_assoc]
       simp only [Subtype.mk.injEq, inv_inv]
     have eq2 : ReflRepn.pi ((t : G) * g)⁻¹ (t, μ₂.gen) = (g_inv_t_g, 1) := by
-      rw [mul_inv_rev, map_mul, Equiv.Perm.coe_mul, Function.comp_apply, inv_refl_eq_self]
+      rw [mul_inv_rev, map_mul, Equiv.Perm.coe_mul, Function.comp_apply, Refl.inv_eq_self]
       calc
         (ReflRepn.pi g⁻¹) ((ReflRepn.pi ↑t) (t, μ₂.gen)) = (ReflRepn.pi g⁻¹) (t, 1) := by
           congr; rw [pi_eval];
           simp only [Refl, SimpleRefl, mul_inv_cancel_right, Prod.mk.injEq, true_and]
-          rw [inv_refl_eq_self, eta_t]; exact μ₂.gen_square
+          rw [Refl.inv_eq_self, eta_t]; exact μ₂.gen_square
         _ = (g_inv_t_g, 1) := by
           rw [pi_eval]
           simp only [Refl, SimpleRefl, inv_inv, one_mul, Prod.mk.injEq, true_and]; exact h;
@@ -801,7 +756,7 @@ lemma lt_iff_eta_eq_gen (g : G) (t : T) : ℓ(t * g) < ℓ(g) ↔ eta g t = μ�
       apply (@mul_left_cancel_iff _ _ _ μ₂.gen).mp
       rw [μ₂.gen_square]; assumption;
     let hh := mpr (t * g) t this
-    rw [←mul_assoc, ←pow_two, sq_refl_eq_one, one_mul] at hh
+    rw [←mul_assoc, ←pow_two, OrderTwoGen.Refl.square_eq_one, one_mul] at hh
     rw [not_lt]
     exact le_of_lt hh
   exact Iff.intro (mp g t) (mpr g t)
@@ -829,7 +784,7 @@ lemma strong_exchange : ∀ (L : List S) (t : T) , ℓ((t:G) * L) < ℓ(L) →
 
 lemma exchange: OrderTwoGen.ExchangeProp S:= by
   intro L t _ h2
-  obtain ⟨i, hi⟩ := strong_exchange L ⟨t.val, (SimpleRefl_subset_Refl m t.prop)⟩ (length_smul_lt_of_le h2)
+  obtain ⟨i, hi⟩ := strong_exchange L ⟨t.val, (OrderTwoGen.SimpleRefl_subset_Refl t.prop)⟩ (length_smul_lt_of_le h2)
   exact ⟨i, hi⟩
 
 -- DLevel 3
