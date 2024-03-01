@@ -364,17 +364,13 @@ lemma toPalindrome_i_in_Refl [CoxeterMatrix m] {L : List S} (i : Fin L.length) :
     exact List.length_eq_zero.mpr tkpos
   exact toPalindrome_in_Refl h
 
---DLevel 3
-lemma mul_Palindrome_i_cancel_i [CoxeterMatrix m] {L : List S} (i : Fin L.length) : (t(L, i):G) * L = (L.removeNth i) := by
-  rw [toPalindrome_i, toPalindrome, List.removeNth_eq_take_drop]
-  rw [List.take_get_lt]
-  simp
+lemma mul_Palindrome_i_cancel_i [CoxeterMatrix m] {L : List S} (i : Fin L.length) : (t(L, i) : G) * L = (L.removeNth i) := by
+  rw [toPalindrome_i, toPalindrome, List.removeNth_eq_take_drop, List.take_get_lt]
+  simp only [gprod_append, gprod_singleton, List.reverse_append, List.reverse_singleton, List.singleton_append, List.tail]
   have : L = (L.take i).gprod * (L.drop i).gprod := by
     nth_rw 1 [← List.take_append_drop i L]
     rw [gprod_append]
-  rw [this, gprod_cons]
-  nth_rw 2 [← mul_assoc]
-  rw [mul_assoc, ← mul_assoc ((List.reverse (List.take (↑i) L)).gprod),
+  rw [this, mul_assoc, ← mul_assoc ((List.reverse (List.take (↑i) L)).gprod),
     reverse_prod_prod_eq_one, one_mul, mul_assoc]
   apply (mul_right_inj (L.take i).gprod).2
   rw [← List.get_drop_eq_drop, gprod_cons, ← mul_assoc]
@@ -383,7 +379,6 @@ lemma mul_Palindrome_i_cancel_i [CoxeterMatrix m] {L : List S} (i : Fin L.length
   apply i.2
   apply i.2
 
--- DLevel 1
 lemma removeNth_of_palindrome_prod (L : List S) (n : Fin L.length) :
   (toPalindrome_i L n:G) * L = (L.removeNth n) := mul_Palindrome_i_cancel_i n
 
