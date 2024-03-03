@@ -314,7 +314,7 @@ lemma prod_insert_zero {M : Type u} [CommMonoid M] {n : Nat} {f g : Nat → M} (
       have : x ∈ Set.univ := Set.mem_univ x
       simp only [this, finprod_true]
 
-lemma prod_insert_zero_fin {M : Type u} [CommMonoid M] {n : Nat} {f : Fin (n + 1) → M} {g : Fin n → M} (h : ∀(i : Fin n), g i = f ⟨i.val + 1, (by linarith [i.prop] : i.val + 1 < n + 1)⟩) :
+lemma prod_insert_zero_fin {M : Type u} [CommMonoid M] {n : Nat} {f : Fin (n + 1) → M} {g : Fin n → M} (h : ∀(i : Fin n), g i = f ⟨i.val + 1, add_lt_add_right i.prop 1⟩) :
     ∏ i : Fin (n + 1), f i = f 0 * ∏ i : Fin n, g i := by
   let not0 : Set (Fin (n + 1)) := Set.univ \ {0}
   have no0 : 0 ∉ not0 := Set.not_mem_diff_of_mem rfl

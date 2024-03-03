@@ -578,25 +578,19 @@ lemma nn_prod_eta_aux [CoxeterMatrix m] (L : List S) (t : T) : μ₂.gen ^ (nn L
             exact mul_right_cancel (mul_left_cancel h.symm)
           rw [if_neg this, pow_zero]
       _ = ∏ i : Fin (Nat.succ tail.length), finprodFn i := by
-        have : ∏ i : Fin (Nat.succ tail.length), finprodFn i = ∏ i : Fin (tail.length + 1), finprodFn i := by congr
-        rw [this]
         have : eta_aux' hd t = finprodFn 0 := by
           simp only [finprodFn]
           congr
         rw [this]
         let g : Fin tail.length → μ₂ := fun i ↦
           eta_aux' (tail.get i) ⟨((tail.take i.1).reverse : G) * sts * tail.take i.1, by apply Refl_palindrome_in_Refl⟩
-        have : ∏ i : Fin tail.length, eta_aux' (tail.get i) ⟨((tail.take i.1).reverse : G) * sts * tail.take i.1, by apply Refl_palindrome_in_Refl⟩
-            = ∏ i : Fin tail.length, g i := by
-          dsimp
-        rw [this]
-        have h : ∀(i : Fin tail.length), g i = finprodFn ⟨i.val + 1, (by linarith [i.prop] : i.val + 1 < tail.length + 1)⟩ := by
+        have h : ∀(i : Fin tail.length), g i = finprodFn ⟨i.val + 1, add_lt_add_right i.prop 1⟩ := by
           intro i
           dsimp
           rw [← Nat.succ_eq_add_one i.1]
           simp only [if_neg]
           congr
-        apply (@prod_insert_zero_fin μ₂ _ tail.length finprodFn _ h).symm
+        exact (prod_insert_zero_fin h).symm
       _ = ∏ i : Fin (Nat.succ tail.length), eta_aux' ((hd :: tail).get i) ⟨((hd :: tail).take i.1).reverse * t * ((hd :: tail).take i.1), by apply Refl_palindrome_in_Refl⟩ := by
         congr
         ext ⟨x, hx⟩
