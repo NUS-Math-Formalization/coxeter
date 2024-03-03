@@ -2,12 +2,13 @@ import Mathlib.Tactic.Linarith
 import Mathlib.Data.List.Basic
 import Mathlib.Data.Subtype
 import Mathlib.Data.Set.Basic
+import Mathlib.Data.Set.Finite
 import Mathlib.GroupTheory.Subgroup.Basic
 import Mathlib.GroupTheory.Submonoid.Membership
 import Mathlib.Data.List.Range
 import Mathlib.Algebra.Module.Equiv
 import Mathlib.Data.List.Palindrome
-
+import Mathlib.Algebra.BigOperators.Finprod
 
 #check List.eraseDups
 #check List.eraseReps
@@ -243,3 +244,138 @@ lemma sub_sub_one_lt_self {i n: Nat} (h : 0 < n) : n - i - 1 < n := by
   exact sub_one_sub_lt_self h
 
 end Nat
+
+open BigOperators
+
+lemma prod_insert_zero {M : Type u} [CommMonoid M] {n : Nat} {f g : Nat → M} (h : ∀(i : Fin n), g i = f (i.val + 1)) :
+    ∏ i : Fin (n + 1), f i = f 0 * ∏ i : Fin n, g i := by
+  let not0 : Set (Fin (n + 1)) := Set.univ \ {0}
+  have no0 : 0 ∉ not0 := Set.not_mem_diff_of_mem rfl
+  have finnot0 : Set.Finite not0 := Set.toFinite not0
+  let p1 : (Fin n) → (Fin (n + 1)) := fun x ↦ ⟨x.val + 1, (by linarith [x.prop])⟩
+  have fp1 := finprod_mem_insert (fun i : Fin (n + 1) ↦ f i) no0 finnot0
+  have insert0 : insert 0 not0 = Set.univ := by
+    ext x
+    constructor
+    · exact fun _ ↦ Set.mem_univ x
+    · intro _
+      by_cases h : x = 0
+      · exact Set.mem_insert_iff.mpr (Or.inl h)
+      · exact Set.mem_insert_of_mem 0 ⟨Set.mem_univ x, h⟩
+  rw [insert0] at fp1
+  have hg : Set.InjOn p1 Set.univ := by
+    intro a _ b _ hab
+    simp only [p1] at hab
+    apply (Fin.eq_iff_veq a b).mpr
+    have : a.val + 1 = b.val + 1 := (Fin.eq_iff_veq _ _).mp hab
+    exact Nat.add_right_cancel this
+  have fp2 : ∏ᶠ (i : Fin (n + 1)) (_ : i ∈ p1 '' Set.univ), f i
+    = ∏ᶠ (j : Fin n) (_ : j ∈ Set.univ), f (p1 j) := finprod_mem_image hg
+  have imgnot0 : not0 = p1 '' Set.univ := by
+    ext x
+    constructor
+    · rintro ⟨_, hx⟩
+      set! xv := x.val with hxv
+      have : xv ≠ 0 := (Fin.ne_iff_vne x 0).mp hx
+      rcases xv with (_ | x')
+      · exact (this rfl).elim
+      · have : x' < n := by
+          apply Nat.lt_of_succ_lt_succ
+          rw [hxv]
+          exact x.2
+        use ⟨x', this⟩
+        simp only [p1]
+        exact ⟨Set.mem_univ (⟨x', this⟩ : Fin n), (Fin.eq_iff_veq _ _).mpr hxv⟩
+    · rintro ⟨y, ⟨_, gyx⟩⟩
+      have : y.val + 1 = x := (Fin.eq_iff_veq _ _).mp gyx
+      rw [← Nat.succ_eq_add_one] at this
+      have : x.val ≠ 0 := by
+        rw [← this]
+        exact Nat.succ_ne_zero y.val
+      exact ⟨Set.mem_univ x, (Fin.ne_iff_vne _ _).mpr this⟩
+  have fp2' : ∏ᶠ (i : Fin (n + 1)) (_ : i ∈ not0), f i
+    = ∏ᶠ (i : Fin (n + 1)) (_ : i ∈ p1 '' Set.univ), f i := by rw [imgnot0]
+  symm
+  calc
+    _ = f 0 * ∏ i : Fin n, g i := rfl
+    _ = f 0 * ∏ᶠ (i : Fin n) (_ : i ∈ Set.univ), f (p1 i) := by
+      rw [finprod_eq_prod_of_fintype]
+      congr
+      ext x
+      simp only [Set.mem_univ x, finprod_true]
+      exact h x
+    _ = ∏ᶠ (i : Fin (n + 1)) (_ : i ∈ Set.univ), f i := by
+      rw [fp1, fp2', fp2]
+      dsimp
+    _ = ∏ i : Fin (n + 1), f i := by
+      rw [finprod_eq_prod_of_fintype]
+      congr
+      ext x
+      have : x ∈ Set.univ := Set.mem_univ x
+      simp only [this, finprod_true]
+
+lemma prod_insert_zero_fin {M : Type u} [CommMonoid M] {n : Nat} {f : Fin (n + 1) → M} {g : Fin n → M} (h : ∀(i : Fin n), g i = f ⟨i.val + 1, (by linarith [i.prop] : i.val + 1 < n + 1)⟩) :
+    ∏ i : Fin (n + 1), f i = f 0 * ∏ i : Fin n, g i := by
+  let not0 : Set (Fin (n + 1)) := Set.univ \ {0}
+  have no0 : 0 ∉ not0 := Set.not_mem_diff_of_mem rfl
+  have finnot0 : Set.Finite not0 := Set.toFinite not0
+  let p1 : (Fin n) → (Fin (n + 1)) := fun x ↦ ⟨x.val + 1, (by linarith [x.prop])⟩
+  have fp1 := finprod_mem_insert (fun i : Fin (n + 1) ↦ f i) no0 finnot0
+  have insert0 : insert 0 not0 = Set.univ := by
+    ext x
+    constructor
+    · exact fun _ ↦ Set.mem_univ x
+    · intro _
+      by_cases h : x = 0
+      · exact Set.mem_insert_iff.mpr (Or.inl h)
+      · exact Set.mem_insert_of_mem 0 ⟨Set.mem_univ x, h⟩
+  rw [insert0] at fp1
+  have hg : Set.InjOn p1 Set.univ := by
+    intro a _ b _ hab
+    simp only [p1] at hab
+    apply (Fin.eq_iff_veq a b).mpr
+    have : a.val + 1 = b.val + 1 := (Fin.eq_iff_veq _ _).mp hab
+    exact Nat.add_right_cancel this
+  have fp2 : ∏ᶠ (i : Fin (n + 1)) (_ : i ∈ p1 '' Set.univ), f i
+    = ∏ᶠ (j : Fin n) (_ : j ∈ Set.univ), f (p1 j) := finprod_mem_image hg
+  have imgnot0 : not0 = p1 '' Set.univ := by
+    ext x
+    constructor
+    · rintro ⟨_, hx⟩
+      set! xv := x.val with hxv
+      have : xv ≠ 0 := (Fin.ne_iff_vne x 0).mp hx
+      rcases xv with (_ | x')
+      · exact (this rfl).elim
+      · have : x' < n := by
+          apply Nat.lt_of_succ_lt_succ
+          rw [hxv]
+          exact x.2
+        use ⟨x', this⟩
+        simp only [p1]
+        exact ⟨Set.mem_univ (⟨x', this⟩ : Fin n), (Fin.eq_iff_veq _ _).mpr hxv⟩
+    · rintro ⟨y, ⟨_, gyx⟩⟩
+      have : y.val + 1 = x := (Fin.eq_iff_veq _ _).mp gyx
+      rw [← Nat.succ_eq_add_one] at this
+      have : x.val ≠ 0 := by
+        rw [← this]
+        exact Nat.succ_ne_zero y.val
+      exact ⟨Set.mem_univ x, (Fin.ne_iff_vne _ _).mpr this⟩
+  have fp2' : ∏ᶠ (i : Fin (n + 1)) (_ : i ∈ not0), f i
+    = ∏ᶠ (i : Fin (n + 1)) (_ : i ∈ p1 '' Set.univ), f i := by rw [imgnot0]
+  symm
+  calc
+    _ = f 0 * ∏ i : Fin n, g i := rfl
+    _ = f 0 * ∏ᶠ (i : Fin n) (_ : i ∈ Set.univ), f (p1 i) := by
+      rw [finprod_eq_prod_of_fintype]
+      congr
+      ext x
+      simp only [Set.mem_univ x, finprod_true]
+      exact h x
+    _ = ∏ᶠ (i : Fin (n + 1)) (_ : i ∈ Set.univ), f i := by
+      rw [fp1, fp2', fp2]
+    _ = ∏ i : Fin (n + 1), f i := by
+      rw [finprod_eq_prod_of_fintype]
+      congr
+      ext x
+      have : x ∈ Set.univ := Set.mem_univ x
+      simp only [this, finprod_true]

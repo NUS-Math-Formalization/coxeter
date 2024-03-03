@@ -561,7 +561,7 @@ lemma nn_prod_eta_aux [CoxeterMatrix m] (L : List S) (t : T) : μ₂.gen ^ (nn L
         ext x
         dsimp
         rw [add_comm 1 x, Nat.add_sub_cancel, ← Nat.succ_eq_add_one, if_neg (Nat.succ_ne_zero x)]
-      _ = eta_aux' hd t * ∏ i : Fin (List.length tail), eta_aux' (List.get tail i) ⟨((tail.take i.1).reverse : G) * sts * tail.take i.1, by apply Refl_palindrome_in_Refl⟩ := by
+      _ = eta_aux' hd t * ∏ i : Fin tail.length, eta_aux' (tail.get i) ⟨((tail.take i.1).reverse : G) * sts * tail.take i.1, by apply Refl_palindrome_in_Refl⟩ := by
         have := ih sts
         rw [nn] at this
         rw [this]
@@ -577,79 +577,27 @@ lemma nn_prod_eta_aux [CoxeterMatrix m] (L : List S) (t : T) : μ₂.gen ^ (nn L
             rw [mul_assoc, (of_square_eq_one' m (Subtype.mem hd)).symm] at h
             exact mul_right_cancel (mul_left_cancel h.symm)
           rw [if_neg this, pow_zero]
-      _ = ∏ i : Fin (Nat.succ (List.length tail)), finprodFn i := by
-        let not0 : Set (Fin (Nat.succ tail.length)) := Set.univ \ {0}
-        have no0 : 0 ∉ not0 := Set.not_mem_diff_of_mem rfl
-        have finnot0 : Set.Finite not0 := Set.toFinite not0
-        have fp1 := finprod_mem_insert finprodFn no0 finnot0
-        have insert0 : insert 0 not0 = Set.univ := by
-          ext x
-          constructor
-          · exact fun _ ↦ Set.mem_univ x
-          · intro _
-            by_cases h : x = 0
-            · exact Set.mem_insert_iff.mpr (Or.inl h)
-            · exact Set.mem_insert_of_mem 0 ⟨Set.mem_univ x, h⟩
-        rw [insert0] at fp1
-        have : eta_aux' hd t = finprodFn 0 := rfl
+      _ = ∏ i : Fin (Nat.succ tail.length), finprodFn i := by
+        have : ∏ i : Fin (Nat.succ tail.length), finprodFn i = ∏ i : Fin (tail.length + 1), finprodFn i := by congr
         rw [this]
-        let g : (Fin tail.length) → (Fin (Nat.succ tail.length)) :=
-          fun x ↦ ⟨x.val + 1, (by linarith [x.prop])⟩
-        have hg : Set.InjOn g Set.univ := by
-          intro a _ b _ hab
-          simp only [g] at hab
-          apply (Fin.eq_iff_veq a b).mpr
-          have : a.val + 1 = b.val + 1 := (Fin.eq_iff_veq _ _).mp hab
-          exact Nat.add_right_cancel this
-        have fp2 : ∏ᶠ (i : Fin (Nat.succ tail.length)) (_ : i ∈ g '' Set.univ), finprodFn i
-          = ∏ᶠ (j : Fin tail.length) (_ : j ∈ Set.univ), finprodFn (g j) := finprod_mem_image hg
-        have imgnot0 : not0 = g '' Set.univ := by
-          ext x
-          constructor
-          · rintro ⟨_, hx⟩
-            set! xv := x.val with hxv
-            have : xv ≠ 0 := (Fin.ne_iff_vne x 0).mp hx
-            rcases xv with (_ | x')
-            · exact (this rfl).elim
-            · have : x' < tail.length := by
-                apply Nat.lt_of_succ_lt_succ
-                rw [hxv]
-                exact x.2
-              use ⟨x', this⟩
-              simp only [g]
-              exact ⟨Set.mem_univ (⟨x', this⟩ : Fin tail.length), (Fin.eq_iff_veq _ _).mpr hxv⟩
-          · rintro ⟨y, ⟨_, gyx⟩⟩
-            have : y.val + 1 = x := (Fin.eq_iff_veq _ _).mp gyx
-            rw [← Nat.succ_eq_add_one] at this
-            have : x.val ≠ 0 := by
-              rw [← this]
-              exact Nat.succ_ne_zero y.val
-            exact ⟨Set.mem_univ x, (Fin.ne_iff_vne _ _).mpr this⟩
-        have fp2' : ∏ᶠ (i : Fin (Nat.succ tail.length)) (_ : i ∈ not0), finprodFn i
-          = ∏ᶠ (i : Fin (Nat.succ tail.length)) (_ : i ∈ g '' Set.univ), finprodFn i := by rw [imgnot0]
-        rw [fp2', fp2] at fp1
-        calc
-          _ = finprodFn 0 * ∏ i : Fin tail.length, eta_aux' (tail.get i) ⟨((tail.take i.1).reverse : G) * sts * tail.take i.1, by apply Refl_palindrome_in_Refl⟩ := rfl
-          _ = finprodFn 0 * ∏ᶠ (j : Fin tail.length) (_ : j ∈ Set.univ), finprodFn (g j) := by
-            rw [finprod_eq_prod_of_fintype]
-            simp only [g, finprodFn]
-            congr
-            ext x
-            have : x ∈ Set.univ := Set.mem_univ x
-            simp only [this, finprod_true]
-            have : x.1 + 1 ≠ 0 := by
-              rw [← Nat.succ_eq_add_one x.1]
-              exact Nat.succ_ne_zero x.1
-            simp only [this, Nat.add_sub_cancel x.1 1]
-            congr
-          _ = ∏ᶠ (i : Fin (Nat.succ tail.length)) (_ : i ∈ Set.univ), finprodFn i := by rw [fp1]
-          _ = ∏ i : Fin (Nat.succ tail.length), finprodFn i := by
-            rw [finprod_eq_prod_of_fintype]
-            congr
-            ext x
-            have : x ∈ Set.univ := Set.mem_univ x
-            simp only [this, finprod_true]
-      _ = ∏ i : Fin (Nat.succ (List.length tail)), eta_aux' ((hd :: tail).get i) ⟨((hd :: tail).take i.1).reverse * t * ((hd :: tail).take i.1), by apply Refl_palindrome_in_Refl⟩ := by
+        have : eta_aux' hd t = finprodFn 0 := by
+          simp only [finprodFn]
+          congr
+        rw [this]
+        let g : Fin tail.length → μ₂ := fun i ↦
+          eta_aux' (tail.get i) ⟨((tail.take i.1).reverse : G) * sts * tail.take i.1, by apply Refl_palindrome_in_Refl⟩
+        have : ∏ i : Fin tail.length, eta_aux' (tail.get i) ⟨((tail.take i.1).reverse : G) * sts * tail.take i.1, by apply Refl_palindrome_in_Refl⟩
+            = ∏ i : Fin tail.length, g i := by
+          dsimp
+        rw [this]
+        have h : ∀(i : Fin tail.length), g i = finprodFn ⟨i.val + 1, (by linarith [i.prop] : i.val + 1 < tail.length + 1)⟩ := by
+          intro i
+          dsimp
+          rw [← Nat.succ_eq_add_one i.1]
+          simp only [if_neg]
+          congr
+        apply (@prod_insert_zero_fin μ₂ _ tail.length finprodFn _ h).symm
+      _ = ∏ i : Fin (Nat.succ tail.length), eta_aux' ((hd :: tail).get i) ⟨((hd :: tail).take i.1).reverse * t * ((hd :: tail).take i.1), by apply Refl_palindrome_in_Refl⟩ := by
         congr
         ext ⟨x, hx⟩
         simp only [eta_aux']
