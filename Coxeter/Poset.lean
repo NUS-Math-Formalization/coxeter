@@ -8,19 +8,23 @@ variable {P : Type*} [PartialOrder P] [Finite P]
 
 def ledot (a b : P) := a < b ∧ (∀ {c : P}, (a ≤ c ∧ c ≤ b) → (a = c ∨ b = c))
 
-def edges {P : Type*} [PartialOrder P] : Set (P × P) := { (a, b) | ledot a b }
+def edges (P : Type*) [PartialOrder P] : Set (P × P) := {(a, b) | ledot a b }
 
-def EL {P A : Type*} [PartialOrder P] [PartialOrder A] := edges P → A
+def EL (P A : Type*) [PartialOrder P] [PartialOrder A]:= edges P → A
 
-def maximal_chain {P : Type*} [PartialOrder P] : List P := sorry
+def chain {P : Type*} [PartialOrder P] (L: List P) : Prop := sorry
 
-def graded {P : Type*} [PartialOrder P] : ∀ (L₁ L₂ : List P), ((maximal_chain L₁) ∧ (maximal_chain L₂)) → (L₁.length = L₂.length)
+def maximal_chain {P : Type*} [PartialOrder P] (L: List P) : Prop := sorry
 
-def shellable {P : Type*} [PartialOrder P] : sorry
+def set_maximal_chains {P : Type*} [PartialOrder P] : Set (List P) := { L | maximal_chain L }
 
-def CL_labelling {P : Type*} [PartialOrder P] : sorry
+def graded (P : Type*) [PartialOrder P] : Prop := ∀ (L₁ L₂ : List P), ((maximal_chain L₁) ∧ (maximal_chain L₂)) → (L₁.length = L₂.length)
 
-def EL_labelling {P : Type*} [PartialOrder P] : sorry
+def shellable (P : Type*) [PartialOrder P] : Prop := sorry
+
+def CL_labelling (P : Type*) [PartialOrder P] : Prop := sorry
+
+def EL_labelling (P : Type*) [PartialOrder P] : Prop := sorry
 
 theorem CL_shellable {P : Type*} [PartialOrder P] (h: CL_labelling P) : shellable P := by sorry
 
