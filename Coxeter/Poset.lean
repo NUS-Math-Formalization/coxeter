@@ -4,6 +4,8 @@ import Mathlib.Data.Set.Card
 
 namespace Shelling
 
+-- Add references and comments
+
 variable {P : Type*} [PartialOrder P] [Finite P]
 
 def ledot (a b : P) := a < b ∧ (∀ {c : P}, (a ≤ c ∧ c ≤ b) → (a = c ∨ b = c))
