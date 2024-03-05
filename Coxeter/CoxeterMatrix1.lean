@@ -508,13 +508,13 @@ lemma nn_prod_eta_aux [CoxeterMatrix m] (L : List S) (t : T) : μ₂.gen ^ (nn L
       _ = μ₂.gen ^ ((List.range (Nat.succ tail.length)).map (fun i => hd * (t((hd :: tail), i) : G) * hd)).count ((hd : G) * t * hd) := by
         congr 1
         let hxh : G → G := fun (x : G) ↦ (hd : G) * x * hd
+        have : Function.Injective hxh := by
+          intro a b hab
+          simp only [hxh] at hab
+          exact mul_left_cancel (mul_right_cancel hab)
         have : ((List.range (Nat.succ tail.length)).map (fun i => (t((hd :: tail), i) : G))).count (t : G)
             = (((List.range (Nat.succ tail.length)).map (fun i => (t((hd :: tail), i) : G))).map hxh).count ((hd : G) * t * hd) := by
-          have : Function.Injective hxh := by
-            intro a b hab
-            simp only [hxh] at hab
-            exact mul_left_cancel (mul_right_cancel hab)
-          rw [List.count_map_of_injective ((List.range (Nat.succ tail.length)).map (fun i => (t((hd :: tail), i) : G))) hxh this]
+          rw [List.count_map_of_injective _ hxh this]
         rw [this, ← List.comp_map]
         congr
       _ = μ₂.gen ^ (((fun i => hd * (t((hd :: tail), i) : G) * hd) 0) :: (List.range tail.length).map (fun i => (t(tail, i) : G))).count ((hd : G) * t * hd) := by
