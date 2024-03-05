@@ -224,6 +224,25 @@ lemma removeNth_length_sub_one (L:List α) : removeNth L (L.length - 1) = dropLa
 lemma removeNth_concat {a:α} (L:List α) : removeNth (concat L a) L.length = L:=by sorry
 -/
 
+#print List.get?_eq_get
+
+lemma range_map_insert_zero {α : Type u} {n : ℕ} {f : ℕ → α} {g : ℕ → α}
+    (h : ∀(i : Fin n), g i = f (i + 1)) :
+    (range (n + 1)).map f = (f 0) :: (range n).map g := by
+  rw [range_eq_range', ← range'_append 0 1 n 1]
+  simp only [range'_one, mul_one, zero_add, singleton_append, map_cons, cons.injEq, true_and]
+  rw [range'_eq_map_range, ← List.comp_map]
+  ext a b
+  simp only [get?_map, Option.mem_def, Option.map_eq_some', Function.comp_apply]
+  by_cases ha : a < (range n).length
+  · rw [get?_eq_get ha]
+    simp only [get_range, Option.some.injEq, exists_eq_left']
+    rw [length_range n] at ha
+    rw [h ⟨a, ha⟩]
+    simp only [add_comm]
+  · push_neg at ha
+    simp only [get?_eq_none.mpr ha, false_and, exists_const]
+
 end List
 
 
@@ -257,8 +276,7 @@ lemma prod_insert_zero_fin {M : Type u} [CommMonoid M] {n : Nat} {f : Fin (n + 1
       rw [finprod_eq_prod_of_fintype]
       congr
       ext x
-      have : x ∈ Set.univ := Set.mem_univ x
-      simp only [this, finprod_true]
+      simp only [Set.mem_univ x, finprod_true]
     _ = f 0 * ∏ᶠ (i : Fin (n + 1)) (_ : i ∈ not0), f i := by
       have prod_insert := finprod_mem_insert (fun i : Fin (n + 1) ↦ f i) no0 (Set.toFinite not0)
       have insert0 : insert 0 not0 = Set.univ := by
