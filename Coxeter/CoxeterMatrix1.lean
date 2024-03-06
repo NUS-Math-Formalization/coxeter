@@ -373,9 +373,7 @@ lemma toPalindrome_in_Refl [CoxeterMatrix m] {L:List S} (hL : L ≠ []) : (toPal
     nth_rw 3 [this]
     apply Eq.symm
     apply gprod_append_singleton
-  rw [this]
-  dsimp
-  rw [gprod_append]
+  rw [this, toPalindrome, gprod_append]
 
 -- Our index starts from 0
 def toPalindrome_i  (L : List S) (i : ℕ) := toPalindrome (L.take (i+1))
@@ -404,7 +402,7 @@ lemma mul_Palindrome_i_cancel_i [CoxeterMatrix m] {L : List S} (i : Fin L.length
     reverse_prod_prod_eq_one, one_mul, mul_assoc]
   apply (mul_right_inj (L.take i).gprod).2
   rw [← List.get_drop_eq_drop, gprod_cons, ← mul_assoc]
-  dsimp
+  dsimp only [Fin.is_lt, Fin.eta, gt_iff_lt, List.getElem_eq_get]
   rw [gen_square_eq_one', one_mul]
   apply i.2
   apply i.2
@@ -517,7 +515,6 @@ lemma Refl_palindrome_in_Refl {i : ℕ} (L : List S) (t : T) : ((L.take i).rever
 lemma nn_prod_eta_aux [CoxeterMatrix m] (L : List S) (t : T) : μ₂.gen ^ (nn L t) =  ∏ i : Fin L.length,
     eta_aux' (L.get i) ⟨((L.take i.1).reverse : G) * t * L.take i.1, by apply Refl_palindrome_in_Refl⟩ := by
   simp only [nn]
-  dsimp
   induction L generalizing t with
   | nil => norm_num
   | cons hd tail ih =>
@@ -530,7 +527,7 @@ lemma nn_prod_eta_aux [CoxeterMatrix m] (L : List S) (t : T) : μ₂.gen ^ (nn L
           (List.range tail.length).map ti1).count (t : G) := by
         congr 2
         have : ∀(i : Fin tail.length), ti1 i.1
-          = (fun i ↦ (t((hd :: tail), i) : G)) (i.1 + 1) := by intro i; dsimp
+          = (fun i ↦ (t((hd :: tail), i) : G)) (i.1 + 1) := by intro i; rfl
         exact List.range_map_insert_zero this
       _ = μ₂.gen ^ ([(fun i ↦ (t((hd :: tail), i) : G)) 0].count (t : G) +
           ((List.range tail.length).map ti1).count (t : G)) := by
@@ -555,8 +552,7 @@ lemma nn_prod_eta_aux [CoxeterMatrix m] (L : List S) (t : T) : μ₂.gen ^ (nn L
         · rw [List.length_nil, List.range_zero, List.map_nil, List.map_nil]
         · congr 1
           ext i
-          dsimp
-          simp only [toPalindrome_i, toPalindrome, List.take_cons, List.reverse_cons]
+          simp only [Function.comp_apply, toPalindrome_i, toPalindrome, List.take_cons, List.reverse_cons]
           rw [List.tail_append_of_ne_nil]
           simp only [gprod_append, gprod_singleton, gprod_nil, gprod_cons, mul_one]
           repeat rw [← mul_assoc]
@@ -579,9 +575,8 @@ lemma nn_prod_eta_aux [CoxeterMatrix m] (L : List S) (t : T) : μ₂.gen ^ (nn L
           ⟨((tail.take i.1).reverse : G) * sts * tail.take i.1, by apply Refl_palindrome_in_Refl⟩
         have h : ∀(i : Fin tail.length), g i = f ⟨i.val + 1, add_lt_add_right i.prop 1⟩ := by
           intro x
-          dsimp
-          simp only [eta_aux', List.reverse_cons, gprod_append,
-            gprod_singleton, gprod_cons, gprod_nil, mul_one, mul_assoc]
+          simp only [List.get_cons_succ, Fin.eta, List.take_cons_succ, eta_aux', List.reverse_cons,
+            gprod_append, gprod_singleton, gprod_cons, gprod_nil, mul_one, mul_assoc]
         exact (prod_insert_zero_fin h).symm
 
 lemma exists_of_nn_ne_zero [CoxeterMatrix m] (L : List S) (t:T) : nn L t > 0 →
