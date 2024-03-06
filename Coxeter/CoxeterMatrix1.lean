@@ -567,14 +567,13 @@ lemma nn_prod_eta_aux [CoxeterMatrix m] (L : List S) (t : T) : μ₂.gen ^ (nn L
         rw [pow_add]
       _ = eta_aux' hd t * ∏ i : Fin tail.length, eta_aux' (tail.get i)
           ⟨((tail.take i.1).reverse : G) * sts * tail.take i.1, by apply Refl_palindrome_in_Refl⟩ := by
-        have := ih sts
-        rw [this]
+        rw [ih sts]
         congr
-        simp only [eta_aux', toPalindrome_i, toPalindrome, List.take, List.reverse_singleton, List.tail,
-          gprod_append, gprod_nil, gprod_singleton, mul_one, List.count_singleton']
-        rw [pow_ite ((t : G) = hd) μ₂.gen 1 0, pow_one, pow_zero]
+        simp only [eta_aux', toPalindrome_i, toPalindrome, List.take, List.reverse_singleton,
+          List.tail, gprod_append, gprod_nil, gprod_singleton, mul_one, List.count_singleton']
+        rw [pow_ite, pow_one, pow_zero]
         congr 1
-        exact propext (Iff.intro (fun x ↦ x.symm) (fun x ↦ x.symm))
+        exact propext (Iff.intro Eq.symm Eq.symm)
       _ = ∏ i : Fin (Nat.succ tail.length), f i := by
         have : eta_aux' hd t = f 0 := by
           congr
