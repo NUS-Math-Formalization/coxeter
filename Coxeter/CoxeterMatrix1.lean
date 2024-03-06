@@ -565,20 +565,16 @@ lemma nn_prod_eta_aux [CoxeterMatrix m] (L : List S) (t : T) : μ₂.gen ^ (nn L
       _ = μ₂.gen ^ [(fun i ↦ (t((hd :: tail), i) : G)) 0].count (t : G) *
           μ₂.gen ^ ((List.range tail.length).map (fun i ↦ (t(tail, i) : G))).count ((hd : G) * t * hd) := by
         rw [pow_add]
-      _ = eta_aux' hd t * ∏ i : Fin tail.length, eta_aux' (tail.get i)
+      _ = f 0 * ∏ i : Fin tail.length, eta_aux' (tail.get i)
           ⟨((tail.take i.1).reverse : G) * sts * tail.take i.1, by apply Refl_palindrome_in_Refl⟩ := by
         rw [ih sts]
         congr
-        simp only [eta_aux', toPalindrome_i, toPalindrome, List.take, List.reverse_singleton,
-          List.tail, gprod_append, gprod_nil, gprod_singleton, mul_one, List.count_singleton']
+        simp only [f, eta_aux', toPalindrome_i, toPalindrome, List.take, List.reverse_singleton, List.reverse_nil,
+          List.tail, gprod_append, gprod_nil, gprod_singleton, mul_one, one_mul, List.count_singleton', List.get]
         rw [pow_ite, pow_one, pow_zero]
         congr 1
         exact propext (Iff.intro Eq.symm Eq.symm)
       _ = ∏ i : Fin (Nat.succ tail.length), f i := by
-        have : eta_aux' hd t = f 0 := by
-          congr
-          simp only [Fin.val_zero, List.take_zero, List.reverse_nil, gprod_nil, mul_one, one_mul]
-        rw [this]
         let g : Fin tail.length → μ₂ := fun i ↦ eta_aux' (tail.get i)
           ⟨((tail.take i.1).reverse : G) * sts * tail.take i.1, by apply Refl_palindrome_in_Refl⟩
         have h : ∀(i : Fin tail.length), g i = f ⟨i.val + 1, add_lt_add_right i.prop 1⟩ := by
