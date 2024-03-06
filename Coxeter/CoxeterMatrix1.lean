@@ -413,7 +413,7 @@ lemma removeNth_of_palindrome_prod (L : List S) (n : Fin L.length) :
   (toPalindrome_i L n:G) * L = (L.removeNth n) := mul_Palindrome_i_cancel_i n
 
 lemma distinct_toPalindrome_i_of_reduced [CoxeterMatrix m] {L : List S} : reduced_word L →
-    (∀ (i j : Fin L.length),  (hij : i ≠ j) → (toPalindrome_i L i) ≠ (toPalindrome_i L j)) := by
+    (∀ (i j : Fin L.length), (hij : i ≠ j) → (toPalindrome_i L i) ≠ (toPalindrome_i L j)) := by
   intro rl
   by_contra! eqp
   rcases eqp with ⟨i, j, ⟨inej, eqp⟩⟩
@@ -470,14 +470,33 @@ noncomputable def eta_aux (s : α) (t:T) : μ₂ := if s = t.val then μ₂.gen 
 noncomputable def eta_aux' (s : S) (t:T) : μ₂ := if s.val = t.val then μ₂.gen else 1
 
 @[simp]
-lemma eta_aux_aux'  (s : α ) (t:T) : eta_aux s t = eta_aux' s t := by congr
+lemma eta_aux_aux' (s : α) (t : T) : eta_aux s t = eta_aux' s t := by congr
 
+noncomputable def eta_aux_aux''_aux (s : S) : α := by
+  choose y _ using s.prop
+  exact y
+
+#print Exists
+
+lemma eta_aux_aux'' (s : S) (t : T) : eta_aux (eta_aux_aux''_aux s) t = eta_aux' s t := by
+  choose y hy using s.prop
+  have : y = s := by
+    rw [toSimpleRefl]
+    congr
+  have : y = eta_aux_aux''_aux s := by
+    rw [eta_aux_aux''_aux]
+    dsimp
+    sorry
+  rw [← this]
+  rw [eta_aux_aux', toSimpleRefl]
+  congr
+  --
+  /-set y := eta_aux_aux''_aux s with h
+  rw [eta_aux_aux', toSimpleRefl]
+  congr
+  rw [eta_aux_aux''_aux] at h-/
 
 noncomputable def nn (L : List S) (t : T) : ℕ := List.count (t : G) <| List.map (fun i => (toPalindrome_i L i : G)) (List.range L.length)
-
--- DLevel 5
--- [BB] (1.15)
--- lemma nn_prod_eta_aux [CoxeterMatrix m] (L: List S) (t:T) : ∏ i:Fin L.length, eta_aux'  (L.nthLe i.1 i.2) ⟨((L.take (i.1+1)).reverse:G) * t * L.take (i.1+1),by sorry⟩ := by sorry
 
 /-
 @[deprecated OrderTwoGen.Refl.mul_SimpleRefl_in_Refl]
@@ -648,7 +667,7 @@ noncomputable def pi : G →* Equiv.Perm R := lift m (fun s => pi_aux' s) (by si
 
 -- DLevel 2
 -- Use MonoidHom.ker_eq_bot_iff
-lemma pi_inj : Function.Injective (pi : G→ Equiv.Perm R) := by sorry
+lemma pi_inj : Function.Injective (pi : G → Equiv.Perm R) := by sorry
 
 
 end ReflRepn
@@ -656,16 +675,51 @@ end ReflRepn
 noncomputable def eta (g : G) (t : T) : μ₂ := (ReflRepn.pi g⁻¹ ⟨t, 1⟩).2
 
 -- DLevel 1
-lemma eta_lift_eta_aux {s :α} {t : T} : eta_aux s t = eta s t := by sorry
+lemma eta_lift_eta_aux {s : α} {t : T} : eta_aux s t = eta s t := by
+  rw [eta, ReflRepn.pi]
+  sorry
+
+lemma eta_lift_eta_aux' {s : S} {t : T} : eta_aux' s t = eta s t := by
+  rw [eta, ReflRepn.pi]
+  sorry
+
+/-lemma eta_aux'_eq_μ₂gen_pow_nn {s : S} : eta_aux' s t = μ₂.gen ^ nn [s] t := by
+  have : List.tail [s] = [] := by rw [List.tail]
+  rw [eta_aux', nn, List.length_singleton, List.range, List.range.loop,
+    List.range.loop, List.map_singleton, List.count_singleton', toPalindrome_i,
+    toPalindrome, List.take, List.take_nil, List.reverse_singleton, gprod_append,
+    gprod_singleton, this, gprod_nil, mul_one]
+  by_cases h : (s : G) = t
+  · rw [if_pos h, if_pos h.symm, pow_one]
+  · rw [if_neg h, if_neg (Ne.symm h), pow_zero]-/
 
 
 -- DLevel 4
-lemma eta_equiv_nn {g:G} {t:T} : ∀ {L : List S}, g = L → eta g t = (μ₂.gen)^(nn L t) := by  sorry
+lemma eta_equiv_nn {g : G} {t : T} : ∀ {L : List S}, g = L → eta g t = μ₂.gen ^ nn L t := by
+  intro L geqL
+  rw [nn_prod_eta_aux L t]
+  calc
+    eta g t = μ₂.gen := by sorry
+    _ = ∏ i : Fin L.length, eta (L.get i : G)  ⟨((L.take i.1).reverse : G) * t * L.take i.1, by apply Refl_palindrome_in_Refl⟩ := by
+      sorry
+    _ = ∏ i : Fin L.length, eta_aux' (L.get i)  ⟨((L.take i.1).reverse : G) * t * L.take i.1, by apply Refl_palindrome_in_Refl⟩ := by
+      congr
+      ext _
+      rw [eta_lift_eta_aux']
 
-lemma eta_equiv_nn' {L : List S} {t : T} : eta L t = (μ₂.gen) ^ (nn L t) := by sorry
+#print Finset.prod_hom_rel
+  -- probably some group hom stuff gotta check
+  -- Finset.prod_hom_rel
 
-lemma eta_t (t : T) : eta (t : G) t = μ₂.gen := by sorry
-  -- rw [eta_lift_eta_aux, eta_aux, if_pos rfl]
+lemma eta_equiv_nn' {L : List S} {t : T} : eta L t = μ₂.gen ^ nn L t := eta_equiv_nn rfl
+
+lemma eta_t (t : T) : eta (t : G) t = μ₂.gen := by
+  rcases t with ⟨g, hg⟩
+  -- remove g
+  rw [eta_equiv_nn]
+  sorry --rw [eta_lift_eta_aux, eta_aux, if_pos rfl]
+  sorry
+  sorry
 
 lemma pi_eval (g : G) (t : T) (ε : μ₂): ReflRepn.pi g (t, ε) = (⟨(g : G) * t * (g : G)⁻¹, OrderTwoGen.Refl.conjugate_closed⟩, ε * eta g⁻¹ t) := by
   sorry
