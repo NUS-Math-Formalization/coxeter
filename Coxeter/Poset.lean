@@ -32,7 +32,9 @@ notation a " ⋖ " b => ledot a b
 /- Defintion: We define the set of edges of P as set of all pairs (a,b) such that a is covered by b.-/
 def edges (P : Type*) [PartialOrder P] : Set (P × P) := {(a, b) | ledot a b }
 
-
+def relations {P : Type*} [PartialOrder P] : List P → List (P × P)
+  | [] => []
+  | cons a l => cons ((a l.head) : P × P) (relations l)
 
 /- Definition: We define an edge labelling of P as a function from the set of cover relations to another poset A.-/
 def EL (P A : Type*) [PartialOrder P] := edges P → A
@@ -44,7 +46,7 @@ def chain {P : Type*} [PartialOrder P] (L: List P) : Prop := List.Chain' (. < .)
 
 #print List.Chain'
 
-/- Definitio: The length of a chain is defined to be the cardinality of the underlying set -1. -/
+/- Definition: The length of a chain is defined to be the cardinality of the underlying set -1. -/
 
 
 /-
@@ -55,7 +57,9 @@ In other words, all relations are cover relations with x_0 being a minimal eleme
 def maximal_chain {P : Type*} [PartialOrder P] (L: List P) : Prop := chain L ∧
   ∀ L' : List P, chain L' -> List.Sublist L L' -> L = L'
 
-lemma maximal_chain_ledot {P : Type*} [PartialOrder P] (L: List P) (h: chain L) (h1 : maximal_chain L): Prop := sorry
+lemma maximal_chain_ledot {P : Type*} [PartialOrder P] (L: List P) (h : maximal_chain L):
+  ∀ i : ℕ, (L.take i : P) :=
+  sorry
   -- ∀ i :
   -- ((L.head h = (⊥ : P)) ∧ (L.getLast h = (⊤ : P)) ∧ (List.Chain' ledot L)) := by sorry
 
@@ -64,6 +68,7 @@ lemma exist_maximal_chain {P : Type*} [PartialOrder P] [BoundedOrder P] [Finite 
 
 lemma ledot_max_chain {P : Type*} [PartialOrder P] [BoundedOrder P]  [Finite P] (L: List P) (h : L ≠ []) :
   maximal_chain L ↔ ((L.head h = (⊥ : P)) ∧ (L.getLast h = (⊤ : P)) ∧ (List.Chain' ledot L)) := by sorry
+
 
 /-
 We define the set of all maximal chains of P.
