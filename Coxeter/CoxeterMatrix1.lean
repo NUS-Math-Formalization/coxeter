@@ -585,9 +585,11 @@ namespace ReflRepn
 noncomputable def pi_aux (s : α) (r : R) : R :=
   ⟨⟨(s:G) * r.1 * (s:G)⁻¹, OrderTwoGen.Refl.conjugate_closed⟩ , r.2 * eta_aux s r.1⟩
 
-lemma eta_aux_one_or_neg_one [CoxeterMatrix m] (s : α) (r : R) (h : (eta_aux' s r.1) ≠ 1) :
-  eta_aux' s r.1 = μ₂.gen := by
-    exact (μ₂.not_iff_not (eta_aux' (toSimpleRefl m s) r.1)).1 h
+lemma eta_aux_one_or_neg_one [CoxeterMatrix m] (s : α) (r : R) :
+  (eta_aux' s r.1) ≠ 1 ↔ eta_aux' s r.1 = μ₂.gen := by
+    constructor
+    . exact (μ₂.not_iff_not (eta_aux' (toSimpleRefl m s) r.1)).1
+    . exact (μ₂.not_iff_not (eta_aux' (toSimpleRefl m s) r.1)).2
 
 lemma eta_aux_eq_eta_aux_pi_aux [CoxeterMatrix m] (s : α) (r : R) :
   (eta_aux' s r.1) = (eta_aux' s (pi_aux s r).1) := by
@@ -601,19 +603,17 @@ lemma eta_aux_eq_eta_aux_pi_aux [CoxeterMatrix m] (s : α) (r : R) :
           nth_rw 1 [← mul_one (of m s)] at j
           apply Eq.symm
           apply mul_left_cancel j
-        have : r.1.val = s := by
+        have : s = r.1.val := by
+          apply Eq.symm
           rw [← mul_right_inv (of m s)] at this
           apply mul_right_cancel this
-        have : s = r.1.val := this.symm
         have : eta_aux' s r.1 = μ₂.gen := if_pos this
-        have : eta_aux' s r.1 ≠ 1 := by
-          exact (μ₂.not_iff_not (eta_aux' (toSimpleRefl m s) r.1)).2 this
+        have : eta_aux' s r.1 ≠ 1 := (eta_aux_one_or_neg_one s r).2 this
         contradiction
       rw [eta_aux']
       push_neg at k
       exact if_neg k
     . push_neg at h
-      have neg : (eta_aux' s r.1) = μ₂.gen := eta_aux_one_or_neg_one s r h
       have seqr : s = r.1.val := by
         by_contra j
         push_neg at j
@@ -624,7 +624,7 @@ lemma eta_aux_eq_eta_aux_pi_aux [CoxeterMatrix m] (s : α) (r : R) :
       have seqsrs : s = s * r.1.val * (s:G)⁻¹ := by
         rw [seqr]
         simp
-      rw [neg, eta_aux']
+      rw [(eta_aux_one_or_neg_one s r).1 h, eta_aux']
       apply Eq.symm
       exact if_pos seqsrs
 
@@ -638,7 +638,7 @@ lemma eta_aux_mul_eta_aux [CoxeterMatrix m] (s : α) (r : R) :
     rw [h, this]
     rfl
   . push_neg at h
-    have neg : (eta_aux' s r.1) = μ₂.gen := eta_aux_one_or_neg_one s r h
+    have neg : (eta_aux' s r.1) = μ₂.gen := (eta_aux_one_or_neg_one s r).1 h
     have : (eta_aux' s (pi_aux s r).1) = μ₂.gen := by
       rw [← neg]
       exact (eta_aux_eq_eta_aux_pi_aux s r).symm
