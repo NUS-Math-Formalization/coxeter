@@ -233,7 +233,8 @@ lemma toGroup_expression : ∀ x :G, ∃ L : List S,  x = L.gprod := by
         have h'' : QuotientGroup.mk' N (FreeGroup.mk ([(hd.1, true)] ++ [(hd.1, true)])) = 1 := by
           rw [← FreeGroup.mul_mk, ← FreeGroup.of]
           have : (QuotientGroup.mk' N) (FreeGroup.of hd.1 * FreeGroup.of hd.1) =
-            (QuotientGroup.mk' N) (FreeGroup.of hd.1) * (QuotientGroup.mk' N) (FreeGroup.of hd.1) := rfl
+            (QuotientGroup.mk' N) (FreeGroup.of hd.1) * (QuotientGroup.mk' N) (FreeGroup.of hd.1)
+            := rfl
           rw [this, ← of, of_square_eq_one]
         simp only [QuotientGroup.mk'_apply] at h''
         rw [← FreeGroup.mul_mk, QuotientGroup.mk_mul,
