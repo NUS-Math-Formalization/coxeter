@@ -586,10 +586,8 @@ noncomputable def pi_aux (s : α) (r : R) : R :=
   ⟨⟨(s:G) * r.1 * (s:G)⁻¹, OrderTwoGen.Refl.conjugate_closed⟩ , r.2 * eta_aux s r.1⟩
 
 lemma eta_aux_one_or_neg_one [CoxeterMatrix m] (s : α) (r : R) :
-  (eta_aux' s r.1) ≠ 1 ↔ eta_aux' s r.1 = μ₂.gen := by
-    constructor
-    . exact (μ₂.not_iff_not (eta_aux' (toSimpleRefl m s) r.1)).1
-    . exact (μ₂.not_iff_not (eta_aux' (toSimpleRefl m s) r.1)).2
+  (eta_aux' s r.1) ≠ 1 ↔ eta_aux' s r.1 = μ₂.gen :=
+    μ₂.not_iff_not (eta_aux' (toSimpleRefl m s) r.1)
 
 lemma eta_aux_eq_eta_aux_pi_aux [CoxeterMatrix m] (s : α) (r : R) :
   (eta_aux' s r.1) = (eta_aux' s (pi_aux s r).1) := by
@@ -649,21 +647,17 @@ lemma pi_aux_square_identity [CoxeterMatrix m] (s : α) (r : R) : pi_aux s (pi_a
   have comp1 : (pi_aux s (pi_aux s r)).1 = r.1 := by
     have : (pi_aux s (pi_aux s r)).1.val = r.1.val := by
       rw [pi_aux, pi_aux]
-      simp only [SimpleRefl, Set.coe_setOf, Set.mem_setOf_eq]
-      rw [mul_assoc, mul_assoc, ← mul_inv_rev]
-      simp only [SimpleRefl, Set.mem_range, exists_apply_eq_apply, of_square_eq_one', inv_one,
-        mul_one]
-      rw [← mul_assoc]
-      simp only [SimpleRefl, Set.mem_range, exists_apply_eq_apply, of_square_eq_one', one_mul]
+      simp only [Set.coe_setOf, Set.mem_setOf_eq]
+      rw [mul_assoc, mul_assoc, ← mul_inv_rev, of_square_eq_one, inv_one, mul_one,
+        ← mul_assoc, of_square_eq_one, one_mul]
     exact SetCoe.ext this
   have comp2 : (pi_aux s (pi_aux s r)).2 = r.2 := by
     have : (pi_aux s (pi_aux s r)).2.val = r.2.val := by
       rw [pi_aux, pi_aux]
-      simp only [SimpleRefl, Set.coe_setOf, eta_aux_aux', toSimpleRefl, Set.mem_setOf_eq]
+      simp only [Set.coe_setOf, eta_aux_aux', toSimpleRefl, Set.mem_setOf_eq]
       have : (eta_aux' s r.1) * (eta_aux' s (pi_aux s r).1) = 1 := by
         exact eta_aux_mul_eta_aux s r
       rw [toSimpleRefl, pi_aux] at this
-      simp only [SimpleRefl, Set.coe_setOf, Set.mem_setOf_eq] at this
       rw [mul_assoc, this, mul_one]
     exact SetCoe.ext this
   exact Prod.ext comp1 comp2
