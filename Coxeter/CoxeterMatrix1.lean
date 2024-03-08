@@ -206,7 +206,29 @@ lemma toGroup_expression : ∀ x :G, ∃ L : List S,  x = L.gprod := by
   rcases k with ⟨y, rep⟩
   set a := getS m y.toWord
   use a
-  have : x = a.gprod := by sorry
+  have : x = a.gprod := by
+    simp only [a]
+    rw [getS, ← rep]
+    set L := FreeGroup.toWord y with hL
+    have : FreeGroup.mk L = y := by
+      rw [hL]
+      exact FreeGroup.mk_toWord
+    rw [← this]
+    induction L with
+    | nil =>
+      norm_num
+      rw [← FreeGroup.toWord_one, FreeGroup.mk_toWord]
+      simp only [QuotientGroup.mk_one]
+      rw [gprod_nil]
+    | cons hd tail ih =>
+      rw [List.map_cons, ← List.singleton_append, ← FreeGroup.mul_mk]
+      rw [gprod_cons, ← ih]
+      congr 2
+      by_cases h : hd.2
+      · rw [FreeGroup.of]
+        congr
+        exact Prod.snd_eq_iff.mp h
+      · sorry
   apply this
 
 
