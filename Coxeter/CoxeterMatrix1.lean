@@ -614,7 +614,7 @@ noncomputable def pi_aux'  [CoxeterMatrix m] (s:α) : Equiv.Perm R where
   right_inv := by intro r; simp [pi_aux_square_identity]
 
 -- DLevel 5
-lemma pi_relation (s t : α) : ((pi_aux' s : Equiv.Perm R ) * (pi_aux' t : Equiv.Perm R)) = 1 := by
+lemma pi_relation (s t : α) : ((pi_aux' s : Equiv.Perm R) * (pi_aux' t : Equiv.Perm R)) ^ (m s t) = 1 := by
   sorry
 
 noncomputable def pi : G →* Equiv.Perm R := lift m (fun s => pi_aux' s) (by simp [pi_relation])
@@ -647,6 +647,8 @@ lemma eta_lift_eta_aux' {s : S} {t : T} : eta_aux' s t = eta s t := by
   · rw [if_pos h, if_pos h.symm, pow_one]
   · rw [if_neg h, if_neg (Ne.symm h), pow_zero]-/
 
+lemma pi_eval (g : G) (t : T) (ε : μ₂): ReflRepn.pi g (t, ε) = (⟨(g : G) * t * (g : G)⁻¹, OrderTwoGen.Refl.conjugate_closed⟩, ε * eta g⁻¹ t) := by
+  sorry
 
 -- DLevel 4
 lemma eta_equiv_nn {g : G} {t : T} : ∀ {L : List S}, g = L → eta g t = μ₂.gen ^ nn L t := by
@@ -674,10 +676,6 @@ lemma eta_t (t : T) : eta (t : G) t = μ₂.gen := by
   sorry --rw [eta_lift_eta_aux, eta_aux, if_pos rfl]
   sorry
   sorry
-
-lemma pi_eval (g : G) (t : T) (ε : μ₂): ReflRepn.pi g (t, ε) = (⟨(g : G) * t * (g : G)⁻¹, OrderTwoGen.Refl.conjugate_closed⟩, ε * eta g⁻¹ t) := by
-  sorry
-
 
 end ReflRepresentation
 
