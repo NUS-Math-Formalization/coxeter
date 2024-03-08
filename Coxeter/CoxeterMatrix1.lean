@@ -622,8 +622,7 @@ lemma eta_aux_eq_eta_aux_pi_aux [CoxeterMatrix m] (s : α) (r : R) :
           exact if_neg j
         contradiction
       have seqsrs : s = s * r.1.val * (s:G)⁻¹ := by
-        rw [seqr]
-        simp
+        rw [seqr, mul_inv_cancel_right]
       rw [(eta_aux_one_or_neg_one s r).1 h, eta_aux']
       apply Eq.symm
       exact if_pos seqsrs
