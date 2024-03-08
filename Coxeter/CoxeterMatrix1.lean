@@ -199,17 +199,54 @@ lemma of_inv_eq_of {x : α} :  (of m x)⁻¹ =  of m x  :=
 
 def getS (L: List (α × Bool)) := L.map (fun (a, b) => toSimpleRefl m a)
 
--- DLevel 1
+-- DLevel 1 (pretty sure this is level 3/4...)
 lemma toGroup_expression : ∀ x :G, ∃ L : List S,  x = L.gprod := by
   intro x
   have k : ∃ y : F, QuotientGroup.mk y = x := by exact Quot.exists_rep x
   rcases k with ⟨y, rep⟩
   set a := getS m y.toWord
   use a
-  have : x = a.gprod := by sorry
+  have : x = a.gprod := by
+    simp only [a]
+    rw [getS, ← rep]
+    set L := FreeGroup.toWord y with hL
+    have : FreeGroup.mk L = y := by
+      rw [hL]
+      exact FreeGroup.mk_toWord
+    rw [← this]
+    induction L with
+    | nil =>
+      norm_num
+      rw [← FreeGroup.toWord_one, FreeGroup.mk_toWord]
+      simp only [QuotientGroup.mk_one]
+      rw [gprod_nil]
+    | cons hd tail ih =>
+      rw [List.map_cons, ← List.singleton_append, ← FreeGroup.mul_mk]
+      rw [gprod_cons, ← ih]
+      rw [QuotientGroup.mk_mul]
+      simp only [mul_left_inj]
+      by_cases h : hd.2
+      · congr
+        exact Prod.snd_eq_iff.mp h
+      · push_neg at h
+        have h' : hd.2 = false := Bool.eq_false_iff.mpr h
+        have h'' : QuotientGroup.mk' N (FreeGroup.mk ([(hd.1, true)] ++ [(hd.1, true)])) = 1 := by
+          rw [← FreeGroup.mul_mk, ← FreeGroup.of]
+          have : (QuotientGroup.mk' N) (FreeGroup.of hd.1 * FreeGroup.of hd.1) =
+            (QuotientGroup.mk' N) (FreeGroup.of hd.1) * (QuotientGroup.mk' N) (FreeGroup.of hd.1)
+            := rfl
+          rw [this, ← of, of_square_eq_one]
+        simp only [QuotientGroup.mk'_apply] at h''
+        rw [← FreeGroup.mul_mk, QuotientGroup.mk_mul,
+          ← mul_right_inv (↑(FreeGroup.mk [(hd.1, true)])), mul_right_inj,
+          ← QuotientGroup.mk_inv, FreeGroup.inv_mk, FreeGroup.invRev] at h''
+        simp only [List.map_cons, Bool.not_true, List.map_nil, List.reverse_cons, List.reverse_nil,
+          List.nil_append] at h''
+        have : hd = (hd.1, false) := Prod.snd_eq_iff.mp h'
+        nth_rw 1 [this]
+        rw [← h'']
+        rfl
   apply this
-
-
 
 lemma generator_ne_one  (s: α) : of m s ≠ 1 :=  by
   intro h
