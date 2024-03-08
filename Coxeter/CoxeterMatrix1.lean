@@ -591,27 +591,75 @@ lemma nn_prod_eta_aux [CoxeterMatrix m] (L : List S) (t : T) : μ₂.gen ^ (nn L
             gprod_append, gprod_singleton, gprod_cons, gprod_nil, mul_one, mul_assoc]
         exact (prod_insert_zero_fin h).symm
 
-lemma exists_of_nn_ne_zero [CoxeterMatrix m] (L : List S) (t:T) : nn L t > 0 →
-  ∃ i:Fin L.length, (toPalindrome_i L i:G) = t := by
+lemma exists_of_nn_ne_zero [CoxeterMatrix m] (L : List S) (t : T) : nn L t > 0 →
+    ∃ i : Fin L.length, (toPalindrome_i L i : G) = t := by
   intro h
   unfold nn at h
   sorry
-
 
 local notation "R" => T × μ₂
 
 namespace ReflRepn
 noncomputable def pi_aux (s : α) (r : R) : R :=
-  ⟨⟨(s:G) * r.1 * (s:G)⁻¹, OrderTwoGen.Refl.conjugate_closed⟩ , r.2 * eta_aux s r.1⟩
+  ⟨⟨(s : G) * r.1 * (s : G)⁻¹, OrderTwoGen.Refl.conjugate_closed⟩ , r.2 * eta_aux s r.1⟩
 
--- DLevel 3
-lemma pi_aux_square_identity [CoxeterMatrix m] (s : α) (r : R) : pi_aux s (pi_aux s r) = r := by sorry
+lemma pi_aux_square_identity [CoxeterMatrix m] (s : α) (r : R) : pi_aux s (pi_aux s r) = r := by
+  rw [pi_aux]
+  ext -- product same if projections same
+  have : of m s * ((pi_aux s r).1 : G) * (of m s)⁻¹ = r.1 := by
+    rw [pi_aux]
+    dsimp only
+    repeat rw [← mul_assoc]
+    rw [of_square_eq_one, one_mul]
+    repeat rw [mul_assoc]
+    have : (of m s)⁻¹ * (of m s)⁻¹ = (of m s * of m s)⁻¹ := rfl
+    rw [this, of_square_eq_one, inv_one, mul_one]
+  exact this
+  have : (pi_aux s r).2 * eta_aux s (pi_aux s r).1 = r.2 := by
+    rw [pi_aux]
+    simp only [eta_aux_aux', eta_aux', toSimpleRefl]
+    let f : G → G := fun x ↦ of m s * x * (of m s)⁻¹
+    have : Function.Injective f := by
+      intro a b hab
+      dsimp only at hab
+      exact mul_left_cancel (mul_right_cancel hab)
+    have : (f (of m s) = f r.1) = (of m s = r.1) := by
+      exact propext (Function.Injective.eq_iff this)
+    dsimp only at this
+    rw [mul_assoc, mul_right_inv, mul_one] at this
+    apply this.symm.subst (motive := fun x ↦ ((r.2 * if of m s = r.1 then μ₂.gen else 1) * if x then μ₂.gen else 1) = r.2)
+    have (p : Prop) (a1 a2 b1 b2 : μ₂) : ite p a1 a2 * ite p b1 b2 = ite p (a1 * b1) (a2 * b2) := by
+      rw [mul_ite]
+      by_cases h : p
+      · repeat rw [if_pos h]
+      · repeat rw [if_neg h]
+    rw [mul_assoc, this]
+    norm_num
+    intro _
+    exact μ₂.gen_square
+  rw [this]
 
-noncomputable def pi_aux'  [CoxeterMatrix m] (s:α) : Equiv.Perm R where
+noncomputable def pi_aux' [CoxeterMatrix m] (s : α) : Equiv.Perm R where
   toFun r := pi_aux s r
   invFun r := pi_aux s r
   left_inv := by intro r; simp [pi_aux_square_identity]
   right_inv := by intro r; simp [pi_aux_square_identity]
+
+noncomputable def alternating_word (s t : α) (n : ℕ) : List S :=
+  (List.range n).map fun x ↦ if x % 2 = 0 then s else t
+
+/-lemma alternating_word_take (s t : α) (n i : ℕ) (h : i ≤ n) :
+    (alternating_word s t n).take i = alternating_word s t i := by
+  sorry
+
+lemma pi_relation_word_palindromes (s t : α) (i : Fin (2 * m s t)) :
+    toPalindrome_i (alternating_word s t (2 * m s t)) i.1 = alternating_word s t (2 * i.1 + 1) := by
+  sorry
+
+lemma pi_relation_word_palindromes_periodic (s t : α) (i : Fin (m s t)) :
+    (toPalindrome_i (alternating_word s t (m s t)) (i.1 + m s t)).gprod
+    = (toPalindrome_i (alternating_word s t (m s t)) i.1).gprod := by
+  sorry-/
 
 -- DLevel 5
 lemma pi_relation (s t : α) : ((pi_aux' s : Equiv.Perm R) * (pi_aux' t : Equiv.Perm R)) ^ (m s t) = 1 := by
@@ -621,8 +669,8 @@ noncomputable def pi : G →* Equiv.Perm R := lift m (fun s => pi_aux' s) (by si
 
 -- DLevel 2
 -- Use MonoidHom.ker_eq_bot_iff
-lemma pi_inj : Function.Injective (pi : G → Equiv.Perm R) := by sorry
-
+lemma pi_inj : Function.Injective (pi : G → Equiv.Perm R) := by
+  sorry
 
 end ReflRepn
 
