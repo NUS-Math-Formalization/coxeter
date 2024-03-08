@@ -684,10 +684,11 @@ lemma alternating_word_append_even (s t : α) (n m : ℕ) (h1 : m ≤ n) (h2 : E
 -- DLevel 3
 lemma alternating_word_palindrome (s t : α) (i : Fin (2 * m s t)) :
     toPalindrome_i (alternating_word s t (2 * m s t) : List S) i.1 = (alternating_word s t (2 * i.1 + 1) : List S) := by
-  rw [toPalindrome_i, toPalindrome, alternating_word_take]
+  rw [toPalindrome_i, toPalindrome, alternating_word_take s t _ _ (by linarith [i.2] : _)]
   -- you might need more lemmas
+  -- reverse of alternating_word / tail of alternating_word
+  -- may need to by_cases between odd and even
   sorry
-  linarith [i.2]
 
 -- DLevel 2
 lemma alternating_word_palindrome_periodic (s t : α) (i : Fin (m s t)) :
@@ -712,6 +713,7 @@ lemma pi_relation_word_nn_even (s s' : α) (t : T) : Even (nn (alternating_word 
 -- DLevel 5
 lemma pi_relation (s t : α) : ((pi_aux' s : Equiv.Perm R) * (pi_aux' t : Equiv.Perm R)) ^ m s t = 1 := by
   have (r : R) : (((pi_aux' s : Equiv.Perm R) * (pi_aux' t : Equiv.Perm R)) ^ m s t) r = r := by
+    --simp only [pi_aux', pi_aux]
     ext
     sorry
     sorry
