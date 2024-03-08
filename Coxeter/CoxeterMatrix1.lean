@@ -646,31 +646,110 @@ noncomputable def pi_aux' [CoxeterMatrix m] (s : α) : Equiv.Perm R where
   right_inv := by intro r; simp [pi_aux_square_identity]
 
 noncomputable def alternating_word (s t : α) (n : ℕ) : List S :=
-  (List.range n).map fun x ↦ if x % 2 = 0 then s else t
+  (List.range n).map (fun x ↦ if x % 2 = 0 then toSimpleRefl m s else toSimpleRefl m t)
 
-/-lemma alternating_word_take (s t : α) (n i : ℕ) (h : i ≤ n) :
-    (alternating_word s t n).take i = alternating_word s t i := by
-  sorry
+lemma alternating_word_nil (s t : α) : (alternating_word s t 0 : List S) = [] := by
+  rw [alternating_word]
+  simp only [List.range, List.range.loop, List.map_nil]
 
-lemma pi_relation_word_palindromes (s t : α) (i : Fin (2 * m s t)) :
-    toPalindrome_i (alternating_word s t (2 * m s t)) i.1 = alternating_word s t (2 * i.1 + 1) := by
-  sorry
-
-lemma pi_relation_word_palindromes_periodic (s t : α) (i : Fin (m s t)) :
-    (toPalindrome_i (alternating_word s t (m s t)) (i.1 + m s t)).gprod
-    = (toPalindrome_i (alternating_word s t (m s t)) i.1).gprod := by
-  sorry-/
-
--- DLevel 5
-lemma pi_relation (s t : α) : ((pi_aux' s : Equiv.Perm R) * (pi_aux' t : Equiv.Perm R)) ^ (m s t) = 1 := by
-  sorry
-
-noncomputable def pi : G →* Equiv.Perm R := lift m (fun s => pi_aux' s) (by simp [pi_relation])
+lemma alternating_word_singleton (s t : α) : (alternating_word s t 1 : List S) = [s] := by
+  rw [alternating_word]
+  simp only [List.range, List.range.loop, List.map_singleton,
+    if_pos (by norm_num : 0 % 2 = 0)]
+  rfl
 
 -- DLevel 2
--- Use MonoidHom.ker_eq_bot_iff
-lemma pi_inj : Function.Injective (pi : G → Equiv.Perm R) := by
+lemma alternating_word_power (s t : α) (n : ℕ) : (alternating_word s t (2 * n) : List S).gprod
+    = (of m s * of m t) ^ n := by
+  -- induction
   sorry
+
+lemma alternating_word_relation (s t : α) : (alternating_word s t (2 * m s t) : List S).gprod = 1 := by
+  rw [alternating_word_power s t (m s t), of_relation]
+
+-- DLevel 1
+lemma alternating_word_take (s t : α) (n i : ℕ) (h : i ≤ n) :
+    (alternating_word s t n : List S).take i = (alternating_word s t i : List S) := by
+  sorry
+
+-- DLevel 2
+lemma alternating_word_append_odd (s t : α) (n m : ℕ) (h1 : m ≤ n) (h2 : Odd m) :
+    (alternating_word s t n : List S) = (alternating_word s t m : List S) ++ (alternating_word t s (n - m) : List S) := by
+  sorry
+
+lemma alternating_word_append_even (s t : α) (n m : ℕ) (h1 : m ≤ n) (h2 : Even m) :
+    (alternating_word s t n : List S) = (alternating_word s t m : List S) ++ (alternating_word s t (n - m) : List S) := by
+  sorry
+
+-- DLevel 3
+lemma alternating_word_palindrome (s t : α) (i : Fin (2 * m s t)) :
+    toPalindrome_i (alternating_word s t (2 * m s t) : List S) i.1 = (alternating_word s t (2 * i.1 + 1) : List S) := by
+  rw [toPalindrome_i, toPalindrome, alternating_word_take]
+  -- you might need more lemmas
+  sorry
+  linarith [i.2]
+
+-- DLevel 2
+lemma alternating_word_palindrome_periodic (s t : α) (i : Fin (m s t)) :
+    (toPalindrome_i (alternating_word s t (2 * m s t) : List S) (i.1 + m s t) : G)
+    = toPalindrome_i (alternating_word s t (2 * m s t) : List S) i.1 := by
+  rw [alternating_word_palindrome s t ⟨i.1, by linarith [i.2]⟩,
+    alternating_word_palindrome s t ⟨i.1 + m s t, by linarith [i.2]⟩]
+  simp only
+  rw [alternating_word_append_odd s t (2 * (i.1 + m s t) + 1) (2 * i.1 + 1)
+    (by linarith : 2 * i.1 + 1 ≤ 2 * (i.1 + m s t) + 1)
+    (by use i.1 : Odd (2 * i.1 + 1)), gprod_append]
+  -- rewrite the number into 2 * m s t
+  -- apply alternating_word_relation
+  sorry
+
+-- DLevel 4
+lemma pi_relation_word_nn_even (s s' : α) (t : T) : Even (nn (alternating_word s s' (2 * m s s') : List S) t) := by
+  use nn (alternating_word s s' (m s s') : List S) t
+  -- this should be correct (check off-by-one errors)
+  sorry
+
+-- DLevel 5
+lemma pi_relation (s t : α) : ((pi_aux' s : Equiv.Perm R) * (pi_aux' t : Equiv.Perm R)) ^ m s t = 1 := by
+  have (r : R) : (((pi_aux' s : Equiv.Perm R) * (pi_aux' t : Equiv.Perm R)) ^ m s t) r = r := by
+    ext
+    sorry
+    sorry
+  exact Equiv.Perm.disjoint_refl_iff.mp fun x ↦ Or.inl (this x)
+
+noncomputable def pi : G →* Equiv.Perm R := lift m (fun s ↦ pi_aux' s) (by simp [pi_relation])
+
+-- Equation 1.16
+-- Probably needs induction and wrangling with Finset.prod
+-- DLevel 5
+lemma pi_value (g : G) (L : List S) (h : g = L) (r : R) : (pi g) r
+    = (⟨g * r.1 * g⁻¹, by apply Refl.conjugate_closed⟩, r.2 * μ₂.gen ^ nn L.reverse t) := by
+  sorry
+
+-- DLevel 3
+-- (maybe some list wrangling)
+lemma pi_inj : Function.Injective (pi : G → Equiv.Perm R) := by
+  apply (MonoidHom.ker_eq_bot_iff pi).mp
+  apply (Subgroup.eq_bot_iff_forall (MonoidHom.ker pi)).mpr
+  intro w wker
+  by_contra! wne1
+  rcases exists_reduced_word S w with ⟨L, ⟨hL, hw⟩⟩
+  have : L ≠ [] := by
+    contrapose! wne1
+    rw [hw, wne1, gprod_nil]
+  have : pi w ≠ 1 := by
+    let s := L.getLast this
+    let t : T := ⟨s, SimpleRefl_subset_Refl (Subtype.mem s)⟩
+    have : nn L.reverse t = 1 := by
+      -- apply distinct_toPalindrome_i_of_reduced here
+      sorry
+    have : (pi w) (t, 1) ≠ (t, 1) := by
+      rw [pi_value w L hw (t, 1), this]
+      exact fun h ↦ μ₂.gen_ne_one (Prod.ext_iff.mp h).2
+    intro h
+    rw [h] at this
+    exact this rfl
+  exact this wker
 
 end ReflRepn
 
