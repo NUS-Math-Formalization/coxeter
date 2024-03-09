@@ -601,7 +601,7 @@ lemma nn_cons (L : List S) (s : S) (t : T) : nn (s :: L) t = (if (s : G) = t the
       congr 1
       exact propext (Iff.intro Eq.symm Eq.symm)
 
-lemma nn_prod_eta_aux [CoxeterMatrix m] (L : List S) (t : T) : μ₂.gen ^ (nn L t) =  ∏ i : Fin L.length,
+lemma nn_prod_eta_aux [CoxeterMatrix m] (L : List S) (t : T) : μ₂.gen ^ (nn L t) = ∏ i : Fin L.length,
     eta_aux' (L.get i) ⟨((L.take i.1).reverse : G) * t * L.take i.1, by apply Refl_palindrome_in_Refl⟩ := by
   induction L generalizing t with
   | nil =>
@@ -641,29 +641,29 @@ noncomputable def pi_aux (s : α) (r : R) : R :=
   ⟨⟨(s : G) * r.1 * (s : G)⁻¹, OrderTwoGen.Refl.conjugate_closed⟩ , r.2 * eta_aux s r.1⟩
 
 lemma eta_aux_mul_eta_aux [CoxeterMatrix m] (s : α) (r : R) :
-  (eta_aux' s r.1) * (eta_aux' s (pi_aux s r).1) = 1 := by
-    simp only [eta_aux', toSimpleRefl, pi_aux]
-    let f : G → G := fun x ↦ of m s * x * (of m s)⁻¹
-    have : Function.Injective f := by
-      intro a b hab
-      dsimp only at hab
-      exact mul_left_cancel (mul_right_cancel hab)
-    have : (f (of m s) = f r.1) = (of m s = r.1) := by
-      exact propext (Function.Injective.eq_iff this)
-    dsimp only at this
-    rw [mul_assoc, mul_right_inv, mul_one] at this
-    apply this.symm.subst
-      (motive := fun x ↦ ((if of m s = r.1 then μ₂.gen else 1) * if x then μ₂.gen else 1) = 1)
-    have (p : Prop) (a1 a2 b1 b2 : μ₂) :
-      ite p a1 a2 * ite p b1 b2 = ite p (a1 * b1) (a2 * b2) := by
-      rw [mul_ite]
-      by_cases h : p
-      · repeat rw [if_pos h]
-      · repeat rw [if_neg h]
-    rw [this]
-    norm_num
-    intro _
-    exact μ₂.gen_square
+    (eta_aux' s r.1) * (eta_aux' s (pi_aux s r).1) = 1 := by
+  simp only [eta_aux', toSimpleRefl, pi_aux]
+  let f : G → G := fun x ↦ of m s * x * (of m s)⁻¹
+  have : Function.Injective f := by
+    intro a b hab
+    dsimp only at hab
+    exact mul_left_cancel (mul_right_cancel hab)
+  have : (f (of m s) = f r.1) = (of m s = r.1) := by
+    exact propext (Function.Injective.eq_iff this)
+  dsimp only at this
+  rw [mul_assoc, mul_right_inv, mul_one] at this
+  apply this.symm.subst
+    (motive := fun x ↦ ((if of m s = r.1 then μ₂.gen else 1) * if x then μ₂.gen else 1) = 1)
+  have (p : Prop) (a1 a2 b1 b2 : μ₂) :
+    ite p a1 a2 * ite p b1 b2 = ite p (a1 * b1) (a2 * b2) := by
+    rw [mul_ite]
+    by_cases h : p
+    · repeat rw [if_pos h]
+    · repeat rw [if_neg h]
+  rw [this]
+  norm_num
+  intro _
+  exact μ₂.gen_square
 
 -- DLevel 3
 lemma pi_aux_square_identity [CoxeterMatrix m] (s : α) (r : R) : pi_aux s (pi_aux s r) = r := by
