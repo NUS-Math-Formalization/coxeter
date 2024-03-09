@@ -640,21 +640,9 @@ namespace ReflRepn
 noncomputable def pi_aux (s : α) (r : R) : R :=
   ⟨⟨(s : G) * r.1 * (s : G)⁻¹, OrderTwoGen.Refl.conjugate_closed⟩ , r.2 * eta_aux s r.1⟩
 
-lemma pi_aux_square_identity [CoxeterMatrix m] (s : α) (r : R) : pi_aux s (pi_aux s r) = r := by
-  rw [pi_aux]
-  ext -- product same if projections same
-  have : of m s * ((pi_aux s r).1 : G) * (of m s)⁻¹ = r.1 := by
-    rw [pi_aux]
-    dsimp only
-    repeat rw [← mul_assoc]
-    rw [of_square_eq_one, one_mul]
-    repeat rw [mul_assoc]
-    have : (of m s)⁻¹ * (of m s)⁻¹ = (of m s * of m s)⁻¹ := rfl
-    rw [this, of_square_eq_one, inv_one, mul_one]
-  exact this
-  have : (pi_aux s r).2 * eta_aux s (pi_aux s r).1 = r.2 := by
-    rw [pi_aux]
-    simp only [eta_aux_aux', eta_aux', toSimpleRefl]
+lemma eta_aux_mul_eta_aux [CoxeterMatrix m] (s : α) (r : R) :
+  (eta_aux' s r.1) * (eta_aux' s (pi_aux s r).1) = 1 := by
+    simp only [eta_aux', toSimpleRefl, pi_aux]
     let f : G → G := fun x ↦ of m s * x * (of m s)⁻¹
     have : Function.Injective f := by
       intro a b hab
@@ -664,17 +652,39 @@ lemma pi_aux_square_identity [CoxeterMatrix m] (s : α) (r : R) : pi_aux s (pi_a
       exact propext (Function.Injective.eq_iff this)
     dsimp only at this
     rw [mul_assoc, mul_right_inv, mul_one] at this
-    apply this.symm.subst (motive := fun x ↦ ((r.2 * if of m s = r.1 then μ₂.gen else 1) * if x then μ₂.gen else 1) = r.2)
-    have (p : Prop) (a1 a2 b1 b2 : μ₂) : ite p a1 a2 * ite p b1 b2 = ite p (a1 * b1) (a2 * b2) := by
+    apply this.symm.subst
+      (motive := fun x ↦ ((if of m s = r.1 then μ₂.gen else 1) * if x then μ₂.gen else 1) = 1)
+    have (p : Prop) (a1 a2 b1 b2 : μ₂) :
+      ite p a1 a2 * ite p b1 b2 = ite p (a1 * b1) (a2 * b2) := by
       rw [mul_ite]
       by_cases h : p
       · repeat rw [if_pos h]
       · repeat rw [if_neg h]
-    rw [mul_assoc, this]
+    rw [this]
     norm_num
     intro _
     exact μ₂.gen_square
-  rw [this]
+
+-- DLevel 3
+lemma pi_aux_square_identity [CoxeterMatrix m] (s : α) (r : R) : pi_aux s (pi_aux s r) = r := by
+  have comp1 : (pi_aux s (pi_aux s r)).1 = r.1 := by
+    have : (pi_aux s (pi_aux s r)).1.val = r.1.val := by
+      rw [pi_aux, pi_aux]
+      simp only [Set.coe_setOf, Set.mem_setOf_eq]
+      rw [mul_assoc, mul_assoc, ← mul_inv_rev, of_square_eq_one, inv_one, mul_one,
+        ← mul_assoc, of_square_eq_one, one_mul]
+    exact SetCoe.ext this
+  have comp2 : (pi_aux s (pi_aux s r)).2 = r.2 := by
+    have : (pi_aux s (pi_aux s r)).2.val = r.2.val := by
+      rw [pi_aux, pi_aux]
+      simp only [Set.coe_setOf, eta_aux_aux', toSimpleRefl, Set.mem_setOf_eq]
+      have : (eta_aux' s r.1) * (eta_aux' s (pi_aux s r).1) = 1 := by
+        exact eta_aux_mul_eta_aux s r
+      rw [toSimpleRefl, pi_aux] at this
+      rw [mul_assoc, this, mul_one]
+    exact SetCoe.ext this
+  exact Prod.ext comp1 comp2
+
 
 noncomputable def pi_aux' [CoxeterMatrix m] (s : α) : Equiv.Perm R where
   toFun r := pi_aux s r
