@@ -148,21 +148,21 @@ lemma remove_after_L_length (L : List α) {i : ℕ} (h : L.length ≤ i)
   have remove_after_L_length': L.removeNth ((i - L.length) + L.length) = L := by
     set j := i - L.length
     induction' j with k ih
-    . simp
+    . simp only [Nat.zero_eq, zero_add]
       induction L with
-      | nil => simp
+      | nil => simp only [removeNth]
       | cons hd tail ih =>
-        simp
+        simp only [removeNth, Nat.add_eq, add_zero, cons.injEq, true_and]
         apply ih
         exact Nat.lt_succ.1 (Nat.le.step h)
     . induction L with
-      | nil => simp
+      | nil => simp only [removeNth]
       | cons hd tail ih' =>
         set L := hd :: tail
-        simp
+        simp only [removeNth, Nat.add_eq, add_zero, cons.injEq, true_and]
         apply ih'
         exact Nat.lt_succ.1 (Nat.le.step h)
-        simp at ih
+        simp only [removeNth, Nat.add_eq, add_zero, cons.injEq, true_and] at ih
         apply ih
   nth_rw 2 [← remove_after_L_length']
   rw [Nat.sub_add_cancel h]
