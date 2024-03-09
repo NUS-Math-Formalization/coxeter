@@ -160,7 +160,9 @@ def epsilon : G →* μ₂  := lift m (fun _=> μ₂.gen) (by intro s t; ext;sim
 lemma epsilon_of (s : α) : epsilon m (of m s) = μ₂.gen := by
   simp only [epsilon, lift.of m]
 
-
+lemma epsilon_S {a : S} : epsilon m a = μ₂.gen := by
+  simp only [epsilon, lift.of m]
+  aesop
 
 --@[simp] lemma of_mul (x y: α) : (of m x) * (of m y) =
 --QuotientGroup.mk' _  (FreeGroup.mk [(x,tt), (y,tt)]):= by rw [of];
@@ -320,13 +322,48 @@ lemma inv_refl_eq_self [CoxeterMatrix m] {t : T} : (t : G)⁻¹ = t := by sorry
 local notation : max "ℓ(" g ")" => (OrderTwoGen.length S g)
 
 -- DLevel 1
-lemma epsilon_length  {g : G} : epsilon m g = (μ₂.gen)^(ℓ(g)) := by
+lemma epsilon_mul {a b : G}: epsilon m (a * b) =  (epsilon m a) * (epsilon m b) := by
   sorry
 
+lemma epsilon_list_length {L : List S} : epsilon m ↑L = (μ₂.gen)^(L.length) := by
+  induction' L with a L0 ih
+  · aesop
+  · have h1: List.length (a :: L0) = List.length (L0) + 1 := by
+      aesop
+    rw [h1]
+    have h3: ((a :: L0) : G)= (a * ↑L0) := by
+      apply gprod_cons
+    have h2: (epsilon m) ↑(a :: L0) = (μ₂.gen) * (epsilon m ↑L0) :=
+      calc
+        (epsilon m) ↑(a :: L0) = (epsilon m) (a * ↑L0) := by
+          rw [h3]
+        _ = (epsilon m a) * (epsilon m ↑L0) := by
+          rw [epsilon_mul]
+        _ = (μ₂.gen) * (epsilon m ↑L0) := by
+          rw [epsilon_S]
+    rw [h2,ih]
+
+lemma epsilon_length  {g : G} : epsilon m g = (μ₂.gen)^(ℓ(g)) := by
+  let ⟨L,h1,h2⟩ := Nat.find_spec (@length_aux G  _ S _ g)
+  simp only [length]
+  nth_rw 1 [h2]
+  rw [epsilon_list_length,h1]
 
 -- DLevel 1
 lemma length_smul_neq {g : G} {s:S} : ℓ(g) ≠ ℓ(s*g) := by
-  sorry
+  intro h
+  have h1: epsilon m g = epsilon m (s * g) := by
+    rw [epsilon_length]
+    rw [epsilon_length,← h]
+  have h2: epsilon m g = (μ₂.gen) * (epsilon m g) := by
+    calc
+      epsilon m g = epsilon m (s * g) := h1
+      _ = epsilon m s * epsilon m g := by
+        rw [epsilon_mul]
+      _ = (μ₂.gen) * (epsilon m g) := by
+        rw [epsilon_S]
+  have h3: (μ₂.gen) = 1 := by
+    simp [h2, ]
 
 -- DLevel 1
 lemma length_muls_neq {g : G} {s:S} : ℓ(g) ≠ ℓ(g*s) := by
