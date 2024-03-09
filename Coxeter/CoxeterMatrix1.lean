@@ -622,62 +622,30 @@ namespace ReflRepn
 noncomputable def pi_aux (s : α) (r : R) : R :=
   ⟨⟨(s:G) * r.1 * (s:G)⁻¹, OrderTwoGen.Refl.conjugate_closed⟩ , r.2 * eta_aux s r.1⟩
 
-lemma eta_aux_one_or_neg_one [CoxeterMatrix m] (s : α) (r : R) :
-  (eta_aux' s r.1) ≠ 1 ↔ eta_aux' s r.1 = μ₂.gen :=
-    μ₂.not_iff_not (eta_aux' (toSimpleRefl m s) r.1)
-
-lemma eta_aux_eq_eta_aux_pi_aux [CoxeterMatrix m] (s : α) (r : R) :
-  (eta_aux' s r.1) = (eta_aux' s (pi_aux s r).1) := by
-    by_cases h : (eta_aux' s r.1) = 1
-    . rw [h]
-      apply Eq.symm
-      have k : ¬(s = s * r.1.val * (s:G)⁻¹) := by
-        by_contra j
-        have : r.1.val * (s:G)⁻¹ = 1 := by
-          rw [mul_assoc] at j
-          nth_rw 1 [← mul_one (of m s)] at j
-          apply Eq.symm
-          apply mul_left_cancel j
-        have : s = r.1.val := by
-          apply Eq.symm
-          rw [← mul_right_inv (of m s)] at this
-          apply mul_right_cancel this
-        have : eta_aux' s r.1 = μ₂.gen := if_pos this
-        have : eta_aux' s r.1 ≠ 1 := (eta_aux_one_or_neg_one s r).2 this
-        contradiction
-      rw [eta_aux']
-      push_neg at k
-      exact if_neg k
-    . push_neg at h
-      have seqr : s = r.1.val := by
-        by_contra j
-        push_neg at j
-        have : eta_aux' s r.1 = 1 := by
-          simp only [eta_aux']
-          exact if_neg j
-        contradiction
-      have seqsrs : s = s * r.1.val * (s:G)⁻¹ := by
-        rw [seqr, mul_inv_cancel_right]
-      rw [(eta_aux_one_or_neg_one s r).1 h, eta_aux']
-      apply Eq.symm
-      exact if_pos seqsrs
-
-
 lemma eta_aux_mul_eta_aux [CoxeterMatrix m] (s : α) (r : R) :
   (eta_aux' s r.1) * (eta_aux' s (pi_aux s r).1) = 1 := by
-  by_cases h : (eta_aux' s r.1) = 1
-  . have : (eta_aux' s (pi_aux s r).1) = 1 := by
-      rw [← h]
-      exact (eta_aux_eq_eta_aux_pi_aux s r).symm
-    rw [h, this]
-    rfl
-  . push_neg at h
-    have neg : (eta_aux' s r.1) = μ₂.gen := (eta_aux_one_or_neg_one s r).1 h
-    have : (eta_aux' s (pi_aux s r).1) = μ₂.gen := by
-      rw [← neg]
-      exact (eta_aux_eq_eta_aux_pi_aux s r).symm
-    rw [neg, this]
-    rfl
+    simp only [eta_aux', toSimpleRefl, pi_aux]
+    let f : G → G := fun x ↦ of m s * x * (of m s)⁻¹
+    have : Function.Injective f := by
+      intro a b hab
+      dsimp only at hab
+      exact mul_left_cancel (mul_right_cancel hab)
+    have : (f (of m s) = f r.1) = (of m s = r.1) := by
+      exact propext (Function.Injective.eq_iff this)
+    dsimp only at this
+    rw [mul_assoc, mul_right_inv, mul_one] at this
+    apply this.symm.subst
+      (motive := fun x ↦ ((if of m s = r.1 then μ₂.gen else 1) * if x then μ₂.gen else 1) = 1)
+    have (p : Prop) (a1 a2 b1 b2 : μ₂) :
+      ite p a1 a2 * ite p b1 b2 = ite p (a1 * b1) (a2 * b2) := by
+      rw [mul_ite]
+      by_cases h : p
+      · repeat rw [if_pos h]
+      · repeat rw [if_neg h]
+    rw [this]
+    norm_num
+    intro _
+    exact μ₂.gen_square
 
 -- DLevel 3
 lemma pi_aux_square_identity [CoxeterMatrix m] (s : α) (r : R) : pi_aux s (pi_aux s r) = r := by
