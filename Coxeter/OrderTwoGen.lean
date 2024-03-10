@@ -336,29 +336,48 @@ lemma length_mul_le_length_sum  {w1 w2 : G} : ℓ(w1 * w2) ≤ ℓ(w1) + ℓ(w2)
   _ = L1.length + L2.length := by simp
   _ = _ := by simp [h2,h4,length_eq_iff.1 h1,length_eq_iff.1 h3]
 
+
 -- DLevel 1
-lemma length_smul_le_length_add_one {w:G} {s:S}: ℓ(s*w) ≤ ℓ(w) + 1 := by
+lemma length_smul_le_length_add_one {w : G} {s : S} : ℓ(s*w) ≤ ℓ(w) + 1 := by
   obtain ⟨L,⟨hL1,hL2⟩⟩ := exists_reduced_word S w
-  have : s*w = (s::L) := by simp only [gprod_cons, hL2]
+  have : s * w = (s :: L) := by simp only [gprod_cons, hL2]
   rw [this]
   calc
     _ ≤ (s::L).length := length_le_list_length
     _ = L.length + 1 := by simp only [List.length_cons]
-    _ = ℓ(w) + 1 := by rw [length_eq_iff.1 hL1,hL2]
+    _ = ℓ(w) + 1 := by rw [length_eq_iff.1 hL1, hL2]
 
 
 -- DLevel 1
-lemma length_le_length_smul_add_one {w:G} : ℓ(w) ≤ ℓ(s*w) + 1 := by sorry
-
-
+lemma length_le_length_smul_add_one {w : G} {s : S}: ℓ(w) ≤ ℓ(s * w) + 1 := by
+  have h1 : w = s * (s * w) := by
+    calc
+      w = 1 * w := by group
+      _ = (s * s) * w := by rw [gen_square_eq_one']
+      _ = s * (s * w) := by group
+  nth_rw 1 [h1]
+  apply length_smul_le_length_add_one
 
 -- DLevel 1
-lemma length_muls_le_length_add_one {w:G} : ℓ(w*s) ≤ ℓ(w) + 1 := by
-  sorry
+lemma length_muls_le_length_add_one {w : G} {s : S}: ℓ(w * s) ≤ ℓ(w) + 1 := by
+  obtain ⟨L,⟨hL1,hL2⟩⟩ := exists_reduced_word S w
+  have : w * s = (L ++ [s]) := by simp only [gprod_append_singleton, hL2]
+  rw [this]
+  calc
+    _ ≤ (L ++ [s]).length := length_le_list_length
+    _ = L.length + [s].length := by simp only [List.length_append]
+    _ = L.length + 1 := by rw [List.length_singleton]
+    _ = ℓ(w) + 1 := by rw [length_eq_iff.1 hL1, hL2]
 
 -- DLevel 1
-lemma length_le_length_muls_add_one {w:G} : ℓ(w) ≤ ℓ(w*s) + 1 := by
-  sorry
+lemma length_le_length_muls_add_one {w : G} {s : S}: ℓ(w) ≤ ℓ(w*s) + 1 := by
+  have h1 : w = (w * s) * s := by
+    calc
+      w = w * 1 := by group
+      _ = w * (s * s) := by rw [gen_square_eq_one']
+      _ = (w * s) * s := by group
+  nth_rw 1 [h1]
+  apply length_muls_le_length_add_one
 
 lemma length_bound  {w1 w2 : G} : ℓ(w1)  - ℓ(w2) ≤ ℓ(w1 * w2 ⁻¹) := by
   have := @length_mul_le_length_sum _ _ S _ (w1 * w2⁻¹) w2
@@ -366,9 +385,24 @@ lemma length_bound  {w1 w2 : G} : ℓ(w1)  - ℓ(w2) ≤ ℓ(w1 * w2 ⁻¹) := b
   simp only [tsub_le_iff_right, ge_iff_le,this]
 
 
--- DLevel 1
+-- Dlevel 1
 lemma length_zero_iff_one {w:G} : ℓ(w) = 0 ↔ w = 1 := by
-  sorry
+  constructor
+  · intro h1
+    let ⟨L , h4 , h5⟩ := Nat.find_spec (@length_aux G  _ S _ w)
+    have h6 : List.length L = 0 := by
+      calc
+        List.length L = length S w := by
+          rw [h4]
+          simp only [length]
+        _ = 0 := h1
+    have h7 : L = [] := by
+      apply List.length_eq_zero.1 h6
+    rw [h5, ← gprod_nil, h7]
+  · intro h2
+    rw [h2, ← gprod_nil]
+    have h3 : ℓ(([] : List S)) ≤ 0 := length_le_list_length
+    apply Nat.le_zero.1 h3
 
 
 -- DLevel 2
