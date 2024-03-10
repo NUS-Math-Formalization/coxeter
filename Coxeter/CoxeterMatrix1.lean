@@ -151,6 +151,10 @@ def epsilon : G →* μ₂ := lift m (fun _=> μ₂.gen) (by intro s t; ext;simp
 lemma epsilon_of (s : α) : epsilon m (of m s) = μ₂.gen := by
   simp only [epsilon, lift.of m]
 
+lemma epsilon_S {a : S} : epsilon m a = μ₂.gen := by
+  simp only [epsilon, lift.of m]
+  aesop
+
 --@[simp] lemma of_mul (x y: α) : (of m x) * (of m y) =
 --QuotientGroup.mk' _ (FreeGroup.mk [(x,tt), (y,tt)]):= by rw [of];
 
@@ -301,17 +305,75 @@ lemma inv_refl_eq_self [CoxeterMatrix m] {t : T} : (t : G)⁻¹ = t := by sorry
 
 local notation : max "ℓ(" g ")" => (OrderTwoGen.length S g)
 
--- DLevel 1
-lemma epsilon_length {g : G} : epsilon m g = μ₂.gen ^ ℓ(g) := by
-  sorry
+lemma epsilon_mul {a b : G}: epsilon m (a * b) =  (epsilon m a) * (epsilon m b) := by
+  apply MonoidHom.map_mul'
+
+lemma epsilon_list_length {L : List S} : epsilon m ↑L = (μ₂.gen)^(L.length) := by
+  induction' L with a L0 ih
+  · aesop
+  · have h1: List.length (a :: L0) = List.length (L0) + 1 := by
+      aesop
+    rw [h1]
+    have h3: ((a :: L0) : G)= (a * ↑L0) := by
+      apply gprod_cons
+    have h2: (epsilon m) ↑(a :: L0) = (μ₂.gen) * (epsilon m ↑L0) :=
+      calc
+        (epsilon m) ↑(a :: L0) = (epsilon m) (a * ↑L0) := by
+          rw [h3]
+        _ = (epsilon m a) * (epsilon m ↑L0) := by
+          rw [epsilon_mul]
+        _ = (μ₂.gen) * (epsilon m ↑L0) := by
+          rw [epsilon_S]
+    rw [h2,ih,add_comm]
+    group
+
+lemma epsilon_length  {g : G} : epsilon m g = (μ₂.gen)^(ℓ(g)) := by
+  let ⟨L,h1,h2⟩ := Nat.find_spec (@length_aux G  _ S _ g)
+  simp only [length]
+  nth_rw 1 [h2]
+  rw [epsilon_list_length,h1]
 
 -- DLevel 1
-lemma length_smul_neq {g : G} {s : S} : ℓ(g) ≠ ℓ(s * g) := by
-  sorry
+lemma length_smul_neq {g : G} {s:S} : ℓ(g) ≠ ℓ(s*g) := by
+  intro h
+  have h1: epsilon m g = epsilon m (s * g) := by
+    rw [epsilon_length]
+    rw [epsilon_length,← h]
+  have h2: epsilon m g = (μ₂.gen) * (epsilon m g) := by
+    calc
+      epsilon m g = epsilon m (s * g) := h1
+      _ = epsilon m s * epsilon m g := by
+        rw [epsilon_mul]
+      _ = (μ₂.gen) * (epsilon m g) := by
+        rw [epsilon_S]
+  have h3: (μ₂.gen) = 1 := by
+    calc
+      (μ₂.gen) = (μ₂.gen) * (epsilon m g) * (epsilon m g)⁻¹ := by group
+      _ = (epsilon m g) * (epsilon m g)⁻¹ := by rw [←h2]
+      _ = 1 := by group
+  apply μ₂.gen_ne_one
+  exact h3
 
 -- DLevel 1
-lemma length_muls_neq {g : G} {s : S} : ℓ(g) ≠ ℓ(g * s) := by
-  sorry
+lemma length_muls_neq {g : G} {s:S} : ℓ(g) ≠ ℓ(g*s) := by
+  intro h
+  have h1: epsilon m g = epsilon m (g * s) := by
+    rw [epsilon_length]
+    rw [epsilon_length,← h]
+  have h2: epsilon m g = (epsilon m g) * (μ₂.gen) := by
+    calc
+      epsilon m g = epsilon m (g * s) := h1
+      _ = epsilon m g * epsilon m s := by
+        rw [epsilon_mul]
+      _ = (epsilon m g) * (μ₂.gen)  := by
+        rw [epsilon_S]
+  have h3: (μ₂.gen) = 1 := by
+    calc
+      (μ₂.gen) =  (epsilon m g)⁻¹ * ((epsilon m g) * (μ₂.gen)) := by group
+      _ = (epsilon m g)⁻¹ * (epsilon m g) := by rw [← h2]
+      _ = 1 := by group
+  apply μ₂.gen_ne_one
+  exact h3
 
 -- DLevel 1
 lemma length_diff_one {g : G} {s : S} : ℓ(s * g) = ℓ(g) + 1 ∨ ℓ(g) = ℓ(s * g) + 1 := by
@@ -603,8 +665,51 @@ namespace ReflRepn
 noncomputable def pi_aux (s : α) (r : R) : R :=
   ⟨⟨(s:G) * r.1 * (s:G)⁻¹, OrderTwoGen.Refl.conjugate_closed⟩ , r.2 * eta_aux s r.1⟩
 
+lemma eta_aux_mul_eta_aux [CoxeterMatrix m] (s : α) (r : R) :
+  (eta_aux' s r.1) * (eta_aux' s (pi_aux s r).1) = 1 := by
+    simp only [eta_aux', toSimpleRefl, pi_aux]
+    let f : G → G := fun x ↦ of m s * x * (of m s)⁻¹
+    have : Function.Injective f := by
+      intro a b hab
+      dsimp only at hab
+      exact mul_left_cancel (mul_right_cancel hab)
+    have : (f (of m s) = f r.1) = (of m s = r.1) := by
+      exact propext (Function.Injective.eq_iff this)
+    dsimp only at this
+    rw [mul_assoc, mul_right_inv, mul_one] at this
+    apply this.symm.subst
+      (motive := fun x ↦ ((if of m s = r.1 then μ₂.gen else 1) * if x then μ₂.gen else 1) = 1)
+    have (p : Prop) (a1 a2 b1 b2 : μ₂) :
+      ite p a1 a2 * ite p b1 b2 = ite p (a1 * b1) (a2 * b2) := by
+      rw [mul_ite]
+      by_cases h : p
+      · repeat rw [if_pos h]
+      · repeat rw [if_neg h]
+    rw [this]
+    norm_num
+    intro _
+    exact μ₂.gen_square
+
 -- DLevel 3
-lemma pi_aux_square_identity [CoxeterMatrix m] (s : α) (r : R) : pi_aux s (pi_aux s r) = r := by sorry
+lemma pi_aux_square_identity [CoxeterMatrix m] (s : α) (r : R) : pi_aux s (pi_aux s r) = r := by
+  have comp1 : (pi_aux s (pi_aux s r)).1 = r.1 := by
+    have : (pi_aux s (pi_aux s r)).1.val = r.1.val := by
+      rw [pi_aux, pi_aux]
+      simp only [Set.coe_setOf, Set.mem_setOf_eq]
+      rw [mul_assoc, mul_assoc, ← mul_inv_rev, of_square_eq_one, inv_one, mul_one,
+        ← mul_assoc, of_square_eq_one, one_mul]
+    exact SetCoe.ext this
+  have comp2 : (pi_aux s (pi_aux s r)).2 = r.2 := by
+    have : (pi_aux s (pi_aux s r)).2.val = r.2.val := by
+      rw [pi_aux, pi_aux]
+      simp only [Set.coe_setOf, eta_aux_aux', toSimpleRefl, Set.mem_setOf_eq]
+      have : (eta_aux' s r.1) * (eta_aux' s (pi_aux s r).1) = 1 := by
+        exact eta_aux_mul_eta_aux s r
+      rw [toSimpleRefl, pi_aux] at this
+      rw [mul_assoc, this, mul_one]
+    exact SetCoe.ext this
+  exact Prod.ext comp1 comp2
+
 
 noncomputable def pi_aux' [CoxeterMatrix m] (s:α) : Equiv.Perm R where
   toFun r := pi_aux s r
