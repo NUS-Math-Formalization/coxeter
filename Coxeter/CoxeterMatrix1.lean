@@ -751,21 +751,20 @@ noncomputable def pi_aux' [CoxeterMatrix m] (s : α) : Equiv.Perm R where
   left_inv := by intro r; simp [pi_aux_square_identity]
   right_inv := by intro r; simp [pi_aux_square_identity]
 
-noncomputable def alternating_word (s t : α) (n : ℕ) : List S :=
-  (List.range n).map (fun x ↦ if x % 2 = 0 then toSimpleRefl m s else toSimpleRefl m t)
+noncomputable def alternating_word (s t : α) (n : ℕ) : List α :=
+  (List.range n).map (fun x ↦ if x % 2 = 0 then s else t)
 
-lemma alternating_word_length (s t : α) (n : ℕ) : (alternating_word s t n : List S).length = n := by
+lemma alternating_word_length (s t : α) (n : ℕ) : (alternating_word s t n).length = n := by
   rw [alternating_word, List.length_map, List.length_range]
 
-lemma alternating_word_nil (s t : α) : (alternating_word s t 0 : List S) = [] := by
+lemma alternating_word_nil (s t : α) : alternating_word s t 0 = [] := by
   rw [alternating_word]
   simp only [List.range, List.range.loop, List.map_nil]
 
-lemma alternating_word_singleton (s t : α) : (alternating_word s t 1 : List S) = [s] := by
+lemma alternating_word_singleton (s t : α) : alternating_word s t 1 = [s] := by
   rw [alternating_word]
   simp only [List.range, List.range.loop, List.map_singleton,
     if_pos (by norm_num : 0 % 2 = 0)]
-  rfl
 
 -- DLevel 2
 lemma alternating_word_power (s t : α) (n : ℕ) : (alternating_word s t (2 * n) : List S).gprod
@@ -778,22 +777,22 @@ lemma alternating_word_relation (s t : α) : (alternating_word s t (2 * m s t) :
 
 -- DLevel 1
 lemma alternating_word_take (s t : α) (n i : ℕ) (h : i ≤ n) :
-    (alternating_word s t n : List S).take i = (alternating_word s t i : List S) := by
+    (alternating_word s t n).take i = alternating_word s t i := by
   sorry
 
 -- DLevel 2
 lemma alternating_word_append_odd (s t : α) (n m : ℕ) (h1 : m ≤ n) (h2 : Odd m) :
-    (alternating_word s t n : List S) = (alternating_word s t m : List S) ++ (alternating_word t s (n - m) : List S) := by
+    alternating_word s t n = alternating_word s t m ++ alternating_word t s (n - m) := by
   sorry
 
 lemma alternating_word_append_even (s t : α) (n m : ℕ) (h1 : m ≤ n) (h2 : Even m) :
-    (alternating_word s t n : List S) = (alternating_word s t m : List S) ++ (alternating_word s t (n - m) : List S) := by
+    alternating_word s t n = alternating_word s t m ++ alternating_word s t (n - m) := by
   sorry
 
 -- DLevel 3
 lemma alternating_word_palindrome (s t : α) (n : ℕ) (i : Fin n) :
     toPalindrome_i (alternating_word s t n : List S) i.1 = (alternating_word s t (2 * i.1 + 1) : List S) := by
-  rw [toPalindrome_i, toPalindrome, alternating_word_take s t _ _ (by linarith [i.2] : _)]
+  rw [toPalindrome_i, toPalindrome, alternating_word_take (toSimpleRefl m s) (toSimpleRefl m t) _ _ (by linarith [i.2] : _)]
   -- you might need more lemmas
   -- reverse of alternating_word / tail of alternating_word
   -- may need to by_cases between odd and even
@@ -802,7 +801,7 @@ lemma alternating_word_palindrome (s t : α) (n : ℕ) (i : Fin n) :
 lemma alternating_word_palindrome_periodic (s t : α) (i : ℕ) :
     ((alternating_word s t (2 * (i + m s t) + 1) : List S) : G)
     = ((alternating_word s t (2 * i + 1) : List S) : G) := by
-  rw [alternating_word_append_odd s t (2 * (i + m s t) + 1) (2 * i + 1)
+  rw [alternating_word_append_odd (s : S) t (2 * (i + m s t) + 1) (2 * i + 1)
     (by linarith : 2 * i + 1 ≤ 2 * (i + m s t) + 1)
     (by use i : Odd (2 * i + 1)), gprod_append]
   apply (mul_one (alternating_word s t (2 * i + 1) : List S).gprod).subst
@@ -816,8 +815,8 @@ lemma alternating_word_palindrome_periodic (s t : α) (i : ℕ) :
   congr 1
   exact symmetric s t
 
-lemma pi_relation_word_nn_even (s s' : α) (t : T) : Even (nn (alternating_word s s' (2 * m s s') : List S) t) := by
-  use ((List.range (m s s')).map fun i ↦ (alternating_word s s' (2 * i + 1)).gprod).count (t : G)
+lemma pi_relation_word_nn_even (s s' : α) (t : T) : Even (nn (alternating_word (s : S) s' (2 * m s s')) t) := by
+  use ((List.range (m s s')).map fun i ↦ (alternating_word (s : S) s' (2 * i + 1)).gprod).count (t : G)
   rw [nn, alternating_word_length]
   let f := fun i ↦ (alternating_word s s' (2 * i + 1) : List S).gprod
   calc
@@ -849,23 +848,31 @@ lemma pi_relation_word_nn_even (s s' : α) (t : T) : Even (nn (alternating_word 
       exact alternating_word_palindrome_periodic s s' x
     _ = _ := by rfl
 
-/-lemma pi_aux_list_in_Refl_S (L : List S) (r : R) : (L : G) * (r.1 : G) * (L.reverse : G) ∈ T := by
-  rw [gprod_reverse]
+lemma pi_aux_list_in_T (L : List α) (t : T) :
+    (L.map (toSimpleRefl m) : G) * t * (L.reverse.map (toSimpleRefl m)) ∈ T := by
+  rw [← List.reverse_map, gprod_reverse]
   exact Refl.conjugate_closed
 
-lemma pi_aux_list (L : List S) (r : R) : (((L.map pi_aux').prod r) : R) =
-    ((⟨(L : G) * (r.1 : G) * (L : G)⁻¹, Refl.conjugate_closed⟩,
-    r.2 * μ₂.gen ^ nn L r.1) : R) := by
-  sorry-/
+-- DLevel 4
+lemma pi_aux_list (L : List α) (r : R) : (L.map pi_aux').prod r =
+    ((⟨(L.map (toSimpleRefl m)) * r.1 * (L.reverse.map (toSimpleRefl m)), pi_aux_list_in_T L r.1⟩,
+    r.2 * μ₂.gen ^ nn (L.map (toSimpleRefl m)) r.1) : R) := by
+  -- induction on L
+  sorry
 
--- DLevel 5
+-- DLevel 3
+lemma pi_aux_list_mul (s t : α) : ((pi_aux' s : Equiv.Perm R) * (pi_aux' t : Equiv.Perm R)) ^ n
+    = ((alternating_word s t (2 * n)).map pi_aux' : List (Equiv.Perm R)).prod := by
+  -- induction on n
+  sorry
+
+-- DLevel 3
 lemma pi_relation (s t : α) : ((pi_aux' s : Equiv.Perm R) * (pi_aux' t : Equiv.Perm R)) ^ m s t = 1 := by
   have (r : R) : (((pi_aux' s : Equiv.Perm R) * (pi_aux' t : Equiv.Perm R)) ^ m s t) r = r := by
-    simp only [pi_aux', pi_aux]
-    ext
-    -- probably need some induction for the term, build a lemma
-    sorry
-    --
+    rw [pi_aux_list_mul, pi_aux_list]
+    -- main idea:
+    -- alternating_word_relation and simplify
+    -- pi_relation_word_nn_even
     sorry
   exact Equiv.Perm.disjoint_refl_iff.mp fun x ↦ Or.inl (this x)
 
