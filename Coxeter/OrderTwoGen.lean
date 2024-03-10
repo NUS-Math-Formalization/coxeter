@@ -339,11 +339,11 @@ lemma length_mul_le_length_sum  {w1 w2 : G} : ℓ(w1 * w2) ≤ ℓ(w1) + ℓ(w2)
 
 -- DLevel 1
 lemma length_smul_le_length_add_one {w : G} {s : S} : ℓ(s*w) ≤ ℓ(w) + 1 := by
-  obtain ⟨L,⟨hL1,hL2⟩⟩ := exists_reduced_word S w
+  obtain ⟨L, ⟨hL1 , hL2⟩ ⟩ := exists_reduced_word S w
   have : s * w = (s :: L) := by simp only [gprod_cons, hL2]
   rw [this]
   calc
-    _ ≤ (s::L).length := length_le_list_length
+    _ ≤ (s :: L).length := length_le_list_length
     _ = L.length + 1 := by simp only [List.length_cons]
     _ = ℓ(w) + 1 := by rw [length_eq_iff.1 hL1, hL2]
 
@@ -360,7 +360,7 @@ lemma length_le_length_smul_add_one {w : G} {s : S}: ℓ(w) ≤ ℓ(s * w) + 1 :
 
 -- DLevel 1
 lemma length_muls_le_length_add_one {w : G} {s : S}: ℓ(w * s) ≤ ℓ(w) + 1 := by
-  obtain ⟨L,⟨hL1,hL2⟩⟩ := exists_reduced_word S w
+  obtain ⟨L, ⟨hL1 , hL2⟩ ⟩ := exists_reduced_word S w
   have : w * s = (L ++ [s]) := by simp only [gprod_append_singleton, hL2]
   rw [this]
   calc
