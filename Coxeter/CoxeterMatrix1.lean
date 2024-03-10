@@ -790,12 +790,23 @@ lemma pi_relation_word_nn_even (s s' : α) (t : T) : Even (nn (alternating_word 
       exact alternating_word_palindrome_periodic s s' x
     _ = _ := by rfl
 
+/-lemma pi_aux_list_in_Refl_S (L : List S) (r : R) : (L : G) * (r.1 : G) * (L.reverse : G) ∈ T := by
+  rw [gprod_reverse]
+  exact Refl.conjugate_closed
+
+lemma pi_aux_list (L : List S) (r : R) : (((L.map pi_aux').prod r) : R) =
+    ((⟨(L : G) * (r.1 : G) * (L : G)⁻¹, Refl.conjugate_closed⟩,
+    r.2 * μ₂.gen ^ nn L r.1) : R) := by
+  sorry-/
+
 -- DLevel 5
 lemma pi_relation (s t : α) : ((pi_aux' s : Equiv.Perm R) * (pi_aux' t : Equiv.Perm R)) ^ m s t = 1 := by
   have (r : R) : (((pi_aux' s : Equiv.Perm R) * (pi_aux' t : Equiv.Perm R)) ^ m s t) r = r := by
-    --simp only [pi_aux', pi_aux]
+    simp only [pi_aux', pi_aux]
     ext
+    -- probably need some induction for the term, build a lemma
     sorry
+    --
     sorry
   exact Equiv.Perm.disjoint_refl_iff.mp fun x ↦ Or.inl (this x)
 
