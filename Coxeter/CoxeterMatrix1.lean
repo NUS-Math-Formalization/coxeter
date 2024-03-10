@@ -353,11 +353,12 @@ lemma reverseList_nonEmpty {L : List S} (hL : L ≠ []) : L.reverse ≠ [] := by
 
 lemma dropLast_eq_reverse_tail_reverse {L : List S} : L.dropLast = L.reverse.tail.reverse := by
   induction L with
-  | nil => simp
+  | nil => simp only [List.dropLast_nil, List.reverse_nil, List.tail_nil]
   | cons hd tail ih =>
     by_cases k : tail = []
     . rw [k]
-      simp
+      simp only [List.dropLast_single, List.reverse_cons, List.reverse_nil,
+        List.nil_append, List.tail_cons]
     . push_neg at k
       have htd : (hd :: tail).dropLast = hd :: (tail.dropLast) := by
         exact List.dropLast_cons_of_ne_nil k
@@ -367,7 +368,7 @@ lemma dropLast_eq_reverse_tail_reverse {L : List S} : L.dropLast = L.reverse.tai
         apply reverseList_nonEmpty k
       have : (hd :: tail).reverse.tail = (hd :: tail).dropLast.reverse := by
         rw [htd]
-        simp
+        simp only [List.reverse_cons]
         rw [trht]
         apply (List.append_left_inj [hd]).2
         apply (List.reverse_eq_iff).1
