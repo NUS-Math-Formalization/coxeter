@@ -392,19 +392,26 @@ lemma length_muls_neq {g : G} {s:S} : ℓ(g) ≠ ℓ(g*s) := by
   exact h3
 
 -- DLevel 1
-lemma length_diff_one  {g : G} {s:S} : ℓ(s*g) = ℓ(g) + 1  ∨ ℓ(g) = ℓ(s*g) + 1 := by
-  by_cases h : ℓ(s*g) > ℓ(g)
+lemma length_diff_one  {g : G} {s : S} : ℓ(s * g) = ℓ(g) + 1 ∨ ℓ(g) = ℓ(s * g) + 1 := by
+  by_cases h : ℓ(s * g) > ℓ(g)
   . left
-    have : ℓ(s*g) ≤ ℓ(g) + 1:= length_smul_le_length_add_one
+    have : ℓ(s * g) ≤ ℓ(g) + 1 := length_smul_le_length_add_one
     linarith
   . right
-    have : ℓ(g) ≤ ℓ(s*g) + 1 := sorry--length_smul_le_length_add_one
-    have : ℓ(g) ≠ ℓ(s*g) := by sorry
-    sorry
+    have h1 : ℓ(g) ≤ ℓ(s * g) + 1 := length_le_length_smul_add_one
+    have : ℓ(g) ≠ ℓ(s * g) := length_smul_neq
+    apply le_antisymm h1
+    apply Nat.add_one_le_iff.2
+    apply Nat.lt_iff_le_and_ne.2
+    constructor
+    · exact le_of_not_gt h
+    · exact Ne.symm this
 
 -- DLevel 1
 lemma length_smul_lt_of_le {g : G} {s : S} (hlen : ℓ(s * g) ≤ ℓ(g)) : ℓ(s * g) < ℓ(g):= by
-  sorry
+  apply Ne.lt_of_le'
+  apply length_smul_neq
+  exact hlen
 
 -- In the following section, we prove the strong exchange property
 section ReflRepresentation
