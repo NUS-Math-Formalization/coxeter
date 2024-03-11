@@ -691,7 +691,10 @@ lemma exists_of_nn_ne_zero [CoxeterMatrix m] (L : List S) (t : T) : nn L t > 0 �
     ∃ i : Fin L.length, (toPalindrome_i L i : G) = t := by
   intro h
   unfold nn at h
-  sorry
+  obtain ⟨⟨w, hw⟩, h⟩ := List.mem_iff_get.mp (List.count_pos_iff_mem.mp h)
+  rw [List.get_map, List.get_range] at h
+  rw [List.length_map, List.length_range] at hw
+  exact ⟨⟨w, hw⟩, h⟩
 
 local notation "R" => T × μ₂
 
