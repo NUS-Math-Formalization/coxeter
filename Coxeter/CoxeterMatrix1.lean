@@ -864,7 +864,15 @@ lemma pi_aux_list (L : List α) (r : R) : (L.map pi_aux').prod r =
 lemma pi_aux_list_mul (s t : α) : ((pi_aux' s : Equiv.Perm R) * (pi_aux' t : Equiv.Perm R)) ^ n
     = ((alternating_word s t (2 * n)).map pi_aux' : List (Equiv.Perm R)).prod := by
   -- induction on n
-  sorry
+  induction' n with k ih
+  . simp only [pow_zero, alternating_word, Nat.zero_eq, mul_zero, List.range_zero, List.map_nil,
+      List.prod_nil]
+  . rw [Nat.succ_eq_add_one, pow_succ, mul_add, add_comm, mul_one,
+      alternating_word_append_even s t (2 + 2 * k) (2)]
+    simp only [add_tsub_cancel_left, List.map_append, List.prod_append, ← ih, mul_left_inj]
+    rfl
+    norm_num
+    norm_num
 
 -- DLevel 3
 lemma pi_relation (s t : α) : ((pi_aux' s : Equiv.Perm R) * (pi_aux' t : Equiv.Perm R)) ^ m s t = 1 := by
