@@ -320,7 +320,7 @@ lemma epsilon_list_length {L : List S} : epsilon m L = μ₂.gen ^ L.length := b
           rw [gprod_cons]
         _ = epsilon m a * epsilon m L0 := by
           rw [epsilon_mul]
-        _ = (μ₂.gen) * (epsilon m L0) := by
+        _ = μ₂.gen * epsilon m L0 := by
           rw [epsilon_S]
     rw [h2, ih, pow_succ μ₂.gen L0.length]
 
@@ -339,9 +339,9 @@ lemma length_smul_neq {g : G} {s : S} : ℓ(g) ≠ ℓ(s * g) := by
       epsilon m g = epsilon m (s * g) := h1
       _ = epsilon m s * epsilon m g := by
         rw [epsilon_mul]
-      _ = (μ₂.gen) * (epsilon m g) := by
+      _ = μ₂.gen * epsilon m g := by
         rw [epsilon_S]
-  have h3 : (μ₂.gen) = 1 := by
+  have h3 : μ₂.gen = 1 := by
     calc
       μ₂.gen = μ₂.gen * epsilon m g * (epsilon m g)⁻¹ := by group
       _ = epsilon m g * (epsilon m g)⁻¹ := by rw [← h2]
@@ -367,7 +367,7 @@ lemma length_muls_neq {g : G} {s : S} : ℓ(g) ≠ ℓ(g * s) := by
   exact μ₂.gen_ne_one h3
 
 -- DLevel 1
-lemma length_diff_one  {g : G} {s : S} : ℓ(s * g) = ℓ(g) + 1 ∨ ℓ(g) = ℓ(s * g) + 1 := by
+lemma length_diff_one {g : G} {s : S} : ℓ(s * g) = ℓ(g) + 1 ∨ ℓ(g) = ℓ(s * g) + 1 := by
   by_cases h : ℓ(s * g) > ℓ(g)
   . left
     have : ℓ(s * g) ≤ ℓ(g) + 1 := length_smul_le_length_add_one
@@ -383,10 +383,8 @@ lemma length_diff_one  {g : G} {s : S} : ℓ(s * g) = ℓ(g) + 1 ∨ ℓ(g) = �
     · exact Ne.symm this
 
 -- DLevel 1
-lemma length_smul_lt_of_le {g : G} {s : S} (hlen : ℓ(s * g) ≤ ℓ(g)) : ℓ(s * g) < ℓ(g):= by
-  apply Ne.lt_of_le'
-  apply length_smul_neq
-  exact hlen
+lemma length_smul_lt_of_le {g : G} {s : S} (hlen : ℓ(s * g) ≤ ℓ(g)) : ℓ(s * g) < ℓ(g) :=
+  Ne.lt_of_le' length_smul_neq hlen
 
 -- In the following section, we prove the strong exchange property
 section ReflRepresentation
@@ -406,9 +404,9 @@ lemma toPalindrome_length {L : List β} : (toPalindrome L).length = 2 * L.length
     apply Nat.pos_of_ne_zero h
 
 lemma reverseList_nonEmpty {L : List S} (hL : L ≠ []) : L.reverse ≠ [] := by
-  apply (List.length_pos).1
+  apply List.length_pos.1
   rw [List.length_reverse]
-  exact (List.length_pos).2 hL
+  exact List.length_pos.2 hL
 
 lemma dropLast_eq_reverse_tail_reverse {L : List S} : L.dropLast = L.reverse.tail.reverse := by
   induction L with
@@ -429,7 +427,7 @@ lemma dropLast_eq_reverse_tail_reverse {L : List S} : L.dropLast = L.reverse.tai
         simp only [List.reverse_cons]
         rw [trht]
         apply (List.append_left_inj [hd]).2
-        exact (List.reverse_eq_iff).1 ih.symm
+        exact List.reverse_eq_iff.1 ih.symm
       rw [this, List.reverse_reverse, htd]
 
 lemma reverse_tail_reverse_append {L : List S} (hL : L ≠ []) :
@@ -500,17 +498,17 @@ lemma distinct_toPalindrome_i_of_reduced [CoxeterMatrix m] {L : List S} : reduce
     have hi : i < (L.removeNth j).length := by
       rw [List.length_removeNth j.2]
       exact lt_of_lt_of_le iltj (Nat.le_pred_of_lt j.2)
-    have hL : L.gprod = ((L.removeNth j).removeNth i) := by
+    have hL : L.gprod = (L.removeNth j).removeNth i := by
       calc
-        _ = (toPalindrome_i L i).gprod * (toPalindrome_i L j) * L := by
+        _ = (toPalindrome_i L i : G) * toPalindrome_i L j * L := by
           rw [h, one_mul]
-        _ = (toPalindrome_i L i).gprod * (L.removeNth j) := by
+        _ = (toPalindrome_i L i : G) * L.removeNth j := by
           rw [mul_assoc, removeNth_of_palindrome_prod]
-        _ = (toPalindrome_i (L.removeNth j) i).gprod * (L.removeNth j) := by
+        _ = (toPalindrome_i (L.removeNth j) i : G) * L.removeNth j := by
           repeat rw [toPalindrome_i]
           congr 3
           apply (List.take_of_removeNth L (Nat.add_one_le_iff.mpr iltj)).symm
-        _ = ((L.removeNth j).removeNth i) :=
+        _ = (L.removeNth j).removeNth i :=
           removeNth_of_palindrome_prod (L.removeNth j) ⟨i.val, hi⟩
     have hlen : L.length ≤ ((L.removeNth j).removeNth i).length :=
       rl ((L.removeNth j).removeNth i) hL
