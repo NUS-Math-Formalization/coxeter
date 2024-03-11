@@ -1,4 +1,5 @@
 import Coxeter.CoxeterSystem
+import Coxeter.CoxeterMatrix1
 
 import Mathlib.Data.Set.Card
 
@@ -116,13 +117,34 @@ def Interval (x y : G) : Set G := Set.Icc x y
 
 local notation "S" => (SimpleRefl G)
 
+/- Iteratively remove a list of element from -/
+def remove_list (L : List S) (L_ind_rm : List (Fin L.length)) : List S := sorry
+
+/- To say a word L' is a subword of L is just to remove a list of element from L' -/
+def remove_list_of_subword (L L' : List S) (hsub : List.Sublist L' L) :
+  ∃ (L_ind_rm : List (Fin L.length)), L' = remove_list L L_ind_rm := by sorry
+
 --  Bjorner, Brenti, Lemma 2.2.1
-lemma SubwordAux {L L' : List S} (hne: (L:G) ≠ L') (hred: reduced_word L) (hred': reduced_word L') (hsub: List.Sublist L' L) : ∃ (L'' : List S), reduced_word L'' ∧ (L' :G) < L'' ∧ ℓ((L'':G)) = ℓ((L':G)) + 1 ∧ List.Sublist L'' L :=by
-  sorry
+lemma subword_aux {L L' : List S} (hne: (L:G) ≠ L') (hred: reduced_word L) (hred': reduced_word L')
+  (hsub: List.Sublist L' L) :
+  ∃ (L'' : List S), reduced_word L'' ∧ (L' : G) < L'' ∧ ℓ((L'':G)) = ℓ((L':G)) + 1 ∧ List.Sublist L'' L := by
+  let ⟨L_ind_rm, h_eq⟩ := remove_list_of_subword L L' hsub
+  have h_L_ind_rm_nonempty : L_ind_rm ≠ [] := sorry
+  let t := toPalindrome_i L (L_ind_rm.getLast h_L_ind_rm_nonempty)
+  let L'' := L ++ t
+  have h0 : reduced_word L'' := by sorry
+  have h1 : (L' : G) < L'' := by sorry
+  have h2 : ℓ((L'':G)) = ℓ((L':G)) + 1 := by sorry
+  have h3 : List.Sublist L'' L := by sorry
+  use L''
 
+lemma le_aux (u w : G) (h : u <= w) :
+  ∃ (T : List (Refl G)) (X : List G) (hn : X ≠ []), X.length = T.length + 1 ∧
+  (X.head hn = u) ∧ (X.getLast hn = w) ∧ (∀ p : Fin T.length, X.get ⟨p-1, by sorry⟩ = X.get ⟨p, by sorry⟩ * T.get p) := by sorry
 
-theorem subwordProp {L: List S} (hred : reduced_word L) : u ≤ L ↔ ∃ (L': List S), reduced_word L' ∧ List.Sublist L' L ∧ u = L'.gprod where
-  mp := by sorry
+theorem SubwordProp {L: List S} (hred : reduced_word L) : u ≤ L ↔ ∃ (L': List S), reduced_word L' ∧ List.Sublist L' L ∧ u = L'.gprod where
+  mp := by
+    sorry
   mpr := fun
     | .intro w h => by
       sorry
