@@ -542,21 +542,9 @@ lemma eta_aux_aux'' (s : S) (t : T) : eta_aux (eta_aux_aux''_aux s) t = eta_aux'
   rw [eta_aux_aux', toSimpleRefl]
   congr
 
-  end
-  --
-  /-set y := eta_aux_aux''_aux s with h
-  rw [eta_aux_aux', toSimpleRefl]
-  congr
-  rw [eta_aux_aux''_aux] at h-/
+end
 
 noncomputable def nn (L : List S) (t : T) : ℕ := List.count (t : G) <| List.map (fun i ↦ (toPalindrome_i L i : G)) (List.range L.length)
-
-/-
-@[deprecated OrderTwoGen.Refl.mul_SimpleRefl_in_Refl]
-lemma SimpleRefl_Refl_SimpleRefl_in_Refl (s : S) (t : T) : (s : G) * t * (s : G) ∈ T := by
-  rcases s with ⟨_, ⟨_, hy⟩⟩
-  exact hy.subst (motive := fun x : G ↦ x * t * x ∈ T) Refl.conjugate_closed'
--/
 
 lemma Refl_palindrome_in_Refl {i : ℕ} (L : List S) (t : T) : ((L.take i).reverse : G) * t * L.take i ∈ T := by
   induction i with
@@ -716,7 +704,6 @@ lemma pi_aux_square_identity [CoxeterMatrix m] (s : α) (r : R) : pi_aux s (pi_a
       rw [mul_assoc, this, mul_one]
     exact SetCoe.ext this
   exact Prod.ext comp1 comp2
-
 
 noncomputable def pi_aux' [CoxeterMatrix m] (s : α) : Equiv.Perm R where
   toFun r := pi_aux s r
