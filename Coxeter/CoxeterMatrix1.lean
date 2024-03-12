@@ -861,7 +861,20 @@ lemma pi_aux_list (L : List α) (r : R) : (L.map pi_aux').prod r =
     ((⟨(L.map (toSimpleRefl m)) * r.1 * (L.reverse.map (toSimpleRefl m)), pi_aux_list_in_T L r.1⟩,
     r.2 * μ₂.gen ^ nn (L.map (toSimpleRefl m)) r.1) : R) := by
   -- induction on L
-  sorry
+  induction L with
+  | nil => simp only [nn, List.map_nil, List.prod_nil, Equiv.Perm.coe_one, id_eq,
+    Set.mem_setOf_eq, List.reverse_nil, List.length_nil, List.range_zero, List.nodup_nil,
+    List.count_nil, pow_zero, mul_one, gprod_nil, one_mul]
+  | cons hd tail ih =>
+    rw [List.map_cons, List.prod_cons, Equiv.Perm.mul_apply, ih, pi_aux']
+    ext
+    simp only [List.map_cons, toSimpleRefl,
+      List.reverse_cons, List.map_append, List.map_nil, gprod_append,
+      pi_aux]
+    dsimp only [SimpleRefl, Set.mem_setOf_eq, Set.coe_setOf, id_eq, μ₂.gen, Equiv.coe_fn_mk]
+    rw [gprod_cons, gprod_singleton]
+    sorry
+    sorry
 
 -- DLevel 3
 lemma pi_aux_list_mul (s t : α) : ((pi_aux' s : Equiv.Perm R) * (pi_aux' t : Equiv.Perm R)) ^ n
@@ -893,7 +906,7 @@ noncomputable def pi : G →* Equiv.Perm R := lift m (fun s ↦ pi_aux' s) (by s
 -- Probably needs induction and wrangling with Finset.prod
 -- DLevel 5
 lemma pi_value (g : G) (L : List S) (h : g = L) (r : R) : (pi g) r
-    = (⟨g * r.1 * g⁻¹, by apply Refl.conjugate_closed⟩, r.2 * μ₂.gen ^ nn L.reverse t) := by
+    = (⟨g * r.1 * g⁻¹, by apply Refl.conjugate_closed⟩, r.2 * μ₂.gen ^ nn L.reverse r.1) := by
   sorry
 
 -- DLevel 3
@@ -928,6 +941,9 @@ noncomputable def eta (g : G) (t : T) : μ₂ := (ReflRepn.pi g⁻¹ ⟨t, 1⟩)
 -- DLevel 1
 lemma eta_lift_eta_aux {s : α} {t : T} : eta_aux s t = eta s t := by
   rw [eta, ReflRepn.pi]
+  simp only [eta_aux_aux', toSimpleRefl, SimpleRefl, Set.coe_setOf, map_inv, lift]
+  rw [PresentedGroup.toGroup]
+  simp only [SimpleRefl, Set.coe_setOf]
   sorry
 
 lemma eta_lift_eta_aux' {s : S} {t : T} : eta_aux' s t = eta s t := by
@@ -952,7 +968,9 @@ lemma eta_equiv_nn {g : G} {t : T} : ∀ {L : List S}, g = L → eta g t = μ₂
   intro L geqL
   rw [nn_prod_eta_aux L t]
   calc
-    eta g t = μ₂.gen := by sorry
+    eta g t = μ₂.gen := by
+      rw [eta, ReflRepn.pi_value g⁻¹ L.reverse (geqL.symm.subst (motive := fun x ↦ x⁻¹ = _) (gprod_reverse L).symm) (t, 1)]
+      sorry
     _ = ∏ i : Fin L.length, eta (L.get i : G)  ⟨((L.take i.1).reverse : G) * t * L.take i.1, by apply Refl_palindrome_in_Refl⟩ := by
       sorry
     _ = ∏ i : Fin L.length, eta_aux' (L.get i)  ⟨((L.take i.1).reverse : G) * t * L.take i.1, by apply Refl_palindrome_in_Refl⟩ := by
