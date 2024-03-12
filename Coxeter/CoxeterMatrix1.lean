@@ -20,11 +20,11 @@ open BigOperators
 section
 variable {α : Type*} [DecidableEq α]
 
-variable (m : Matrix α  α ℕ)
+variable (m : Matrix α α ℕ)
 
 class CoxeterMatrix : Prop where
-  symmetric : ∀ (a b : α ), m a b = m b a
-  oneIff: ∀  (a b : α), m a b = 1 ↔ a=b
+  symmetric : ∀ (a b : α), m a b = m b a
+  oneIff : ∀ (a b : α), m a b = 1 ↔ a = b
 end
 
 open Classical
@@ -34,19 +34,17 @@ variable {α} (m : Matrix α α ℕ) [hm: CoxeterMatrix m]
 
 --variable {m' : Matrix α α ℕ} [hm': CoxeterMatrix m']
 
-
-lemma one_iff :∀ (a b:α), m a b = 1 ↔ a=b := hm.oneIff
+lemma one_iff :∀ (a b:α), m a b = 1 ↔ a = b := hm.oneIff
 
 lemma diagonal_one {s : α} : m s s = 1 := by rw [hm.oneIff]
 
 lemma off_diagonal_ne_one {s : α} : s ≠ t → m s t ≠ 1 := by simp [hm.oneIff]
 
+local notation "F" => FreeGroup α
 
-local notation  "F" => FreeGroup α
+@[simp] def toRelation (s t : α) (n : ℕ) : F := (FreeGroup.of s * FreeGroup.of t) ^ n
 
-@[simp] def toRelation (s t : α) (n : ℕ ) : F := (FreeGroup.of s * FreeGroup.of t)^n
-
-@[simp] def toRelation'  (s : α × α ) : F :=toRelation s.1 s.2 (m s.1 s.2)
+@[simp] def toRelation' (s : α × α) : F := toRelation s.1 s.2 (m s.1 s.2)
 
 def toRelationSet : (Set F) := Set.range <| toRelation' m
 
@@ -59,11 +57,9 @@ instance : Group <| toGroup m := QuotientGroup.Quotient.group _
 
 def of (x : α) : G := QuotientGroup.mk' N (FreeGroup.of x)
 
-
 -- The set of simple reflections
 @[simp]
 abbrev SimpleRefl := Set.range (of m)
-
 
 local notation "S" => (SimpleRefl m)
 
@@ -71,9 +67,6 @@ local notation "S" => (SimpleRefl m)
 --abbrev Refl : Set G := Set.range <| fun ((g, s) : G × S) => g * s * g⁻¹
 
 --local notation "T" => (Refl m)
-
-
-
 
 @[simp]
 def toSimpleRefl (a : α) : SimpleRefl m := ⟨of m a, by simp⟩
@@ -84,19 +77,17 @@ instance coe_group: Coe α (toGroup m) where
 instance coe_simple_refl: Coe α (SimpleRefl m) where
   coe := toSimpleRefl m
 
-def liftHom_aux {A:Type*} [Group A] (f : α → A)  (h : ∀ (s t: α ), (f s * f t)^(m s t) = 1) : ∀ r ∈ toRelationSet m, (FreeGroup.lift f) r = 1 := by
+lemma liftHom_aux {A:Type*} [Group A] (f : α → A) (h : ∀ (s t : α), (f s * f t) ^ (m s t) = 1) : ∀ r ∈ toRelationSet m, (FreeGroup.lift f) r = 1 := by
   intro r hr
-  obtain ⟨⟨s,t⟩,hst⟩ := hr
+  obtain ⟨⟨s, t⟩, hst⟩ := hr
   simp only [toRelation', toRelation] at hst
-  simp only [<- hst, map_pow, map_mul, FreeGroup.lift.of, h]
+  simp only [← hst, map_pow, map_mul, FreeGroup.lift.of, h]
 
 -- Lift map from α→ A to Coxeter group → A
-def lift {A : Type _} [Group A] (f : α → A)  (h : ∀ (s t: α ), (f s * f t)^(m s t) = 1) : G →* A := PresentedGroup.toGroup <| liftHom_aux m f h
+def lift {A : Type _} [Group A] (f : α → A) (h : ∀ (s t : α), (f s * f t) ^ (m s t) = 1) : G →* A := PresentedGroup.toGroup <| liftHom_aux m f h
 
-
-lemma lift.of {A : Type _} [Group A] (f : α → A) (h : ∀ (s t: α ), (f s * f t)^(m s t) = 1) (s : α) : lift m f h (of m s) = f s := by
+lemma lift.of {A : Type _} [Group A] (f : α → A) (h : ∀ (s t : α), (f s * f t) ^ (m s t) = 1) (s : α) : lift m f h (of m s) = f s := by
   apply PresentedGroup.toGroup.of
-
 
 abbrev μ₂ := rootsOfUnity 2 ℤ
 @[simp]
@@ -104,26 +95,26 @@ abbrev μ₂.gen :μ₂ := ⟨-1, by norm_cast⟩
 
 lemma μ₂.gen_ne_one : μ₂.gen ≠ 1 := by rw [μ₂.gen]; norm_cast
 
-lemma μ₂.mem_iff {z} : z∈ μ₂ ↔ z = 1 ∨ z = μ₂.gen := by
+lemma μ₂.mem_iff {z} : z ∈ μ₂ ↔ z = 1 ∨ z = μ₂.gen := by
   constructor
   . intro _
-    have : z.val^2 = 1 := by norm_cast;simp only [Int.units_sq, Units.val_one]
+    have : z.val^2 = 1 := by norm_cast; simp only [Int.units_sq, Units.val_one]
     replace := sq_eq_one_iff.1 this
     rcases this with h1|h2
-    . exact Or.inl (by simp only [Units.val_eq_one] at h1 ;exact h1)
+    . exact Or.inl (by simp only [Units.val_eq_one] at h1; exact h1)
     . right; ext; rw [h2]; rfl
   . intro h
     rcases h with h1|h2
     . simp [h1]
-    . simp [h2];norm_cast
+    . simp [h2]; norm_cast
 
 lemma μ₂.mem_iff' (z : μ₂) : z = 1 ∨ z = μ₂.gen := by
-  have := μ₂.mem_iff.1  z.2
+  have := μ₂.mem_iff.1 z.2
   rcases this with h1|h2
   . left; norm_cast at h1
   . right; norm_cast at h2
 
-lemma μ₂.not_iff_not : ∀ (z : μ₂), ¬ z = 1 ↔ z = μ₂.gen := by
+lemma μ₂.not_iff_not : ∀ (z : μ₂), ¬z = 1 ↔ z = μ₂.gen := by
   intro z
   constructor
   . have := (μ₂.mem_iff' z)
@@ -133,7 +124,7 @@ lemma μ₂.not_iff_not : ∀ (z : μ₂), ¬ z = 1 ↔ z = μ₂.gen := by
   . intro h; rw [h]; simp [gen_ne_one]
 
 
-lemma μ₂.not_iff_not' : ∀ (z : μ₂), ¬ z = μ₂.gen ↔ z = 1 := by
+lemma μ₂.not_iff_not' : ∀ (z : μ₂), ¬z = μ₂.gen ↔ z = 1 := by
   intro z
   constructor
   . contrapose; rw [not_not]; exact (μ₂.not_iff_not z).mp
@@ -155,7 +146,7 @@ lemma μ₂.odd_pow_iff_eq_gen {n : ℕ} : μ₂.gen ^ n = μ₂.gen ↔ Odd n :
   rw [Nat.odd_iff_not_even, ← μ₂.even_pow_iff_eq_one, not_iff_not]
 
 @[simp]
-def epsilon : G →* μ₂  := lift m (fun _=> μ₂.gen) (by intro s t; ext;simp)
+def epsilon : G →* μ₂ := lift m (fun _=> μ₂.gen) (by intro s t; ext; simp)
 
 lemma epsilon_of (s : α) : epsilon m (of m s) = μ₂.gen := by
   simp only [epsilon, lift.of m]
@@ -165,12 +156,10 @@ lemma epsilon_S {a : S} : epsilon m a = μ₂.gen := by
   aesop
 
 --@[simp] lemma of_mul (x y: α) : (of m x) * (of m y) =
---QuotientGroup.mk' _  (FreeGroup.mk [(x,tt), (y,tt)]):= by rw [of];
+--QuotientGroup.mk' _ (FreeGroup.mk [(x,tt), (y,tt)]):= by rw [of];
 
-
--- DLevel 1
 @[simp]
-lemma of_relation (s t: α) : ((of m s) * (of m t))^(m s t) = 1  :=  by
+lemma of_relation (s t: α) : ((of m s) * (of m t))^(m s t) = 1 := by
   set M := toRelationSet m
   set k := ((FreeGroup.of s) * (FreeGroup.of t))^(m s t)
   have kM : (k ∈ M) := by exact Exists.intro (s, t) rfl
@@ -183,9 +172,8 @@ lemma of_relation (s t: α) : ((of m s) * (of m t))^(m s t) = 1  :=  by
   apply (QuotientGroup.eq_one_iff k).2
   exact kN
 
--- DLevel 1
-@[simp]
-lemma of_square_eq_one {s : α} : (of m s) * (of m s) = 1  :=  by
+-- @[simp] "simp can prove this"
+lemma of_square_eq_one {s : α} : (of m s) * (of m s) = 1 := by
   have : m s s = 1 := diagonal_one m
   rw [← pow_one ((of m s) * (of m s)), ←this]
   apply of_relation m s s
@@ -196,13 +184,12 @@ lemma of_square_eq_one' : s ∈ SimpleRefl m → s * s = 1 := by
   intro x h
   simp_all only [← h, of_square_eq_one]
 
-lemma of_inv_eq_of {x : α} :  (of m x)⁻¹ =  of m x  :=
+lemma of_inv_eq_of {x : α} : (of m x)⁻¹ = of m x :=
   inv_eq_of_mul_eq_one_left (@of_square_eq_one α m hm x)
 
-def getS (L: List (α × Bool)) := L.map (fun (a, b) => toSimpleRefl m a)
+def getS (L: List (α × Bool)) := L.map (fun (a, _) => toSimpleRefl m a)
 
--- DLevel 1 (pretty sure this is level 3/4...)
-lemma toGroup_expression : ∀ x :G, ∃ L : List S,  x = L.gprod := by
+lemma toGroup_expression : ∀ (x : G), ∃ L : List S, x = L.gprod := by
   intro x
   have k : ∃ y : F, QuotientGroup.mk y = x := by exact Quot.exists_rep x
   rcases k with ⟨y, rep⟩
@@ -250,35 +237,32 @@ lemma toGroup_expression : ∀ x :G, ∃ L : List S,  x = L.gprod := by
         rfl
   apply this
 
-lemma generator_ne_one  (s: α) : of m s ≠ 1 :=  by
+lemma generator_ne_one (s : α) : of m s ≠ 1 := by
   intro h
-  have h1 :epsilon m (of m s) = 1 := by rw [h];simp
-  have h2 :epsilon m (of m s) = μ₂.gen := by rw [epsilon_of]
+  have h1 : epsilon m (of m s) = 1 := by rw [h]; simp
+  have h2 : epsilon m (of m s) = μ₂.gen := by rw [epsilon_of]
   rw [h2] at h1; exact μ₂.gen_ne_one h1
 
-
-lemma generator_ne_one'  {x: G} : x ∈ S → x ≠ 1 :=  by
+lemma generator_ne_one' {x : G} : x ∈ S → x ≠ 1 := by
   rintro ⟨s, hs⟩
   rw [← hs]
   exact generator_ne_one m s
 
-lemma order_two :  ∀ (x: G) , x ∈ S →  x * x = (1 : G) ∧ x ≠ 1 :=  by
+lemma order_two : ∀ (x : G), x ∈ S → x * x = (1 : G) ∧ x ≠ 1 := by
   rintro x ⟨s, hs⟩
   rw [← hs]
   exact ⟨of_square_eq_one m, generator_ne_one m s⟩
 
-
-instance ofOrderTwoGen : OrderTwoGen (SimpleRefl m)  where
+instance ofOrderTwoGen : OrderTwoGen (SimpleRefl m) where
   order_two := order_two m
   expression := toGroup_expression m
 
 end CoxeterMatrix
 
-
 namespace CoxeterMatrix
 open OrderTwoGen
 
-variable {α} {m : Matrix α α ℕ} [hm: CoxeterMatrix m]
+variable {α} {m : Matrix α α ℕ} [hm : CoxeterMatrix m]
 
 local notation "G" => toGroup m
 local notation "S" => SimpleRefl m
@@ -321,135 +305,129 @@ lemma inv_refl_eq_self [CoxeterMatrix m] {t : T} : (t : G)⁻¹ = t := by sorry
 
 local notation : max "ℓ(" g ")" => (OrderTwoGen.length S g)
 
-lemma epsilon_mul {a b : G}: epsilon m (a * b) =  (epsilon m a) * (epsilon m b) := by
-  apply MonoidHom.map_mul'
+lemma epsilon_mul {a b : G} : epsilon m (a * b) = epsilon m a * epsilon m b :=
+  MonoidHom.map_mul (epsilon m) a b
 
-lemma epsilon_list_length {L : List S} : epsilon m ↑L = (μ₂.gen)^(L.length) := by
+lemma epsilon_list_length {L : List S} : epsilon m L = μ₂.gen ^ L.length := by
   induction' L with a L0 ih
-  · aesop
-  · have h1: List.length (a :: L0) = List.length (L0) + 1 := by
-      aesop
+  · rw [gprod_nil, List.length_nil, pow_zero]; rfl
+  · have h1 : (a :: L0).length = L0.length + 1 :=
+      List.length_cons a L0
     rw [h1]
-    have h3: ((a :: L0) : G)= (a * ↑L0) := by
-      apply gprod_cons
-    have h2: (epsilon m) ↑(a :: L0) = (μ₂.gen) * (epsilon m ↑L0) :=
+    have h2 : epsilon m (a :: L0) = μ₂.gen * epsilon m L0 :=
       calc
-        (epsilon m) ↑(a :: L0) = (epsilon m) (a * ↑L0) := by
-          rw [h3]
-        _ = (epsilon m a) * (epsilon m ↑L0) := by
+        epsilon m (a :: L0) = epsilon m (a * L0) := by
+          rw [gprod_cons]
+        _ = epsilon m a * epsilon m L0 := by
           rw [epsilon_mul]
-        _ = (μ₂.gen) * (epsilon m ↑L0) := by
+        _ = μ₂.gen * epsilon m L0 := by
           rw [epsilon_S]
-    rw [h2,ih,add_comm]
-    group
+    rw [h2, ih, pow_succ μ₂.gen L0.length]
 
-lemma epsilon_length  {g : G} : epsilon m g = (μ₂.gen)^(ℓ(g)) := by
-  let ⟨L,h1,h2⟩ := Nat.find_spec (@length_aux G  _ S _ g)
+lemma epsilon_length {g : G} : epsilon m g = μ₂.gen ^ ℓ(g) := by
+  let ⟨L, h1, h2⟩ := Nat.find_spec (@length_aux G _ S _ g)
   simp only [length]
   nth_rw 1 [h2]
-  rw [epsilon_list_length,h1]
+  rw [epsilon_list_length, h1]
 
--- DLevel 1
-lemma length_smul_neq {g : G} {s:S} : ℓ(g) ≠ ℓ(s*g) := by
+lemma length_smul_neq {g : G} {s : S} : ℓ(g) ≠ ℓ(s * g) := by
   intro h
-  have h1: epsilon m g = epsilon m (s * g) := by
-    rw [epsilon_length]
-    rw [epsilon_length,← h]
-  have h2: epsilon m g = (μ₂.gen) * (epsilon m g) := by
+  have h1 : epsilon m g = epsilon m (s * g) := by
+    rw [epsilon_length, epsilon_length, ← h]
+  have h2 : epsilon m g = μ₂.gen * epsilon m g := by
     calc
       epsilon m g = epsilon m (s * g) := h1
       _ = epsilon m s * epsilon m g := by
         rw [epsilon_mul]
-      _ = (μ₂.gen) * (epsilon m g) := by
+      _ = μ₂.gen * epsilon m g := by
         rw [epsilon_S]
-  have h3: (μ₂.gen) = 1 := by
+  have h3 : μ₂.gen = 1 := by
     calc
-      (μ₂.gen) = (μ₂.gen) * (epsilon m g) * (epsilon m g)⁻¹ := by group
-      _ = (epsilon m g) * (epsilon m g)⁻¹ := by rw [←h2]
+      μ₂.gen = μ₂.gen * epsilon m g * (epsilon m g)⁻¹ := by group
+      _ = epsilon m g * (epsilon m g)⁻¹ := by rw [← h2]
       _ = 1 := by group
-  apply μ₂.gen_ne_one
-  exact h3
+  exact μ₂.gen_ne_one h3
 
--- DLevel 1
-lemma length_muls_neq {g : G} {s:S} : ℓ(g) ≠ ℓ(g*s) := by
+lemma length_muls_neq {g : G} {s : S} : ℓ(g) ≠ ℓ(g * s) := by
   intro h
-  have h1: epsilon m g = epsilon m (g * s) := by
-    rw [epsilon_length]
-    rw [epsilon_length,← h]
-  have h2: epsilon m g = (epsilon m g) * (μ₂.gen) := by
+  have h1 : epsilon m g = epsilon m (g * s) := by
+    rw [epsilon_length, epsilon_length, ← h]
+  have h2 : epsilon m g = epsilon m g * μ₂.gen := by
     calc
       epsilon m g = epsilon m (g * s) := h1
       _ = epsilon m g * epsilon m s := by
         rw [epsilon_mul]
-      _ = (epsilon m g) * (μ₂.gen)  := by
+      _ = epsilon m g * μ₂.gen := by
         rw [epsilon_S]
-  have h3: (μ₂.gen) = 1 := by
+  have h3 : μ₂.gen = 1 := by
     calc
-      (μ₂.gen) =  (epsilon m g)⁻¹ * ((epsilon m g) * (μ₂.gen)) := by group
-      _ = (epsilon m g)⁻¹ * (epsilon m g) := by rw [← h2]
+      μ₂.gen = (epsilon m g)⁻¹ * (epsilon m g * μ₂.gen) := by group
+      _ = (epsilon m g)⁻¹ * epsilon m g := by rw [← h2]
       _ = 1 := by group
-  apply μ₂.gen_ne_one
-  exact h3
+  exact μ₂.gen_ne_one h3
 
 -- DLevel 1
-lemma length_diff_one  {g : G} {s:S} : ℓ(s*g) = ℓ(g) + 1  ∨ ℓ(g) = ℓ(s*g) + 1 := by
-  by_cases h : ℓ(s*g) > ℓ(g)
+lemma length_diff_one {g : G} {s : S} : ℓ(s * g) = ℓ(g) + 1 ∨ ℓ(g) = ℓ(s * g) + 1 := by
+  by_cases h : ℓ(s * g) > ℓ(g)
   . left
-    have : ℓ(s*g) ≤ ℓ(g) + 1:= length_smul_le_length_add_one
+    have : ℓ(s * g) ≤ ℓ(g) + 1 := length_smul_le_length_add_one
     linarith
   . right
-    have : ℓ(g) ≤ ℓ(s*g) + 1 := sorry--length_smul_le_length_add_one
-    have : ℓ(g) ≠ ℓ(s*g) := by sorry
-    sorry
+    have h1 : ℓ(g) ≤ ℓ(s * g) + 1 := length_le_length_smul_add_one
+    have : ℓ(g) ≠ ℓ(s * g) := length_smul_neq
+    apply le_antisymm h1
+    apply Nat.add_one_le_iff.2
+    apply Nat.lt_iff_le_and_ne.2
+    constructor
+    · exact le_of_not_gt h
+    · exact Ne.symm this
 
 -- DLevel 1
-lemma length_smul_lt_of_le {g : G} {s : S} (hlen : ℓ(s * g) ≤ ℓ(g)) : ℓ(s * g) < ℓ(g):= by
-  sorry
+lemma length_smul_lt_of_le {g : G} {s : S} (hlen : ℓ(s * g) ≤ ℓ(g)) : ℓ(s * g) < ℓ(g) :=
+  Ne.lt_of_le' length_smul_neq hlen
 
 -- In the following section, we prove the strong exchange property
 section ReflRepresentation
 
-variable {β:Type*}
+variable {β : Type*}
 -- For a list L := [b₀, b₁, b₂, ..., bₙ], we define the Palindrome of L as [b₀, b₁, b₂, ..., bₙ, bₙ₋₁, ..., b₁, b₀]
 @[simp]
-abbrev toPalindrome   (L : List β) : List β := L ++ L.reverse.tail
+abbrev toPalindrome (L : List β) : List β := L ++ L.reverse.tail
 
 -- Note that 0-1 = 0
 lemma toPalindrome_length {L : List β} : (toPalindrome L).length = 2 * L.length - 1 := by
   simp only [toPalindrome, List.length_append, List.length_reverse, List.length_tail]
-  by_cases h: L.length=0
+  by_cases h : L.length = 0
   . simp [h]
-  . rw [<-Nat.add_sub_assoc]
+  . rw [← Nat.add_sub_assoc]
     zify; ring_nf
     apply Nat.pos_of_ne_zero h
 
 lemma reverseList_nonEmpty {L : List S} (hL : L ≠ []) : L.reverse ≠ [] := by
-  apply (List.length_pos).1
+  apply List.length_pos.1
   rw [List.length_reverse]
-  apply (List.length_pos).2
-  exact hL
+  exact List.length_pos.2 hL
 
 lemma dropLast_eq_reverse_tail_reverse {L : List S} : L.dropLast = L.reverse.tail.reverse := by
   induction L with
-  | nil => simp
+  | nil => simp only [List.dropLast_nil, List.reverse_nil, List.tail_nil]
   | cons hd tail ih =>
     by_cases k : tail = []
     . rw [k]
-      simp
+      simp only [List.dropLast_single, List.reverse_cons, List.reverse_nil,
+        List.nil_append, List.tail_cons]
     . push_neg at k
       have htd : (hd :: tail).dropLast = hd :: (tail.dropLast) := by
         exact List.dropLast_cons_of_ne_nil k
       rw [htd]
-      have trht : (tail.reverse ++ [hd]).tail = (tail.reverse.tail) ++ [hd] := by
-        apply List.tail_append_of_ne_nil
-        apply reverseList_nonEmpty k
+      have trht : (tail.reverse ++ [hd]).tail = (tail.reverse.tail) ++ [hd] :=
+        List.tail_append_of_ne_nil _ _ (reverseList_nonEmpty k)
       have : (hd :: tail).reverse.tail = (hd :: tail).dropLast.reverse := by
         rw [htd]
-        simp
+        simp only [List.reverse_cons]
         rw [trht]
         apply (List.append_left_inj [hd]).2
-        apply (List.reverse_eq_iff).1
-        apply Eq.symm ih
+        exact List.reverse_eq_iff.1 ih.symm
       rw [this, List.reverse_reverse, htd]
 
 lemma reverse_tail_reverse_append {L : List S} (hL : L ≠ []) :
@@ -457,51 +435,44 @@ lemma reverse_tail_reverse_append {L : List S} (hL : L ≠ []) :
   rw [← dropLast_eq_reverse_tail_reverse]
   exact List.dropLast_append_getLast hL
 
--- DLevel 2
 lemma toPalindrome_in_Refl [CoxeterMatrix m] {L:List S} (hL : L ≠ []) : (toPalindrome L:G) ∈ T := by
   apply OrderTwoGen.Refl.simplify.mpr
   use L.reverse.tail.reverse.gprod, (L.getLast hL)
   rw [← gprod_reverse, List.reverse_reverse]
   have : L.reverse.tail.reverse.gprod * (L.getLast hL) = L.gprod := by
-    have : L = L.reverse.tail.reverse ++ [L.getLast hL] := by
-      apply Eq.symm
-      apply reverse_tail_reverse_append hL
+    have : L = L.reverse.tail.reverse ++ [L.getLast hL] :=
+      (reverse_tail_reverse_append hL).symm
     nth_rw 3 [this]
-    apply Eq.symm
-    apply gprod_append_singleton
+    exact gprod_append_singleton.symm
   rw [this, toPalindrome, gprod_append]
 
 -- Our index starts from 0
-def toPalindrome_i  (L : List S) (i : ℕ) := toPalindrome (L.take (i+1))
+def toPalindrome_i (L : List S) (i : ℕ) := toPalindrome (L.take (i+1))
 local notation:210 "t(" L:211 "," i:212 ")" => toPalindrome_i L i
 
---def toPalindromeList (L : List S) : Set (List S):= List.image (toPalindrome_i L)'' Set.univ
 lemma toPalindrome_i_in_Refl [CoxeterMatrix m] {L : List S} (i : Fin L.length) :
     (toPalindrome_i L i : G) ∈ T := by
   rw [toPalindrome_i]
   have tklen : (L.take (i+1)).length = i + 1 :=
     List.take_le_length L (by linarith [i.prop] : i + 1 ≤ L.length)
-  have tkpos : (L.take (i+1)).length ≠ 0 := by
-    linarith
+  have tkpos : (L.take (i+1)).length ≠ 0 := by linarith
   have h : List.take (i + 1) L ≠ [] := by
     contrapose! tkpos
     exact List.length_eq_zero.mpr tkpos
   exact toPalindrome_in_Refl h
 
 lemma mul_Palindrome_i_cancel_i [CoxeterMatrix m] {L : List S} (i : Fin L.length) : (t(L, i) : G) * L = (L.removeNth i) := by
-  rw [toPalindrome_i, toPalindrome, List.removeNth_eq_take_drop, List.take_get_lt]
+  rw [toPalindrome_i, toPalindrome, List.removeNth_eq_take_drop, List.take_get_lt _ _ i.2]
   simp only [gprod_append, gprod_singleton, List.reverse_append, List.reverse_singleton, List.singleton_append, List.tail]
   have : L = (L.take i).gprod * (L.drop i).gprod := by
     nth_rw 1 [← List.take_append_drop i L]
     rw [gprod_append]
-  rw [this, mul_assoc, ← mul_assoc ((List.reverse (List.take (↑i) L)).gprod),
+  rw [this, mul_assoc, ← mul_assoc ((List.reverse (List.take i L)).gprod),
     reverse_prod_prod_eq_one, one_mul, mul_assoc]
   apply (mul_right_inj (L.take i).gprod).2
-  rw [← List.get_drop_eq_drop, gprod_cons, ← mul_assoc]
-  dsimp only [Fin.is_lt, Fin.eta, gt_iff_lt, List.getElem_eq_get]
+  rw [← List.get_drop_eq_drop _ _ i.2, gprod_cons, ← mul_assoc]
+  dsimp only [Fin.is_lt, Fin.eta, gt_iff_lt, List.getElem_eq_get _ _ i.2]
   rw [gen_square_eq_one', one_mul]
-  apply i.2
-  apply i.2
 
 lemma removeNth_of_palindrome_prod (L : List S) (n : Fin L.length) :
   (toPalindrome_i L n:G) * L = (L.removeNth n) := mul_Palindrome_i_cancel_i n
@@ -527,17 +498,17 @@ lemma distinct_toPalindrome_i_of_reduced [CoxeterMatrix m] {L : List S} : reduce
     have hi : i < (L.removeNth j).length := by
       rw [List.length_removeNth j.2]
       exact lt_of_lt_of_le iltj (Nat.le_pred_of_lt j.2)
-    have hL : L.gprod = ((L.removeNth j).removeNth i) := by
+    have hL : L.gprod = (L.removeNth j).removeNth i := by
       calc
-        _ = (toPalindrome_i L i).gprod * (toPalindrome_i L j) * L := by
+        _ = (toPalindrome_i L i : G) * toPalindrome_i L j * L := by
           rw [h, one_mul]
-        _ = (toPalindrome_i L i).gprod * (L.removeNth j) := by
+        _ = (toPalindrome_i L i : G) * L.removeNth j := by
           rw [mul_assoc, removeNth_of_palindrome_prod]
-        _ = (toPalindrome_i (L.removeNth j) i).gprod * (L.removeNth j) := by
+        _ = (toPalindrome_i (L.removeNth j) i : G) * L.removeNth j := by
           repeat rw [toPalindrome_i]
           congr 3
           apply (List.take_of_removeNth L (Nat.add_one_le_iff.mpr iltj)).symm
-        _ = ((L.removeNth j).removeNth i) :=
+        _ = (L.removeNth j).removeNth i :=
           removeNth_of_palindrome_prod (L.removeNth j) ⟨i.val, hi⟩
     have hlen : L.length ≤ ((L.removeNth j).removeNth i).length :=
       rl ((L.removeNth j).removeNth i) hL
@@ -545,11 +516,12 @@ lemma distinct_toPalindrome_i_of_reduced [CoxeterMatrix m] {L : List S} : reduce
       List.removeNth_length (L.removeNth j) ⟨i.val, hi⟩
     linarith [hlen, lenremNip, lenremNjp]
 
-noncomputable def eta_aux (s : α) (t:T) : μ₂ := if s = t.val then μ₂.gen else 1
+noncomputable def eta_aux (s : α) (t : T) : μ₂ := if s = t.val then μ₂.gen else 1
 
-noncomputable def eta_aux' (s : S) (t:T) : μ₂ := if s.val = t.val then μ₂.gen else 1
+noncomputable def eta_aux' (s : S) (t : T) : μ₂ := if s.val = t.val then μ₂.gen else 1
 
 @[simp]
+lemma eta_aux_aux' (s : α) (t : T) : eta_aux s t = eta_aux' s t := by congr
 lemma eta_aux_aux' (s : α) (t : T) : eta_aux s t = eta_aux' s t := by congr
 
 noncomputable def eta_aux_aux''_aux (s : S) : α := by
@@ -661,6 +633,7 @@ lemma nn_cons (L : List S) (s : S) (t : T) : nn (s :: L) t = (if (s : G) = t the
       exact propext (Iff.intro Eq.symm Eq.symm)
 
 lemma nn_prod_eta_aux [CoxeterMatrix m] (L : List S) (t : T) : μ₂.gen ^ (nn L t) = ∏ i : Fin L.length,
+lemma nn_prod_eta_aux [CoxeterMatrix m] (L : List S) (t : T) : μ₂.gen ^ (nn L t) = ∏ i : Fin L.length,
     eta_aux' (L.get i) ⟨((L.take i.1).reverse : G) * t * L.take i.1, by apply Refl_palindrome_in_Refl⟩ := by
   induction L generalizing t with
   | nil =>
@@ -700,7 +673,7 @@ local notation "R" => T × μ₂
 
 namespace ReflRepn
 noncomputable def pi_aux (s : α) (r : R) : R :=
-  ⟨⟨(s : G) * r.1 * (s : G)⁻¹, OrderTwoGen.Refl.conjugate_closed⟩ , r.2 * eta_aux s r.1⟩
+  ⟨⟨(s : G) * r.1 * (s : G)⁻¹, OrderTwoGen.Refl.conjugate_closed⟩, r.2 * eta_aux s r.1⟩
 
 lemma eta_aux_mul_eta_aux [CoxeterMatrix m] (s : α) (r : R) :
     (eta_aux' s r.1) * (eta_aux' s (pi_aux s r).1) = 1 := by
@@ -725,7 +698,6 @@ lemma eta_aux_mul_eta_aux [CoxeterMatrix m] (s : α) (r : R) :
   norm_num
   exact fun _ ↦ μ₂.gen_square
 
--- DLevel 3
 lemma pi_aux_square_identity [CoxeterMatrix m] (s : α) (r : R) : pi_aux s (pi_aux s r) = r := by
   have comp1 : (pi_aux s (pi_aux s r)).1 = r.1 := by
     have : (pi_aux s (pi_aux s r)).1.val = r.1.val := by
@@ -990,7 +962,6 @@ lemma eta_t (t : T) : eta (t : G) t = μ₂.gen := by
 
 end ReflRepresentation
 
-
 lemma lt_iff_eta_eq_gen (g : G) (t : T) : ℓ(t * g) < ℓ(g) ↔ eta g t = μ₂.gen := by
   have mpr (g : G) (t : T) : eta g t = μ₂.gen → ℓ(t * g) < ℓ(g) := by
     intro h
@@ -1036,21 +1007,16 @@ lemma lt_iff_eta_eq_gen (g : G) (t : T) : ℓ(t * g) < ℓ(g) ↔ eta g t = μ�
       apply (@mul_left_cancel_iff _ _ _ μ₂.gen).mp
       rw [μ₂.gen_square]; assumption;
     let hh := mpr (t * g) t this
-    rw [←mul_assoc, ←pow_two, OrderTwoGen.Refl.square_eq_one, one_mul] at hh
+    rw [← mul_assoc, ← pow_two, OrderTwoGen.Refl.square_eq_one, one_mul] at hh
     rw [not_lt]
     exact le_of_lt hh
   exact Iff.intro (mp g t) (mpr g t)
-
-
 
 -- DLevel 2
 lemma lt_iff_eta_eq_gen' (g : G) (t : T) : ℓ(t * g) ≤ ℓ(g) ↔ eta g t = μ₂.gen := by
   sorry
 
-
-
--- DLevel 4
-lemma strong_exchange : ∀ (L : List S) (t : T) , ℓ((t:G) * L) < ℓ(L) →
+lemma strong_exchange : ∀ (L : List S) (t : T), ℓ((t:G) * L) < ℓ(L) →
   ∃ (i : Fin L.length), (t : G) * L = (L.removeNth i) := by
   intro L t h
   have eta_eq_gen : eta L t = μ₂.gen := (lt_iff_eta_eq_gen L t).mp h
@@ -1061,8 +1027,7 @@ lemma strong_exchange : ∀ (L : List S) (t : T) , ℓ((t:G) * L) < ℓ(L) →
   obtain ⟨i, hi⟩ := this; use i; rw [← hi]
   exact removeNth_of_palindrome_prod L i
 
-
-lemma exchange: OrderTwoGen.ExchangeProp S:= by
+lemma exchange: OrderTwoGen.ExchangeProp S := by
   intro L t _ h2
   obtain ⟨i, hi⟩ := strong_exchange L ⟨t.val, (OrderTwoGen.SimpleRefl_subset_Refl t.prop)⟩ (length_smul_lt_of_le h2)
   exact ⟨i, hi⟩
@@ -1071,10 +1036,9 @@ lemma exchange: OrderTwoGen.ExchangeProp S:= by
 instance ReflSet.fintype : Fintype (ReflSet S g) := sorry
 
 -- DLevel 3
-lemma length_eq_card_reflset  [OrderTwoGen S] : ℓ(g) = Fintype.card (ReflSet S g) := by sorry
+lemma length_eq_card_reflset [OrderTwoGen S] : ℓ(g) = Fintype.card (ReflSet S g) := by sorry
 
 end CoxeterMatrix
-
 
 namespace CoxeterMatrix
 open OrderTwoGen
@@ -1086,10 +1050,10 @@ variable {α : Type*} [DecidableEq α] {m : Matrix α α ℕ} [CoxeterMatrix m]
 instance ofCoxeterSystem : CoxeterSystem (SimpleRefl m) where
   order_two := order_two m
   expression := toGroup_expression m
-  exchange :=  exchange
+  exchange := exchange
 
 
-instance ofCoxeterGroup : CoxeterGroup  (toGroup m)  where
+instance ofCoxeterGroup : CoxeterGroup (toGroup m) where
   S := SimpleRefl m
   order_two := order_two m
   expression := toGroup_expression m
