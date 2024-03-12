@@ -46,7 +46,6 @@ def List_pair {P : Type*} [PartialOrder P] : List P → List (P × P)
   a is coverd by b;
   or a < b with at = b for some reflection t.
 -/
-def EL (P A : Type*) [PartialOrder P] :=  P × P → A
 
 /-
 Definition: A chain in the poset P is a finite sequence x₀ < x₁ < ⋯ < x_n.
@@ -89,6 +88,14 @@ def maximalChains (P : Type*) [PartialOrder P] : Set (List P) := { L | maximal_c
 /- Definition: A poset P is called graded if it is pure and bounded.-/
 class GradedPoset (P : Type*) [PartialOrder P] extends BoundedOrder P where
   pure: ∀ (L₁ L₂ : List P), ((maximal_chain L₁) ∧ (maximal_chain L₂)) → (L₁.length = L₂.length)
+
+class EL_labelling (P A : Type*) [PartialOrder P][BoundedOrder P][PartialOrder A] where
+  EL : P × P → A
+  chain: (L : List P), maximal_chain L → chain ((List_pair L).map EL)
+  Inc : (L : List P), maximal_chain L → chain ((List_pair L).map EL)
+  Uni : ∀ L1 L2 : List P, ((maximal_chain L1) ∧ (maximal_chain L2))→ (chain ((List_pair L1).map EL) ∧ chain ((List_pair L2).map EL)) → L1 = L2
+  L_min : ∀ L1 L2 : List P, ((maximal_chain L1) ∧ (maximal_chain L2))
+
 
 /-
 Definition: A graded poset P is called shellable if there is an ordering L_1, ⋯ , L_m of all maximal
