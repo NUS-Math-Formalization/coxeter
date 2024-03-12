@@ -90,11 +90,13 @@ class GradedPoset (P : Type*) [PartialOrder P] extends BoundedOrder P where
   pure: ∀ (L₁ L₂ : List P), ((maximal_chain L₁) ∧ (maximal_chain L₂)) → (L₁.length = L₂.length)
 
 class EL_labelling (P A : Type*) [PartialOrder P][BoundedOrder P][PartialOrder A] where
-  EL : (edges : Set (P × P)) → A
-  chain: (L : List P), maximal_chain L → chain ((List_pair L).map EL)
-  Inc : (L : List P), maximal_chain L → chain ((List_pair L).map EL)
+  edges : Set (P × P)
+  EL : edges → A
+  chainL : (x y : P) → (h : x ≤ y) → List P
+  Inc : (x y : P) → (h : x ≤ y) → maximal_chain (chainL x y h) ∧  chain ((List_pair (chainL x y h)).map EL)
   Uni : ∀ L1 L2 : List P, ((maximal_chain L1) ∧ (maximal_chain L2))→ (chain ((List_pair L1).map EL) ∧ chain ((List_pair L2).map EL)) → L1 = L2
   L_min : ∀ L1 L2 : List P, ((maximal_chain L1) ∧ (maximal_chain L2))
+
 
 
 /-
