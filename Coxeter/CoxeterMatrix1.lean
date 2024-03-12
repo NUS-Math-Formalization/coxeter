@@ -859,9 +859,40 @@ lemma pi_aux_list_in_T (L : List α) (t : T) :
 -- DLevel 4
 lemma pi_aux_list (L : List α) (r : R) : (L.map pi_aux').prod r =
     ((⟨(L.map (toSimpleRefl m)) * r.1 * (L.reverse.map (toSimpleRefl m)), pi_aux_list_in_T L r.1⟩,
-    r.2 * μ₂.gen ^ nn (L.map (toSimpleRefl m)) r.1) : R) := by
+    r.2 * μ₂.gen ^ nn (L.reverse.map (toSimpleRefl m)) r.1) : R) := by
   -- induction on L
-  sorry
+  induction L with
+  | nil => simp only [nn, List.map_nil, List.prod_nil, Equiv.Perm.coe_one, id_eq,
+    Set.mem_setOf_eq, List.reverse_nil, List.length_nil, List.range_zero, List.nodup_nil,
+    List.count_nil, pow_zero, mul_one, gprod_nil, one_mul]
+  | cons hd tail ih =>
+    rw [List.map_cons, List.prod_cons, Equiv.Perm.mul_apply, ih, pi_aux']
+    ext
+    . simp only [List.map_cons, toSimpleRefl,
+      List.reverse_cons, List.map_append, List.map_nil, gprod_append,
+      pi_aux]
+      dsimp only [SimpleRefl, Set.mem_setOf_eq, Set.coe_setOf, id_eq, μ₂.gen, Equiv.coe_fn_mk]
+      rw [gprod_cons, gprod_singleton]
+      simp only []
+      rw [mul_assoc, mul_assoc, mul_assoc, mul_assoc, mul_assoc]
+      simp only [mul_right_inj]
+      apply (mul_left_inj (of m hd)).1
+      rw [mul_left_inv]
+      apply Eq.symm
+      apply of_square_eq_one
+    . simp only [List.map_cons, toSimpleRefl, Submonoid.coe_mul, Subgroup.coe_toSubmonoid,
+        SubmonoidClass.coe_pow, Units.val_mul, Units.val_pow_eq_pow_val, Units.val_neg,
+        Units.val_one, Int.reduceNeg, pi_aux]
+      dsimp only [id_eq, Set.mem_setOf_eq, Equiv.coe_fn_mk]
+      simp only [Submonoid.coe_mul, Subgroup.coe_toSubmonoid, μ₂.gen, SubmonoidClass.coe_pow,
+        eta_aux_aux', toSimpleRefl, SimpleRefl, Units.val_mul, Units.val_pow_eq_pow_val,
+        Units.val_neg, Units.val_one, Int.reduceNeg, List.reverse_cons, List.map_append,
+        List.map_cons, toSimpleRefl, List.map_nil]
+      rw [mul_assoc]
+      congr 1
+      sorry
+
+#exit
 
 -- DLevel 3
 lemma pi_aux_list_mul (s t : α) : ((pi_aux' s : Equiv.Perm R) * (pi_aux' t : Equiv.Perm R)) ^ n
