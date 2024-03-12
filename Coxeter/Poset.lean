@@ -50,7 +50,7 @@ def List_pair {P : Type*} [PartialOrder P] : List P → List (P × P)
 /-
 Definition: A chain in the poset P is a finite sequence x₀ < x₁ < ⋯ < x_n.
 -/
-def chain {P : Type*} [PartialOrder P] (L: List P) : Prop := List.Chain' (. < .) L
+def chain {P : Type*} [PartialOrder P] (L : List P) : Prop := List.Chain' (. < .) L
 
 #print List.Chain'
 
@@ -90,7 +90,7 @@ class GradedPoset (P : Type*) [PartialOrder P] extends BoundedOrder P where
   pure: ∀ (L₁ L₂ : List P), ((maximal_chain L₁) ∧ (maximal_chain L₂)) → (L₁.length = L₂.length)
 
 class EL_labelling (P A : Type*) [PartialOrder P][BoundedOrder P][PartialOrder A] where
-  EL : P × P → A
+  EL : (edges : Set (P × P)) → A
   chain: (L : List P), maximal_chain L → chain ((List_pair L).map EL)
   Inc : (L : List P), maximal_chain L → chain ((List_pair L).map EL)
   Uni : ∀ L1 L2 : List P, ((maximal_chain L1) ∧ (maximal_chain L2))→ (chain ((List_pair L1).map EL) ∧ chain ((List_pair L2).map EL)) → L1 = L2
