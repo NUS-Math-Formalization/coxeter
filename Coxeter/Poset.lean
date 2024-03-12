@@ -32,12 +32,21 @@ notation a " ⋖ " b => ledot a b
 /- Defintion: We define the set of edges of P as set of all pairs (a,b) such that a is covered by b.-/
 def edges (P : Type*) [PartialOrder P] : Set (P × P) := {(a, b) | ledot a b }
 
-def relations {P : Type*} [PartialOrder P] : List P → List (P × P)
-  | [] => []
-  | cons a l => cons ((a l.head) : P × P) (relations l)
 
-/- Definition: We define an edge labelling of P as a function from the set of cover relations to another poset A.-/
-def EL (P A : Type*) [PartialOrder P] := edges P → A
+/- Definition: For any list L = (x0, x1, ⋯ , x_n) in P, we define a new list in P × P by
+((x0, x1), (x1,x2), ⋯ (x_{n-1}, x_n).
+  If the list L has length less than 2, the new list will be an empty list by conventin. -/
+def List_pair {P : Type*} [PartialOrder P] : List P → List (P × P)
+  | [] => []
+  | _ :: []  => []
+  | a :: b :: l =>  ((a, b) : P × P) :: (List_pair (b :: l))
+
+/- Definition: We define an edge labelling of P as a function from the set of relations to another poset A.-/
+/- Remark: We are interested in two cases :
+  a is coverd by b;
+  or a < b with at = b for some reflection t.
+-/
+def EL (P A : Type*) [PartialOrder P] :=  P × P → A
 
 /-
 Definition: A chain in the poset P is a finite sequence x₀ < x₁ < ⋯ < x_n.
@@ -45,6 +54,7 @@ Definition: A chain in the poset P is a finite sequence x₀ < x₁ < ⋯ < x_n.
 def chain {P : Type*} [PartialOrder P] (L: List P) : Prop := List.Chain' (. < .) L
 
 #print List.Chain'
+
 
 /- Definition: The length of a chain is defined to be the cardinality of the underlying set -1. -/
 
@@ -74,8 +84,6 @@ lemma ledot_max_chain {P : Type*} [PartialOrder P] [BoundedOrder P]  [Finite P] 
 We define the set of all maximal chains of P.
 -/
 def maximalChains (P : Type*) [PartialOrder P] : Set (List P) := { L | maximal_chain L }
-
-/- Definition: If all maximal chains are of the same length, then P is called pure. -/
 
 
 /- Definition: A poset P is called graded if it is pure and bounded.-/
@@ -114,7 +122,7 @@ chain is called increasing if λ(x_0 ⋖ x_1) ≤ λ(x_1 ⋖ x_2) ≤ ⋯ ≤ λ
 -/
 
 def Increasing_chain  (P A : Type*) [PartialOrder P] [PartialOrder A] (L: List P) (h: maximal_chain L) : Prop
-  := List.chain' L
+  := List.chain' ledot L
 
 #print List.chain'_iff_get
 
