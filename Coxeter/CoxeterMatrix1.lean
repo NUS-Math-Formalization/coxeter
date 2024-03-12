@@ -30,11 +30,11 @@ end
 open Classical
 
 namespace CoxeterMatrix
-variable {α} (m : Matrix α α ℕ) [hm: CoxeterMatrix m]
+variable {α} (m : Matrix α α ℕ) [hm : CoxeterMatrix m]
 
---variable {m' : Matrix α α ℕ} [hm': CoxeterMatrix m']
+--variable {m' : Matrix α α ℕ} [hm' : CoxeterMatrix m']
 
-lemma one_iff :∀ (a b:α), m a b = 1 ↔ a = b := hm.oneIff
+lemma one_iff : ∀ (a b : α), m a b = 1 ↔ a = b := hm.oneIff
 
 lemma diagonal_one {s : α} : m s s = 1 := by rw [hm.oneIff]
 
