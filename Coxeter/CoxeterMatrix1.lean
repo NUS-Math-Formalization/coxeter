@@ -718,14 +718,12 @@ lemma eta_aux_mul_eta_aux [CoxeterMatrix m] (s : α) (r : R) :
     (motive := fun x ↦ ((if of m s = r.1 then μ₂.gen else 1) * if x then μ₂.gen else 1) = 1)
   have (p : Prop) (a1 a2 b1 b2 : μ₂) :
     ite p a1 a2 * ite p b1 b2 = ite p (a1 * b1) (a2 * b2) := by
-    rw [mul_ite]
     by_cases h : p
     · repeat rw [if_pos h]
     · repeat rw [if_neg h]
   rw [this]
   norm_num
-  intro _
-  exact μ₂.gen_square
+  exact fun _ ↦ μ₂.gen_square
 
 -- DLevel 3
 lemma pi_aux_square_identity [CoxeterMatrix m] (s : α) (r : R) : pi_aux s (pi_aux s r) = r := by
@@ -769,15 +767,6 @@ lemma alternating_word_singleton (s t : α) : alternating_word s t 1 = [s] := by
   simp only [List.range, List.range.loop, List.map_singleton,
     if_pos (by norm_num : 0 % 2 = 0)]
 
--- DLevel 2
-lemma alternating_word_power (s t : α) (n : ℕ) : (alternating_word s t (2 * n) : List S).gprod
-    = (of m s * of m t) ^ n := by
-  -- induction
-  sorry
-
-lemma alternating_word_relation (s t : α) : (alternating_word s t (2 * m s t) : List S).gprod = 1 := by
-  rw [alternating_word_power s t (m s t), of_relation]
-
 -- DLevel 1
 lemma alternating_word_take (s t : α) (n i : ℕ) (h : i ≤ n) :
     (alternating_word s t n).take i = alternating_word s t i := by
@@ -788,9 +777,24 @@ lemma alternating_word_append_odd (s t : α) (n m : ℕ) (h1 : m ≤ n) (h2 : Od
     alternating_word s t n = alternating_word s t m ++ alternating_word t s (n - m) := by
   sorry
 
+-- DLevel 2
 lemma alternating_word_append_even (s t : α) (n m : ℕ) (h1 : m ≤ n) (h2 : Even m) :
     alternating_word s t n = alternating_word s t m ++ alternating_word s t (n - m) := by
   sorry
+
+-- DLevel 2
+lemma alternating_word_power (s t : α) (n : ℕ) : (alternating_word s t (2 * n) : List S).gprod
+    = (of m s * of m t) ^ n := by
+  induction n with
+  | zero => simp only [alternating_word, Nat.zero_eq, mul_zero,
+    List.range_zero, List.map_nil, pow_zero, gprod_nil]
+  | succ k ih =>
+    -- split the power, use pow_add, alternating_word_append_even, gprod_append
+    -- handle the easy case of n = 1
+    sorry
+
+lemma alternating_word_relation (s t : α) : (alternating_word s t (2 * m s t) : List S).gprod = 1 := by
+  rw [alternating_word_power s t (m s t), of_relation]
 
 -- DLevel 3
 lemma alternating_word_palindrome (s t : α) (n : ℕ) (i : Fin n) :
@@ -907,7 +911,8 @@ noncomputable def pi : G →* Equiv.Perm R := lift m (fun s ↦ pi_aux' s) (by s
 -- DLevel 5
 lemma pi_value (g : G) (L : List S) (h : g = L) (r : R) : (pi g) r
     = (⟨g * r.1 * g⁻¹, by apply Refl.conjugate_closed⟩, r.2 * μ₂.gen ^ nn L.reverse r.1) := by
-  rw [nn_prod_eta_aux]
+  rw [nn_prod_eta_aux, pi, h]
+  -- pi_aux_list ?
   sorry
 
 -- DLevel 3
