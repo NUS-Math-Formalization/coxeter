@@ -907,6 +907,7 @@ noncomputable def pi : G →* Equiv.Perm R := lift m (fun s ↦ pi_aux' s) (by s
 -- DLevel 5
 lemma pi_value (g : G) (L : List S) (h : g = L) (r : R) : (pi g) r
     = (⟨g * r.1 * g⁻¹, by apply Refl.conjugate_closed⟩, r.2 * μ₂.gen ^ nn L.reverse r.1) := by
+  rw [nn_prod_eta_aux]
   sorry
 
 -- DLevel 3
@@ -963,20 +964,10 @@ lemma eta_lift_eta_aux' {s : S} {t : T} : eta_aux' s t = eta s t := by
 lemma pi_eval (g : G) (t : T) (ε : μ₂): ReflRepn.pi g (t, ε) = (⟨(g : G) * t * (g : G)⁻¹, OrderTwoGen.Refl.conjugate_closed⟩, ε * eta g⁻¹ t) := by
   sorry
 
--- DLevel 4
 lemma eta_equiv_nn {g : G} {t : T} : ∀ {L : List S}, g = L → eta g t = μ₂.gen ^ nn L t := by
   intro L geqL
-  rw [nn_prod_eta_aux L t]
-  calc
-    eta g t = μ₂.gen := by
-      rw [eta, ReflRepn.pi_value g⁻¹ L.reverse (geqL.symm.subst (motive := fun x ↦ x⁻¹ = _) (gprod_reverse L).symm) (t, 1)]
-      sorry
-    _ = ∏ i : Fin L.length, eta (L.get i : G)  ⟨((L.take i.1).reverse : G) * t * L.take i.1, by apply Refl_palindrome_in_Refl⟩ := by
-      sorry
-    _ = ∏ i : Fin L.length, eta_aux' (L.get i)  ⟨((L.take i.1).reverse : G) * t * L.take i.1, by apply Refl_palindrome_in_Refl⟩ := by
-      congr
-      ext _
-      rw [eta_lift_eta_aux']
+  have := (geqL.symm.subst (motive := fun x ↦ x⁻¹ = _) (gprod_reverse L).symm)
+  rw [eta, ReflRepn.pi_value g⁻¹ L.reverse this (t, 1), List.reverse_reverse, one_mul]
 
 #print Finset.prod_hom_rel
   -- probably some group hom stuff gotta check
