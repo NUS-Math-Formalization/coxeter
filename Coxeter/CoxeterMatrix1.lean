@@ -522,13 +522,12 @@ noncomputable def eta_aux' (s : S) (t : T) : μ₂ := if s.val = t.val then μ�
 
 @[simp]
 lemma eta_aux_aux' (s : α) (t : T) : eta_aux s t = eta_aux' s t := by congr
-lemma eta_aux_aux' (s : α) (t : T) : eta_aux s t = eta_aux' s t := by congr
 
+section
+--I think this section might not be required, but I'm not sure.
 noncomputable def eta_aux_aux''_aux (s : S) : α := by
   choose y _ using s.prop
   exact y
-
-#print Exists
 
 lemma eta_aux_aux'' (s : S) (t : T) : eta_aux (eta_aux_aux''_aux s) t = eta_aux' s t := by
   choose y hy using s.prop
@@ -542,6 +541,8 @@ lemma eta_aux_aux'' (s : S) (t : T) : eta_aux (eta_aux_aux''_aux s) t = eta_aux'
   rw [← this]
   rw [eta_aux_aux', toSimpleRefl]
   congr
+
+  end
   --
   /-set y := eta_aux_aux''_aux s with h
   rw [eta_aux_aux', toSimpleRefl]
@@ -632,7 +633,6 @@ lemma nn_cons (L : List S) (s : S) (t : T) : nn (s :: L) t = (if (s : G) = t the
       congr 1
       exact propext (Iff.intro Eq.symm Eq.symm)
 
-lemma nn_prod_eta_aux [CoxeterMatrix m] (L : List S) (t : T) : μ₂.gen ^ (nn L t) = ∏ i : Fin L.length,
 lemma nn_prod_eta_aux [CoxeterMatrix m] (L : List S) (t : T) : μ₂.gen ^ (nn L t) = ∏ i : Fin L.length,
     eta_aux' (L.get i) ⟨((L.take i.1).reverse : G) * t * L.take i.1, by apply Refl_palindrome_in_Refl⟩ := by
   induction L generalizing t with
