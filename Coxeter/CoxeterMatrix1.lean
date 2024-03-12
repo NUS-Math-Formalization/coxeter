@@ -880,16 +880,14 @@ lemma pi_aux_list (L : List α) (r : R) : (L.map pi_aux').prod r =
       rw [mul_left_inv]
       apply Eq.symm
       apply of_square_eq_one
-    . simp only [List.map_cons, toSimpleRefl, Submonoid.coe_mul, Subgroup.coe_toSubmonoid,
-        SubmonoidClass.coe_pow, Units.val_mul, Units.val_pow_eq_pow_val, Units.val_neg,
-        Units.val_one, Int.reduceNeg, pi_aux]
+    . simp only [List.map_cons, pi_aux]
       dsimp only [id_eq, Set.mem_setOf_eq, Equiv.coe_fn_mk]
-      simp only [Submonoid.coe_mul, Subgroup.coe_toSubmonoid, μ₂.gen, SubmonoidClass.coe_pow,
-        eta_aux_aux', toSimpleRefl, SimpleRefl, Units.val_mul, Units.val_pow_eq_pow_val,
-        Units.val_neg, Units.val_one, Int.reduceNeg, List.reverse_cons, List.map_append,
-        List.map_cons, toSimpleRefl, List.map_nil]
+      simp only [eta_aux_aux', List.reverse_cons, List.map_append,
+        List.map_cons, List.map_nil]
       rw [mul_assoc]
-      congr 1
+      congr
+      simp only [nn_prod_eta_aux]
+      -- somehow coerce everything so that finprod works nicely. aarrrggghhh
       sorry
 
 #exit
