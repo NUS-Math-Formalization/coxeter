@@ -9,6 +9,7 @@ import Mathlib.Data.List.Range
 import Mathlib.Algebra.Module.Equiv
 import Mathlib.Data.List.Palindrome
 import Mathlib.Algebra.BigOperators.Finprod
+import Mathlib.Logic.Equiv.Fin
 
 #check List.eraseDups
 #check List.eraseReps
@@ -328,3 +329,86 @@ lemma prod_insert_zero_fin {M : Type u} [CommMonoid M] {n : Nat} {f : Fin (n + 1
 lemma prod_insert_zero {M : Type u} [CommMonoid M] {n : Nat} {f g : Nat → M} (h : ∀(i : Fin n), g i = f (i.val + 1)) :
     ∏ i : Fin (n + 1), f i = f 0 * ∏ i : Fin n, g i := by
   exact prod_insert_zero_fin h
+
+lemma prod_insert_last_fin {M : Type u} [CommMonoid M] (n : Nat) (f : Nat → M) :
+    ∏ i : Fin (n + 1), f i = f n * ∏ i : Fin n, f i := by
+  repeat rw [← finprod_eq_prod_of_fintype]
+  let n_fin : Fin (n + 1) := ⟨n, Nat.le.refl⟩
+  let not_n : Set (Fin (n + 1)) := Set.univ \ {n_fin}
+  have no_n : n_fin ∉ not_n := Set.not_mem_diff_of_mem rfl
+  have prod_insert := finprod_mem_insert (fun i : Fin (n + 1) ↦ f i) no_n (Set.toFinite not_n)
+  have insert_n : insert n_fin not_n = Set.univ := by
+    ext x
+    constructor
+    · exact fun _ ↦ Set.mem_univ x
+    · exact fun _ ↦
+        if h : x = n_fin then Set.mem_insert_iff.mpr (Or.inl h)
+        else Set.mem_insert_of_mem n_fin ⟨Set.mem_univ x, h⟩
+  rw [insert_n] at prod_insert
+  simp only [Set.mem_univ, finprod_true] at prod_insert
+  rw [prod_insert]
+  congr 1
+  let fmap : Fin n → Fin (n + 1) := fun x ↦ ⟨x.1, (by linarith [x.2] : x.1 < n + 1)⟩
+  have : Set.InjOn fmap Set.univ := by
+    intro a _ b _ hab
+    simp only [fmap] at hab
+    exact (Fin.eq_iff_veq a b).mpr ((@Fin.eq_iff_veq (n + 1) _ _).mp hab)
+  have := @finprod_mem_image _ _ M _ (fun x ↦ f x.1) Set.univ fmap this
+  simp only [Set.mem_univ, finprod_true] at this
+  rw [← this]
+  congr
+  ext x
+  have : not_n = fmap '' Set.univ := by
+    ext x
+    constructor
+    · rintro ⟨_, hx⟩
+      set! xv := x.val with hxv
+      have : xv ≠ n_fin := (Fin.ne_iff_vne x n_fin).mp hx
+      have : x.1 < n := Fin.val_lt_last hx
+      use ⟨x.1, this⟩
+      simp only [fmap]
+      exact And.intro (Set.mem_univ _) True.intro
+    · rintro ⟨y, ⟨_, gyx⟩⟩
+      have : y.val = x := (Fin.eq_iff_veq _ _).mp gyx
+      have : x.val ≠ n := by
+        rw [← this]
+        exact Nat.ne_of_lt y.2
+      exact ⟨Set.mem_univ x, (Fin.ne_iff_vne _ _).mpr this⟩
+  rw [← this]
+
+lemma prod_insert_zero_last {M : Type u} [CommMonoid M] (n : Nat) (f : ℕ → M) :
+    ∏ i : Fin (n + 2), f i = f 0 * f (n + 1) * ∏ i : Fin n, f (i + 1) := by
+  rw [@prod_insert_zero M _ (n + 1) f (fun i ↦ f (i + 1)) (fun i ↦ rfl), mul_assoc]
+  congr 1
+  exact prod_insert_last_fin n (fun i ↦ f (i + 1))
+
+lemma halve_odd_prod {M : Type u} [CommMonoid M] {n : ℕ} (f : ℕ → M) :
+    ∏ i : Fin (2 * n + 1), f i = f n * ∏ i : Fin n, (f i * f (2 * n - i)) := by
+  induction n generalizing f with
+  | zero =>
+    simp only [Nat.zero_eq, Nat.mul_zero, Nat.cast_zero, Finset.univ_eq_empty, Fin.coe_eq_castSucc,
+      Fin.reduceMul, zero_sub, Finset.prod_empty, mul_one]
+    exact Fintype.prod_subsingleton (fun x : Fin 1 ↦ f x) 0
+  | succ m ih =>
+    let f' : ℕ → M := fun i ↦ f (i + 1)
+    let g : ℕ → M := fun i ↦ f i * f (2 * m + 2 - i)
+    calc
+      _ = f 0 * f ((2 * m + 1 : ℕ) + 1) * ∏ i : Fin (2 * m + 1), f (i + 1) := by
+        rw [← prod_insert_zero_last (2 * m + 1) f]
+        rfl
+      _ = f 0 * f (2 * m + 1 + 1) * ∏ i : Fin (2 * m + 1), f' i := by rfl
+      _ = g 0 * (f' m * ∏ i : Fin m, g (i + 1)) := by
+        rw [ih f']
+        dsimp only [g]
+        congr 3
+        ext i
+        congr 2
+        simp only [Nat.succ_sub_succ_eq_sub]
+        ring_nf
+        exact (Nat.add_sub_assoc (by linarith [i.2]) 1).symm
+      _ = f' m * (g 0 * ∏ i : Fin m, g (i + 1)) := by
+        rw [← mul_assoc (f' m), mul_comm (f' m) (g 0), mul_assoc (g 0)]
+      _ = f' m * ∏ i : Fin (m + 1), g i := by
+        rw [prod_insert_zero_fin (fun i ↦ rfl)]
+        rfl
+      _ = _ := by dsimp only [f', g]; rfl

@@ -940,12 +940,48 @@ lemma eta_equiv_nn {g : G} {t : T} : ∀ {L : List S}, g = L → eta g t = μ₂
 lemma eta_equiv_nn' {L : List S} {t : T} : eta L t = μ₂.gen ^ nn L t := eta_equiv_nn rfl
 
 lemma eta_t (t : T) : eta (t : G) t = μ₂.gen := by
-  rcases t with ⟨g, hg⟩
-  -- remove g
-  rw [eta_equiv_nn]
-  sorry --rw [eta_lift_eta_aux, eta_aux, if_pos rfl]
-  sorry
-  sorry
+  rcases h : t with ⟨t', ⟨g, s, ht⟩⟩
+  obtain ⟨L, hgL⟩ := @exists_prod G _ S _ g
+  have tLgL : t' = (L ++ [s] ++ L.reverse : G) := by
+    rw [gprod_append, gprod_append, gprod_singleton, gprod_reverse, ← hgL]
+    exact ht
+  rw [@eta_equiv_nn α m hm t' ⟨t', ⟨g, s, ht⟩⟩ (L ++ [s] ++ L.reverse) tLgL,
+    nn_prod_eta_aux]
+  have tt1 : t' * t' = 1 := by
+    rw [← sq]
+    exact @Refl.square_eq_one G _ S _ ⟨t', ⟨g, s, ht⟩⟩
+  have len : (L ++ [s] ++ L.reverse).length = 2 * L.length + 1 := by
+    rw [List.length_append, List.length_append, List.length_reverse, List.length_singleton]
+    ring
+  have len_lt (i : ℕ) : i < (L ++ [s] ++ L.reverse).length ↔ i < 2 * L.length + 1 := by rw [len]
+  let f : Fin (L ++ [s] ++ L.reverse).length → μ₂ := fun i ↦ eta_aux' ((L ++ [s] ++ L.reverse).get i)
+    ⟨((L ++ [s] ++ L.reverse).take i).reverse * t * (L ++ [s] ++ L.reverse).take i, by apply Refl_palindrome_in_Refl⟩
+  let f' : Fin (2 * L.length + 1) → μ₂ := fun i ↦ eta_aux' ((L ++ [s] ++ L.reverse).get ⟨i.1, (len_lt i.1).mpr i.2⟩)
+    ⟨((L ++ [s] ++ L.reverse).take i).reverse * t * (L ++ [s] ++ L.reverse).take i, by apply Refl_palindrome_in_Refl⟩
+  have heqf : HEq f f' := by
+    let t := cast (by rw [len] : (Fin (L ++ [s] ++ L.reverse).length → μ₂) = (Fin (2 * L.length + 1) → μ₂)) f
+    have : t = f' := by
+      dsimp only [t, f]
+      sorry
+    --rw [eta_lift_eta_aux, eta_aux, if_pos rfl]
+    sorry
+  -- (L ++ [s] ++ L.reverse).length - 1 - i
+  -- folding lemma
+  have (i : Fin (L ++ [s] ++ L.reverse).length) (j : Fin (L ++ [s] ++ L.reverse).length)
+      (hij : i + j + 1 = (L ++ [s] ++ L.reverse).length) : f i = f j := by
+    sorry
+  calc
+    _ = ∏ i : Fin (2 * L.length + 1), f' i := by
+      congr 1
+      repeat exact len
+      repeat rw [len]
+      --rw [heqf]
+      sorry
+    _ = f' L.length * ∏ i : Fin L.length, (f' i * f' (L.length * 2 - i)) := by
+      --rw [halve_odd_prod]
+      sorry
+    _ = _ := by
+      sorry
 
 end ReflRepresentation
 
