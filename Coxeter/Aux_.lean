@@ -330,7 +330,7 @@ lemma prod_insert_zero {M : Type u} [CommMonoid M] {n : Nat} {f g : Nat → M} (
     ∏ i : Fin (n + 1), f i = f 0 * ∏ i : Fin n, g i := by
   exact prod_insert_zero_fin h
 
-lemma prod_insert_last_fin {M : Type u} [CommMonoid M] (n : Nat) (f : Nat → M) :
+lemma prod_insert_last {M : Type u} [CommMonoid M] (n : Nat) (f : Nat → M) :
     ∏ i : Fin (n + 1), f i = f n * ∏ i : Fin n, f i := by
   repeat rw [← finprod_eq_prod_of_fintype]
   let n_fin : Fin (n + 1) := ⟨n, Nat.le.refl⟩
@@ -362,16 +362,13 @@ lemma prod_insert_last_fin {M : Type u} [CommMonoid M] (n : Nat) (f : Nat → M)
     ext x
     constructor
     · rintro ⟨_, hx⟩
-      set! xv := x.val with hxv
-      have : xv ≠ n_fin := (Fin.ne_iff_vne x n_fin).mp hx
       have : x.1 < n := Fin.val_lt_last hx
       use ⟨x.1, this⟩
       simp only [fmap]
       exact And.intro (Set.mem_univ _) True.intro
     · rintro ⟨y, ⟨_, gyx⟩⟩
-      have : y.val = x := (Fin.eq_iff_veq _ _).mp gyx
       have : x.val ≠ n := by
-        rw [← this]
+        rw [← (Fin.eq_iff_veq _ _).mp gyx]
         exact Nat.ne_of_lt y.2
       exact ⟨Set.mem_univ x, (Fin.ne_iff_vne _ _).mpr this⟩
   rw [← this]
@@ -380,7 +377,7 @@ lemma prod_insert_zero_last {M : Type u} [CommMonoid M] (n : Nat) (f : ℕ → M
     ∏ i : Fin (n + 2), f i = f 0 * f (n + 1) * ∏ i : Fin n, f (i + 1) := by
   rw [@prod_insert_zero M _ (n + 1) f (fun i ↦ f (i + 1)) (fun i ↦ rfl), mul_assoc]
   congr 1
-  exact prod_insert_last_fin n (fun i ↦ f (i + 1))
+  exact prod_insert_last n (fun i ↦ f (i + 1))
 
 lemma halve_odd_prod {M : Type u} [CommMonoid M] {n : ℕ} (f : ℕ → M) :
     ∏ i : Fin (2 * n + 1), f i = f n * ∏ i : Fin n, (f i * f (2 * n - i)) := by
