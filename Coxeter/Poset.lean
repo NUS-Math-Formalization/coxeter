@@ -76,10 +76,13 @@ def maximal_chain {P : Type*} [PartialOrder P] (L: List P) : Prop := chain L ∧
   ∀ L' : List P, chain L' -> List.Sublist L L' -> L = L'
 
 lemma maximal_chain_ledot {P : Type*} [PartialOrder P] (L: List P) (h : maximal_chain L):
-  ∀ i : ℕ, (L.take i : P) :=
+  ∀ i : Fin (L.length - 1), (L.get (⟨i.1, (by sorry : i.1<L.length)⟩ : Fin L.length) : P) ⋖ (L.get ⟨i.1+1, (by sorry : i.1+1<L.length)⟩) :=
   sorry
   -- ∀ i :
   -- ((L.head h = (⊥ : P)) ∧ (L.getLast h = (⊤ : P)) ∧ (List.Chain' ledot L)) := by sorry
+lemma maximal_chain_edges {P : Type*} [PartialOrder P] (L: List P) (h : maximal_chain L):
+  List_pair L ∈ List {(a, b) : P × P | ledot a b } := by sorry
+
 
 lemma exist_maximal_chain {P : Type*} [PartialOrder P] [BoundedOrder P] [Finite P] :
   ∃ L : List P, maximal_chain L := by sorry
@@ -100,11 +103,31 @@ class GradedPoset (P : Type*) [PartialOrder P] extends BoundedOrder P where
 
 def Interval {P : Type*} [PartialOrder P] (x y : P) (h : x ≤ y) : Set P := {z | x ≤ z ∧ z ≤ y}
 
-instance Interval.fintype {P : Type*} [PartialOrder P] {x y : P} (h : x ≤ y) : BoundedOrder (Interval x y h) where
+-- def Interval.poset1 {P : Type*} [PartialOrder P] (x y : P) (h : x ≤ y) : Prop := sorry
+
+instance Interval.bounded {P : Type*} [PartialOrder P] {x y : P} (h : x ≤ y) : BoundedOrder (Interval x y h) where
   top := ⟨y, And.intro h (le_refl y)⟩
   bot := ⟨x, And.intro (le_refl x) h⟩
   le_top := fun x ↦ x.2.2
   bot_le := fun x ↦ x.2.1
+
+theorem Interval.poset {P : Type*} [PartialOrder P] {x y : P} (h : x ≤ y) :
+PartialOrder (Interval x y h) := by exact Subtype.partialOrder _
+
+section
+example (Q : Type*) [LE Q] [BoundedOrder Q] : PartialOrder Q := by apply?
+end
+
+-- example : ∀ z ∈ Interval x y h, z ≤ y := by sorry
+  -- intro z h1
+  -- have h2 := Interval.poset h
+  -- have :=  h2.le_top ⟨z, h1⟩
+  -- have : y ∈ Interval x y h := by sorry
+  -- have : (⊤ : Interval.poset h) = y := by simp
+  -- simp [h2.top] at this
+
+
+
 
 /-
 Definition: An edge labelling of P is called an EL-labelling if for every interval [x,y] in P,
@@ -113,14 +136,15 @@ Definition: An edge labelling of P is called an EL-labelling if for every interv
 Here <_L denotes the lexicographic ordering for the tuples in the labelling poset A.
 -/
 class EL_labelling (P A : Type*) [PartialOrder P] [BoundedOrder P] [PartialOrder A] where
-  edges : {(a, b) : P × P | ledot a b }
-  EL : (edges : P × P) → A
+  edges : Set (P × P) := {(a, b) : P × P | ledot a b }
+  EL : edges → A
   chainL : (x y : P) → (h : x ≤ y) → List (Interval x y h)
-  max : (x y : P) → (h : x ≤ y) → @maximal_chain _ _ (chainL x y h)
-  chainPair : (x y : P) → (h : x ≤ y) → ((List_pair (chainL x y h)))
-  Inc : (x y : P) → (h : x ≤ y) → maximal_chain (chainL x y h) ∧ chain ((List_pair (chainL x y h)).map EL)
-  Unique : ∀ L1 L2 : List P, ((maximal_chain L1) ∧ (maximal_chain L2))→ (chain ((List_pair L1).map EL) ∧ chain ((List_pair L2).map EL)) → L1 = L2
-  L_min : ∀ L1 L2 : List P, ((maximal_chain L1) ∧ (maximal_chain L2))
+  max : (x y : P) → (h : x ≤ y) → @maximal_chain _ (Interval.poset h) (chainL x y h)
+  chainL_edges : Prop := sorry
+  -- chainPair : (x y : P) → (h : x ≤ y) → ((List_pair (chainL x y h)))
+  Inc : (x y : P) → (h : x ≤ y) → @maximal_chain _ (Interval.poset h) (chainL x y h) ∧ chain ((List_pair (chainL x y h)).map EL)
+  Unique : ∀ L1 L2 : List (Interval x y h), ((maximal_chain L1) ∧ (maximal_chain L2))→ (chain ((List_pair L1).map EL) ∧ chain ((List_pair L2).map EL)) → L1 = L2
+  L_min : ∀ L1 L2 : List (Interval x y h), ((maximal_chain L1) ∧ (maximal_chain L2))
 
 
 
