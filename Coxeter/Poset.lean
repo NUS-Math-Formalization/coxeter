@@ -98,17 +98,25 @@ def maximalChains (P : Type*) [PartialOrder P] : Set (List P) := { L | maximal_c
 class GradedPoset (P : Type*) [PartialOrder P] extends BoundedOrder P where
   pure: ∀ (L₁ L₂ : List P), ((maximal_chain L₁) ∧ (maximal_chain L₂)) → (L₁.length = L₂.length)
 
+def Interval {P : Type*} [PartialOrder P] (x y : P) (h : x ≤ y) : Set P := {z | x ≤ z ∧ z ≤ y}
+
+instance Interval.fintype {P : Type*} [PartialOrder P] {x y : P} (h : x ≤ y) : BoundedOrder (Interval x y h) where
+  top := ⟨y, And.intro h (le_refl y)⟩
+  bot := ⟨x, And.intro (le_refl x) h⟩
+  le_top := fun x ↦ x.2.2
+  bot_le := fun x ↦ x.2.1
+
 /-
 Definition: An edge labelling of P is called an EL-labelling if for every interval [x,y] in P,
   (1) there is a unique increasing maximal chain c in [x,y],
   (2) c <_L c' for all other maximal chains c' in [x,y].
 Here <_L denotes the lexicographic ordering for the tuples in the labelling poset A.
 -/
-class EL_labelling (P A : Type*) [PartialOrder P][BoundedOrder P][PartialOrder A] where
+class EL_labelling (P A : Type*) [PartialOrder P] [BoundedOrder P] [PartialOrder A] where
   edges : {(a, b) : P × P | ledot a b }
   EL : (edges : P × P) → A
-  chainL : (x y : P) → (h : x ≤ y) → List [x,y]
-  max : (x y : P) → (h : x ≤ y) → maximal_chain (chainL x y h)
+  chainL : (x y : P) → (h : x ≤ y) → List (Interval x y h)
+  max : (x y : P) → (h : x ≤ y) → @maximal_chain _ _ (chainL x y h)
   chainPair : (x y : P) → (h : x ≤ y) → ((List_pair (chainL x y h)))
   Inc : (x y : P) → (h : x ≤ y) → maximal_chain (chainL x y h) ∧ chain ((List_pair (chainL x y h)).map EL)
   Unique : ∀ L1 L2 : List P, ((maximal_chain L1) ∧ (maximal_chain L2))→ (chain ((List_pair L1).map EL) ∧ chain ((List_pair L2).map EL)) → L1 = L2
