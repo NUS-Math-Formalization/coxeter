@@ -16,30 +16,23 @@ namespace Shelling
 /- Let P be a finite poet. -/
 variable {P : Type*} [PartialOrder P]
 
+/- Definition: We say a poset P is bounded, if it has a unique minimal and a unique maximal element. -/
 #print BoundedOrder
 
-/- Definition: We say a poset P is bounded, if it has a unique minimal and a unique maximal element. -/
-variable [BoundedOrder P]
 
-/- Notations for mininal and maximal. -/
-
-variable {X : Type*} [Preorder X] (A : Interval X)
-#check A
-#check Prod X X
-
-
-example : Interval X :=
-
-#check (⊥ : P)
-#check (⊤ : P)
 /- Definition: We say a is covered by b if x < y and there is no element z such that x < z < y. -/
-def ledot (a b : P) := a < b ∧ (∀ {c : P}, (a ≤ c ∧ c ≤ b) → (a = c ∨ b = c))
+def ledot {P : Type*} [PartialOrder P] : P → P → Prop := sorry -- (a : P) → (b : P) → (a < b ∧ (∀ {c : P}, (a ≤ c ∧ c ≤ b) → (a = c ∨ b = c)))
+def led := (a : P) → (b : P) → (a ≤ b)
+
+/-Bookmark:
+ledot should be of type P → P → Prop
+-/
 
 /- Notation: We denote the cover relation by x ⋖ y -/
 notation a " ⋖ " b => ledot a b
 
 /- Defintion: We define the set of edges of P as set of all pairs (a,b) such that a is covered by b.-/
-def edges (P : Type*) [PartialOrder P] : Set (P × P) := {(a, b) | ledot a b }
+def Set_edges (P : Type*) [PartialOrder P] : Set (P × P) := {(a, b) | ledot a b }
 
 
 /- Definition: For any list L = (x0, x1, ⋯ , x_n) in P, we define a new list in P × P by
@@ -56,15 +49,14 @@ def List_pair {P : Type*} [PartialOrder P] : List P → List (P × P)
   or a < b with at = b for some reflection t.
 -/
 
+
+
 /-
 Definition: A chain in the poset P is a finite sequence x₀ < x₁ < ⋯ < x_n.
 -/
 def chain {P : Type*} [PartialOrder P] (L : List P) : Prop := List.Chain' (. < .) L
 
 #print List.Chain'
-
-
-/- Definition: The length of a chain is defined to be the cardinality of the underlying set -1. -/
 
 
 /-
@@ -75,13 +67,11 @@ In other words, all relations are cover relations with x_0 being a minimal eleme
 def maximal_chain {P : Type*} [PartialOrder P] (L: List P) : Prop := chain L ∧
   ∀ L' : List P, chain L' -> List.Sublist L L' -> L = L'
 
-lemma maximal_chain_ledot {P : Type*} [PartialOrder P] (L: List P) (h : maximal_chain L):
-  ∀ i : Fin (L.length - 1), (L.get (⟨i.1, (by sorry : i.1<L.length)⟩ : Fin L.length) : P) ⋖ (L.get ⟨i.1+1, (by sorry : i.1+1<L.length)⟩) :=
-  sorry
+lemma maximal_chain_ledot {P : Type*} [PartialOrder P] (L: List P) (h : maximal_chain L): Prop := sorry
   -- ∀ i :
   -- ((L.head h = (⊥ : P)) ∧ (L.getLast h = (⊤ : P)) ∧ (List.Chain' ledot L)) := by sorry
 lemma maximal_chain_edges {P : Type*} [PartialOrder P] (L: List P) (h : maximal_chain L):
-  List_pair L ∈ List {(a, b) : P × P | ledot a b } := by sorry
+  Chain' ledot L := by sorry
 
 
 lemma exist_maximal_chain {P : Type*} [PartialOrder P] [BoundedOrder P] [Finite P] :
@@ -111,20 +101,52 @@ instance Interval.bounded {P : Type*} [PartialOrder P] {x y : P} (h : x ≤ y) :
   le_top := fun x ↦ x.2.2
   bot_le := fun x ↦ x.2.1
 
-theorem Interval.poset {P : Type*} [PartialOrder P] {x y : P} (h : x ≤ y) :
+instance Interval.poset {P : Type*} [PartialOrder P] {x y : P} (h : x ≤ y) :
 PartialOrder (Interval x y h) := by exact Subtype.partialOrder _
 
-section
-example (Q : Type*) [LE Q] [BoundedOrder Q] : PartialOrder Q := by apply?
-end
+/- Question: The difference between instance and theorem for the above.-/
 
--- example : ∀ z ∈ Interval x y h, z ≤ y := by sorry
-  -- intro z h1
-  -- have h2 := Interval.poset h
-  -- have :=  h2.le_top ⟨z, h1⟩
-  -- have : y ∈ Interval x y h := by sorry
-  -- have : (⊤ : Interval.poset h) = y := by simp
-  -- simp [h2.top] at this
+
+
+
+--- begin experiment
+section
+variable (P : Type*) [PartialOrder P] (x y z: P) (h : x ≤ y)
+
+def Interval.poset1 {P : Type*} [PartialOrder P] {x y : P} (h : x ≤ y) :
+PartialOrder ({z | x ≤ z ∧ z ≤ y}) := by exact Subtype.partialOrder _
+
+/- Question: can we just define the poset directly? Then the question is if we can pick out the carrier set.
+-/
+
+-- instance Interval.poset1 {P : Type*} [PartialOrder P] {x y : P} (h : x ≤ y) :
+-- PartialOrder (Interval x y h) := by exact Subtype.partialOrder _
+
+#check Interval x y h
+example (a: z ∈ Interval x y h) : z ≤ y := by
+  rw [Interval] at a
+  rcases a with ⟨_, h2⟩
+  exact h2
+
+example : PartialOrder (Interval x y h) := by sorry
+
+example (Q : Type*) [LE Q] [BoundedOrder Q] : PartialOrder Q := by apply?
+
+class PartialBoundedOrder (P : Type*) extends PartialOrder P, BoundedOrder P
+
+
+example : ∀ z ∈ Interval x y h, z ≤ y := by
+  intro z h1
+  rw [Interval] at h1
+  exact h1.2
+
+
+end
+------ end experiment
+
+
+
+
 
 
 
