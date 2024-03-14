@@ -1,6 +1,9 @@
 import Coxeter.CoxeterSystem
-
+import Mathlib.Data.Set.Intervals.Basic
+import Mathlib.Data.Set.Lattice
+import Mathlib.Data.SetLike.Basic
 import Mathlib.Data.Set.Card
+import Mathlib.Init.Data.Ordering.Basic
 
 open Classical
 namespace Shelling
@@ -20,9 +23,15 @@ variable [BoundedOrder P]
 
 /- Notations for mininal and maximal. -/
 
+variable {X : Type*} [Preorder X] (A : Interval X)
+#check A
+#check Prod X X
+
+
+example : Interval X :=
+
 #check (⊥ : P)
 #check (⊤ : P)
-
 /- Definition: We say a is covered by b if x < y and there is no element z such that x < z < y. -/
 def ledot (a b : P) := a < b ∧ (∀ {c : P}, (a ≤ c ∧ c ≤ b) → (a = c ∨ b = c))
 
@@ -46,12 +55,11 @@ def List_pair {P : Type*} [PartialOrder P] : List P → List (P × P)
   a is coverd by b;
   or a < b with at = b for some reflection t.
 -/
-def EL (P A : Type*) [PartialOrder P] :=  P × P → A
 
 /-
 Definition: A chain in the poset P is a finite sequence x₀ < x₁ < ⋯ < x_n.
 -/
-def chain {P : Type*} [PartialOrder P] (L: List P) : Prop := List.Chain' (. < .) L
+def chain {P : Type*} [PartialOrder P] (L : List P) : Prop := List.Chain' (. < .) L
 
 #print List.Chain'
 
@@ -91,6 +99,24 @@ class GradedPoset (P : Type*) [PartialOrder P] extends BoundedOrder P where
   pure: ∀ (L₁ L₂ : List P), ((maximal_chain L₁) ∧ (maximal_chain L₂)) → (L₁.length = L₂.length)
 
 /-
+Definition: An edge labelling of P is called an EL-labelling if for every interval [x,y] in P,
+  (1) there is a unique increasing maximal chain c in [x,y],
+  (2) c <_L c' for all other maximal chains c' in [x,y].
+Here <_L denotes the lexicographic ordering for the tuples in the labelling poset A.
+-/
+class EL_labelling (P A : Type*) [PartialOrder P][BoundedOrder P][PartialOrder A] where
+  edges : {(a, b) : P × P | ledot a b }
+  EL : (edges : P × P) → A
+  chainL : (x y : P) → (h : x ≤ y) → List [x,y]
+  max : (x y : P) → (h : x ≤ y) → maximal_chain (chainL x y h)
+  chainPair : (x y : P) → (h : x ≤ y) → ((List_pair (chainL x y h)))
+  Inc : (x y : P) → (h : x ≤ y) → maximal_chain (chainL x y h) ∧ chain ((List_pair (chainL x y h)).map EL)
+  Unique : ∀ L1 L2 : List P, ((maximal_chain L1) ∧ (maximal_chain L2))→ (chain ((List_pair L1).map EL) ∧ chain ((List_pair L2).map EL)) → L1 = L2
+  L_min : ∀ L1 L2 : List P, ((maximal_chain L1) ∧ (maximal_chain L2))
+
+
+
+/-
 Definition: A graded poset P is called shellable if there is an ordering L_1, ⋯ , L_m of all maximal
 chains of P such that |L_i ∩ (∪_{j < i} L_{j})| = |L_i|- 1.
 -/
@@ -128,13 +154,6 @@ def Increasing_chain  (P A : Type*) [PartialOrder P] [PartialOrder A] (L: List P
 
 /- Needs to define lexicographically ordering. -/
 
-/-
-Definition: An edge labelling of P is called an EL-labelling if for every interval [x,y] in P,
-  (1) there is a unique increasing maximal chain c in [x,y],
-  (2) c <_L c' for all other maximal chains c' in [x,y].
-Here <_L denotes the lexicographic ordering for the tuples in the labelling poset A.
--/
-def EL_labelling (P : Type*) [PartialOrder P] : Prop := sorry
 
 
 /- Theorem: Let P be a graded poset. If P admits an CL-labelling, then P is shellable. -/
