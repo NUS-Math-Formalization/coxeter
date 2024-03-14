@@ -961,13 +961,18 @@ lemma eta_t (t : T) : eta (t : G) t = μ₂.gen := by
   have heqf : HEq f f' := by
     let t := cast (by rw [len] : (Fin (L ++ [s] ++ L.reverse).length → μ₂) = (Fin (2 * L.length + 1) → μ₂)) f
     have : t = f' := by
-      dsimp only [t, f]
+      dsimp only [t, f, cast]
+      ext x
+      congr
+      simp only [SimpleRefl, Set.mem_setOf_eq, List.append_assoc, List.singleton_append,
+        gprod_reverse]
+      congr
       sorry
-    --rw [eta_lift_eta_aux, eta_aux, if_pos rfl]
-    sorry
+    exact (Fin.heq_fun_iff len).mpr (congrFun rfl)
+  --rw [eta_lift_eta_aux, eta_aux, if_pos rfl]
   -- (L ++ [s] ++ L.reverse).length - 1 - i
   -- folding lemma
-  have (i : Fin (L ++ [s] ++ L.reverse).length) (j : Fin (L ++ [s] ++ L.reverse).length)
+  have eta_eq (i : Fin (L ++ [s] ++ L.reverse).length) (j : Fin (L ++ [s] ++ L.reverse).length)
       (hij : i + j + 1 = (L ++ [s] ++ L.reverse).length) : f i = f j := by
     sorry
   calc
@@ -981,6 +986,9 @@ lemma eta_t (t : T) : eta (t : G) t = μ₂.gen := by
       --rw [halve_odd_prod]
       sorry
     _ = _ := by
+      simp only [SimpleRefl, Set.mem_setOf_eq, List.append_assoc, List.singleton_append,
+        gprod_reverse, Fin.val_nat_cast, heqf.symm]
+      --rw [eta_eq]
       sorry
 
 end ReflRepresentation
