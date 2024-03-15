@@ -523,11 +523,14 @@ noncomputable def eta_aux' (s : S) (t : T) : μ₂ := if s.val = t.val then μ�
 @[simp]
 lemma eta_aux_aux' (s : α) (t : T) : eta_aux s t = eta_aux' s t := by congr
 
+<<<<<<< HEAD
+=======
+section
+--I think this section might not be required, but I'm not sure.
+>>>>>>> d9b4d98d301fd971d242ecd908dea2675ef9f84b
 noncomputable def eta_aux_aux''_aux (s : S) : α := by
   choose y _ using s.prop
   exact y
-
-#print Exists
 
 lemma eta_aux_aux'' (s : S) (t : T) : eta_aux (eta_aux_aux''_aux s) t = eta_aux' s t := by
   choose y hy using s.prop
@@ -541,20 +544,18 @@ lemma eta_aux_aux'' (s : S) (t : T) : eta_aux (eta_aux_aux''_aux s) t = eta_aux'
   rw [← this]
   rw [eta_aux_aux', toSimpleRefl]
   congr
+<<<<<<< HEAD
   --
   /-set y := eta_aux_aux''_aux s with h
   rw [eta_aux_aux', toSimpleRefl]
   congr
   rw [eta_aux_aux''_aux] at h-/
+=======
+>>>>>>> d9b4d98d301fd971d242ecd908dea2675ef9f84b
+
+end
 
 noncomputable def nn (L : List S) (t : T) : ℕ := List.count (t : G) <| List.map (fun i ↦ (toPalindrome_i L i : G)) (List.range L.length)
-
-/-
-@[deprecated OrderTwoGen.Refl.mul_SimpleRefl_in_Refl]
-lemma SimpleRefl_Refl_SimpleRefl_in_Refl (s : S) (t : T) : (s : G) * t * (s : G) ∈ T := by
-  rcases s with ⟨_, ⟨_, hy⟩⟩
-  exact hy.subst (motive := fun x : G ↦ x * t * x ∈ T) Refl.conjugate_closed'
--/
 
 lemma Refl_palindrome_in_Refl {i : ℕ} (L : List S) (t : T) : ((L.take i).reverse : G) * t * L.take i ∈ T := by
   induction i with
@@ -689,14 +690,12 @@ lemma eta_aux_mul_eta_aux [CoxeterMatrix m] (s : α) (r : R) :
     (motive := fun x ↦ ((if of m s = r.1 then μ₂.gen else 1) * if x then μ₂.gen else 1) = 1)
   have (p : Prop) (a1 a2 b1 b2 : μ₂) :
     ite p a1 a2 * ite p b1 b2 = ite p (a1 * b1) (a2 * b2) := by
-    rw [mul_ite]
     by_cases h : p
     · repeat rw [if_pos h]
     · repeat rw [if_neg h]
   rw [this]
   norm_num
-  intro _
-  exact μ₂.gen_square
+  exact fun _ ↦ μ₂.gen_square
 
 lemma pi_aux_square_identity [CoxeterMatrix m] (s : α) (r : R) : pi_aux s (pi_aux s r) = r := by
   have comp1 : (pi_aux s (pi_aux s r)).1 = r.1 := by
@@ -738,15 +737,6 @@ lemma alternating_word_singleton (s t : α) : alternating_word s t 1 = [s] := by
   simp only [List.range, List.range.loop, List.map_singleton,
     if_pos (by norm_num : 0 % 2 = 0)]
 
--- DLevel 2
-lemma alternating_word_power (s t : α) (n : ℕ) : (alternating_word s t (2 * n) : List S).gprod
-    = (of m s * of m t) ^ n := by
-  -- induction
-  sorry
-
-lemma alternating_word_relation (s t : α) : (alternating_word s t (2 * m s t) : List S).gprod = 1 := by
-  rw [alternating_word_power s t (m s t), of_relation]
-
 -- DLevel 1
 lemma alternating_word_take (s t : α) (n i : ℕ) (h : i ≤ n) :
     (alternating_word s t n).take i = alternating_word s t i := by
@@ -757,9 +747,24 @@ lemma alternating_word_append_odd (s t : α) (n m : ℕ) (h1 : m ≤ n) (h2 : Od
     alternating_word s t n = alternating_word s t m ++ alternating_word t s (n - m) := by
   sorry
 
+-- DLevel 2
 lemma alternating_word_append_even (s t : α) (n m : ℕ) (h1 : m ≤ n) (h2 : Even m) :
     alternating_word s t n = alternating_word s t m ++ alternating_word s t (n - m) := by
   sorry
+
+-- DLevel 2
+lemma alternating_word_power (s t : α) (n : ℕ) : (alternating_word s t (2 * n) : List S).gprod
+    = (of m s * of m t) ^ n := by
+  induction n with
+  | zero => simp only [alternating_word, Nat.zero_eq, mul_zero,
+    List.range_zero, List.map_nil, pow_zero, gprod_nil]
+  | succ k ih =>
+    -- split the power, use pow_add, alternating_word_append_even, gprod_append
+    -- handle the easy case of n = 1
+    sorry
+
+lemma alternating_word_relation (s t : α) : (alternating_word s t (2 * m s t) : List S).gprod = 1 := by
+  rw [alternating_word_power s t (m s t), of_relation]
 
 -- DLevel 3
 lemma alternating_word_palindrome (s t : α) (n : ℕ) (i : Fin n) :
@@ -837,6 +842,7 @@ lemma pi_aux_list (L : List α) (r : R) : (L.map pi_aux').prod r =
   | cons hd tail ih =>
     rw [List.map_cons, List.prod_cons, Equiv.Perm.mul_apply, ih, pi_aux']
     ext
+<<<<<<< HEAD
     . simp only [List.map_cons, toSimpleRefl,
       List.reverse_cons, List.map_append, List.map_nil, gprod_append,
       pi_aux]
@@ -860,6 +866,15 @@ lemma pi_aux_list (L : List α) (r : R) : (L.map pi_aux').prod r =
       sorry
 
 #exit
+=======
+    simp only [List.map_cons, toSimpleRefl,
+      List.reverse_cons, List.map_append, List.map_nil, gprod_append,
+      pi_aux]
+    dsimp only [SimpleRefl, Set.mem_setOf_eq, Set.coe_setOf, id_eq, μ₂.gen, Equiv.coe_fn_mk]
+    rw [gprod_cons, gprod_singleton]
+    sorry
+    sorry
+>>>>>>> d9b4d98d301fd971d242ecd908dea2675ef9f84b
 
 -- DLevel 3
 lemma pi_aux_list_mul (s t : α) : ((pi_aux' s : Equiv.Perm R) * (pi_aux' t : Equiv.Perm R)) ^ n
@@ -891,7 +906,9 @@ noncomputable def pi : G →* Equiv.Perm R := lift m (fun s ↦ pi_aux' s) (by s
 -- Probably needs induction and wrangling with Finset.prod
 -- DLevel 5
 lemma pi_value (g : G) (L : List S) (h : g = L) (r : R) : (pi g) r
-    = (⟨g * r.1 * g⁻¹, by apply Refl.conjugate_closed⟩, r.2 * μ₂.gen ^ nn L.reverse t) := by
+    = (⟨g * r.1 * g⁻¹, by apply Refl.conjugate_closed⟩, r.2 * μ₂.gen ^ nn L.reverse r.1) := by
+  rw [nn_prod_eta_aux, pi, h]
+  -- pi_aux_list ?
   sorry
 
 -- DLevel 3
@@ -925,8 +942,14 @@ noncomputable def eta (g : G) (t : T) : μ₂ := (ReflRepn.pi g⁻¹ ⟨t, 1⟩)
 
 -- DLevel 1
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> d9b4d98d301fd971d242ecd908dea2675ef9f84b
 lemma eta_lift_eta_aux {s : α} {t : T} : eta_aux s t = eta s t := by
   rw [eta, ReflRepn.pi]
+  simp only [eta_aux_aux', toSimpleRefl, SimpleRefl, Set.coe_setOf, map_inv, lift]
+  rw [PresentedGroup.toGroup]
+  simp only [SimpleRefl, Set.coe_setOf]
   sorry
 
 lemma eta_lift_eta_aux' {s : S} {t : T} : eta_aux' s t = eta s t := by
@@ -949,6 +972,7 @@ lemma eta_lift_eta_aux {s : α} {t : T} : eta_aux s t = eta s t := by sorry
 lemma pi_eval (g : G) (t : T) (ε : μ₂): ReflRepn.pi g (t, ε) = (⟨(g : G) * t * (g : G)⁻¹, OrderTwoGen.Refl.conjugate_closed⟩, ε * eta g⁻¹ t) := by
   sorry
 
+<<<<<<< HEAD
 -- DLevel 4
 <<<<<<< HEAD
 lemma eta_equiv_nn {g : G} {t : T} : ∀ {L : List S}, g = L → eta g t = μ₂.gen ^ nn L t := by
@@ -965,6 +989,12 @@ lemma eta_equiv_nn {g : G} {t : T} : ∀ {L : List S}, g = L → eta g t = μ₂
 =======
 lemma eta_equiv_nn {g : G} {t : T} : ∀ {L : List S}, g = L → eta g t = (μ₂.gen)^(nn L t) := by  sorry
 >>>>>>> 257a5ebd1e7b3b01b701387c6ed805f2e1804f92
+=======
+lemma eta_equiv_nn {g : G} {t : T} : ∀ {L : List S}, g = L → eta g t = μ₂.gen ^ nn L t := by
+  intro L geqL
+  have := (geqL.symm.subst (motive := fun x ↦ x⁻¹ = _) (gprod_reverse L).symm)
+  rw [eta, ReflRepn.pi_value g⁻¹ L.reverse this (t, 1), List.reverse_reverse, one_mul]
+>>>>>>> d9b4d98d301fd971d242ecd908dea2675ef9f84b
 
 #print Finset.prod_hom_rel
   -- probably some group hom stuff gotta check
@@ -973,12 +1003,56 @@ lemma eta_equiv_nn {g : G} {t : T} : ∀ {L : List S}, g = L → eta g t = (μ�
 lemma eta_equiv_nn' {L : List S} {t : T} : eta L t = μ₂.gen ^ nn L t := eta_equiv_nn rfl
 
 lemma eta_t (t : T) : eta (t : G) t = μ₂.gen := by
-  rcases t with ⟨g, hg⟩
-  -- remove g
-  rw [eta_equiv_nn]
-  sorry --rw [eta_lift_eta_aux, eta_aux, if_pos rfl]
-  sorry
-  sorry
+  rcases h : t with ⟨t', ⟨g, s, ht⟩⟩
+  obtain ⟨L, hgL⟩ := @exists_prod G _ S _ g
+  have tLgL : t' = (L ++ [s] ++ L.reverse : G) := by
+    rw [gprod_append, gprod_append, gprod_singleton, gprod_reverse, ← hgL]
+    exact ht
+  rw [@eta_equiv_nn α m hm t' ⟨t', ⟨g, s, ht⟩⟩ (L ++ [s] ++ L.reverse) tLgL,
+    nn_prod_eta_aux]
+  have tt1 : t' * t' = 1 := by
+    rw [← sq]
+    exact @Refl.square_eq_one G _ S _ ⟨t', ⟨g, s, ht⟩⟩
+  have len : (L ++ [s] ++ L.reverse).length = 2 * L.length + 1 := by
+    rw [List.length_append, List.length_append, List.length_reverse, List.length_singleton]
+    ring
+  have len_lt (i : ℕ) : i < (L ++ [s] ++ L.reverse).length ↔ i < 2 * L.length + 1 := by rw [len]
+  let f : Fin (L ++ [s] ++ L.reverse).length → μ₂ := fun i ↦ eta_aux' ((L ++ [s] ++ L.reverse).get i)
+    ⟨((L ++ [s] ++ L.reverse).take i).reverse * t * (L ++ [s] ++ L.reverse).take i, by apply Refl_palindrome_in_Refl⟩
+  let f' : Fin (2 * L.length + 1) → μ₂ := fun i ↦ eta_aux' ((L ++ [s] ++ L.reverse).get ⟨i.1, (len_lt i.1).mpr i.2⟩)
+    ⟨((L ++ [s] ++ L.reverse).take i).reverse * t * (L ++ [s] ++ L.reverse).take i, by apply Refl_palindrome_in_Refl⟩
+  have heqf : HEq f f' := by
+    let t := cast (by rw [len] : (Fin (L ++ [s] ++ L.reverse).length → μ₂) = (Fin (2 * L.length + 1) → μ₂)) f
+    have : t = f' := by
+      dsimp only [t, f, cast]
+      ext x
+      congr
+      simp only [SimpleRefl, Set.mem_setOf_eq, List.append_assoc, List.singleton_append,
+        gprod_reverse]
+      congr
+      sorry
+    exact (Fin.heq_fun_iff len).mpr (congrFun rfl)
+  --rw [eta_lift_eta_aux, eta_aux, if_pos rfl]
+  -- (L ++ [s] ++ L.reverse).length - 1 - i
+  -- folding lemma
+  have eta_eq (i : Fin (L ++ [s] ++ L.reverse).length) (j : Fin (L ++ [s] ++ L.reverse).length)
+      (hij : i + j + 1 = (L ++ [s] ++ L.reverse).length) : f i = f j := by
+    sorry
+  calc
+    _ = ∏ i : Fin (2 * L.length + 1), f' i := by
+      congr 1
+      repeat exact len
+      repeat rw [len]
+      --rw [heqf]
+      sorry
+    _ = f' L.length * ∏ i : Fin L.length, (f' i * f' (L.length * 2 - i)) := by
+      --rw [halve_odd_prod]
+      sorry
+    _ = _ := by
+      simp only [SimpleRefl, Set.mem_setOf_eq, List.append_assoc, List.singleton_append,
+        gprod_reverse, Fin.val_nat_cast, heqf.symm]
+      --rw [eta_eq]
+      sorry
 
 end ReflRepresentation
 
