@@ -865,7 +865,9 @@ lemma pi_aux_list (L : List α) (r : R) : (L.map pi_aux').prod r =
 
       have : n + 1 = th.length := (List.length_append_singleton t (toSimpleRefl m hd)).symm
 
-      -- somehow coerce this into n + 1. idk how to do this.
+      have (x : Fin (n + 1)) : (↑x < th.length) := by sorry
+
+      -- somehow coerce this into Fin(n + 1). idk how to do this.
       set f := fun x : Fin (th.length) ↦
         (eta_aux' (List.get th x)
           {
