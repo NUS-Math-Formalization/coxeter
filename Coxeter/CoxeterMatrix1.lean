@@ -761,8 +761,24 @@ lemma alternating_word_palindrome (s t : α) (n : ℕ) (i : Fin n) :
   rw [toPalindrome_i, toPalindrome, alternating_word_take (toSimpleRefl m s) (toSimpleRefl m t) _ _ (by linarith [i.2] : _)]
   -- you might need more lemmas
   -- reverse of alternating_word / tail of alternating_word
-  -- may need to by_cases between odd and even
-  sorry
+  -- may need to by_cases between odd and even (confirm need to split cases, i suspect last term will screw smth up)
+  set s' := toSimpleRefl m s
+  set t' := toSimpleRefl m t
+  -- DLevel 1
+  have non_empty : alternating_word s' t' (i.1 + 1) ≠ [] := by sorry
+
+  by_cases h : (Even (i.1 + 1))
+  . sorry
+  . have odd_h : Odd (i.1 + 1) := Nat.odd_iff_not_even.mpr h
+    have odd_rev : (alternating_word s' t' (i.1 + 1)).reverse = s' :: alternating_word t' s' i.1 := by sorry
+    rw [odd_rev, List.tail_cons, alternating_word_append_odd s' t' (2 * i.1 + 1) (i.1 + 1)]
+    . simp only [Nat.succ_sub_succ_eq_sub, List.append_cancel_left_eq]
+      rw [two_mul, Nat.add_sub_cancel]
+    . linarith
+    . exact odd_h
+
+
+#exit
 
 lemma alternating_word_palindrome_periodic (s t : α) (i : ℕ) :
     ((alternating_word s t (2 * (i + m s t) + 1) : List S) : G)
