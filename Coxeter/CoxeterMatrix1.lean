@@ -523,11 +523,8 @@ noncomputable def eta_aux' (s : S) (t : T) : μ₂ := if s.val = t.val then μ�
 @[simp]
 lemma eta_aux_aux' (s : α) (t : T) : eta_aux s t = eta_aux' s t := by congr
 
-<<<<<<< HEAD
-=======
 section
 --I think this section might not be required, but I'm not sure.
->>>>>>> d9b4d98d301fd971d242ecd908dea2675ef9f84b
 noncomputable def eta_aux_aux''_aux (s : S) : α := by
   choose y _ using s.prop
   exact y
@@ -544,14 +541,6 @@ lemma eta_aux_aux'' (s : S) (t : T) : eta_aux (eta_aux_aux''_aux s) t = eta_aux'
   rw [← this]
   rw [eta_aux_aux', toSimpleRefl]
   congr
-<<<<<<< HEAD
-  --
-  /-set y := eta_aux_aux''_aux s with h
-  rw [eta_aux_aux', toSimpleRefl]
-  congr
-  rw [eta_aux_aux''_aux] at h-/
-=======
->>>>>>> d9b4d98d301fd971d242ecd908dea2675ef9f84b
 
 end
 
@@ -842,7 +831,6 @@ lemma pi_aux_list (L : List α) (r : R) : (L.map pi_aux').prod r =
   | cons hd tail ih =>
     rw [List.map_cons, List.prod_cons, Equiv.Perm.mul_apply, ih, pi_aux']
     ext
-<<<<<<< HEAD
     . simp only [List.map_cons, toSimpleRefl,
       List.reverse_cons, List.map_append, List.map_nil, gprod_append,
       pi_aux]
@@ -866,15 +854,6 @@ lemma pi_aux_list (L : List α) (r : R) : (L.map pi_aux').prod r =
       sorry
 
 #exit
-=======
-    simp only [List.map_cons, toSimpleRefl,
-      List.reverse_cons, List.map_append, List.map_nil, gprod_append,
-      pi_aux]
-    dsimp only [SimpleRefl, Set.mem_setOf_eq, Set.coe_setOf, id_eq, μ₂.gen, Equiv.coe_fn_mk]
-    rw [gprod_cons, gprod_singleton]
-    sorry
-    sorry
->>>>>>> d9b4d98d301fd971d242ecd908dea2675ef9f84b
 
 -- DLevel 3
 lemma pi_aux_list_mul (s t : α) : ((pi_aux' s : Equiv.Perm R) * (pi_aux' t : Equiv.Perm R)) ^ n
@@ -941,10 +920,6 @@ end ReflRepn
 noncomputable def eta (g : G) (t : T) : μ₂ := (ReflRepn.pi g⁻¹ ⟨t, 1⟩).2
 
 -- DLevel 1
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> d9b4d98d301fd971d242ecd908dea2675ef9f84b
 lemma eta_lift_eta_aux {s : α} {t : T} : eta_aux s t = eta s t := by
   rw [eta, ReflRepn.pi]
   simp only [eta_aux_aux', toSimpleRefl, SimpleRefl, Set.coe_setOf, map_inv, lift]
@@ -972,29 +947,10 @@ lemma eta_lift_eta_aux {s : α} {t : T} : eta_aux s t = eta s t := by sorry
 lemma pi_eval (g : G) (t : T) (ε : μ₂): ReflRepn.pi g (t, ε) = (⟨(g : G) * t * (g : G)⁻¹, OrderTwoGen.Refl.conjugate_closed⟩, ε * eta g⁻¹ t) := by
   sorry
 
-<<<<<<< HEAD
--- DLevel 4
-<<<<<<< HEAD
-lemma eta_equiv_nn {g : G} {t : T} : ∀ {L : List S}, g = L → eta g t = μ₂.gen ^ nn L t := by
-  intro L geqL
-  rw [nn_prod_eta_aux L t]
-  calc
-    eta g t = μ₂.gen := by sorry
-    _ = ∏ i : Fin L.length, eta (L.get i : G)  ⟨((L.take i.1).reverse : G) * t * L.take i.1, by apply Refl_palindrome_in_Refl⟩ := by
-      sorry
-    _ = ∏ i : Fin L.length, eta_aux' (L.get i)  ⟨((L.take i.1).reverse : G) * t * L.take i.1, by apply Refl_palindrome_in_Refl⟩ := by
-      congr
-      ext _
-      rw [eta_lift_eta_aux']
-=======
-lemma eta_equiv_nn {g : G} {t : T} : ∀ {L : List S}, g = L → eta g t = (μ₂.gen)^(nn L t) := by  sorry
->>>>>>> 257a5ebd1e7b3b01b701387c6ed805f2e1804f92
-=======
 lemma eta_equiv_nn {g : G} {t : T} : ∀ {L : List S}, g = L → eta g t = μ₂.gen ^ nn L t := by
   intro L geqL
   have := (geqL.symm.subst (motive := fun x ↦ x⁻¹ = _) (gprod_reverse L).symm)
   rw [eta, ReflRepn.pi_value g⁻¹ L.reverse this (t, 1), List.reverse_reverse, one_mul]
->>>>>>> d9b4d98d301fd971d242ecd908dea2675ef9f84b
 
 #print Finset.prod_hom_rel
   -- probably some group hom stuff gotta check
