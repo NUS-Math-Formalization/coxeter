@@ -863,8 +863,18 @@ lemma pi_aux_list (L : List α) (r : R) : (L.map pi_aux').prod r =
           }
         )
 
-      sorry
+      have : n + 1 = th.length := (List.length_append_singleton t (toSimpleRefl m hd)).symm
 
+      -- somehow coerce this into n + 1. idk how to do this.
+      set f := fun x : Fin (th.length) ↦
+        (eta_aux' (List.get th x)
+          {
+            val := (↑(List.take (↑x) th))⁻¹ * ↑r.1 * ↑(List.take (↑x) th),
+            property := (_ : (fun x => x ∈ Refl S) ((↑(List.take (↑x) th))⁻¹ * ↑r.1 * ↑(List.take (↑x) th)))
+          }
+        )
+
+      sorry
 #exit
 
 -- DLevel 3
