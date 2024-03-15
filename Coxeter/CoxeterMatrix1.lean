@@ -822,7 +822,7 @@ lemma pi_aux_list_in_T (L : List α) (t : T) :
 -- DLevel 4
 lemma pi_aux_list (L : List α) (r : R) : (L.map pi_aux').prod r =
     ((⟨(L.map (toSimpleRefl m)) * r.1 * (L.reverse.map (toSimpleRefl m)), pi_aux_list_in_T L r.1⟩,
-    r.2 * μ₂.gen ^ nn (L.reverse.map (toSimpleRefl m)) r.1) : R) := by
+    r.2 * μ₂.gen ^ nn (L.map (toSimpleRefl m)) r.1) : R) := by
   -- induction on L
   induction L with
   | nil => simp only [nn, List.map_nil, List.prod_nil, Equiv.Perm.coe_one, id_eq,
@@ -831,29 +831,13 @@ lemma pi_aux_list (L : List α) (r : R) : (L.map pi_aux').prod r =
   | cons hd tail ih =>
     rw [List.map_cons, List.prod_cons, Equiv.Perm.mul_apply, ih, pi_aux']
     ext
-    . simp only [List.map_cons, toSimpleRefl,
+    simp only [List.map_cons, toSimpleRefl,
       List.reverse_cons, List.map_append, List.map_nil, gprod_append,
       pi_aux]
-      dsimp only [SimpleRefl, Set.mem_setOf_eq, Set.coe_setOf, id_eq, μ₂.gen, Equiv.coe_fn_mk]
-      rw [gprod_cons, gprod_singleton]
-      simp only []
-      rw [mul_assoc, mul_assoc, mul_assoc, mul_assoc, mul_assoc]
-      simp only [mul_right_inj]
-      apply (mul_left_inj (of m hd)).1
-      rw [mul_left_inv]
-      apply Eq.symm
-      apply of_square_eq_one
-    . simp only [List.map_cons, pi_aux]
-      dsimp only [id_eq, Set.mem_setOf_eq, Equiv.coe_fn_mk]
-      simp only [eta_aux_aux', List.reverse_cons, List.map_append,
-        List.map_cons, List.map_nil]
-      rw [mul_assoc]
-      congr
-      simp only [nn_prod_eta_aux]
-      -- somehow coerce everything so that finprod works nicely. aarrrggghhh
-      sorry
-
-#exit
+    dsimp only [SimpleRefl, Set.mem_setOf_eq, Set.coe_setOf, id_eq, μ₂.gen, Equiv.coe_fn_mk]
+    rw [gprod_cons, gprod_singleton]
+    sorry
+    sorry
 
 -- DLevel 3
 lemma pi_aux_list_mul (s t : α) : ((pi_aux' s : Equiv.Perm R) * (pi_aux' t : Equiv.Perm R)) ^ n
@@ -930,9 +914,6 @@ lemma eta_lift_eta_aux {s : α} {t : T} : eta_aux s t = eta s t := by
 lemma eta_lift_eta_aux' {s : S} {t : T} : eta_aux' s t = eta s t := by
   rw [eta, ReflRepn.pi]
   sorry
-=======
-lemma eta_lift_eta_aux {s : α} {t : T} : eta_aux s t = eta s t := by sorry
->>>>>>> 257a5ebd1e7b3b01b701387c6ed805f2e1804f92
 
 /-lemma eta_aux'_eq_μ₂gen_pow_nn {s : S} : eta_aux' s t = μ₂.gen ^ nn [s] t := by
   have : List.tail [s] = [] := by rw [List.tail]
