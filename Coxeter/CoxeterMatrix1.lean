@@ -822,7 +822,7 @@ lemma pi_aux_list_in_T (L : List α) (t : T) :
 -- DLevel 4
 lemma pi_aux_list (L : List α) (r : R) : (L.map pi_aux').prod r =
     ((⟨(L.map (toSimpleRefl m)) * r.1 * (L.reverse.map (toSimpleRefl m)), pi_aux_list_in_T L r.1⟩,
-    r.2 * μ₂.gen ^ nn (L.map (toSimpleRefl m)) r.1) : R) := by
+    r.2 * μ₂.gen ^ nn (L.reverse.map (toSimpleRefl m)) r.1) : R) := by
   -- induction on L
   induction L with
   | nil => simp only [nn, List.map_nil, List.prod_nil, Equiv.Perm.coe_one, id_eq,
@@ -849,9 +849,23 @@ lemma pi_aux_list (L : List α) (r : R) : (L.map pi_aux').prod r =
         List.map_cons, List.map_nil]
       rw [mul_assoc]
       congr
-      simp only [nn_prod_eta_aux]
-      -- somehow coerce everything so that finprod works nicely. aarrrggghhh
+      simp only [nn_prod_eta_aux, gprod_reverse, List.length_cons]
+
+      set t := tail.reverse.map (toSimpleRefl m)
+      set th := t ++ [toSimpleRefl m hd]
+      set n := t.length
+
+      set g := fun x : Fin (n) ↦
+        (eta_aux' (t.get x)
+          {
+            val := (↑(t.take (↑x)))⁻¹ * ↑r.1 * ↑(t.take (↑x)),
+            property := (_ : (fun x => x ∈ Refl S) ((↑(t.take (↑x)))⁻¹ * ↑r.1 * ↑(t.take (↑x))))
+          }
+        )
+
       sorry
+
+#exit
 
 -- DLevel 3
 lemma pi_aux_list_mul (s t : α) : ((pi_aux' s : Equiv.Perm R) * (pi_aux' t : Equiv.Perm R)) ^ n
