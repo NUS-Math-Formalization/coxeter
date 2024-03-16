@@ -919,8 +919,7 @@ lemma pi_aux_list (L : List α) (r : R) : (L.map pi_aux').prod r =
       apply of_square_eq_one
     . simp only [List.map_cons, pi_aux]
       dsimp only [id_eq, Set.mem_setOf_eq, Equiv.coe_fn_mk]
-      simp only [eta_aux_aux', List.reverse_cons, List.map_append,
-        List.map_cons, List.map_nil]
+      simp only [eta_aux_aux', List.reverse_cons, List.map_append, List.map_cons, List.map_nil]
       rw [mul_assoc]
       congr
       simp only [nn_prod_eta_aux, gprod_reverse, List.length_cons]
@@ -931,41 +930,28 @@ lemma pi_aux_list (L : List α) (r : R) : (L.map pi_aux').prod r =
         (eta_aux' (t.get x)
           {
             val := (↑(t.take (↑x)))⁻¹ * ↑r.1 * ↑(t.take (↑x)),
-            property := (_ : (fun x => x ∈ Refl S)
-              ((↑(t.take (↑x)))⁻¹ * ↑r.1 * ↑(t.take (↑x))))
+            property := (_ : (fun x => x ∈ Refl S) ((↑(t.take (↑x)))⁻¹ * ↑r.1 * ↑(t.take (↑x))))
           }
         )
       set g' := fun x : Fin (th.length) ↦
-        (eta_aux' (List.get th x)
-          { val := (↑(List.take (↑x) th))⁻¹ * ↑r.1 * ↑(List.take (↑x) th),
-            property := (_ : (fun x => x ∈ Refl S)
-              ((↑(List.take (↑x) th))⁻¹ * ↑r.1 * ↑(List.take (↑x) th)))
+        (eta_aux' (th.get x)
+          { val := (↑(th.take (↑x)))⁻¹ * ↑r.1 * ↑(th.take (↑x)),
+            property := (_ : (fun x => x ∈ Refl S) ((↑(th.take (↑x)))⁻¹ * ↑r.1 * ↑(th.take (↑x))))
           }
         )
       have len : n + 1 = th.length := (List.length_append_singleton t (toSimpleRefl m hd)).symm
-      let f : Fin (th.length) → μ₂ := fun x ↦
-        (eta_aux' (th.get x)
-          (⟨((th.take (↑x)).gprod)⁻¹ * ↑r.1 * (th.take (↑x)).gprod,
-              by nth_rw 2 [← inv_inv (th.take (↑x)).gprod]; apply Refl.conjugate_closed⟩)
-        )
-      let f' : Fin (n + 1) → μ₂ := fun x ↦
+      let f : Fin (n + 1) → μ₂ := fun x ↦
         (eta_aux' (th.get ⟨x, by rw [← len]; exact x.2⟩)
           (⟨((th.take (↑x)).gprod)⁻¹ * ↑r.1 * (th.take (↑x)).gprod,
               by nth_rw 2 [← inv_inv (th.take (↑x)).gprod]; apply Refl.conjugate_closed⟩)
         )
-      have heqf : HEq f' f := by
-        apply (Fin.heq_fun_iff len).2
-        have (i : Fin (n + 1)) (j : Fin (th.length)) : i.1 = j.1 → f' i = f j := by
+      have heqf : HEq g' f := by
+        apply (Fin.heq_fun_iff len.symm).2
+        have (i : Fin (th.length)) (j : Fin (n + 1)) : i.1 = j.1 → g' i = f j := by
           intro ieqj
           rw [Fin.eq_mk_iff_val_eq.mpr ieqj]
-          rw [len]
-          exact j.2
-        exact fun i => this i { val := ↑i, isLt := len ▸ i.isLt } rfl
-      have heqg' : HEq g' f := by
-        apply (Fin.heq_fun_iff rfl).2
-        exact fun i => rfl
-      have heqf' : HEq g' f' := HEq.trans heqg' heqf.symm
-      have replace_prod : ∏ i : Fin (th.length), g' i = ∏ i : Fin (n + 1), f' i := by
+        exact fun i => this i { val := ↑i, isLt := len.symm ▸ i.isLt } rfl
+      have replace_prod : ∏ i : Fin (th.length), g' i = ∏ i : Fin (n + 1), f i := by
         congr 1
         exact congrArg Fin (len.symm)
         repeat rw [len]
