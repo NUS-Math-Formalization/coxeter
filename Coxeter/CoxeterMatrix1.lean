@@ -899,7 +899,6 @@ lemma pi_aux_list_in_T (L : List α) (t : T) :
 lemma pi_aux_list (L : List α) (r : R) : (L.map pi_aux').prod r =
     ((⟨(L.map (toSimpleRefl m)) * r.1 * (L.reverse.map (toSimpleRefl m)), pi_aux_list_in_T L r.1⟩,
     r.2 * μ₂.gen ^ nn (L.reverse.map (toSimpleRefl m)) r.1) : R) := by
-  -- induction on L
   induction L with
   | nil => simp only [nn, List.map_nil, List.prod_nil, Equiv.Perm.coe_one, id_eq,
     Set.mem_setOf_eq, List.reverse_nil, List.length_nil, List.range_zero, List.nodup_nil,
@@ -907,13 +906,12 @@ lemma pi_aux_list (L : List α) (r : R) : (L.map pi_aux').prod r =
   | cons hd tail ih =>
     rw [List.map_cons, List.prod_cons, Equiv.Perm.mul_apply, ih, pi_aux']
     ext
-    . simp only [List.map_cons, toSimpleRefl,
-      List.reverse_cons, List.map_append, List.map_nil, gprod_append,
-      pi_aux]
+    . simp only [List.map_cons, toSimpleRefl, List.reverse_cons,
+        List.map_append, List.map_nil, gprod_append, pi_aux]
       dsimp only [SimpleRefl, Set.mem_setOf_eq, Set.coe_setOf, id_eq, μ₂.gen, Equiv.coe_fn_mk]
       rw [gprod_cons, gprod_singleton]
-      simp only []
-      rw [mul_assoc, mul_assoc, mul_assoc, mul_assoc, mul_assoc]
+      simp only
+      repeat rw [mul_assoc]
       simp only [mul_right_inj]
       apply (mul_left_inj (of m hd)).1
       rw [mul_left_inv]
