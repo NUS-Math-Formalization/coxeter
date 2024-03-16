@@ -924,48 +924,35 @@ lemma pi_aux_list (L : List α) (r : R) : (L.map pi_aux').prod r =
       rw [mul_assoc]
       congr
       simp only [nn_prod_eta_aux, gprod_reverse, List.length_cons]
-
       set t := tail.reverse.map (toSimpleRefl m)
       set th := t ++ [toSimpleRefl m hd]
       set n := t.length
-
       set g := fun x : Fin (n) ↦
         (eta_aux' (t.get x)
           {
             val := (↑(t.take (↑x)))⁻¹ * ↑r.1 * ↑(t.take (↑x)),
-            property := (_ : (fun x => x ∈ Refl S) ((↑(t.take (↑x)))⁻¹ * ↑r.1 * ↑(t.take (↑x))))
+            property := (_ : (fun x => x ∈ Refl S)
+              ((↑(t.take (↑x)))⁻¹ * ↑r.1 * ↑(t.take (↑x))))
           }
         )
-
       set g' := fun x : Fin (th.length) ↦
         (eta_aux' (List.get th x)
           { val := (↑(List.take (↑x) th))⁻¹ * ↑r.1 * ↑(List.take (↑x) th),
-            property := (_ : (fun x => x ∈ Refl S) ((↑(List.take (↑x) th))⁻¹ * ↑r.1 * ↑(List.take (↑x) th)))
+            property := (_ : (fun x => x ∈ Refl S)
+              ((↑(List.take (↑x) th))⁻¹ * ↑r.1 * ↑(List.take (↑x) th)))
           }
         )
-
       have len : n + 1 = th.length := (List.length_append_singleton t (toSimpleRefl m hd)).symm
-
-      have inReflS (x : Fin (th.length)) (r : Refl S) :
-        ((th.take (↑x)).gprod)⁻¹ * r * (th.take (↑x)).gprod ∈ Refl S := by
-        nth_rw 2 [← inv_inv (th.take (↑x)).gprod]
-        apply Refl.conjugate_closed
-
       let f : Fin (th.length) → μ₂ := fun x ↦
         (eta_aux' (th.get x)
-          (⟨((th.take (↑x)).gprod)⁻¹ * ↑r.1 * (th.take (↑x)).gprod, inReflS x ↑r.1⟩)
+          (⟨((th.take (↑x)).gprod)⁻¹ * ↑r.1 * (th.take (↑x)).gprod,
+              by nth_rw 2 [← inv_inv (th.take (↑x)).gprod]; apply Refl.conjugate_closed⟩)
         )
-
-      have inReflS' (x : Fin (n + 1)) (r : Refl S) :
-        ((th.take (↑x)).gprod)⁻¹ * r * (th.take (↑x)).gprod ∈ Refl S := by
-        nth_rw 2 [← inv_inv (th.take (↑x)).gprod]
-        apply Refl.conjugate_closed
-
       let f' : Fin (n + 1) → μ₂ := fun x ↦
         (eta_aux' (th.get ⟨x, by rw [← len]; exact x.2⟩)
-          (⟨((th.take (↑x)).gprod)⁻¹ * ↑r.1 * (th.take (↑x)).gprod, inReflS' x ↑r.1⟩)
+          (⟨((th.take (↑x)).gprod)⁻¹ * ↑r.1 * (th.take (↑x)).gprod,
+              by nth_rw 2 [← inv_inv (th.take (↑x)).gprod]; apply Refl.conjugate_closed⟩)
         )
-
       have heqf : HEq f' f := by
         apply (Fin.heq_fun_iff len).2
         have (i : Fin (n + 1)) (j : Fin (th.length)) : i.1 = j.1 → f' i = f j := by
@@ -974,18 +961,14 @@ lemma pi_aux_list (L : List α) (r : R) : (L.map pi_aux').prod r =
           rw [len]
           exact j.2
         exact fun i => this i { val := ↑i, isLt := len ▸ i.isLt } rfl
-
       have heqg' : HEq g' f := by
         apply (Fin.heq_fun_iff rfl).2
         exact fun i => rfl
-
       have heqf' : HEq g' f' := HEq.trans heqg' heqf.symm
-
       have replace_prod : ∏ i : Fin (th.length), g' i = ∏ i : Fin (n + 1), f' i := by
         congr 1
         exact congrArg Fin (len.symm)
         repeat rw [len]
-
       rw [replace_prod, prod_insert_last_fin, mul_comm]
       congr
       . rw [List.get_last]
@@ -996,9 +979,16 @@ lemma pi_aux_list (L : List α) (r : R) : (L.map pi_aux').prod r =
         rw [List.take_left, List.map_reverse, List.reverse_reverse]
       . simp only [Fin.val_nat_cast, Nat.mod_succ]
         rw [List.take_left, List.map_reverse]
-      . sorry
+      . funext i
+        simp only [List.get_map, Fin.coe_eq_castSucc, Fin.coe_castSucc]
+        rw [List.get_append]
+        . congr 1
+          . rw [List.get_map]
+          . simp only [Subtype.mk.injEq]
+            rw [List.take_append_of_le_length]
+            simp only [n] at i
+            apply le_of_lt i.2
 
-#exit
 -- DLevel 3
 lemma pi_aux_list_mul (s t : α) : ((pi_aux' s : Equiv.Perm R) * (pi_aux' t : Equiv.Perm R)) ^ n
     = ((alternating_word s t (2 * n)).map pi_aux' : List (Equiv.Perm R)).prod := by
