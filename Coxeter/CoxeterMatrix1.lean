@@ -899,7 +899,6 @@ lemma pi_aux_list_in_T (L : List α) (t : T) :
 lemma pi_aux_list (L : List α) (r : R) : (L.map pi_aux').prod r =
     ((⟨(L.map (toSimpleRefl m)) * r.1 * (L.reverse.map (toSimpleRefl m)), pi_aux_list_in_T L r.1⟩,
     r.2 * μ₂.gen ^ nn (L.reverse.map (toSimpleRefl m)) r.1) : R) := by
-  -- induction on L
   induction L with
   | nil => simp only [nn, List.map_nil, List.prod_nil, Equiv.Perm.coe_one, id_eq,
     Set.mem_setOf_eq, List.reverse_nil, List.length_nil, List.range_zero, List.nodup_nil,
@@ -907,13 +906,12 @@ lemma pi_aux_list (L : List α) (r : R) : (L.map pi_aux').prod r =
   | cons hd tail ih =>
     rw [List.map_cons, List.prod_cons, Equiv.Perm.mul_apply, ih, pi_aux']
     ext
-    . simp only [List.map_cons, toSimpleRefl,
-      List.reverse_cons, List.map_append, List.map_nil, gprod_append,
-      pi_aux]
+    . simp only [List.map_cons, toSimpleRefl, List.reverse_cons,
+        List.map_append, List.map_nil, gprod_append, pi_aux]
       dsimp only [SimpleRefl, Set.mem_setOf_eq, Set.coe_setOf, id_eq, μ₂.gen, Equiv.coe_fn_mk]
       rw [gprod_cons, gprod_singleton]
-      simp only []
-      rw [mul_assoc, mul_assoc, mul_assoc, mul_assoc, mul_assoc]
+      simp only
+      repeat rw [mul_assoc]
       simp only [mul_right_inj]
       apply (mul_left_inj (of m hd)).1
       rw [mul_left_inv]
@@ -1074,19 +1072,11 @@ lemma eta_t (t : T) : eta (t : G) t = μ₂.gen := by
   let f' : Fin (2 * L.length + 1) → μ₂ := fun i ↦ eta_aux' ((L ++ [s] ++ L.reverse).get ⟨i.1, (len_lt i.1).mpr i.2⟩)
     ⟨((L ++ [s] ++ L.reverse).take i).reverse * t * (L ++ [s] ++ L.reverse).take i, by apply Refl_palindrome_in_Refl⟩
   have heqf : HEq f f' := by
-    let t := cast (by rw [len] : (Fin (L ++ [s] ++ L.reverse).length → μ₂) = (Fin (2 * L.length + 1) → μ₂)) f
-    have : t = f' := by
-      dsimp only [t, f, cast]
-      ext x
-      congr
-      simp only [SimpleRefl, Set.mem_setOf_eq, List.append_assoc, List.singleton_append,
-        gprod_reverse]
-      congr
-      sorry
-    exact (Fin.heq_fun_iff len).mpr (congrFun rfl)
-  --rw [eta_lift_eta_aux, eta_aux, if_pos rfl]
-  -- (L ++ [s] ++ L.reverse).length - 1 - i
-  -- folding lemma
+    apply (Fin.heq_fun_iff len).mpr
+    have : ∀ (fm : Fin (L ++ [s] ++ L.reverse).length) (fn : Fin (2 * L.length + 1)), fm.1 = fn.1 → f fm = f' fn := by
+      intro _ _ meqn
+      rw [Fin.eq_mk_iff_val_eq.mpr meqn]
+    exact fun i => this i { val := i, isLt := len ▸ i.isLt } rfl
   have eta_eq (i : Fin (L ++ [s] ++ L.reverse).length) (j : Fin (L ++ [s] ++ L.reverse).length)
       (hij : i + j + 1 = (L ++ [s] ++ L.reverse).length) : f i = f j := by
     sorry
@@ -1095,7 +1085,6 @@ lemma eta_t (t : T) : eta (t : G) t = μ₂.gen := by
       congr 1
       repeat exact len
       repeat rw [len]
-      --rw [heqf]
       sorry
     _ = f' L.length * ∏ i : Fin L.length, (f' i * f' (L.length * 2 - i)) := by
       --rw [halve_odd_prod]

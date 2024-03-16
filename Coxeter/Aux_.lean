@@ -385,7 +385,22 @@ lemma prod_insert_last {M : Type u} [CommMonoid M] (n : Nat) (f : Nat → M) :
   rw [← this]
 
 lemma prod_insert_last_fin {M : Type u} [CommMonoid M] (n : Nat) (f : Fin (n + 1) → M) :
-    ∏ i : Fin (n + 1), f i = f n * ∏ i : Fin n, f i := by sorry
+    ∏ i : Fin (n + 1), f i = f n * ∏ i : Fin n, f i := by
+  let fn : Nat → M := fun x ↦ if h : x < n + 1 then f ⟨x, h⟩ else 1
+  calc
+    _ = ∏ i : Fin (n + 1), fn i := by
+      congr
+      ext x
+      simp only [Fin.is_lt, reduceDite, Fin.eta]
+    _ = fn n * ∏ i : Fin n, fn i := prod_insert_last n fn
+    _ = _ := by
+      congr
+      simp only [fn, if_pos (Nat.le_add_right n 1), lt_add_iff_pos_right,
+        zero_lt_one, reduceDite, Fin.cast_nat_eq_last]
+      rfl
+      ext x
+      simp only [Fin.coe_eq_castSucc]
+      exact dif_pos (Fin.castLE.proof_1 (Nat.le_add_right n 1) x)
 
 lemma prod_insert_zero_last {M : Type u} [CommMonoid M] (n : Nat) (f : ℕ → M) :
     ∏ i : Fin (n + 2), f i = f 0 * f (n + 1) * ∏ i : Fin n, f (i + 1) := by
