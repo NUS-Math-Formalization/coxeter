@@ -373,6 +373,9 @@ lemma prod_insert_last {M : Type u} [CommMonoid M] (n : Nat) (f : Nat → M) :
       exact ⟨Set.mem_univ x, (Fin.ne_iff_vne _ _).mpr this⟩
   rw [← this]
 
+lemma prod_insert_last_fin {M : Type u} [CommMonoid M] (n : Nat) (f : Fin (n + 1) → M) :
+    ∏ i : Fin (n + 1), f i = f n * ∏ i : Fin n, f i := by sorry
+
 lemma prod_insert_zero_last {M : Type u} [CommMonoid M] (n : Nat) (f : ℕ → M) :
     ∏ i : Fin (n + 2), f i = f 0 * f (n + 1) * ∏ i : Fin n, f (i + 1) := by
   rw [@prod_insert_zero M _ (n + 1) f (fun i ↦ f (i + 1)) (fun i ↦ rfl), mul_assoc]
