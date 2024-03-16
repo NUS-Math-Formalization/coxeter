@@ -711,25 +711,48 @@ noncomputable def pi_aux' [CoxeterMatrix m] (s : α) : Equiv.Perm R where
   left_inv := by intro r; simp [pi_aux_square_identity]
   right_inv := by intro r; simp [pi_aux_square_identity]
 
-noncomputable def alternating_word (s t : α) (n : ℕ) : List α :=
-  (List.range n).map (fun x ↦ if x % 2 = 0 then s else t)
+/-noncomputable def alternating_word (s t : α) (n : ℕ) : List α :=
+  (List.range n).map (fun x ↦ if x % 2 = 0 then s else t)-/
 
-lemma alternating_word_length (s t : α) (n : ℕ) : (alternating_word s t n).length = n := by
-  rw [alternating_word, List.length_map, List.length_range]
+def alternating_word (s t : α) (n : ℕ) : List α :=
+  match n with
+  | 0 => []
+  | m + 1 => s :: alternating_word t s m
+
+lemma alternating_word_range (s t : α) (n : ℕ) : alternating_word s t n = (List.range n).map (fun x ↦ if x % 2 = 0 then s else t) := by
+  induction' n with m ih generalizing s t
+  · simp only [Nat.zero_eq, List.range_zero, List.map_nil, alternating_word]
+  · rw [alternating_word, ih t s, List.range_eq_range', List.range_eq_range',
+      ← List.range'_append_1 0 1 m, List.map_append, List.range'_eq_map_range 1 m, List.range_eq_range']
+    simp only [List.range'_one, List.map_cons, Nat.zero_mod, reduceIte, List.map_nil, List.map_map,
+      List.singleton_append, List.cons.injEq, true_and]
+    congr
+    ext x
+    dsimp only [Function.comp_apply]
+    have : (if ¬¬(1 + x) % 2 = 0 then s else t) = if x % 2 = 0 then t else s := by
+      rw [ite_not]
+      congr
+      simp only [Nat.mod_two_ne_zero, eq_iff_iff]
+      rw [add_comm, ← Nat.succ_eq_add_one]
+      exact Nat.succ_mod_two_eq_one_iff
+    rw [← this]
+    congr
+    rw [not_not]
 
 lemma alternating_word_nil (s t : α) : alternating_word s t 0 = [] := by
   rw [alternating_word]
-  simp only [List.range, List.range.loop, List.map_nil]
 
 lemma alternating_word_singleton (s t : α) : alternating_word s t 1 = [s] := by
-  rw [alternating_word]
-  simp only [List.range, List.range.loop, List.map_singleton,
-    if_pos (by norm_num : 0 % 2 = 0)]
+  rw [alternating_word, alternating_word_nil]
 
--- DLevel 1
+lemma alternating_word_length (s t : α) (n : ℕ) : (alternating_word s t n).length = n := by
+  induction' n with m ih generalizing s t
+  rw [alternating_word_nil, List.length_nil]
+  rw [alternating_word, List.length_cons, ih t s]
+
 lemma alternating_word_take (s t : α) (n i : ℕ) (h : i ≤ n) :
     (alternating_word s t n).take i = alternating_word s t i := by
-  sorry
+  rw [alternating_word_range, alternating_word_range, ← List.map_take, List.take_range h]
 
 -- DLevel 2
 lemma alternating_word_append_odd (s t : α) (n m : ℕ) (h1 : m ≤ n) (h2 : Odd m) :
@@ -755,14 +778,67 @@ lemma alternating_word_power (s t : α) (n : ℕ) : (alternating_word s t (2 * n
 lemma alternating_word_relation (s t : α) : (alternating_word s t (2 * m s t) : List S).gprod = 1 := by
   rw [alternating_word_power s t (m s t), of_relation]
 
+lemma odd_alternating_word_reverse (s t : α) (i : ℕ) (h : Odd i) :
+  (alternating_word s t i).reverse = alternating_word s t i := by
+  rcases h with ⟨k, ek⟩
+  rw [ek]
+  clear ek
+  induction' k with l ih
+  . simp only [Nat.zero_eq, mul_zero, zero_add]
+    rfl
+  . rw [Nat.succ_eq_add_one, mul_add, mul_one, add_assoc, add_comm 2 1, ← add_assoc]
+    nth_rw 1 [alternating_word_append_odd s t (2 * l + 1 + 2) (2 * l + 1)]
+    nth_rw 1 [alternating_word_append_even s t (2 * l + 1 + 2) 2]
+    . simp only [add_tsub_cancel_left, List.reverse_append, add_tsub_cancel_right,
+        ih, List.append_cancel_right_eq]
+      rfl
+    . norm_num
+    . norm_num
+    . norm_num
+    . norm_num
+
+lemma even_alternating_word_reverse (s t : α) (i : ℕ) (h : Even i) :
+  (alternating_word s t i).reverse = alternating_word t s i := by
+  rcases h with ⟨k, ek⟩
+  rw [← two_mul] at ek
+  rw [ek]
+  clear ek
+  induction' k with l ih
+  . simp only [Nat.zero_eq, mul_zero]
+    rfl
+  . rw [Nat.succ_eq_add_one, mul_add, mul_one, alternating_word_append_even s t (2 * l + 2) 2,
+        alternating_word_append_even t s (2 * l + 2) (2 * l), List.reverse_append,
+        add_tsub_cancel_right, add_tsub_cancel_left, ih]
+    rfl
+    . norm_num
+    . norm_num
+    . norm_num
+    . norm_num
+
 -- DLevel 3
 lemma alternating_word_palindrome (s t : α) (n : ℕ) (i : Fin n) :
     toPalindrome_i (alternating_word s t n : List S) i.1 = (alternating_word s t (2 * i.1 + 1) : List S) := by
-  rw [toPalindrome_i, toPalindrome, alternating_word_take (toSimpleRefl m s) (toSimpleRefl m t) _ _ (by linarith [i.2] : _)]
-  -- you might need more lemmas
-  -- reverse of alternating_word / tail of alternating_word
-  -- may need to by_cases between odd and even
-  sorry
+  rw [toPalindrome_i, toPalindrome,
+      alternating_word_take (toSimpleRefl m s) (toSimpleRefl m t) _ _ (by linarith [i.2] : _)]
+  set s' := toSimpleRefl m s
+  set t' := toSimpleRefl m t
+  by_cases h : (Even (i.1 + 1))
+  . rw [even_alternating_word_reverse]
+    nth_rw 2 [alternating_word]
+    rw [List.tail_cons, alternating_word_append_even s' t' (2 * i.1 + 1) (i.1 + 1)]
+    . simp only [Nat.succ_sub_succ_eq_sub, List.append_cancel_left_eq]
+      rw [two_mul, Nat.add_sub_cancel]
+    . linarith
+    . exact h
+    . exact h
+  . rw [odd_alternating_word_reverse]
+    nth_rw 2 [alternating_word]
+    rw [List.tail_cons, alternating_word_append_odd s' t' (2 * i.1 + 1) (i.1 + 1)]
+    . simp only [Nat.succ_sub_succ_eq_sub, List.append_cancel_left_eq]
+      rw [two_mul, Nat.add_sub_cancel]
+    . linarith
+    . exact Nat.odd_iff_not_even.mpr h
+    . exact Nat.odd_iff_not_even.mpr h
 
 lemma alternating_word_palindrome_periodic (s t : α) (i : ℕ) :
     ((alternating_word s t (2 * (i + m s t) + 1) : List S) : G)
@@ -851,7 +927,7 @@ lemma pi_aux_list (L : List α) (r : R) : (L.map pi_aux').prod r =
       congr
       simp only [nn_prod_eta_aux, gprod_reverse, List.length_cons]
 
-      set t := tail.reverse.map (toSimpleRefl m)
+      /-set t := tail.reverse.map (toSimpleRefl m)
       set th := t ++ [toSimpleRefl m hd]
       set n := t.length
 
@@ -874,10 +950,9 @@ lemma pi_aux_list (L : List α) (r : R) : (L.map pi_aux').prod r =
             val := (↑(List.take (↑x) th))⁻¹ * ↑r.1 * ↑(List.take (↑x) th),
             property := (_ : (fun x => x ∈ Refl S) ((↑(List.take (↑x) th))⁻¹ * ↑r.1 * ↑(List.take (↑x) th)))
           }
-        )
+        )-/
 
       sorry
-#exit
 
 -- DLevel 3
 lemma pi_aux_list_mul (s t : α) : ((pi_aux' s : Equiv.Perm R) * (pi_aux' t : Equiv.Perm R)) ^ n
