@@ -244,6 +244,17 @@ lemma range_map_insert_zero {α : Type u} {n : ℕ} {f : ℕ → α} {g : ℕ �
   · push_neg at ha
     simp only [get?_eq_none.mpr ha, false_and, exists_const]
 
+lemma take_range {n i : ℕ} (h : i ≤ n) : (List.range n).take i = List.range i := by
+  refine (ext_get ?hl ?h).symm
+  rw [length_range, length_take, length_range]
+  exact eq_min Nat.le.refl h fun {_} a _ => a
+  intro m h1 h2
+  rw [get_range, ← get_take, get_range]
+  rw [length_range] at h1 ⊢
+  exact Nat.lt_of_lt_of_le h1 h
+  rw [length_range] at h1
+  exact h1
+
 end List
 
 
