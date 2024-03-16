@@ -755,8 +755,8 @@ lemma alternating_word_power (s t : α) (n : ℕ) : (alternating_word s t (2 * n
 lemma alternating_word_relation (s t : α) : (alternating_word s t (2 * m s t) : List S).gprod = 1 := by
   rw [alternating_word_power s t (m s t), of_relation]
 
-lemma odd_alternating_word_rev (s t : α) (n : ℕ) (i : Fin n) (h : Odd (i.1 + 1)) :
-  (alternating_word s t (i.1 + 1)).reverse = alternating_word s t (i.1 + 1) := by
+lemma odd_alternating_word_rev (s t : α) (i : ℕ) (h : Odd (i + 1)) :
+  (alternating_word s t (i + 1)).reverse = alternating_word s t (i + 1) := by
   rcases h with ⟨k, ek⟩
   rw [ek]
   clear ek
@@ -775,13 +775,13 @@ lemma odd_alternating_word_rev (s t : α) (n : ℕ) (i : Fin n) (h : Odd (i.1 + 
     . norm_num
 
 -- DLevel 1
-lemma odd_alternating_word_rev' (s t : α) (n : ℕ) (i : Fin n) (h : Odd (i.1 + 1)) :
-  (alternating_word s t (i.1 + 1)).reverse = s :: alternating_word t s i.1 := by
+lemma odd_alternating_word_rev' (s t : α) (i : ℕ) (h : Odd (i + 1)) :
+  (alternating_word s t (i + 1)).reverse = s :: alternating_word t s i := by
   sorry
 
 
-lemma even_alternating_word_rev (s t : α) (n : ℕ) (i : Fin n) (h : Even (i.1 + 1)) :
-  (alternating_word s t (i.1 + 1)).reverse = alternating_word t s (i.1 + 1) := by
+lemma even_alternating_word_rev (s t : α) (i : ℕ) (h : Even (i + 1)) :
+  (alternating_word s t (i + 1)).reverse = alternating_word t s (i + 1) := by
   rcases h with ⟨k, ek⟩
   rw [← two_mul] at ek
   rw [ek]
@@ -799,8 +799,8 @@ lemma even_alternating_word_rev (s t : α) (n : ℕ) (i : Fin n) (h : Even (i.1 
     . norm_num
 
 -- DLevel 1
-lemma even_alternating_word_rev' (s t : α) (n : ℕ) (i : Fin n) (h : Even (i.1 + 1)) :
-  (alternating_word s t (i.1 + 1)).reverse = t :: alternating_word s t i.1 := by
+lemma even_alternating_word_rev' (s t : α) (i : ℕ) (h : Even (i + 1)) :
+  (alternating_word s t (i + 1)).reverse = t :: alternating_word s t i := by
   sorry
 
 -- DLevel 3
