@@ -1028,7 +1028,7 @@ lemma eta_lift_eta_aux' {s : S} {t : T} : eta_aux' s t = eta s t := by
   rw [eta, ReflRepn.pi]
   sorry
 
-/-lemma eta_aux'_eq_μ₂gen_pow_nn {s : S} : eta_aux' s t = μ₂.gen ^ nn [s] t := by
+/-lemma eta_aux'_equiv_nn {s : S} : eta_aux' s t = μ₂.gen ^ nn [s] t := by
   have : List.tail [s] = [] := by rw [List.tail]
   rw [eta_aux', nn, List.length_singleton, List.range, List.range.loop,
     List.range.loop, List.map_singleton, List.count_singleton', toPalindrome_i,
@@ -1078,8 +1078,34 @@ lemma eta_t (t : T) : eta (t : G) t = μ₂.gen := by
       rw [Fin.eq_mk_iff_val_eq.mpr meqn]
     exact fun i => this i { val := i, isLt := len ▸ i.isLt } rfl
   have eta_eq (i : Fin (L ++ [s] ++ L.reverse).length) (j : Fin (L ++ [s] ++ L.reverse).length)
-      (hij : i + j + 1 = (L ++ [s] ++ L.reverse).length) : f i = f j := by
-    sorry
+      (hij : i + j = 2 * L.length) (hi : i.1 < L.length) : f i = f j := by
+    dsimp only [f]
+    simp only [SimpleRefl, Set.mem_setOf_eq]
+    repeat rw [List.append_assoc]
+    have : i ≤ (L ++ [s]).length := by
+      rw [List.length_append L [s], List.length_singleton]
+      exact Nat.lt_succ.mp (Nat.le.step (Nat.le.step hi))
+    simp only [List.take_append_of_le_length this, List.take_append_of_le_length (by linarith [hi] : i ≤ L.length)]
+    rw [List.get_append, List.get_append i.1 hi]
+    simp only [eta_aux']
+    congr 1
+    calc
+      _ = (L.get ⟨i, hi⟩ = ((L.take i).reverse : G) * t * L.take i) := by rfl
+      _ = (L.get ⟨i, hi⟩ = ((L.take i).reverse : G) * (L ++ [s] ++ L.reverse) * L.take i) := by
+        congr
+        rw [h]
+        exact tLgL
+      _ = ((L.take i : G) * L.get ⟨i, hi⟩ * (L.take i).reverse = (L.take i : G) * (L.take i).reverse * (L ++ [s] ++ L.reverse) * L.take i * (L.take i).reverse) := by
+        sorry --simp?
+      _ = ((L.take i : G) * L.get ⟨i, hi⟩ * (L.take i).reverse = (L ++ [s] ++ L.reverse)) := by
+        sorry
+        --rw [mul_left]
+      _ = (((L ++ [s] ++ L.reverse).get j : G) = (((L ++ [s] ++ L.reverse).take j).reverse : G) * t * (L ++ [s] ++ L.reverse).take j) := by
+        sorry
+    /-have : i < (L ++ [s]).length := by
+      rw [List.length_append L [s], List.length_singleton]
+      exact Nat.le.step hi
+    exact this-/
   calc
     _ = ∏ i : Fin (2 * L.length + 1), f' i := by
       congr 1
