@@ -637,15 +637,15 @@ lemma nn_prod_eta_aux [CoxeterMatrix m] (L : List S) (t : T) : μ₂.gen ^ (nn L
           ⟨((tail.take i.1).reverse : G) * sts * tail.take i.1, by apply Refl_palindrome_in_Refl⟩ := by
         congr
         simp only [f, eta_aux', toPalindrome_i, toPalindrome, List.take, List.reverse_singleton, List.reverse_nil,
-          List.tail, gprod_append, gprod_nil, gprod_singleton, mul_one, one_mul, List.count_singleton', List.get]
+          List.tail, List.count_singleton', List.get, gprod_simps]
         rw [pow_ite, pow_one, pow_zero]
       _ = ∏ i : Fin (Nat.succ tail.length), f i := by
         let g : Fin tail.length → μ₂ := fun i ↦ eta_aux' (tail.get i)
           ⟨((tail.take i.1).reverse : G) * sts * tail.take i.1, by apply Refl_palindrome_in_Refl⟩
         have h : ∀(i : Fin tail.length), g i = f ⟨i.val + 1, add_lt_add_right i.prop 1⟩ := by
           intro x
-          simp only [List.get_cons_succ, Fin.eta, List.take_cons_succ, eta_aux', List.reverse_cons,
-            gprod_append, gprod_singleton, gprod_cons, gprod_nil, mul_one, mul_assoc]
+          simp only [List.get_cons_succ, Fin.eta, List.take_cons_succ, eta_aux',
+            List.reverse_cons, gprod_simps]
         exact (prod_insert_zero_fin h).symm
 
 lemma exists_of_nn_ne_zero [CoxeterMatrix m] (L : List S) (t : T) : nn L t > 0 →

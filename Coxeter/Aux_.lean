@@ -11,6 +11,8 @@ import Mathlib.Data.List.Palindrome
 import Mathlib.Algebra.BigOperators.Finprod
 import Mathlib.Logic.Equiv.Fin
 
+import Coxeter.AttrRegister
+
 #check List.eraseDups
 #check List.eraseReps
 #check List.groupBy
@@ -409,3 +411,5 @@ lemma halve_odd_prod {M : Type u} [CommMonoid M] {n : ℕ} (f : ℕ → M) :
         rw [prod_insert_zero_fin (fun i ↦ rfl)]
         rfl
       _ = _ := by dsimp only [f', g]; rfl
+
+attribute [gprod_simps] mul_assoc mul_one one_mul mul_inv_rev mul_left_inv mul_right_inv inv_inv inv_one

@@ -64,13 +64,16 @@ instance List.ListGtoGroup : CoeOut (List G) G where
 instance List.ListStoGroup : CoeOut (List S) G where
   coe := fun L ↦ L.gprod
 
+@[gprod_simps]
 lemma gprod_nil : ([] : List S) = (1 : G) := by exact List.prod_nil
 
+@[gprod_simps]
 lemma gprod_singleton {s : S}: ([s] : G) = s := by
   calc
    _ = List.prod [(s : G)] := by congr
    _ = s := by simp
 
+@[gprod_simps]
 lemma gprod_eq_of_list_eq {L1 L2 : List S} (h : L1 = L2) : (L1 : G) = (L2 : G) := by rw [h]
 
 -- Some automation regarding List S
@@ -83,24 +86,25 @@ instance HasHMulListS : HMul (List S) S G where
 instance HasHMulGList : HMul G (List S) G where
   hMul := fun g L ↦ g * (L : G)
 
+@[gprod_simps]
 lemma gprod_cons (hd : S)  (tail : List S) : (hd :: tail : G) = hd * (tail : G) := by {
   simp_rw [← List.prod_cons]
   congr
 }
 
-@[simp]
+@[simp, gprod_simps]
 lemma gprod_append {l1 l2 : List S} : (l1 ++ l2 : G) = l1 * l2 := by {
   rw [← List.prod_append]
   congr
   simp [List.gprod, Lean.Internal.coeM]
 }
 
-@[simp]
+@[simp, gprod_simps]
 lemma gprod_append_singleton {l1 : List S} {s : S} : (l1 ++ [s] : G) = l1 * s := by {
   rw [← gprod_singleton, gprod_append]
 }
 
-@[simp]
+@[simp, gprod_simps]
 abbrev inv_reverse (L : List S) : List G := (List.map (fun x ↦ (x : G)⁻¹) L).reverse
 
 lemma gprod_inv_eq_inv_reverse (L: List S) : (L : G)⁻¹ = inv_reverse L := by rw [List.prod_inv_reverse]
@@ -125,14 +129,14 @@ lemma gen_square_eq_one : ∀ x ∈ S, x * x = 1 := fun x hx ↦ (h.order_two x 
 @[simp]
 lemma gen_square_eq_one' (s : S) : (s : G) * s = 1:= by simp [gen_square_eq_one s.1 s.2]
 
-@[simp]
+--@[simp] -- makes expression more complex
 lemma inv_eq_self [h : OrderTwoGen S]: ∀ x : G, x ∈ S → x = x⁻¹ :=
   fun x hx ↦ mul_eq_one_iff_eq_inv.1 (h.order_two x hx).1
 
-@[simp]
+--@[simp] -- makes expression more complex
 lemma inv_eq_self' : ∀ (x : S), x = (x : G)⁻¹ := fun x ↦ inv_eq_self x.1 x.2
 
-@[simp]
+@[simp, gprod_simps]
 lemma inv_eq_self'' : ∀ (x : S), (x : G)⁻¹ = x := fun x ↦ Eq.symm (inv_eq_self x.1 x.2)
 
 -- The lemma was called non_one
@@ -157,11 +161,11 @@ lemma reverse_prod_prod_eq_one {L : List S} : (L.reverse : G) * L = 1 := by {
     _ = _ := inv_reverse_prod_prod_eq_one
 }
 
-@[simp]
+@[simp, gprod_simps]
 lemma gprod_reverse (L : List S) : L.reverse.gprod = (L.gprod)⁻¹ :=
   mul_eq_one_iff_eq_inv.1 reverse_prod_prod_eq_one
 
-@[simp]
+@[simp, gprod_simps]
 lemma gprod_reverse' (L : List S) : (L.reverse : G)⁻¹ = L := by simp
 
 lemma exists_prod (g : G) : ∃ (L : List S), g = L := h.expression g
