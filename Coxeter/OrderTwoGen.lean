@@ -394,11 +394,20 @@ lemma reduced_drop_of_reduced {S: Set G} [OrderTwoGen S] {L: List S} (H : reduce
 -- On the other hand, the metric is well defined for Coxeter Group
 noncomputable def metric {G :Type*} [Group G] (S : Set G) [@OrderTwoGen G _ S] : MetricSpace G where
   dist := fun x y => length S (x * y⁻¹)
-  dist_self := by sorry
-  dist_comm := by sorry
-  dist_triangle := by sorry
-  eq_of_dist_eq_zero := by sorry
-  edist_dist := by sorry
+  dist_self := fun _ ↦ by simp only [dist, mul_right_inv]; norm_num; exact length_zero_iff_one.mpr rfl
+  dist_comm := fun _ _ ↦ by simp only [dist]; rw [length_eq_inv_length]; group
+  dist_triangle := fun x y z ↦ by
+    simp only [dist]
+    rw [(by group : x * z⁻¹ = (x * y⁻¹) * (y * z⁻¹))]
+    rw [← Nat.cast_add]
+    apply (@Nat.cast_le ℝ _ _ _ _ _ (length S (x * y⁻¹ * (y * z⁻¹))) (length S (x * y⁻¹) + length S (y * z⁻¹))).mpr
+    exact length_mul_le_length_sum
+  eq_of_dist_eq_zero := fun {x y} h ↦ by
+    simp only [Nat.cast_eq_zero, length_zero_iff_one] at h
+    rw [← one_mul y, ← h, mul_assoc, mul_left_inv, mul_one]
+  edist_dist := fun x y ↦ by
+    simp only [Nonneg.mk_nat_cast, ENNReal.ofReal_coe_nat]
+    exact rfl
 
 
 noncomputable def choose_reduced_word (S : Set G) [OrderTwoGen S] (g:G) : List S := Classical.choose (exists_reduced_word S g)
