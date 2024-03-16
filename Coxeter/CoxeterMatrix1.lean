@@ -589,7 +589,7 @@ lemma nn_cons (L : List S) (s : S) (t : T) : nn (s :: L) t = (if (s : G) = t the
       rw [List.count_cons, add_comm]
       congr
       simp only [toPalindrome_i, toPalindrome, List.take, List.reverse_singleton, List.tail,
-        gprod_append, gprod_singleton, gprod_nil, mul_one, List.count_singleton']
+        gprod_simps, List.count_singleton']
     _ = ([(fun i ↦ (t((s :: L), i) : G)) 0].count (t : G) +
         ((List.range L.length).map (fun i ↦ (t(L, i) : G))).count ((s : G) * t * s)) := by
       congr 1
@@ -609,7 +609,7 @@ lemma nn_cons (L : List S) (s : S) (t : T) : nn (s :: L) t = (if (s : G) = t the
         ext i
         simp only [Function.comp_apply, toPalindrome_i, toPalindrome, List.take_cons, List.reverse_cons]
         rw [List.tail_append_of_ne_nil]
-        simp only [gprod_append, gprod_singleton, gprod_nil, gprod_cons, mul_one]
+        simp only [gprod_simps]
         repeat rw [← mul_assoc]
         rw [mul_assoc _ s.1 s.1, gen_square_eq_one s.1 s.2, one_mul, mul_one]
         exact List.append_singleton_ne_nil (ttail.take i).reverse th
