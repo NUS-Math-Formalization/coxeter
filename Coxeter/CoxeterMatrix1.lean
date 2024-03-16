@@ -959,19 +959,11 @@ lemma eta_t (t : T) : eta (t : G) t = μ₂.gen := by
   let f' : Fin (2 * L.length + 1) → μ₂ := fun i ↦ eta_aux' ((L ++ [s] ++ L.reverse).get ⟨i.1, (len_lt i.1).mpr i.2⟩)
     ⟨((L ++ [s] ++ L.reverse).take i).reverse * t * (L ++ [s] ++ L.reverse).take i, by apply Refl_palindrome_in_Refl⟩
   have heqf : HEq f f' := by
-    let t := cast (by rw [len] : (Fin (L ++ [s] ++ L.reverse).length → μ₂) = (Fin (2 * L.length + 1) → μ₂)) f
-    have : t = f' := by
-      dsimp only [t, f, cast]
-      ext x
-      congr
-      simp only [SimpleRefl, Set.mem_setOf_eq, List.append_assoc, List.singleton_append,
-        gprod_reverse]
-      congr
-      sorry
-    exact (Fin.heq_fun_iff len).mpr (congrFun rfl)
-  --rw [eta_lift_eta_aux, eta_aux, if_pos rfl]
-  -- (L ++ [s] ++ L.reverse).length - 1 - i
-  -- folding lemma
+    apply (Fin.heq_fun_iff len).mpr
+    have : ∀ (fm : Fin (L ++ [s] ++ L.reverse).length) (fn : Fin (2 * L.length + 1)), fm.1 = fn.1 → f fm = f' fn := by
+      intro _ _ meqn
+      rw [Fin.eq_mk_iff_val_eq.mpr meqn]
+    exact fun i => this i { val := i, isLt := len ▸ i.isLt } rfl
   have eta_eq (i : Fin (L ++ [s] ++ L.reverse).length) (j : Fin (L ++ [s] ++ L.reverse).length)
       (hij : i + j + 1 = (L ++ [s] ++ L.reverse).length) : f i = f j := by
     sorry
@@ -980,7 +972,6 @@ lemma eta_t (t : T) : eta (t : G) t = μ₂.gen := by
       congr 1
       repeat exact len
       repeat rw [len]
-      --rw [heqf]
       sorry
     _ = f' L.length * ∏ i : Fin L.length, (f' i * f' (L.length * 2 - i)) := by
       --rw [halve_odd_prod]
