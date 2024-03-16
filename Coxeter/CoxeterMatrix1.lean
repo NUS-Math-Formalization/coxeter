@@ -711,25 +711,48 @@ noncomputable def pi_aux' [CoxeterMatrix m] (s : α) : Equiv.Perm R where
   left_inv := by intro r; simp [pi_aux_square_identity]
   right_inv := by intro r; simp [pi_aux_square_identity]
 
-noncomputable def alternating_word (s t : α) (n : ℕ) : List α :=
-  (List.range n).map (fun x ↦ if x % 2 = 0 then s else t)
+/-noncomputable def alternating_word (s t : α) (n : ℕ) : List α :=
+  (List.range n).map (fun x ↦ if x % 2 = 0 then s else t)-/
 
-lemma alternating_word_length (s t : α) (n : ℕ) : (alternating_word s t n).length = n := by
-  rw [alternating_word, List.length_map, List.length_range]
+def alternating_word (s t : α) (n : ℕ) : List α :=
+  match n with
+  | 0 => []
+  | m + 1 => s :: alternating_word t s m
+
+lemma alternating_word_range (s t : α) (n : ℕ) : alternating_word s t n = (List.range n).map (fun x ↦ if x % 2 = 0 then s else t) := by
+  induction' n with m ih generalizing s t
+  · simp only [Nat.zero_eq, List.range_zero, List.map_nil, alternating_word]
+  · rw [alternating_word, ih t s, List.range_eq_range', List.range_eq_range',
+      ← List.range'_append_1 0 1 m, List.map_append, List.range'_eq_map_range 1 m, List.range_eq_range']
+    simp only [List.range'_one, List.map_cons, Nat.zero_mod, reduceIte, List.map_nil, List.map_map,
+      List.singleton_append, List.cons.injEq, true_and]
+    congr
+    ext x
+    dsimp only [Function.comp_apply]
+    have : (if ¬¬(1 + x) % 2 = 0 then s else t) = if x % 2 = 0 then t else s := by
+      rw [ite_not]
+      congr
+      simp only [Nat.mod_two_ne_zero, eq_iff_iff]
+      rw [add_comm, ← Nat.succ_eq_add_one]
+      exact Nat.succ_mod_two_eq_one_iff
+    rw [← this]
+    congr
+    rw [not_not]
 
 lemma alternating_word_nil (s t : α) : alternating_word s t 0 = [] := by
   rw [alternating_word]
-  simp only [List.range, List.range.loop, List.map_nil]
 
 lemma alternating_word_singleton (s t : α) : alternating_word s t 1 = [s] := by
-  rw [alternating_word]
-  simp only [List.range, List.range.loop, List.map_singleton,
-    if_pos (by norm_num : 0 % 2 = 0)]
+  rw [alternating_word, alternating_word_nil]
 
--- DLevel 1
+lemma alternating_word_length (s t : α) (n : ℕ) : (alternating_word s t n).length = n := by
+  induction' n with m ih generalizing s t
+  rw [alternating_word_nil, List.length_nil]
+  rw [alternating_word, List.length_cons, ih t s]
+
 lemma alternating_word_take (s t : α) (n i : ℕ) (h : i ≤ n) :
     (alternating_word s t n).take i = alternating_word s t i := by
-  sorry
+  rw [alternating_word_range, alternating_word_range, ← List.map_take, List.take_range h]
 
 -- DLevel 2
 lemma alternating_word_append_odd (s t : α) (n m : ℕ) (h1 : m ≤ n) (h2 : Odd m) :
@@ -755,14 +778,67 @@ lemma alternating_word_power (s t : α) (n : ℕ) : (alternating_word s t (2 * n
 lemma alternating_word_relation (s t : α) : (alternating_word s t (2 * m s t) : List S).gprod = 1 := by
   rw [alternating_word_power s t (m s t), of_relation]
 
+lemma odd_alternating_word_reverse (s t : α) (i : ℕ) (h : Odd i) :
+  (alternating_word s t i).reverse = alternating_word s t i := by
+  rcases h with ⟨k, ek⟩
+  rw [ek]
+  clear ek
+  induction' k with l ih
+  . simp only [Nat.zero_eq, mul_zero, zero_add]
+    rfl
+  . rw [Nat.succ_eq_add_one, mul_add, mul_one, add_assoc, add_comm 2 1, ← add_assoc]
+    nth_rw 1 [alternating_word_append_odd s t (2 * l + 1 + 2) (2 * l + 1)]
+    nth_rw 1 [alternating_word_append_even s t (2 * l + 1 + 2) 2]
+    . simp only [add_tsub_cancel_left, List.reverse_append, add_tsub_cancel_right,
+        ih, List.append_cancel_right_eq]
+      rfl
+    . norm_num
+    . norm_num
+    . norm_num
+    . norm_num
+
+lemma even_alternating_word_reverse (s t : α) (i : ℕ) (h : Even i) :
+  (alternating_word s t i).reverse = alternating_word t s i := by
+  rcases h with ⟨k, ek⟩
+  rw [← two_mul] at ek
+  rw [ek]
+  clear ek
+  induction' k with l ih
+  . simp only [Nat.zero_eq, mul_zero]
+    rfl
+  . rw [Nat.succ_eq_add_one, mul_add, mul_one, alternating_word_append_even s t (2 * l + 2) 2,
+        alternating_word_append_even t s (2 * l + 2) (2 * l), List.reverse_append,
+        add_tsub_cancel_right, add_tsub_cancel_left, ih]
+    rfl
+    . norm_num
+    . norm_num
+    . norm_num
+    . norm_num
+
 -- DLevel 3
 lemma alternating_word_palindrome (s t : α) (n : ℕ) (i : Fin n) :
     toPalindrome_i (alternating_word s t n : List S) i.1 = (alternating_word s t (2 * i.1 + 1) : List S) := by
-  rw [toPalindrome_i, toPalindrome, alternating_word_take (toSimpleRefl m s) (toSimpleRefl m t) _ _ (by linarith [i.2] : _)]
-  -- you might need more lemmas
-  -- reverse of alternating_word / tail of alternating_word
-  -- may need to by_cases between odd and even
-  sorry
+  rw [toPalindrome_i, toPalindrome,
+      alternating_word_take (toSimpleRefl m s) (toSimpleRefl m t) _ _ (by linarith [i.2] : _)]
+  set s' := toSimpleRefl m s
+  set t' := toSimpleRefl m t
+  by_cases h : (Even (i.1 + 1))
+  . rw [even_alternating_word_reverse]
+    nth_rw 2 [alternating_word]
+    rw [List.tail_cons, alternating_word_append_even s' t' (2 * i.1 + 1) (i.1 + 1)]
+    . simp only [Nat.succ_sub_succ_eq_sub, List.append_cancel_left_eq]
+      rw [two_mul, Nat.add_sub_cancel]
+    . linarith
+    . exact h
+    . exact h
+  . rw [odd_alternating_word_reverse]
+    nth_rw 2 [alternating_word]
+    rw [List.tail_cons, alternating_word_append_odd s' t' (2 * i.1 + 1) (i.1 + 1)]
+    . simp only [Nat.succ_sub_succ_eq_sub, List.append_cancel_left_eq]
+      rw [two_mul, Nat.add_sub_cancel]
+    . linarith
+    . exact Nat.odd_iff_not_even.mpr h
+    . exact Nat.odd_iff_not_even.mpr h
 
 lemma alternating_word_palindrome_periodic (s t : α) (i : ℕ) :
     ((alternating_word s t (2 * (i + m s t) + 1) : List S) : G)
@@ -822,8 +898,7 @@ lemma pi_aux_list_in_T (L : List α) (t : T) :
 -- DLevel 4
 lemma pi_aux_list (L : List α) (r : R) : (L.map pi_aux').prod r =
     ((⟨(L.map (toSimpleRefl m)) * r.1 * (L.reverse.map (toSimpleRefl m)), pi_aux_list_in_T L r.1⟩,
-    r.2 * μ₂.gen ^ nn (L.map (toSimpleRefl m)) r.1) : R) := by
-  -- induction on L
+    r.2 * μ₂.gen ^ nn (L.reverse.map (toSimpleRefl m)) r.1) : R) := by
   induction L with
   | nil => simp only [nn, List.map_nil, List.prod_nil, Equiv.Perm.coe_one, id_eq,
     Set.mem_setOf_eq, List.reverse_nil, List.length_nil, List.range_zero, List.nodup_nil,
@@ -831,13 +906,74 @@ lemma pi_aux_list (L : List α) (r : R) : (L.map pi_aux').prod r =
   | cons hd tail ih =>
     rw [List.map_cons, List.prod_cons, Equiv.Perm.mul_apply, ih, pi_aux']
     ext
-    simp only [List.map_cons, toSimpleRefl,
-      List.reverse_cons, List.map_append, List.map_nil, gprod_append,
-      pi_aux]
-    dsimp only [SimpleRefl, Set.mem_setOf_eq, Set.coe_setOf, id_eq, μ₂.gen, Equiv.coe_fn_mk]
-    rw [gprod_cons, gprod_singleton]
-    sorry
-    sorry
+    . simp only [List.map_cons, toSimpleRefl, List.reverse_cons,
+        List.map_append, List.map_nil, gprod_append, pi_aux]
+      dsimp only [SimpleRefl, Set.mem_setOf_eq, Set.coe_setOf, id_eq, μ₂.gen, Equiv.coe_fn_mk]
+      rw [gprod_cons, gprod_singleton]
+      simp only
+      repeat rw [mul_assoc]
+      simp only [mul_right_inj]
+      apply (mul_left_inj (of m hd)).1
+      rw [mul_left_inv]
+      apply Eq.symm
+      apply of_square_eq_one
+    . simp only [List.map_cons, pi_aux]
+      dsimp only [id_eq, Set.mem_setOf_eq, Equiv.coe_fn_mk]
+      simp only [eta_aux_aux', List.reverse_cons, List.map_append, List.map_cons, List.map_nil]
+      rw [mul_assoc]
+      congr
+      simp only [nn_prod_eta_aux, gprod_reverse, List.length_cons]
+      set t := tail.reverse.map (toSimpleRefl m)
+      set th := t ++ [toSimpleRefl m hd]
+      set n := t.length
+      set g := fun x : Fin (n) ↦
+        (eta_aux' (t.get x)
+          {
+            val := (↑(t.take (↑x)))⁻¹ * ↑r.1 * ↑(t.take (↑x)),
+            property := (_ : (fun x => x ∈ Refl S) ((↑(t.take (↑x)))⁻¹ * ↑r.1 * ↑(t.take (↑x))))
+          }
+        )
+      set g' := fun x : Fin (th.length) ↦
+        (eta_aux' (th.get x)
+          { val := (↑(th.take (↑x)))⁻¹ * ↑r.1 * ↑(th.take (↑x)),
+            property := (_ : (fun x => x ∈ Refl S) ((↑(th.take (↑x)))⁻¹ * ↑r.1 * ↑(th.take (↑x))))
+          }
+        )
+      have len : n + 1 = th.length := (List.length_append_singleton t (toSimpleRefl m hd)).symm
+      let f : Fin (n + 1) → μ₂ := fun x ↦
+        (eta_aux' (th.get ⟨x, by rw [← len]; exact x.2⟩)
+          (⟨((th.take (↑x)).gprod)⁻¹ * ↑r.1 * (th.take (↑x)).gprod,
+              by nth_rw 2 [← inv_inv (th.take (↑x)).gprod]; apply Refl.conjugate_closed⟩)
+        )
+      have heqf : HEq g' f := by
+        apply (Fin.heq_fun_iff len.symm).2
+        have (i : Fin (th.length)) (j : Fin (n + 1)) : i.1 = j.1 → g' i = f j := by
+          intro ieqj
+          rw [Fin.eq_mk_iff_val_eq.mpr ieqj]
+        exact fun i => this i { val := ↑i, isLt := len.symm ▸ i.isLt } rfl
+      have replace_prod : ∏ i : Fin (th.length), g' i = ∏ i : Fin (n + 1), f i := by
+        congr 1
+        exact congrArg Fin (len.symm)
+        repeat rw [len]
+      rw [replace_prod, prod_insert_last_fin, mul_comm]
+      congr
+      . rw [List.get_last]
+        simp only [List.length_map, List.length_reverse, Fin.val_nat_cast, Nat.mod_succ,
+          lt_self_iff_false, not_false_eq_true]
+      . rw [← gprod_reverse]
+        simp only [Fin.val_nat_cast, Nat.mod_succ]
+        rw [List.take_left, List.map_reverse, List.reverse_reverse]
+      . simp only [Fin.val_nat_cast, Nat.mod_succ]
+        rw [List.take_left, List.map_reverse]
+      . funext i
+        simp only [List.get_map, Fin.coe_eq_castSucc, Fin.coe_castSucc]
+        rw [List.get_append]
+        . congr 1
+          . rw [List.get_map]
+          . simp only [Subtype.mk.injEq]
+            rw [List.take_append_of_le_length]
+            simp only [n] at i
+            apply le_of_lt i.2
 
 -- DLevel 3
 lemma pi_aux_list_mul (s t : α) : ((pi_aux' s : Equiv.Perm R) * (pi_aux' t : Equiv.Perm R)) ^ n
@@ -959,19 +1095,11 @@ lemma eta_t (t : T) : eta (t : G) t = μ₂.gen := by
   let f' : Fin (2 * L.length + 1) → μ₂ := fun i ↦ eta_aux' ((L ++ [s] ++ L.reverse).get ⟨i.1, (len_lt i.1).mpr i.2⟩)
     ⟨((L ++ [s] ++ L.reverse).take i).reverse * t * (L ++ [s] ++ L.reverse).take i, by apply Refl_palindrome_in_Refl⟩
   have heqf : HEq f f' := by
-    let t := cast (by rw [len] : (Fin (L ++ [s] ++ L.reverse).length → μ₂) = (Fin (2 * L.length + 1) → μ₂)) f
-    have : t = f' := by
-      dsimp only [t, f, cast]
-      ext x
-      congr
-      simp only [SimpleRefl, Set.mem_setOf_eq, List.append_assoc, List.singleton_append,
-        gprod_reverse]
-      congr
-      sorry
-    exact (Fin.heq_fun_iff len).mpr (congrFun rfl)
-  --rw [eta_lift_eta_aux, eta_aux, if_pos rfl]
-  -- (L ++ [s] ++ L.reverse).length - 1 - i
-  -- folding lemma
+    apply (Fin.heq_fun_iff len).mpr
+    have : ∀ (fm : Fin (L ++ [s] ++ L.reverse).length) (fn : Fin (2 * L.length + 1)), fm.1 = fn.1 → f fm = f' fn := by
+      intro _ _ meqn
+      rw [Fin.eq_mk_iff_val_eq.mpr meqn]
+    exact fun i => this i { val := i, isLt := len ▸ i.isLt } rfl
   have eta_eq (i : Fin (L ++ [s] ++ L.reverse).length) (j : Fin (L ++ [s] ++ L.reverse).length)
       (hij : i + j + 1 = (L ++ [s] ++ L.reverse).length) : f i = f j := by
     sorry
@@ -980,7 +1108,6 @@ lemma eta_t (t : T) : eta (t : G) t = μ₂.gen := by
       congr 1
       repeat exact len
       repeat rw [len]
-      --rw [heqf]
       sorry
     _ = f' L.length * ∏ i : Fin L.length, (f' i * f' (L.length * 2 - i)) := by
       --rw [halve_odd_prod]
