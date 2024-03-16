@@ -755,55 +755,53 @@ lemma alternating_word_power (s t : α) (n : ℕ) : (alternating_word s t (2 * n
 lemma alternating_word_relation (s t : α) : (alternating_word s t (2 * m s t) : List S).gprod = 1 := by
   rw [alternating_word_power s t (m s t), of_relation]
 
-
 lemma odd_alternating_word_rev (s t : α) (n : ℕ) (i : Fin n) (h : Odd (i.1 + 1)) :
-  (alternating_word s t (i.1 + 1)).reverse = s :: alternating_word t s i.1 := by
+  (alternating_word s t (i.1 + 1)).reverse = alternating_word s t (i.1 + 1) := by
   rcases h with ⟨k, ek⟩
-  simp only [add_left_inj] at ek
   rw [ek]
   clear ek
   induction' k with l ih
   . simp only [Nat.zero_eq, mul_zero, zero_add]
     rfl
-  . rw [Nat.succ_eq_add_one, mul_add, mul_one, add_assoc, add_comm 2 1, ← add_assoc,
-        alternating_word_append_even s t (2 * l + 1 + 2) 2]
-    . rw [Nat.add_sub_cancel, List.reverse_append, ih]
-      simp only [List.cons_append, List.cons.injEq, true_and]
-      have : List.reverse (alternating_word s t 2) = alternating_word t s 2 := rfl
-      rw [this]
-      rw [alternating_word_append_even t s (2 * l + 2) (2 * l)]
-      simp only [add_tsub_cancel_left]
-      . norm_num
-      . norm_num
-    . linarith
+  . rw [Nat.succ_eq_add_one, mul_add, mul_one, add_assoc, add_comm 2 1, ← add_assoc]
+    nth_rw 1 [alternating_word_append_odd s t (2 * l + 1 + 2) (2 * l + 1)]
+    nth_rw 1 [alternating_word_append_even s t (2 * l + 1 + 2) 2]
+    . simp only [add_tsub_cancel_left, List.reverse_append, add_tsub_cancel_right,
+        ih, List.append_cancel_right_eq]
+      rfl
+    . norm_num
+    . norm_num
+    . norm_num
     . norm_num
 
+-- DLevel 1
+lemma odd_alternating_word_rev' (s t : α) (n : ℕ) (i : Fin n) (h : Odd (i.1 + 1)) :
+  (alternating_word s t (i.1 + 1)).reverse = s :: alternating_word t s i.1 := by
+  sorry
+
+
 lemma even_alternating_word_rev (s t : α) (n : ℕ) (i : Fin n) (h : Even (i.1 + 1)) :
-  (alternating_word s t (i.1 + 1)).reverse = t :: alternating_word s t i.1 := by
+  (alternating_word s t (i.1 + 1)).reverse = alternating_word t s (i.1 + 1) := by
   rcases h with ⟨k, ek⟩
   rw [← two_mul] at ek
   rw [ek]
-  have : i.1 = 2 * k - 1 := eq_tsub_of_add_eq ek
-  rw [this]
-  rcases k with _ | k
-  . have : i.1 < 0 := by linarith
-    contradiction
-  . clear ek this
-    induction' k with l ih
-    . simp only [Nat.zero_eq, Nat.reduceSucc, mul_one, Nat.succ_sub_succ_eq_sub, tsub_zero] at *
-      rfl
-    . rw [Nat.succ_eq_add_one] at *
-      rw [mul_add, mul_one, ← tsub_add_eq_add_tsub,
-          alternating_word_append_even s t (2 * (l + 1) + 2) (2 * (l + 1)),
-          alternating_word_append_even s t (2 * (l + 1) - 1 + 2) 2]
-      simp only [add_tsub_cancel_left, List.reverse_append, add_tsub_cancel_right]
-      rw [ih]
-      rfl
-      . norm_num
-      . norm_num
-      . norm_num
-      . norm_num
-      . exact Nat.one_le_of_lt Nat.le.refl
+  clear ek
+  induction' k with l ih
+  . simp only [Nat.zero_eq, mul_zero]
+    rfl
+  . rw [Nat.succ_eq_add_one, mul_add, mul_one, alternating_word_append_even s t (2 * l + 2) 2,
+        alternating_word_append_even t s (2 * l + 2) (2 * l), List.reverse_append,
+        add_tsub_cancel_right, add_tsub_cancel_left, ih]
+    rfl
+    . norm_num
+    . norm_num
+    . norm_num
+    . norm_num
+
+-- DLevel 1
+lemma even_alternating_word_rev' (s t : α) (n : ℕ) (i : Fin n) (h : Even (i.1 + 1)) :
+  (alternating_word s t (i.1 + 1)).reverse = t :: alternating_word s t i.1 := by
+  sorry
 
 -- DLevel 3
 lemma alternating_word_palindrome (s t : α) (n : ℕ) (i : Fin n) :
@@ -813,14 +811,14 @@ lemma alternating_word_palindrome (s t : α) (n : ℕ) (i : Fin n) :
   set s' := toSimpleRefl m s
   set t' := toSimpleRefl m t
   by_cases h : (Even (i.1 + 1))
-  . rw [even_alternating_word_rev, List.tail_cons,
+  . rw [even_alternating_word_rev', List.tail_cons,
         alternating_word_append_even s' t' (2 * i.1 + 1) (i.1 + 1)]
     . simp only [Nat.succ_sub_succ_eq_sub, List.append_cancel_left_eq]
       rw [two_mul, Nat.add_sub_cancel]
     . linarith
     . exact h
     . exact h
-  . rw [odd_alternating_word_rev, List.tail_cons,
+  . rw [odd_alternating_word_rev', List.tail_cons,
         alternating_word_append_odd s' t' (2 * i.1 + 1) (i.1 + 1)]
     . simp only [Nat.succ_sub_succ_eq_sub, List.append_cancel_left_eq]
       rw [two_mul, Nat.add_sub_cancel]
