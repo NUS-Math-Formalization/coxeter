@@ -21,8 +21,8 @@ variable {P : Type*} [PartialOrder P]
 
 
 /- Definition: We say a is covered by b if x < y and there is no element z such that x < z < y. -/
-def ledot {P : Type*} [PartialOrder P] : P → P → Prop := sorry -- (a : P) → (b : P) → (a < b ∧ (∀ {c : P}, (a ≤ c ∧ c ≤ b) → (a = c ∨ b = c)))
-def led := (a : P) → (b : P) → (a ≤ b)
+-- def ledot {P : Type*} [PartialOrder P] : P → P → Prop := sorry -- (a : P) → (b : P) → (a < b ∧ (∀ {c : P}, (a ≤ c ∧ c ≤ b) → (a = c ∨ b = c)))
+def ledot {P : Type*} [PartialOrder P]  (a b : P) : Prop := (∀ c : P, (a ≤ c ∧ c ≤ b) → (a = c ∨ b = c))
 
 /-Bookmark:
 ledot should be of type P → P → Prop
@@ -37,7 +37,7 @@ def Set_edges (P : Type*) [PartialOrder P] : Set (P × P) := {(a, b) | ledot a b
 
 /- Definition: For any list L = (x0, x1, ⋯ , x_n) in P, we define a new list in P × P by
 ((x0, x1), (x1,x2), ⋯ (x_{n-1}, x_n).
-  If the list L has length less than 2, the new list will be an empty list by conventin. -/
+  If the list L has length less than 2, the new list will be an empty list by convention. -/
 def List_pair {P : Type*} [PartialOrder P] : List P → List (P × P)
   | [] => []
   | _ :: []  => []
@@ -56,6 +56,7 @@ Definition: A chain in the poset P is a finite sequence x₀ < x₁ < ⋯ < x_n.
 -/
 def chain {P : Type*} [PartialOrder P] (L : List P) : Prop := List.Chain' (. < .) L
 
+
 #print List.Chain'
 
 
@@ -67,16 +68,22 @@ In other words, all relations are cover relations with x_0 being a minimal eleme
 def maximal_chain {P : Type*} [PartialOrder P] (L: List P) : Prop := chain L ∧
   ∀ L' : List P, chain L' -> List.Sublist L L' -> L = L'
 
-lemma maximal_chain_ledot {P : Type*} [PartialOrder P] (L: List P) (h : maximal_chain L): Prop := sorry
-  -- ∀ i :
-  -- ((L.head h = (⊥ : P)) ∧ (L.getLast h = (⊤ : P)) ∧ (List.Chain' ledot L)) := by sorry
-lemma maximal_chain_edges {P : Type*} [PartialOrder P] (L: List P) (h : maximal_chain L):
-  Chain' ledot L := by sorry
+
+/-
+Lemma: If a chain L : x₀ < x₁ < ⋯ < x_n is maximal, then we have x_0 ⋖ x_1 ⋖ x_2 ⋯ ⋖ x_n.
+-/
+lemma maximal_chain_ledot {P : Type*} [PartialOrder P] (L: List P) (h : maximal_chain L): List.Chain' ledot L := sorry
 
 
+/-
+Lemma: Let P be a bounded finite poset. Then a maximal chain exsits.
+-/
 lemma exist_maximal_chain {P : Type*} [PartialOrder P] [BoundedOrder P] [Finite P] :
   ∃ L : List P, maximal_chain L := by sorry
 
+/-
+Lemma:
+-/
 lemma ledot_max_chain {P : Type*} [PartialOrder P] [BoundedOrder P]  [Finite P] (L: List P) (h : L ≠ []) :
   maximal_chain L ↔ ((L.head h = (⊥ : P)) ∧ (L.getLast h = (⊤ : P)) ∧ (List.Chain' ledot L)) := by sorry
 
@@ -87,13 +94,13 @@ We define the set of all maximal chains of P.
 def maximalChains (P : Type*) [PartialOrder P] : Set (List P) := { L | maximal_chain L }
 
 
-/- Definition: A poset P is called graded if it is pure and bounded.-/
-class GradedPoset (P : Type*) [PartialOrder P] extends BoundedOrder P where
+/- Definition: A poset P is called graded if it is pure and bounded.
+A poset is called pure if all maximal chains are of the same length.
+-/
+class GradedPoset (P : Type*) [PartialOrder P][Finite P] extends BoundedOrder P where
   pure: ∀ (L₁ L₂ : List P), ((maximal_chain L₁) ∧ (maximal_chain L₂)) → (L₁.length = L₂.length)
 
 def Interval {P : Type*} [PartialOrder P] (x y : P) (h : x ≤ y) : Set P := {z | x ≤ z ∧ z ≤ y}
-
--- def Interval.poset1 {P : Type*} [PartialOrder P] (x y : P) (h : x ≤ y) : Prop := sorry
 
 instance Interval.bounded {P : Type*} [PartialOrder P] {x y : P} (h : x ≤ y) : BoundedOrder (Interval x y h) where
   top := ⟨y, And.intro h (le_refl y)⟩
@@ -110,7 +117,7 @@ PartialOrder (Interval x y h) := by exact Subtype.partialOrder _
 
 
 --- begin experiment
-section
+section Experiement
 variable (P : Type*) [PartialOrder P] (x y z: P) (h : x ≤ y)
 
 def Interval.poset1 {P : Type*} [PartialOrder P] {x y : P} (h : x ≤ y) :
@@ -141,7 +148,7 @@ example : ∀ z ∈ Interval x y h, z ≤ y := by
   exact h1.2
 
 
-end
+end Experiement
 ------ end experiment
 
 
@@ -157,35 +164,28 @@ Definition: An edge labelling of P is called an EL-labelling if for every interv
   (2) c <_L c' for all other maximal chains c' in [x,y].
 Here <_L denotes the lexicographic ordering for the tuples in the labelling poset A.
 -/
-class EL_labelling (P A : Type*) [PartialOrder P] [BoundedOrder P] [PartialOrder A] where
+class EL_labelling (P A : Type*) [PartialOrder P] [Finite P][GradedPoset P] [PartialOrder A] where
   edges : Set (P × P) := {(a, b) : P × P | ledot a b }
   EL : edges → A
   chainL : (x y : P) → (h : x ≤ y) → List (Interval x y h)
   max : (x y : P) → (h : x ≤ y) → @maximal_chain _ (Interval.poset h) (chainL x y h)
-  chainL_edges : Prop := sorry
-  -- chainPair : (x y : P) → (h : x ≤ y) → ((List_pair (chainL x y h)))
-  Inc : (x y : P) → (h : x ≤ y) → @maximal_chain _ (Interval.poset h) (chainL x y h) ∧ chain ((List_pair (chainL x y h)).map EL)
-  Unique : ∀ L1 L2 : List (Interval x y h), ((maximal_chain L1) ∧ (maximal_chain L2))→ (chain ((List_pair L1).map EL) ∧ chain ((List_pair L2).map EL)) → L1 = L2
-  L_min : ∀ L1 L2 : List (Interval x y h), ((maximal_chain L1) ∧ (maximal_chain L2))
+  chainL_edges : List.Chain' ledot (chainL x y h)
+  Inc : chain ((List_pair (chainL x y h)).map EL)
+  Unique : ∀ L1 : List (Interval x y h), (maximal_chain L1)→ chain ((List_pair L1).map EL)→ L1 = chainL x y h
+  L_min : ∀ L1 : List (Interval x y h), (maximal_chain L1)  → ((List_pair (chainL x y h)).map EL) ≤ ((List_pair L1).map EL)
 
-
+#check EL_labelling.chainL
 
 /-
 Definition: A graded poset P is called shellable if there is an ordering L_1, ⋯ , L_m of all maximal
 chains of P such that |L_i ∩ (∪_{j < i} L_{j})| = |L_i|- 1.
 -/
-def shellable (P : Type*) [PartialOrder P] [GradedPoset P]: Prop := sorry
+def shellable (P : Type*) [PartialOrder P][Finite P] [GradedPoset P]: Prop := sorry
  --∃ (m:ℕ) (L: Fin m ≃ maximalChains P),
   --(∀ i : Fin m, ((L i).val.toFinset ∩ (⋃  j : Fin i.val, (L ⟨j.val,by sorry⟩).val.toFinset)).card = (L i).toFinset.length -1)
 
 
--- def CL_labelling (P : Type*) [PartialOrder P] (h: graded P): Prop := sorry
 
-/-
-
-How to hide the graded assmption.
-
--/
 
 /- Get elements out of the list L-/
 
@@ -193,7 +193,7 @@ def pick_i {P : Type*} [PartialOrder P] (L : List P) (i : (Fin (L.length-1))) : 
    ((L.get ⟨i.1,by linarith [i.2]⟩),L.get ⟨i.1+1, by (linarith [i.2])⟩)
 
 
-def EL_maximal_chain (P A : Type*) [PartialOrder P] [PartialOrder A] [GradedPoset P] (L: List P) (h: maximal_chain L)
+def EL_maximal_chain (P A : Type*) [PartialOrder P] [PartialOrder A][Finite P] [GradedPoset P] (L: List P) (h: maximal_chain L)
   (el : EL P A):= ∀ i, el ⟨((L.get ⟨i, by sorry⟩ ),(L.get ⟨i+1, by sorry⟩)),by sorry⟩ → (Fin n→ A)
 
 /-
@@ -220,6 +220,4 @@ lemma EL_CL {P : Type*} [PartialOrder P] (h: EL_labelling P) : CL_labelling P :=
 
 /- Theorem: Let P be a graded poset. If P admits an EL-labelling, then P is shellable. -/
 
-theorem EL_shellable {P : Type*} [PartialOrder P] (h: EL_labelling P) : shellable P := by
-  apply EL_CL at h
-  apply CL_shellable h
+theorem EL_shellable {P : Type*} [PartialOrder P] [BoundedOrder P] (EL_labelling P A) : shellable P := by sorry
