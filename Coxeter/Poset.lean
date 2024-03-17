@@ -28,7 +28,7 @@ def ledot {P : Type*} [PartialOrder P]  (a b : P) : Prop := (∀ c : P, (a ≤ c
 ledot should be of type P → P → Prop
 -/
 
-/- Notation: We denote the cover relation by x ⋖ y -/
+/- Notation: We denote the cover relation by x ⋖ y. Use "\les" to type the symbol -/
 notation a " ⋖ " b => ledot a b
 
 /- Defintion: We define the set of edges of P as set of all pairs (a,b) such that a is covered by b.-/
@@ -56,9 +56,7 @@ Definition: A chain in the poset P is a finite sequence x₀ < x₁ < ⋯ < x_n.
 -/
 def chain {P : Type*} [PartialOrder P] (L : List P) : Prop := List.Chain' (. < .) L
 
-
-#print List.Chain'
-
+--#print List.Chain'
 
 /-
 Definition: A chain in the poset P is maximal if it is not a proper subset of any other chains.
@@ -100,16 +98,17 @@ A poset is called pure if all maximal chains are of the same length.
 class GradedPoset (P : Type*) [PartialOrder P][Finite P] extends BoundedOrder P where
   pure: ∀ (L₁ L₂ : List P), ((maximal_chain L₁) ∧ (maximal_chain L₂)) → (L₁.length = L₂.length)
 
+@[deprecated Set.Icc]
 def Interval {P : Type*} [PartialOrder P] (x y : P) (h : x ≤ y) : Set P := {z | x ≤ z ∧ z ≤ y}
 
-instance Interval.bounded {P : Type*} [PartialOrder P] {x y : P} (h : x ≤ y) : BoundedOrder (Interval x y h) where
+instance Interval.bounded {P : Type*} [PartialOrder P] {x y : P} (h : x ≤ y) : BoundedOrder (Set.Icc x y) where
   top := ⟨y, And.intro h (le_refl y)⟩
   bot := ⟨x, And.intro (le_refl x) h⟩
   le_top := fun x ↦ x.2.2
   bot_le := fun x ↦ x.2.1
 
 instance Interval.poset {P : Type*} [PartialOrder P] {x y : P} (h : x ≤ y) :
-PartialOrder (Interval x y h) := by exact Subtype.partialOrder _
+PartialOrder (Set.Icc x y) := by exact Subtype.partialOrder _
 
 /- Question: The difference between instance and theorem for the above.-/
 
@@ -120,7 +119,7 @@ PartialOrder (Interval x y h) := by exact Subtype.partialOrder _
 section Experiement
 variable (P : Type*) [PartialOrder P] (x y z: P) (h : x ≤ y)
 
-def Interval.poset1 {P : Type*} [PartialOrder P] {x y : P} (h : x ≤ y) :
+def Interval.poset1 {P : Type*} [PartialOrder P] {x y : P} :
 PartialOrder ({z | x ≤ z ∧ z ≤ y}) := by exact Subtype.partialOrder _
 
 /- Question: can we just define the poset directly? Then the question is if we can pick out the carrier set.
