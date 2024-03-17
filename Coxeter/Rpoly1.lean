@@ -1,7 +1,4 @@
-import Coxeter.Basic
-import Coxeter.Bruhat
-import Coxeter.Length_reduced_word
-import Coxeter.Hecke
+import Coxeter.Hecke2
 
 import Mathlib.Data.Polynomial.Degree.Definitions
 import Mathlib.Data.Polynomial.Reverse

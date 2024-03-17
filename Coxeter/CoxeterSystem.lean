@@ -1,4 +1,5 @@
 import Coxeter.OrderTwoGen
+import Coxeter.Aux_
 
 namespace OrderTwoGen
 variable {G : Type*} [Group G] (S : Set G) [OrderTwoGen S]
@@ -102,7 +103,7 @@ lemma exchange_imp_deletion : ExchangeProp S →  DeletionProp S:= by
   have h_L_decomp : (List.removeNth (List.removeNth L j) i) =
     (List.removeNth L1 i).gprod * (List.drop (j+1) L) := by
     rw [←gprod_append]; apply congr_arg
-    rw [←List.removeNth_append_lt, ←List.remove_nth_eq_take_drop]
+    rw [←List.removeNth_append_lt, ←List.removeNth_eq_take_drop]
     exact i.2
   rw [h_L_decomp, ←Hp, ←gprod_singleton]
   apply take_drop_get'
@@ -209,11 +210,18 @@ variable (G :Type*) [hG: HOrderTwoGenGroup G]
 variable {H :Type*} [hH: HOrderTwoGenGroup H]
 
 @[simp]
-def SimpleRefls := hG.S
+abbrev SimpleRefl := hG.S
+@[simp,deprecated SimpleRefl]
+abbrev SimpleRefls := hG.S
 
-#check SimpleRefls G
 
-instance SimpleRefls.toOrderTwoGen  : @OrderTwoGen H _ (SimpleRefls H) where
+
+abbrev Refl (G:Type*) [HOrderTwoGenGroup G]: Set G:= {x:G| ∃ (w:G)(s : SimpleRefl G) , x = w*s*w⁻¹}
+
+@[deprecated Refl]
+abbrev Refls (G:Type*) [HOrderTwoGenGroup G]: Set G:= {x:G| ∃ (w:G)(s : SimpleRefl G) , x = w*s*w⁻¹}
+
+instance SimpleRefls.toOrderTwoGen  : @OrderTwoGen H _ (SimpleRefl H) where
   order_two := hH.order_two
   expression := hH.expression
 
@@ -224,8 +232,11 @@ instance SimpleRefls.toOrderTwoGen'  : @OrderTwoGen H _ (hH.S) where
 
 noncomputable def length  (g :H) := OrderTwoGen.length (hH.S) g
 
-notation:100 "ℓ(" g:101 ")" => (length g)
-
+notation:65 "ℓ(" g:66 ")" => (length g)
+variable (s w :G)
+#check ℓ(s*w)
+#check ℓ((s*w))
+#check ℓ(s) - 1
 end HOrderTwoGenGroup
 
 class CoxeterGroup (G:Type*) extends HOrderTwoGenGroup G where
@@ -236,7 +247,7 @@ class CoxeterGroup (G:Type*) extends HOrderTwoGenGroup G where
 namespace CoxeterGroup
 open HOrderTwoGenGroup
 
-instance SimpleRefl_isCoxeterSystem  {G:Type*} [hG:CoxeterGroup G]: CoxeterSystem (SimpleRefls G) where
+instance SimpleRefl_isCoxeterSystem  {G:Type*} [hG:CoxeterGroup G]: CoxeterSystem (SimpleRefl G) where
   exchange := hG.exchange
   exchange' := hG.exchange'
   deletion := hG.deletion
@@ -246,15 +257,126 @@ instance SimpleRefl_isCoxeterSystem'  {G:Type*} [hG:CoxeterGroup G]: CoxeterSyst
   exchange' := hG.exchange'
   deletion := hG.deletion
 
+instance {G:Type*} [hG:CoxeterGroup G]: HMul hG.S G G where
+  hMul := fun s g => s.1 * g
 
-def Refls (G:Type*) [CoxeterGroup G]: Set G:= {x:G| ∃ (w:G)(s : SimpleRefls G) , x = w*s*w⁻¹}
+instance {G:Type*} [hG:CoxeterGroup G]: HMul G hG.S G where
+  hMul := fun g s => g * s.1
+
+instance {G:Type*} [hG:CoxeterGroup G]: CoeOut hG.S G where
+  coe := fun s => s.1
+
 
 -- The length function defines a metric on the Coxeter group
-noncomputable instance metric [CoxeterGroup G]: MetricSpace G := OrderTwoGen.metric <| SimpleRefls G
+noncomputable instance metric [CoxeterGroup G]: MetricSpace G := OrderTwoGen.metric <| SimpleRefl G
+
+def leftAssocRefls (w : G) [CoxeterGroup G] := {t : G | t ∈ Refl G ∧ ℓ(((t:G)*w)) < ℓ(w)}
+
+def rightAssocRefls (w : G) [CoxeterGroup G] := {t : G | t ∈ Refl G ∧ ℓ((w*(t:G))) < ℓ(w)}
+
+def leftDescent (w : G) [hG:CoxeterGroup G] := leftAssocRefls w ∩ hG.S
+
+def rightDescent (w : G) [hG:CoxeterGroup G] := rightAssocRefls w ∩ hG.S
+
+section HeckeAux
+variable {G : Type*} {w : G} [hG:CoxeterGroup G]
+
+-- following lemmas assume G is CoxeterGroup, we can also have CoxeterMatrix version.
+-- these lemmas are needed in Hecke.lean, because the def of Hecke use [CoxeterGroup G],
+-- for convenience, the statements also use [CoxeterGroup G]
+-- some lemmas are symmetric, such as muls_twice : w*s*s = w, the symm version is s*s*w = w.
+-- this section only contain lemmas that needed in Hecke.lean, you can also formulate the symms if u want.
+lemma leftDescent_NE_of_ne_one  (h : w ≠ 1) : Nonempty $ leftDescent w:= sorry
+
+lemma rightDescent_NE_of_ne_one  (h : w ≠ 1) : Nonempty $ rightDescent w:= sorry
+
+lemma ne_one_of_length_smul_lt {s : hG.S} {w:G} (lt: ℓ(s*w) < ℓ(w)) : w ≠ 1:= sorry
+
+lemma length_smul_neq (s:hG.S) (w:G) : ℓ(s*w) ≠ ℓ(w) := sorry
+
+lemma length_muls_neq (w:G) (t:hG.S) : ℓ(w*t) ≠ ℓ(w) := sorry
+
+lemma length_diff_one {s:hG.S} {g : G} : ℓ(s*g) = ℓ(g) + 1  ∨ ℓ(g) = ℓ(s*g) + 1 :=sorry
+
+lemma length_smul_of_length_lt {s : hG.S} {w:G} (h : w ≠ 1) (lt: ℓ(s*w) < ℓ(w)) : ℓ(s*w) = ℓ(w) - 1 := sorry
+
+lemma length_muls_of_length_lt {s : hG.S} {w:G} (h : w ≠ 1) (lt: ℓ(w*s) < ℓ(w)) : ℓ(w*s) = ℓ(w) - 1 := sorry
+
+lemma length_smul_of_length_gt {s : hG.S} {w:G} (gt: ℓ(w) < ℓ(s*w)) : ℓ(s*w) = ℓ(w) + 1 := sorry
+
+lemma length_muls_of_length_gt {s : hG.S} {w:G} (gt: ℓ(w) < ℓ(w*s)) : ℓ(w*s) = ℓ(w) + 1 := sorry
+
+lemma length_muls_of_mem_leftDescent  (h : w ≠ 1) (s : leftDescent w) : ℓ(s*w) = ℓ(w) - 1 :=sorry
+
+lemma length_muls_of_mem_rightDescent  (h : w ≠ 1) (s : rightDescent w) : ℓ(w*s) = ℓ(w) - 1 :=sorry
+
+lemma muls_twice (w:G) (s:hG.S) : w*s*s = w := sorry
+
+lemma smul_eq_muls_of_length_eq (s t:hG.S) (w:G) :ℓ(s*w*t) = ℓ(w) ∧ ℓ(s*w)=ℓ(w*t) → s*w=w*t:= sorry
+
+lemma length_smul_eq_length_muls_of_length_neq (s t :hG.S) (w:G): ℓ(s*w*t) ≠ ℓ(w) → ℓ(s*w)=ℓ(w*t):= sorry
+
+-- ℓ(s*w*t) = ℓ(w) or ℓ(s*w*t) = ℓ(w) + 2 or ℓ(s*w*t) = ℓ(w) - 2
+-- ℓ(s*w*t) < ℓ(w) →  ℓ(s*w*t) < ℓ(s*w) <ℓ(w) ∧ ℓ(s*w*t) < ℓ(w*t) <ℓ(w)
+lemma length_lt_of_length_smuls_lt {s t:hG.S} {w:G} (h: ℓ(s*w*t) < ℓ(w)) : ℓ(s*w*t) < ℓ(s*w) := sorry
+
+lemma length_lt_of_length_smuls_lt' {s t:hG.S} {w:G} (h: ℓ(s*w*t) < ℓ(w)) : ℓ(s*w) < ℓ(w) := sorry
+
+lemma length_gt_of_length_smuls_gt {s t:hG.S} {w:G} (h: ℓ(w) < ℓ(s*w*t)) : ℓ(w) < ℓ(s*w) :=sorry
+
+lemma length_gt_of_length_smuls_gt' {s t:hG.S} {w:G} (h: ℓ(w) < ℓ(s*w*t)) : ℓ(s*w) <ℓ(s*w*t) :=sorry
+
+end HeckeAux
+
 
 end CoxeterGroup
 
 end
+
+
+
+-- Palindrome words is moved here
+section Palindrome
+@[simp]
+abbrev toPalindrome   (L : List β) : List β := L ++ L.reverse.tail
+
+-- Note that 0-1 = 0
+lemma toPalindrome_length {L : List β} : (toPalindrome L).length = 2 * L.length - 1 := by
+  simp only [toPalindrome, List.length_append, List.length_reverse, List.length_tail]
+  by_cases h: L.length=0
+  . simp [h]
+  . rw [<-Nat.add_sub_assoc]
+    zify; ring_nf
+    apply Nat.pos_of_ne_zero h
+
+variable {G:Type*} [Group G] {S : Set G} [OrderTwoGen S]
+
+local notation "T" => (OrderTwoGen.Refl S)
+
+-- DLevel 2
+lemma toPalindrome_in_Refl [OrderTwoGen S] {L:List S} (hL : L ≠ []) : (toPalindrome L:G) ∈ T := by
+  sorry
+
+-- Our index starts from 0
+def toPalindrome_i  (L : List S) (i : ℕ) := toPalindrome (L.take (i+1))
+local notation:210 "t(" L:211 "," i:212 ")" => toPalindrome_i L i
+
+--def toPalindromeList (L : List S) : Set (List S):= List.image (toPalindrome_i L)'' Set.univ
+
+--DLevel 3
+lemma mul_Palindrome_i_cancel_i [OrderTwoGen S] {L : List S} (i : Fin L.length) : (t(L, i):G) * L = (L.removeNth i) := by sorry
+
+
+-- DLevel 4
+lemma distinct_toPalindrome_i_of  [OrderTwoGen S] {L : List S} :  reduced_word L → (∀ (i j : Fin L.length),  (hij : i ≠ j) → (toPalindrome_i L i) ≠ (toPalindrome_i L i)) := by
+   sorry
+
+
+lemma reduce_of_distinct_toPalindrome_i  [OrderTwoGen S] {L : List S} (hdel: DeletionProp S): ( ∀ i j:Fin L.length, (hij : i ≠ j) → (toPalindrome_i L i) ≠ (toPalindrome_i L i)) → reduced_word L := by sorry
+
+
+end Palindrome
+
 
 -- namespace CoxeterSystem
 

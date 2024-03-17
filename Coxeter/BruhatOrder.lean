@@ -1,4 +1,5 @@
 import Coxeter.CoxeterSystem
+import Coxeter.CoxeterMatrix1
 
 import Mathlib.Data.Set.Card
 
@@ -10,17 +11,17 @@ namespace Bruhat
 variable {G : Type*} [CoxeterGroup G]
 
 @[simp]
-abbrev lt_adj (u w : G) := ∃ t ∈ Refls G, w = u * t ∧ ℓ(u) < ℓ(w)
+abbrev lt_adj (u w : G) := ∃ t ∈ Refl G, w = u * t ∧ ℓ(u) < ℓ(w)
 
 @[simp]
-abbrev lt_adj' (u w : G) := ∃ t ∈ Refls G, w = t * u ∧ ℓ(u) < ℓ(w)
+abbrev lt_adj' (u w : G) := ∃ t ∈ Refl G, w = t * u ∧ ℓ(u) < ℓ(w)
 
 lemma lt_adj_iff_lt_adj' {u w : G} : lt_adj u w ↔ lt_adj' u w := by
   constructor
   · rintro ⟨t, ⟨trfl, wut, ulew⟩⟩
     use u * t * u⁻¹
-    have uturfl : u * t * u⁻¹ ∈ Refls G := by
-      rw [Refls] at trfl ⊢
+    have uturfl : u * t * u⁻¹ ∈ Refl G := by
+      --simp [Refl] at trfl ⊢
       rcases trfl with ⟨v, s, vsv⟩
       use u * v, s
       rw [vsv]
@@ -31,8 +32,8 @@ lemma lt_adj_iff_lt_adj' {u w : G} : lt_adj u w ↔ lt_adj' u w := by
     exact ⟨uturfl, wexp, ulew⟩
   · rintro ⟨t, ⟨trfl, wtu, ulew⟩⟩
     use u⁻¹ * t * u
-    have uturfl : u⁻¹ * t * u ∈ Refls G := by
-      rw [Refls] at trfl ⊢
+    have uturfl : u⁻¹ * t * u ∈ Refl G := by
+      --rw [Refls] at trfl ⊢
       rcases trfl with ⟨v, s, vsv⟩
       use u⁻¹ * v, s
       rw [vsv]
@@ -114,19 +115,36 @@ instance PartialOrder : PartialOrder G where
 
 def Interval (x y : G) : Set G := Set.Icc x y
 
-local notation "S" => (SimpleRefls G)
+local notation "S" => (SimpleRefl G)
+
+/- Iteratively remove a list of element from -/
+def remove_list (L : List S) (L_ind_rm : List (Fin L.length)) : List S := sorry
+
+/- To say a word L' is a subword of L is just to remove a list of element from L' -/
+def remove_list_of_subword (L L' : List S) (hsub : List.Sublist L' L) :
+  ∃ (L_ind_rm : List (Fin L.length)), L' = remove_list L L_ind_rm := by sorry
 
 --  Bjorner, Brenti, Lemma 2.2.1
-lemma exists_intermediate_reduced_subword {L L' : List S} (hne: (L : G) ≠ L')
-    (hred : reduced_word L) (hred' : reduced_word L') (hsub: List.Sublist L' L) :
-    ∃ (L'' : List S), reduced_word L'' ∧ (L' : G) < L'' ∧
-    ℓ((L'' : G)) = ℓ((L' : G)) + 1 ∧ List.Sublist L'' L := by
-  sorry
+lemma subword_aux {L L' : List S} (hne: (L:G) ≠ L') (hred: reduced_word L) (hred': reduced_word L')
+  (hsub: List.Sublist L' L) :
+  ∃ (L'' : List S), reduced_word L'' ∧ (L' : G) < L'' ∧ ℓ((L'':G)) = ℓ((L':G)) + 1 ∧ List.Sublist L'' L := by
+  let ⟨L_ind_rm, h_eq⟩ := remove_list_of_subword L L' hsub
+  have h_L_ind_rm_nonempty : L_ind_rm ≠ [] := sorry
+  let t := toPalindrome_i L (L_ind_rm.getLast h_L_ind_rm_nonempty)
+  let L'' := L ++ t
+  have h0 : reduced_word L'' := by sorry
+  have h1 : (L' : G) < L'' := by sorry
+  have h2 : ℓ((L'':G)) = ℓ((L':G)) + 1 := by sorry
+  have h3 : List.Sublist L'' L := by sorry
+  use L''
 
--- Theorem 2.2.2
-theorem le_iff_exists_reduced_subword {L : List S} (hred : reduced_word L) :
-    u ≤ L ↔ ∃ (L': List S), reduced_word L' ∧ List.Sublist L' L ∧ u = L'.gprod where
-  mp := by sorry
+lemma le_aux (u w : G) (h : u <= w) :
+  ∃ (T : List (Refl G)) (X : List G) (hn : X ≠ []), X.length = T.length + 1 ∧
+  (X.head hn = u) ∧ (X.getLast hn = w) ∧ (∀ p : Fin T.length, X.get ⟨p-1, by sorry⟩ = X.get ⟨p, by sorry⟩ * T.get p) := by sorry
+
+theorem SubwordProp {L: List S} (hred : reduced_word L) : u ≤ L ↔ ∃ (L': List S), reduced_word L' ∧ List.Sublist L' L ∧ u = L'.gprod where
+  mp := by
+    sorry
   mpr := fun
     | .intro w h => by
       sorry
