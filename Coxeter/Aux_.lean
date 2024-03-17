@@ -88,7 +88,19 @@ lemma removeNth_length {α : Type _} (L: List α) (n : Fin L.length) : (L.remove
       rw [removeNth, length, length]
       rw [ih ⟨m, (add_lt_add_iff_right 1).mp nprop⟩]
 
-
+lemma reverse_drop {α : Type _} (L : List α) (n : ℕ) : (L.drop n).reverse = L.reverse.take (L.length - n) := by
+  induction L generalizing n with
+  | nil => simp only [drop_nil, reverse_nil, take_nil]
+  | cons hd tail ih =>
+    induction n with
+    | zero =>
+      simp only [Nat.zero_eq, drop_zero, reverse_cons, tsub_zero]
+      rw [← length_reverse, reverse_cons, take_length]
+    | succ n =>
+      simp only [drop_succ_cons, length_cons, Nat.succ_sub_succ_eq_sub, reverse_cons]
+      rw [ih n, take_append_of_le_length]
+      rw [length_reverse]
+      exact Nat.sub_le (length tail) n
 
 lemma sub_one_lt_self (n: ℕ) (_ : 0 < n) : n - 1 < n := match n with
 | 0 => by {contradiction}
