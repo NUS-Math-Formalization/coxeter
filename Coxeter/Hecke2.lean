@@ -1,6 +1,6 @@
 import Coxeter.BruhatOrder
 import Coxeter.WellFounded
-import Coxeter.Morphism
+--import Coxeter.Morphism
 
 import Mathlib.Data.Polynomial.Degree.Definitions
 import Mathlib.Data.Polynomial.Reverse
@@ -9,14 +9,17 @@ import Mathlib.LinearAlgebra.FreeModule.Basic
 import Mathlib.Data.Polynomial.Laurent
 import Mathlib.Algebra.DirectSum.Basic
 import Mathlib.Algebra.Ring.Defs
+import Mathlib.Algebra.Algebra.Hom
+import Mathlib.Algebra.Algebra.Equiv
+
 
 open Classical List CoxeterSystem OrderTwoGen CoxeterGroup HOrderTwoGenGroup CoxeterMatrix
 
 variable {G :(Type _)} [hG:CoxeterGroup G]
 variable {w:G}
-#check toMatrix hG.S
-#check CoxeterMatrix.length_smul_neq (m:=toMatrix hG.S) (g:=equiv.invFun w)
-#check Presentation.map hG.S
+--#check toMatrix hG.S
+--#check CoxeterMatrix.length_smul_neq (m:=toMatrix hG.S) (g:=equiv.invFun w)
+--#check Presentation.map hG.S
 
 noncomputable def q :=@LaurentPolynomial.T ℤ _ 1
 
@@ -510,12 +513,21 @@ LinearEquiv (@RingHom.id (LaurentPolynomial ℤ) _) (subalg G) (Hecke G) where
 
 lemma alg_hom_id : alg_hom G 1 = TT 1 := by simp [alg_hom]
 
-lemma subalg.id_eq :(alg_hom G).invFun (TT 1) = 1:=by
-  rw [←alg_hom_id]
-  simp
+lemma subalg.id_eq :(alg_hom G).symm (TT 1) = 1:=by
+  simp_rw [←alg_hom_id, LinearEquiv.symm_apply_eq]
+
+
+lemma subalg.zero :(alg_hom G).symm 0 = 0:=by
+  simp only [alg_hom, map_zero]
 
 @[simp]
-noncomputable def HeckeMul : Hecke G → Hecke G → Hecke G := fun x =>(fun y => (alg_hom G).toFun ((alg_hom G).invFun x * (alg_hom G).invFun y))
+noncomputable def HeckeMul : Hecke G → Hecke G → Hecke G := fun x =>(fun y => alg_hom G <| (alg_hom G).symm x * (alg_hom G).symm y)
+
+noncomputable instance (F : Type*)  (R : outParam (Type*)) (M : outParam (Type*)) (M₂ : outParam (Type*)) [Semiring R] [AddCommMonoid M] [AddCommMonoid M₂] [Module R M] [Module R M₂] [FunLike F M M₂] [LinearMapClass F R M M₂] : ZeroHomClass F  M M₂ where
+  map_zero := fun f:F => by simp [LinearMap.map_zero]
+
+noncomputable instance (F : Type*)  (R : outParam (Type*)) (M : outParam (Type*)) (M₂ : outParam (Type*)) [Semiring R] [AddCommMonoid M] [AddCommMonoid M₂] [Module R M] [Module R M₂] [EquivLike F M M₂] [LinearEquivClass F R M M₂] : ZeroHomClass F  M M₂ where
+  map_zero := fun f:F => by simp [LinearMap.map_zero]
 
 noncomputable instance : Mul (Hecke G) where
   mul := HeckeMul
@@ -528,10 +540,12 @@ lemma heckeMul {x y : Hecke G} : HeckeMul x y = x * y := rfl
 --   simp [HeckeMul]
 -- }
 
-lemma Hecke.mul_zero : ∀ (a : Hecke G), HeckeMul a 0 = 0 := by
+lemma mul_zero : ∀ (a : Hecke G), HeckeMul a 0 = 0 := by
   intro a
-  simp only [HeckeMul,LinearEquiv.invFun_eq_symm,LinearEquiv.map_zero,NonUnitalNonAssocSemiring.mul_zero,LinearEquiv.map_zero]
-  simp only [AddHom.toFun_eq_coe,LinearMap.coe_toAddHom,LinearMap.map_zero]
+  simp only [HeckeMul,map_zero]
+  calc
+    _ = alg_hom G 0 := by congr;simp only [MulZeroClass.mul_zero]
+    _ = 0 := by simp_rw [map_zero]
 
 
 lemma Hecke.zero_mul : ∀ (a : Hecke G),  HeckeMul 0 a = 0 := by
@@ -549,19 +563,17 @@ lemma Hecke.mul_assoc :∀ (a b c : Hecke G), HeckeMul (HeckeMul a b) c = HeckeM
 
 lemma Hecke.one_mul : ∀ (a : Hecke G), HeckeMul (TT 1) a = a := by
   intro a
-  simp[HeckeMul]
-  rw [←LinearEquiv.invFun_eq_symm,@subalg.id_eq G _]
+  rw [HeckeMul, subalg.id_eq]
   simp
 
 lemma Hecke.mul_one : ∀ (a : Hecke G), HeckeMul a (TT 1) = a := by
   intro a
-  simp[HeckeMul]
-  rw [←LinearEquiv.invFun_eq_symm,@subalg.id_eq G _]
+  rw [HeckeMul,subalg.id_eq]
   simp
 
 lemma Hecke.left_distrib : ∀ (a b c : Hecke G), HeckeMul a (b + c) = HeckeMul a b + HeckeMul a c := by
   intro a b c
-  simp[HeckeMul]
+  rw [HeckeMul]
   rw [NonUnitalNonAssocSemiring.left_distrib]
   congr
 
@@ -594,12 +606,12 @@ noncomputable instance : NonUnitalNonAssocRing (Hecke G) :=
 
 lemma Hecke.smul_assoc : ∀ (r : LaurentPolynomial ℤ) (x y : Hecke G), HeckeMul (r • x) y = r • (HeckeMul x y):=by
   intro r x y
-  simp [HeckeMul]
+  simp_rw [HeckeMul]
 
 
 lemma Hecke.smul_comm : ∀ (r : LaurentPolynomial ℤ) (x y : Hecke G), HeckeMul x (r • y) = r • (HeckeMul x y):=by
   intro r x y
-  simp [HeckeMul]
+  simp only [HeckeMul]
 
 noncomputable instance Hecke.algebra : Algebra (LaurentPolynomial ℤ) (Hecke G):=
 Algebra.ofModule (Hecke.smul_assoc) (Hecke.smul_comm)

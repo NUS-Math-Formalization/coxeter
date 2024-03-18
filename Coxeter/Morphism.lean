@@ -2,6 +2,10 @@ import Coxeter.CoxeterMatrix1
 
 
 variable {G : Type*} [Group G] {S : Set G} [hS: CoxeterSystem S]
+variable {G' : Type*} [Group G'] {S' : Set G'} [hS: CoxeterSystem S']
+
+
+
 
 noncomputable section
 namespace CoxeterSystem
@@ -10,7 +14,7 @@ open CoxeterMatrix
 @[simp]
 abbrev toMatrix (S : Set G) [CoxeterSystem S] : Matrix S S ℕ := fun s t => orderOf (s.1*t.1)
 
-instance isCoxeterMatrix {S:Set G} [CoxeterSystem S]: CoxeterMatrix (toMatrix S) where
+instance CoxeterMatrix {S:Set G} [CoxeterSystem S]: CoxeterMatrix (toMatrix S) where
   symmetric := by sorry
   oneIff := by sorry
 
@@ -38,7 +42,20 @@ def equiv : G' ≃ G := Equiv.ofBijective _ map_bijective
 
 end Presentation
 
-end CoxeterSystem
+
+noncomputable section Morphism
+class Morphism (f : S → S') where
+  preservesOrder : ∀ s1 s2: S, orderOf ((s1 : G) * s2) = orderOf ((f s1 : G') * (f s2))
+
+namespace Morphism
+def toGroupHom (f : S → S') [Morphism f]  := (fun s => f s) (by sorry)
+
+end Morphism
+
+
+
+
+
 
 namespace CoxeterGroup
 
@@ -47,7 +64,7 @@ variable {G:Type*} [hG : CoxeterGroup G]
 @[simp]
 abbrev toMatrix (G:Type*) [hG : CoxeterGroup G]: Matrix hG.S hG.S ℕ := CoxeterSystem.toMatrix hG.S
 
-instance isCoxeterMatrix : CoxeterMatrix (toMatrix G) where
+instance CoxeterMatrix : CoxeterMatrix (toMatrix G) where
   symmetric := by sorry
   oneIff := by sorry
 
@@ -71,4 +88,3 @@ variable (w:G)
 #check equiv.invFun w
 
 end CoxeterGroup
-end
