@@ -203,7 +203,7 @@ def mapMaxChain (l : edgeLabeling P A) (m : maximalChains P)  : List A := List.m
 
 def mapMaxChain_interval (l : edgeLabeling P A) {x y : P} (m : maximalChains <| Set.Icc x y)  : List A := List.map (fun e : edges (Set.Icc x y) => l (e : edges P)) <| edgePairs m
 
-abbrev rising_chain (l : edgeLabeling P A) (x y: P) := {m : maximalChains <| Set.Icc x y | chain <| mapMaxChain_interval l m}
+abbrev risingChains (l : edgeLabeling P A) (x y: P) := {m : maximalChains <| Set.Icc x y | chain <| mapMaxChain_interval l m}
 
 /-
 Definition: An edge labelling of P is called an EL-labelling if for every interval [x,y] in P,
@@ -212,9 +212,8 @@ Definition: An edge labelling of P is called an EL-labelling if for every interv
 Here <_L denotes the lexicographic ordering for the tuples in the labelling poset A.
 -/
 class EL_labeling (l : edgeLabeling P A) where
-  unique {x y: P} (h : x<y) : Unique (rising_chain l x y)
-  unique_min {x y: P} (h : x<y): ∀ (m' : maximalChains <| Set.Icc x y),
-     mapMaxChain_interval l (unique h).default.val < mapMaxChain_interval l m'
+  unique {x y: P} (h : x<y) : Unique (risingChains l x y)
+  unique_min {x y: P} (h : x<y): ∀ (m' : maximalChains <| Set.Icc x y), m' ≠ (unique h).default → (mapMaxChain_interval l (unique h).default.val < mapMaxChain_interval l m')
 
 end ParticalOrder
 end labeling
