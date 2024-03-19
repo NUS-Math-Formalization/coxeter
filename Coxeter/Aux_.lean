@@ -45,6 +45,10 @@ lemma length_append_singleton (L : List α) (a : α) : (L ++ [a]).length = L.len
 lemma take_le_length (L : List α) (h : n ≤ L.length)  : (L.take n).length = n := by
   simp only [length_take,ge_iff_le, h, min_eq_left]
 
+/-map and removeNth are commute with each other-/
+lemma map_removeNth_comm {α : Type*} {β : Type*} {f : α → β } (L : List α) (i : ℕ)
+: (L.removeNth i).map f = (L.map f).removeNth i := by sorry
+
 lemma removeNth_eq_take_drop {α : Type _} (L: List α) (n : ℕ) : L.removeNth n = L.take n ++ L.drop (n+1) := by
   revert n
   induction L with
