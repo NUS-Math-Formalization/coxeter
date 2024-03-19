@@ -382,23 +382,52 @@ lemma length_zero_iff_one {w : G} : ℓ(w) = 0 ↔ w = 1 := by
     apply Nat.le_zero.1 h3
 
 -- DLevel 2
-lemma reduced_take_of_reduced {S: Set G} [OrderTwoGen S] {L: List S} (H : reduced_word L) (n:ℕ) : reduced_word (L.take n) := by sorry
+lemma reduced_take_of_reduced {S : Set G} [OrderTwoGen S] {L : List S} (h : reduced_word L) (n : ℕ) :
+    reduced_word (L.take n) := by
+  contrapose! h
+  simp only [reduced_word] at *
+  push_neg at *
+  rcases h with ⟨L', hL'⟩
+  use L' ++ L.drop n
+  rw [gprod_append, hL'.1.symm, List.length_append, ← gprod_append, List.take_append_drop]
+  apply And.intro rfl
+  by_cases h : n ≤ L.length
+  · rw [List.length_drop]
+    rw [List.length_take_of_le h] at hL'
+    apply lt_of_lt_of_le (add_lt_add_right hL'.2 (L.length - n))
+    rw [← Nat.add_sub_assoc h, add_comm, Nat.add_sub_cancel]
+  · rw [List.length_drop, Nat.sub_eq_zero_of_le (by linarith [h])]
+    apply lt_of_lt_of_le hL'.2
+    rw [List.length_take]
+    exact min_le_iff.mpr (Or.inr le_rfl)
 
-
--- DLevel 1
-lemma reduced_drop_of_reduced {S: Set G} [OrderTwoGen S] {L: List S} (H : reduced_word L) (n:ℕ) : reduced_word (L.drop n) := by sorry
-
-
+-- DLevel 2
+lemma reduced_drop_of_reduced {S : Set G} [OrderTwoGen S] {L : List S} (h : reduced_word L) (n : ℕ) :
+    reduced_word (L.drop n) := by
+  apply reverse_is_reduced at h
+  rw [← List.reverse_reverse (L.drop n)]
+  apply reverse_is_reduced
+  rw [List.reverse_drop]
+  exact reduced_take_of_reduced h (L.length - n)
 
 -- Cannot define the metric as an instance as there are various choices of S for a fixed G
 -- On the other hand, the metric is well defined for Coxeter Group
-noncomputable def metric {G :Type*} [Group G] (S : Set G) [@OrderTwoGen G _ S] : MetricSpace G where
+noncomputable def metric {G : Type*} [Group G] (S : Set G) [@OrderTwoGen G _ S] : MetricSpace G where
   dist := fun x y => length S (x * y⁻¹)
-  dist_self := by sorry
-  dist_comm := by sorry
-  dist_triangle := by sorry
-  eq_of_dist_eq_zero := by sorry
-  edist_dist := by sorry
+  dist_self := fun _ ↦ by simp only [dist, mul_right_inv]; norm_num; exact length_zero_iff_one.mpr rfl
+  dist_comm := fun _ _ ↦ by simp only [dist]; rw [length_eq_inv_length]; group
+  dist_triangle := fun x y z ↦ by
+    simp only [dist]
+    rw [(by group : x * z⁻¹ = (x * y⁻¹) * (y * z⁻¹))]
+    rw [← Nat.cast_add]
+    apply (@Nat.cast_le ℝ _ _ _ _ _ (length S (x * y⁻¹ * (y * z⁻¹))) (length S (x * y⁻¹) + length S (y * z⁻¹))).mpr
+    exact length_mul_le_length_sum
+  eq_of_dist_eq_zero := fun {x y} h ↦ by
+    simp only [Nat.cast_eq_zero, length_zero_iff_one] at h
+    rw [← one_mul y, ← h, mul_assoc, mul_left_inv, mul_one]
+  edist_dist := fun x y ↦ by
+    simp only [Nonneg.mk_nat_cast, ENNReal.ofReal_coe_nat]
+    exact rfl
 
 
 noncomputable def choose_reduced_word (S : Set G) [OrderTwoGen S] (g:G) : List S := Classical.choose (exists_reduced_word S g)
