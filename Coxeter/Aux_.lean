@@ -622,20 +622,17 @@ lemma mem_subgroup_closure_iff_prod (z : G) :
   z ∈ closure S ↔ (∃ (L : List {z | z ∈ S ∨ z⁻¹ ∈ S}), z = L ) := by
   constructor
   . intro hz
-    suffices h : (fun (z:G) => ∃ L : List {z | z∈ S ∨ z⁻¹ ∈ S}, z = L) z from by exact h
-    apply @closure_induction G _ S _ z hz
-    . intro s hs
-      use [⟨s,Or.inl hs⟩]
+    induction' hz using closure_induction' with s hs x _ y _ hx hy x _ hx
+    . use [⟨s,Or.inl hs⟩]
       rw [gprod_singleton]
     . use []
       rw [gprod_nil]
-    . intro x y hx hy
+    . --intro x y hx hy
       obtain ⟨Lx,hLx⟩ := hx
       obtain ⟨Ly,hLy⟩ := hy
       use Lx++Ly
       rw [hLx,hLy,gprod_append]
-    . intro x hx
-      obtain ⟨L,hL⟩:=hx
+    . obtain ⟨L,hL⟩:=hx
       use List.inv_reverse L
       rw [hL,List.inv_eq_inv_reverse]
   . intro ⟨L,hL⟩
