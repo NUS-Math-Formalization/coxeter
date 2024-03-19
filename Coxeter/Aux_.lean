@@ -47,7 +47,12 @@ lemma take_le_length (L : List α) (h : n ≤ L.length)  : (L.take n).length = n
 
 /-map and removeNth are commute with each other-/
 lemma map_removeNth_comm {α : Type*} {β : Type*} {f : α → β } (L : List α) (i : ℕ)
-: (L.removeNth i).map f = (L.map f).removeNth i := by sorry
+: (L.removeNth i).map f = (L.map f).removeNth i := by
+  induction' L with x xa h generalizing i
+  . simp only [removeNth, map_nil]
+  . induction' i with n _
+    . simp only [removeNth]
+    . simp_rw [removeNth,map_cons, h n]
 
 lemma removeNth_eq_take_drop {α : Type _} (L: List α) (n : ℕ) : L.removeNth n = L.take n ++ L.drop (n+1) := by
   revert n
