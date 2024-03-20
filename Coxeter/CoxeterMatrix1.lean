@@ -757,12 +757,41 @@ lemma alternating_word_take (s t : α) (n i : ℕ) (h : i ≤ n) :
 -- DLevel 2
 lemma alternating_word_append_odd (s t : α) (n m : ℕ) (h1 : m ≤ n) (h2 : Odd m) :
     alternating_word s t n = alternating_word s t m ++ alternating_word t s (n - m) := by
-  sorry
+  nth_rw 1 [← Nat.sub_add_cancel (h1)]
+  set d := n - m
+  rcases h2 with ⟨k, ek⟩
+  rw [ek]
+  clear ek
+  induction k with
+  | zero =>
+    rw [Nat.mul_zero, Nat.zero_add, Nat.add_one, Nat.succ_eq_add_one]
+    rw [alternating_word_singleton, alternating_word, List.singleton_append]
+  | succ y ih =>
+    rw [Nat.add_one, Nat.succ_eq_add_one, Nat.succ_eq_add_one, mul_add]
+    nth_rw 2 [two_mul]
+    nth_rw 3 [two_mul]
+    repeat rw [← add_assoc]
+    rw [alternating_word, alternating_word]
+    rw [add_assoc, ih]
+    rw [alternating_word, alternating_word]
+    repeat rw [← List.cons_append]
 
 -- DLevel 2
 lemma alternating_word_append_even (s t : α) (n m : ℕ) (h1 : m ≤ n) (h2 : Even m) :
     alternating_word s t n = alternating_word s t m ++ alternating_word s t (n - m) := by
-  sorry
+  nth_rw 1 [← Nat.sub_add_cancel (h1)]
+  set d := n - m
+  rcases h2 with ⟨k, ek⟩
+  rw [ek, ← two_mul]
+  clear ek
+  induction k with
+  | zero =>
+    rw [Nat.mul_zero, Nat.add_zero, alternating_word_nil, List.nil_append]
+  | succ y ih =>
+    rw [Nat.succ_eq_add_one, mul_add, two_mul, two_mul, ← add_assoc]
+    repeat rw [alternating_word]
+    rw [← two_mul, ih]
+    repeat rw [← List.cons_append]
 
 -- DLevel 2
 lemma alternating_word_power (s t : α) (n : ℕ) : (alternating_word s t (2 * n) : List S).gprod
