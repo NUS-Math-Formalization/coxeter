@@ -757,41 +757,41 @@ lemma alternating_word_take (s t : α) (n i : ℕ) (h : i ≤ n) :
 -- DLevel 2
 lemma alternating_word_append_odd (s t : α) (n m : ℕ) (h1 : m ≤ n) (h2 : Odd m) :
     alternating_word s t n = alternating_word s t m ++ alternating_word t s (n - m) := by
-  sorry
+  nth_rw 1 [← Nat.sub_add_cancel (h1)]
+  set d := n - m
+  rcases h2 with ⟨k, ek⟩
+  rw [ek]
+  clear ek
+  induction k with
+  | zero =>
+    rw [Nat.mul_zero, Nat.zero_add, Nat.add_one, Nat.succ_eq_add_one]
+    rw [alternating_word_singleton, alternating_word, List.singleton_append]
+  | succ y ih =>
+    rw [Nat.add_one, Nat.succ_eq_add_one, Nat.succ_eq_add_one, mul_add]
+    nth_rw 2 [two_mul]
+    nth_rw 3 [two_mul]
+    repeat rw [← add_assoc]
+    rw [alternating_word, alternating_word]
+    rw [add_assoc, ih]
+    rw [alternating_word, alternating_word]
+    repeat rw [← List.cons_append]
 
 -- DLevel 2
 lemma alternating_word_append_even (s t : α) (n m : ℕ) (h1 : m ≤ n) (h2 : Even m) :
     alternating_word s t n = alternating_word s t m ++ alternating_word s t (n - m) := by
+  nth_rw 1 [← Nat.sub_add_cancel (h1)]
+  set d := n - m
   rcases h2 with ⟨k, ek⟩
+  rw [ek, ← two_mul]
+  clear ek
   induction k with
   | zero =>
-    rw [ek, Nat.add_zero, Nat.sub_zero, alternating_word_nil, List.nil_append]
-  | succ k ih =>
-    rw [Nat.succ_eq_add_one, ← two_mul, mul_add, two_mul, two_mul, ← add_assoc] at ek
-    rw [ek]
-    rw [alternating_word, alternating_word]
-    rw [← two_mul, add_assoc, ← two_mul, Nat.add_comm, ← Nat.sub_sub, mul_one]
-    rw [← List.singleton_append, List.append_assoc]
-    nth_rw 2 [← List.singleton_append]
-    rw [List.append_assoc]
-    rw [← two_mul] at ih
-    -- replace the next line with inductive step
-    nth_rw 1 [← alternating_word_append_even s t (n - 2) (2 * k)]
-    nth_rw 2 [List.singleton_append]
-    rw [List.singleton_append, ← alternating_word, ← alternating_word]
-    rw [Nat.succ_eq_add_one, add_assoc, ← two_mul, mul_one, Nat.sub_add_cancel]
-    linarith
-    . apply Nat.pred_le_pred at h1
-      apply Nat.pred_le_pred at h1
-      repeat rw [Nat.pred_eq_sub_one] at h1
-      rw [ek, Nat.sub_sub, Nat.sub_sub, add_assoc] at h1
-      repeat rw [← two_mul] at h1
-      repeat rw [mul_one] at h1
-      rw [Nat.add_sub_cancel] at h1
-      apply h1
-    . rw [two_mul]
-      simp
-
+    rw [Nat.mul_zero, Nat.add_zero, alternating_word_nil, List.nil_append]
+  | succ y ih =>
+    rw [Nat.succ_eq_add_one, mul_add, two_mul, two_mul, ← add_assoc]
+    repeat rw [alternating_word]
+    rw [← two_mul, ih]
+    repeat rw [← List.cons_append]
 
 -- DLevel 2
 lemma alternating_word_power (s t : α) (n : ℕ) : (alternating_word s t (2 * n) : List S).gprod
