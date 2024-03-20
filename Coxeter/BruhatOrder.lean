@@ -115,6 +115,10 @@ instance PartialOrder : PartialOrder G where
 
 def Interval (x y : G) : Set G := Set.Icc x y
 
+def Icc (u w : G): Set G := Set.Icc u w
+
+def Iic (w : G): Set G := Set.Iic w
+
 local notation "S" => (SimpleRefl G)
 
 /- Iteratively remove a list of element from -/
