@@ -1,5 +1,6 @@
 import Coxeter.CoxeterSystem
 import Coxeter.CoxeterMatrix1
+import Coxeter.StrongExchange
 
 import Mathlib.Data.Set.Card
 
@@ -109,7 +110,11 @@ instance PartialOrder : PartialOrder G where
     eq_of_le_of_length_ge ulew (length_le_of_le wleu)
 
 
-def Interval (x y : G) : Set G := Set.Icc x y
+abbrev Interval (x y : G) : Set G := Set.Icc x y
+
+def Icc (u w : G): Set G := Set.Icc u w
+
+def Iic (w : G): Set G := Set.Iic w
 
 local notation "S" => (SimpleRefl G)
 
@@ -121,6 +126,8 @@ local notation "S" => (SimpleRefl G)
     ∃ (L_ind_rm : List (Fin L.length)), L' = remove_list L L_ind_rm := by
   have := List.sublist_eq_map_get hsub
   sorry-/
+
+#check CoxeterSystem.strong_exchange
 
 --  Bjorner, Brenti, Lemma 2.2.1
 lemma exists_intermediate_reduced_subword {L L' : List S} (hne: (L:G) ≠ L') (hred: reduced_word L) (hred': reduced_word L')

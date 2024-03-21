@@ -237,6 +237,7 @@ variable (s w :G)
 #check ℓ(s*w)
 #check ℓ((s*w))
 #check ℓ(s) - 1
+#check w^(ℓ(w))
 end HOrderTwoGenGroup
 
 class CoxeterGroup (G:Type*) extends HOrderTwoGenGroup G where
