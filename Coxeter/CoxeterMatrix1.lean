@@ -1079,35 +1079,35 @@ lemma eta_aux'_reflection (L : List S) (s : S) (t : T) (i : Fin L.length) (h : (
     eta_aux' (L.get i) ⟨((L ++ [s] ++ L.reverse).take i).reverse * t * (L ++ [s] ++ L.reverse).take i, by apply Refl_palindrome_in_Refl⟩
     = eta_aux' (L.get i) ⟨((L ++ [s] ++ L.reverse).take (2 * L.length - i)).reverse * t * (L ++ [s] ++ L.reverse).take (2 * L.length - i), by apply Refl_palindrome_in_Refl⟩
     := by
-  simp only [h]
-  have takex : (L ++ [s] ++ L.reverse).take x.1 = L.take x.1 := by
+  have takex : (L ++ [s] ++ L.reverse).take i.1 = L.take i.1 := by
     sorry
-  have take2lmx : (L ++ [s] ++ L.reverse).take (2 * L.length - x.1) = L ++ [s] ++ L.reverse.take (L.length - 1 - x.1) := by
+  have take2lmx : (L ++ [s] ++ L.reverse).take (2 * L.length - i.1) = L ++ [s] ++ L.reverse.take (L.length - 1 - i.1) := by
     sorry
   have tt1 : (t : G) * t = 1 := by
     rw [← sq]
     exact @Refl.square_eq_one G _ S _ t
-  --apply (sq _).subst (motive := fun x ↦ x * x = (1 : μ₂))
-  --
-  /-repeat rw [List.append_assoc]
-
-  simp only [takex, take2lmx, List.reverse_append, gprod_append, gprod_singleton, List.reverse_singleton]
-  have : (List.reverse (List.take (List.length L - 1 - x.1) (List.reverse L))).gprod *
-      ((s : G) * L.reverse) * t * (↑L * ↑s * ↑(List.take (List.length L - 1 - ↑x) (List.reverse L)))
-      = (List.reverse (List.take (List.length L - 1 - ↑x) (List.reverse L))) * s * g * s * ↑(List.take (List.length L - 1 - ↑x) (List.reverse L)) := by
+  have Ldrop : (L.reverse.take (List.length L - 1 - i.1)) = (L.drop (1 + i.1)).reverse := by
+    --rw [List.reverse_take]
     sorry
-  simp only [this] -- some more work combining the take with the s
-  --rw [List.take_append_of_le_length]
-  -- (((L ++ [s] ++ L.reverse).take x.1)).reverse : G) * t * ((L ++ [s] ++ L.reverse).take x.1))
-
-  --sorry
-  --simp only [List.get_append_left, List.get_append_right, x.2, ylb]
-  -- get_append_left/get_append_right
-  -- show that the two preds are equal
-  --sorry-/
-  sorry
-
-#exit
+  simp only [h, takex, take2lmx, List.reverse_append, gprod_append, gprod_singleton,
+    List.reverse_singleton, Ldrop]
+  have drop_prod : (L.drop (1 + i.1) : G) = (L.get i : G) * (L.take i.1).reverse * L := by
+    apply (List.take_drop_get L i.1 i.2).symm.subst
+      (motive := fun (x : List S) ↦ ((L.drop (1 + i.1) : G) = (L.get i : G) * (L.take i.1).reverse * x))
+    simp only [gprod_append, gprod_reverse, gprod_singleton]
+    group
+    rw [@gen_square_eq_one' G _ S _ (L.get i)]
+    exact self_eq_mul_left.mpr rfl
+  simp only [gprod_reverse, drop_prod]
+  simp only [← mul_assoc, inv_mul_cancel_right, mul_inv_cancel_right, inv_inv, mul_inv_rev]
+  simp only [mul_assoc _ (s : G) (s : G), @gen_square_eq_one' G _ S _ s, mul_one]
+  simp only [mul_assoc (L.get i : G) _ _, eta_aux']
+  congr 1
+  have (s : S) (g : G) : (s : G) = g ↔ s = (s : G) * (g * (s : G)⁻¹) := by
+    refine Iff.intro ?mp ?mpr
+    · exact (fun h ↦ by rw [← h, mul_right_inv, mul_one])
+    · exact (fun h ↦ (mul_inv_eq_one.mp (self_eq_mul_right.mp h)).symm)
+  exact propext (this _ _)
 
 lemma eta_t (t : T) : eta (t : G) t = μ₂.gen := by
   rcases h : t with ⟨t', ⟨g, s, ht⟩⟩
