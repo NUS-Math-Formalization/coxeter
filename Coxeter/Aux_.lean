@@ -545,8 +545,8 @@ instance HasHMulListS : HMul (List S) S G where
 instance HasHMulGList : HMul G (List S) G where
   hMul := fun g L ↦ g * (L : G)
 
-instance HasHMulST {S T: Set G}: HMul S T G where
-  hMul := fun s t ↦ s.val*t.val
+--instance HasHMulST {S T: Set G}: HMul S T G where
+--  hMul := fun s t ↦ s.val*t.val
 
 
 lemma gprod_cons (hd : S)  (tail : List S) : (hd :: tail : G) = hd * (tail : G) := by {

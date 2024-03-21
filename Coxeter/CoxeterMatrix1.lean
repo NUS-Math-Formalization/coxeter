@@ -205,10 +205,10 @@ lemma toGroup_expression : ∀ (x : G), ∃ L : List S, x = L.gprod := by
     rw [← this]
     induction L with
     | nil =>
-      norm_num
+      norm_num1
       rw [← FreeGroup.toWord_one, FreeGroup.mk_toWord]
-      simp only [QuotientGroup.mk_one]
-      rw [gprod_nil]
+      simp only [QuotientGroup.mk_one, SimpleRefl, toSimpleRefl,
+        FreeGroup.toWord_one, List.map_nil, gprod_nil]
     | cons hd tail ih =>
       rw [List.map_cons, ← List.singleton_append, ← FreeGroup.mul_mk]
       rw [gprod_cons, ← ih]
@@ -626,7 +626,9 @@ lemma nn_prod_eta_aux [CoxeterMatrix m] (L : List S) (t : T) : μ₂.gen ^ (nn L
   induction L generalizing t with
   | nil =>
     rw [nn]
-    norm_num
+    simp only [μ₂.gen, SimpleRefl, Set.mem_setOf_eq, List.length_nil, List.range_zero, List.map_nil,
+      List.nodup_nil, List.count_nil, pow_zero, Finset.univ_eq_empty, List.take_nil,
+      List.reverse_nil, gprod_nil, one_mul, mul_one, Subtype.coe_eta, Finset.prod_empty]
   | cons hd tail ih =>
     let sts : T := ⟨hd * t * hd, Refl.mul_SimpleRefl_in_Refl hd t⟩
     rw [nn_cons, pow_add, ih sts]
@@ -683,7 +685,7 @@ lemma eta_aux_mul_eta_aux [CoxeterMatrix m] (s : α) (r : R) :
     · repeat rw [if_pos h]
     · repeat rw [if_neg h]
   rw [this]
-  norm_num
+  simp only [mul_one, ite_eq_right_iff]
   exact fun _ ↦ μ₂.gen_square
 
 lemma pi_aux_square_identity [CoxeterMatrix m] (s : α) (r : R) : pi_aux s (pi_aux s r) = r := by
