@@ -1083,9 +1083,6 @@ lemma eta_aux'_reflection (L : List S) (s : S) (t : T) (i : Fin L.length) (h : (
     sorry
   have take2lmx : (L ++ [s] ++ L.reverse).take (2 * L.length - i.1) = L ++ [s] ++ L.reverse.take (L.length - 1 - i.1) := by
     sorry
-  have tt1 : (t : G) * t = 1 := by
-    rw [← sq]
-    exact @Refl.square_eq_one G _ S _ t
   have Ldrop : (L.reverse.take (List.length L - 1 - i.1)) = (L.drop (1 + i.1)).reverse := by
     --rw [List.reverse_take]
     sorry
