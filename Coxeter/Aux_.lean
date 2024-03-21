@@ -47,6 +47,15 @@ lemma length_append_singleton (L : List α) (a : α) : (L ++ [a]).length = L.len
 lemma take_le_length (L : List α) (h : n ≤ L.length)  : (L.take n).length = n := by
   simp only [length_take,ge_iff_le, h, min_eq_left]
 
+/-map and removeNth are commute with each other-/
+lemma map_removeNth_comm {α : Type*} {β : Type*} {f : α → β } (L : List α) (i : ℕ)
+: (L.removeNth i).map f = (L.map f).removeNth i := by
+  induction' L with x xa h generalizing i
+  . simp only [removeNth, map_nil]
+  . induction' i with n _
+    . simp only [removeNth]
+    . simp_rw [removeNth,map_cons, h n]
+
 lemma removeNth_eq_take_drop {α : Type _} (L: List α) (n : ℕ) : L.removeNth n = L.take n ++ L.drop (n+1) := by
   revert n
   induction L with
@@ -90,7 +99,19 @@ lemma removeNth_length {α : Type _} (L: List α) (n : Fin L.length) : (L.remove
       rw [removeNth, length, length]
       rw [ih ⟨m, (add_lt_add_iff_right 1).mp nprop⟩]
 
-
+lemma reverse_drop {α : Type _} (L : List α) (n : ℕ) : (L.drop n).reverse = L.reverse.take (L.length - n) := by
+  induction L generalizing n with
+  | nil => simp only [drop_nil, reverse_nil, take_nil]
+  | cons hd tail ih =>
+    induction n with
+    | zero =>
+      simp only [Nat.zero_eq, drop_zero, reverse_cons, tsub_zero]
+      rw [← length_reverse, reverse_cons, take_length]
+    | succ n =>
+      simp only [drop_succ_cons, length_cons, Nat.succ_sub_succ_eq_sub, reverse_cons]
+      rw [ih n, take_append_of_le_length]
+      rw [length_reverse]
+      exact Nat.sub_le (length tail) n
 
 lemma sub_one_lt_self (n: ℕ) (_ : 0 < n) : n - 1 < n := match n with
 | 0 => by {contradiction}
@@ -280,6 +301,8 @@ end Nat
 
 open BigOperators
 
+section BigOperators
+
 lemma prod_insert_zero_fin {M : Type u} [CommMonoid M] {n : Nat} {f : Fin (n + 1) → M} {g : Fin n → M} (h : ∀(i : Fin n), g i = f ⟨i.val + 1, add_lt_add_right i.prop 1⟩) :
     ∏ i : Fin (n + 1), f i = f 0 * ∏ i : Fin n, g i := by
   let not0 : Set (Fin (n + 1)) := Set.univ \ {0}
@@ -441,4 +464,196 @@ lemma halve_odd_prod {M : Type u} [CommMonoid M] {n : ℕ} (f : ℕ → M) :
         rfl
       _ = _ := by dsimp only [f', g]; rfl
 
+end BigOperators
+
+
+/-The following is about lists of elements in a subset of G-/
+section CoeM
+universe u
+variable {α β : Type u} [(a : α) -> CoeT α a β]
+
+lemma coeM_nil_eq_nil : (([] : List α) : List β) = ([] : List β) := by rfl
+
+@[simp]
+lemma coeM_cons {hd : α} {tail : List α} :
+  ((hd :: tail : List α) : List β) = (hd : β) :: (tail : List β) := by rfl
+
+@[simp]
+lemma coeM_append {l1 l2 : List α} :
+  ((l1 ++ l2) : List β) = (l1 : List β ) ++ (l2 : List β) := by
+  simp only [Lean.Internal.coeM, List.bind_eq_bind, List.append_bind]
+
+
+@[simp]
+lemma coeM_reverse {l : List α} : (l.reverse : List β) = (l : List β ).reverse := by
+  induction l with
+  | nil => trivial
+  | cons hd tail ih => simp; congr
+
+@[simp]
+lemma mem_subtype_list {x : α} {S : Set α} {L : List S}: x ∈ (L : List α) → x ∈ S := by {
+  intro H
+  induction L with
+  | nil => trivial
+  | cons hd tail ih => {
+    simp only [coeM_cons, List.mem_cons] at H
+    cases H with
+    | inl hh => {
+      have : CoeT.coe hd = (hd : α) := rfl
+      simp only [hh, this, Subtype.coe_prop]
+    }
+    | inr hh => {exact ih hh}
+  }
+}
+
+end CoeM
+
+section list_properties
+--open Classical
+
+variable {G : Type _} [Group G] {S : Set G}
+
+--noncomputable instance HasBEq : BEq S where
+--  beq := fun s1 s2 => s1.val = s2.val
+
+@[coe]
+abbrev List.gprod {S : Set G} (L : List S) := (L : List G).prod
+
+instance List.ListGtoGroup : CoeOut (List G) G where
+  coe := fun L ↦ (L : List G).prod
+
+instance List.ListStoGroup : CoeOut (List S) G where
+  coe := fun L ↦ L.gprod
+
+@[simp, gprod_simps]
+lemma gprod_nil : ([] : List S) = (1 : G) := by exact List.prod_nil
+
+@[simp, gprod_simps]
+lemma gprod_singleton {s : S}: ([s] : G) = s := by
+  calc
+   _ = List.prod [(s : G)] := by congr
+   _ = s := by simp
+
+@[simp, gprod_simps]
+lemma gprod_eq_of_list_eq {L1 L2 : List S} (h : L1 = L2) : (L1 : G) = (L2 : G) := by rw [h]
+
+-- Some automation regarding List S
+--instance HasHMulListList : HMul (List S) (List S) (List S) where
+--  hMul := fun L1 L2 ↦ (L1 ++ L2 : List S)
+
+instance HasHMulListS : HMul (List S) S G where
+  hMul := fun L g ↦ (L : G) * g
+
+instance HasHMulGList : HMul G (List S) G where
+  hMul := fun g L ↦ g * (L : G)
+
+instance HasHMulST {S T: Set G}: HMul S T G where
+  hMul := fun s t ↦ s.val*t.val
+
+@[gprod_simps]
+lemma gprod_cons (hd : S)  (tail : List S) : (hd :: tail : G) = hd * (tail : G) := by {
+  simp_rw [← List.prod_cons]
+  congr
+}
+
+@[simp, gprod_simps]
+lemma gprod_append {l1 l2 : List S} : (l1 ++ l2 : G) = l1 * l2 := by {
+  rw [← List.prod_append]
+  congr
+  simp [List.gprod, Lean.Internal.coeM]
+}
+
+@[simp, gprod_simps]
+lemma gprod_append_singleton {l1 : List S} {s : S} : (l1 ++ [s] : G) = l1 * s := by {
+  rw [← gprod_singleton, gprod_append]
+}
+
+@[simp]
+abbrev inv_reverse (L : List S) : List G := (List.map (fun x ↦ (x : G)⁻¹) L).reverse
+
+lemma gprod_inv_eq_inv_reverse (L: List S) : (L : G)⁻¹ = inv_reverse L := by rw [List.prod_inv_reverse]
+
+lemma inv_reverse_prod_prod_eq_one {L: List S} : inv_reverse L * (L : G) = 1 :=
+  by rw [inv_reverse, ← gprod_inv_eq_inv_reverse, mul_left_inv]
+
 attribute [gprod_simps] mul_assoc mul_one one_mul mul_inv_rev mul_left_inv mul_right_inv inv_inv inv_one
+
+namespace Subgroup
+
+variable {G :Type*} [Group G] {S : Set G}
+
+local notation "T"=> {z | z∈ S ∨ z⁻¹∈S}
+
+def List.inv.aux (x : T) : x.val⁻¹ ∈ T := by
+  cases' x.prop with h h
+  . right; rw [inv_inv]; exact h
+  . left; exact h
+
+/-
+def List.inv (L : List T) : List {z | z∈ S ∨ z⁻¹∈S} :=
+  match L with
+  | [] => []
+  | x :: tail => ⟨x.val⁻¹, List.inv.aux x⟩ :: List.inv tail
+-/
+
+
+def List.inv (L : List T) : List {z | z∈ S ∨ z⁻¹∈S} := L.map (fun z => ⟨z.val⁻¹, List.inv.aux z⟩)
+
+lemma List.inv.coeM (L : List T) : (List.inv L: List G) = (L : List G).map (fun z => z⁻¹) := by
+  rw [List.inv]
+  induction' L with x t hx
+  . trivial
+  . simp only [Set.coe_setOf, Set.mem_setOf_eq, List.map_cons, coeM_cons, List.cons.injEq]
+    constructor
+    . trivial
+    . exact hx
+
+def List.inv_reverse (L : List T) : List T := (List.inv L).reverse
+
+lemma List.inv_eq_inv_reverse (L: List T) : (L : G)⁻¹ = List.inv_reverse L := by
+    rw [List.prod_inv_reverse,inv_reverse,List.inv]
+    congr 1
+    simp_rw [Set.coe_setOf, Set.mem_setOf_eq, coeM_reverse, List.reverse_inj,<-List.inv.coeM]
+    congr
+
+/-
+An element is in subgroup closure of S if and only if it can be
+written as a product of elements in {z | z ∈ S ∨ z⁻¹ ∈ S}
+-/
+lemma mem_subgroup_closure_iff_prod (z : G) :
+  z ∈ closure S ↔ (∃ (L : List {z | z ∈ S ∨ z⁻¹ ∈ S}), z = L ) := by
+  constructor
+  . intro hz
+    induction' hz using closure_induction' with s hs x _ y _ hx hy x _ hx
+    . use [⟨s,Or.inl hs⟩]
+      rw [gprod_singleton]
+    . use []
+      rw [gprod_nil]
+    . --intro x y hx hy
+      obtain ⟨Lx,hLx⟩ := hx
+      obtain ⟨Ly,hLy⟩ := hy
+      use Lx++Ly
+      rw [hLx,hLy,gprod_append]
+    . obtain ⟨L,hL⟩:=hx
+      use List.inv_reverse L
+      rw [hL,List.inv_eq_inv_reverse]
+  . intro ⟨L,hL⟩
+    induction' L with x hx thx generalizing z
+    . rw [gprod_nil] at hL
+      simp only [hL,Subgroup.one_mem]
+    . rw [gprod_cons] at hL
+      rw [hL]
+      apply mul_mem
+      . cases x.prop with
+        | inl h => exact Set.mem_of_mem_of_subset h Subgroup.subset_closure
+        | inr h =>
+          apply (Subgroup.inv_mem_iff _).1
+          exact Set.mem_of_mem_of_subset h Subgroup.subset_closure
+      . exact thx (hx.gprod) (rfl)
+
+
+end Subgroup
+
+
+
+end list_properties

@@ -1,5 +1,6 @@
 import Coxeter.CoxeterSystem
 import Coxeter.CoxeterMatrix1
+import Coxeter.StrongExchange
 
 import Mathlib.Data.Set.Card
 
@@ -113,7 +114,11 @@ instance PartialOrder : PartialOrder G where
     eq_of_le_of_length_ge ulew (length_le_of_le wleu)
 
 
-def Interval (x y : G) : Set G := Set.Icc x y
+abbrev Interval (x y : G) : Set G := Set.Icc x y
+
+def Icc (u w : G): Set G := Set.Icc u w
+
+def Iic (w : G): Set G := Set.Iic w
 
 local notation "S" => (SimpleRefl G)
 
@@ -123,6 +128,8 @@ def remove_list (L : List S) (L_ind_rm : List (Fin L.length)) : List S := sorry
 /- To say a word L' is a subword of L is just to remove a list of element from L' -/
 def remove_list_of_subword (L L' : List S) (hsub : List.Sublist L' L) :
   ∃ (L_ind_rm : List (Fin L.length)), L' = remove_list L L_ind_rm := by sorry
+
+#check CoxeterSystem.strong_exchange
 
 --  Bjorner, Brenti, Lemma 2.2.1
 lemma subword_aux {L L' : List S} (hne: (L:G) ≠ L') (hred: reduced_word L) (hred': reduced_word L')

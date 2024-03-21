@@ -5,10 +5,10 @@ variable {α : Type*} [DecidableEq α]
 
 variable (m : Matrix α  α ℕ) [CoxeterMatrix m]
 
-noncomputable section GeometricRepresentation
+namespace GeometricRepresentation
 --variable {α : Type*} [DecidableEq α]
 --variable (m : Matrix α  α ℕ) [CoxeterMatrix m]
-
+noncomputable section
 
 
 class Splitting (k : Matrix α α ℝ) where
@@ -63,18 +63,19 @@ lemma sigma_star_mul_apply_s'_eq_two  {p : V⋆} (h: m s s' = 2) : ((σ⋆ s) * 
 -- The final goal is
 lemma order_sigma_star_mul : orderOf ((σ⋆ s) * (σ⋆ s')) = m s s' := by sorry
 
-lemma order_generator_mul (s t :α) : orderOf (CoxeterMatrix.of m s * CoxeterMatrix.of m t) = m s t := by sorry
-
-
-
+end
 end GeometricRepresentation
 
 namespace CoxeterMatrix
 
--- This is non-trivial, one have to compute the order of the product of two generators.
+lemma order_generator_mul (s t :α) : orderOf (CoxeterMatrix.of m s * CoxeterMatrix.of m t) = m s t := by sorry
+
 lemma of_injective (a b :α) : of m a = of m b ↔ a = b:= by
   constructor
-  . sorry
+  . contrapose; intro h; by_contra h2
+    have : (of m a) * (of m b) = 1 := by simp [h2]
+    rw [<-orderOf_eq_one_iff,order_generator_mul,one_iff] at this
+    exact h this
   . intro ;congr
 
 end CoxeterMatrix

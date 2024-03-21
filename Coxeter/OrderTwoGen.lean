@@ -8,113 +8,6 @@ import Mathlib.Tactic.IntervalCases
 import Coxeter.Aux_
 open Classical
 
-section CoeM
-universe u
-variable {α β : Type u} [(a : α) -> CoeT α a β]
-
-lemma coeM_nil_eq_nil : (([] : List α) : List β) = ([] : List β) := by rfl
-
-@[simp]
-lemma coeM_cons {hd : α} {tail : List α} :
-  ((hd :: tail : List α) : List β) = (hd : β) :: (tail : List β) := by rfl
-
-@[simp]
-lemma coeM_append {l1 l2 : List α} :
-  ((l1 ++ l2) : List β) = (l1 : List β ) ++ (l2 : List β) := by
-  simp only [Lean.Internal.coeM, List.bind_eq_bind, List.append_bind]
-
-
-@[simp]
-lemma coeM_reverse {l : List α} : (l.reverse : List β) = (l : List β ).reverse := by
-  induction l with
-  | nil => trivial
-  | cons hd tail ih => simp; congr
-
-@[simp]
-lemma mem_subtype_list {x : α} {S : Set α} {L : List S}: x ∈ (L : List α) → x ∈ S := by {
-  intro H
-  induction L with
-  | nil => trivial
-  | cons hd tail ih => {
-    simp only [coeM_cons, List.mem_cons] at H
-    cases H with
-    | inl hh => {
-      have : CoeT.coe hd = (hd : α) := rfl
-      simp only [hh, this, Subtype.coe_prop]
-    }
-    | inr hh => {exact ih hh}
-  }
-}
-
-end CoeM
-
-section list_properties
-
-variable {G : Type _} [Group G] {S : Set G}
-
-noncomputable instance HasBEq : BEq S where
-  beq := fun s1 s2 ↦ (s1 : G) = s2
-
-@[coe]
-abbrev List.gprod {S : Set G} (L : List S) := (L : List G).prod
-
-instance List.ListGtoGroup : CoeOut (List G) G where
-  coe := fun L ↦ (L : List G).prod
-
-instance List.ListStoGroup : CoeOut (List S) G where
-  coe := fun L ↦ L.gprod
-
-@[gprod_simps]
-lemma gprod_nil : ([] : List S) = (1 : G) := by exact List.prod_nil
-
-@[gprod_simps]
-lemma gprod_singleton {s : S}: ([s] : G) = s := by
-  calc
-   _ = List.prod [(s : G)] := by congr
-   _ = s := by simp
-
-@[gprod_simps]
-lemma gprod_eq_of_list_eq {L1 L2 : List S} (h : L1 = L2) : (L1 : G) = (L2 : G) := by rw [h]
-
--- Some automation regarding List S
---instance HasHMulListList : HMul (List S) (List S) (List S) where
---  hMul := fun L1 L2 ↦ (L1 ++ L2 : List S)
-
-instance HasHMulListS : HMul (List S) S G where
-  hMul := fun L g ↦ (L : G) * g
-
-instance HasHMulGList : HMul G (List S) G where
-  hMul := fun g L ↦ g * (L : G)
-
-@[gprod_simps]
-lemma gprod_cons (hd : S)  (tail : List S) : (hd :: tail : G) = hd * (tail : G) := by {
-  simp_rw [← List.prod_cons]
-  congr
-}
-
-@[simp, gprod_simps]
-lemma gprod_append {l1 l2 : List S} : (l1 ++ l2 : G) = l1 * l2 := by {
-  rw [← List.prod_append]
-  congr
-  simp [List.gprod, Lean.Internal.coeM]
-}
-
-@[simp, gprod_simps]
-lemma gprod_append_singleton {l1 : List S} {s : S} : (l1 ++ [s] : G) = l1 * s := by {
-  rw [← gprod_singleton, gprod_append]
-}
-
-@[simp, gprod_simps]
-abbrev inv_reverse (L : List S) : List G := (List.map (fun x ↦ (x : G)⁻¹) L).reverse
-
-lemma gprod_inv_eq_inv_reverse (L: List S) : (L : G)⁻¹ = inv_reverse L := by rw [List.prod_inv_reverse]
-
-
-lemma inv_reverse_prod_prod_eq_one {L: List S} : inv_reverse L * (L : G) = 1 :=
-  by simp [← gprod_inv_eq_inv_reverse]
-
-end list_properties
-
 class OrderTwoGen {G : Type*} [Group G] (S : Set G) where
   order_two : ∀ (x : G), x ∈ S → x * x = (1 : G) ∧ x ≠ (1 : G)
   expression : ∀ (x : G), ∃ (L : List S), x = L.gprod
@@ -386,23 +279,52 @@ lemma length_zero_iff_one {w : G} : ℓ(w) = 0 ↔ w = 1 := by
     apply Nat.le_zero.1 h3
 
 -- DLevel 2
-lemma reduced_take_of_reduced {S: Set G} [OrderTwoGen S] {L: List S} (H : reduced_word L) (n:ℕ) : reduced_word (L.take n) := by sorry
+lemma reduced_take_of_reduced {S : Set G} [OrderTwoGen S] {L : List S} (h : reduced_word L) (n : ℕ) :
+    reduced_word (L.take n) := by
+  contrapose! h
+  simp only [reduced_word] at *
+  push_neg at *
+  rcases h with ⟨L', hL'⟩
+  use L' ++ L.drop n
+  rw [gprod_append, hL'.1.symm, List.length_append, ← gprod_append, List.take_append_drop]
+  apply And.intro rfl
+  by_cases h : n ≤ L.length
+  · rw [List.length_drop]
+    rw [List.length_take_of_le h] at hL'
+    apply lt_of_lt_of_le (add_lt_add_right hL'.2 (L.length - n))
+    rw [← Nat.add_sub_assoc h, add_comm, Nat.add_sub_cancel]
+  · rw [List.length_drop, Nat.sub_eq_zero_of_le (by linarith [h])]
+    apply lt_of_lt_of_le hL'.2
+    rw [List.length_take]
+    exact min_le_iff.mpr (Or.inr le_rfl)
 
-
--- DLevel 1
-lemma reduced_drop_of_reduced {S: Set G} [OrderTwoGen S] {L: List S} (H : reduced_word L) (n:ℕ) : reduced_word (L.drop n) := by sorry
-
-
+-- DLevel 2
+lemma reduced_drop_of_reduced {S : Set G} [OrderTwoGen S] {L : List S} (h : reduced_word L) (n : ℕ) :
+    reduced_word (L.drop n) := by
+  apply reverse_is_reduced at h
+  rw [← List.reverse_reverse (L.drop n)]
+  apply reverse_is_reduced
+  rw [List.reverse_drop]
+  exact reduced_take_of_reduced h (L.length - n)
 
 -- Cannot define the metric as an instance as there are various choices of S for a fixed G
 -- On the other hand, the metric is well defined for Coxeter Group
-noncomputable def metric {G :Type*} [Group G] (S : Set G) [@OrderTwoGen G _ S] : MetricSpace G where
+noncomputable def metric {G : Type*} [Group G] (S : Set G) [@OrderTwoGen G _ S] : MetricSpace G where
   dist := fun x y => length S (x * y⁻¹)
-  dist_self := by sorry
-  dist_comm := by sorry
-  dist_triangle := by sorry
-  eq_of_dist_eq_zero := by sorry
-  edist_dist := by sorry
+  dist_self := fun _ ↦ by simp only [dist, mul_right_inv]; norm_num; exact length_zero_iff_one.mpr rfl
+  dist_comm := fun _ _ ↦ by simp only [dist]; rw [length_eq_inv_length]; group
+  dist_triangle := fun x y z ↦ by
+    simp only [dist]
+    rw [(by group : x * z⁻¹ = (x * y⁻¹) * (y * z⁻¹))]
+    rw [← Nat.cast_add]
+    apply (@Nat.cast_le ℝ _ _ _ _ _ (length S (x * y⁻¹ * (y * z⁻¹))) (length S (x * y⁻¹) + length S (y * z⁻¹))).mpr
+    exact length_mul_le_length_sum
+  eq_of_dist_eq_zero := fun {x y} h ↦ by
+    simp only [Nat.cast_eq_zero, length_zero_iff_one] at h
+    rw [← one_mul y, ← h, mul_assoc, mul_left_inv, mul_one]
+  edist_dist := fun x y ↦ by
+    simp only [Nonneg.mk_nat_cast, ENNReal.ofReal_coe_nat]
+    exact rfl
 
 
 noncomputable def choose_reduced_word (S : Set G) [OrderTwoGen S] (g:G) : List S := Classical.choose (exists_reduced_word S g)
