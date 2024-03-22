@@ -293,6 +293,8 @@ instance Delta.ASC.Pure {P : Type*} [PartialOrder P] [Fintype P] [GradedPoset P]
 def Shellable (P : Type*) [PartialOrder P] [Fintype P] [GradedPoset P] :=
   AbstractSimplicialComplex.shellable (Delta.ASC P)
 
+
+
 end Shellable
 
 /-
