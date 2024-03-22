@@ -205,9 +205,10 @@ lemma toGroup_expression : ∀ (x : G), ∃ L : List S, x = L.gprod := by
     rw [← this]
     induction L with
     | nil =>
-      norm_num
+      norm_num1
       rw [← FreeGroup.toWord_one, FreeGroup.mk_toWord]
-      simp [QuotientGroup.mk_one]
+      simp only [QuotientGroup.mk_one, SimpleRefl, toSimpleRefl,
+        FreeGroup.toWord_one, List.map_nil, gprod_nil]
     | cons hd tail ih =>
       rw [List.map_cons, ← List.singleton_append, ← FreeGroup.mul_mk]
       rw [gprod_cons, ← ih]
