@@ -22,14 +22,14 @@ lemma gen_square_eq_one : ∀ x ∈ S, x * x = 1 := fun x hx ↦ (h.order_two x 
 @[simp]
 lemma gen_square_eq_one' (s : S) : (s : G) * s = 1:= by simp [gen_square_eq_one s.1 s.2]
 
-@[simp]
+--@[simp] -- makes expression more complex
 lemma inv_eq_self [h : OrderTwoGen S]: ∀ x : G, x ∈ S → x = x⁻¹ :=
   fun x hx ↦ mul_eq_one_iff_eq_inv.1 (h.order_two x hx).1
 
-@[simp]
+--@[simp] -- makes expression more complex
 lemma inv_eq_self' : ∀ (x : S), x = (x : G)⁻¹ := fun x ↦ inv_eq_self x.1 x.2
 
-@[simp]
+@[simp, gprod_simps]
 lemma inv_eq_self'' : ∀ (x : S), (x : G)⁻¹ = x := fun x ↦ Eq.symm (inv_eq_self x.1 x.2)
 
 -- The lemma was called non_one
@@ -54,11 +54,11 @@ lemma reverse_prod_prod_eq_one {L : List S} : (L.reverse : G) * L = 1 := by {
     _ = _ := inv_reverse_prod_prod_eq_one
 }
 
-@[simp]
+@[simp, gprod_simps]
 lemma gprod_reverse (L : List S) : L.reverse.gprod = (L.gprod)⁻¹ :=
   mul_eq_one_iff_eq_inv.1 reverse_prod_prod_eq_one
 
-@[simp]
+@[simp, gprod_simps]
 lemma gprod_reverse' (L : List S) : (L.reverse : G)⁻¹ = L := by simp
 
 lemma exists_prod (g : G) : ∃ (L : List S), g = L := h.expression g
