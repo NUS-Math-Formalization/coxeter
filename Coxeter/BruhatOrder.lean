@@ -1,5 +1,5 @@
 import Coxeter.CoxeterSystem
-import Coxeter.CoxeterMatrix1
+import Coxeter.CoxeterMatrix
 import Coxeter.StrongExchange
 
 import Mathlib.Data.Set.Card

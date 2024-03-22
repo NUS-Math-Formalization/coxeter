@@ -547,8 +547,9 @@ instance HasHMulListS : HMul (List S) S G where
 instance HasHMulGList : HMul G (List S) G where
   hMul := fun g L ↦ g * (L : G)
 
-instance HasHMulST {S T: Set G}: HMul S T G where
-  hMul := fun s t ↦ s.val*t.val
+--The following instance will cause wrong type class resolution
+--instance HasHMulST {S T: Set G}: HMul S T G where
+--  hMul := fun s t ↦ s.val*t.val
 
 @[gprod_simps]
 lemma gprod_cons (hd : S)  (tail : List S) : (hd :: tail : G) = hd * (tail : G) := by {
