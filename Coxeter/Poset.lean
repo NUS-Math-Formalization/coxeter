@@ -57,21 +57,11 @@ variable {P : Type*} [PartialOrder P]
 -- def ledot {P : Type*} [PartialOrder P] : P → P → Prop := sorry -- (a : P) → (b : P) → (a < b ∧ (∀ {c : P}, (a ≤ c ∧ c ≤ b) → (a = c ∨ b = c)))
 def ledot {P : Type*} [PartialOrder P]  (a b : P) : Prop := (∀ c : P, (a ≤ c ∧ c ≤ b) → (a = c ∨ b = c))
 
-/-Bookmark:
-ledot should be of type P → P → Prop
--/
-
 /- Notation: We denote the cover relation by x ⋖ y. Use "\les" to type the symbol -/
 notation a " ⋖ " b => ledot a b
 
 /- Defintion: We define the set of edges of P as set of all pairs (a,b) such that a is covered by b.-/
 def edges (P : Type*) [PartialOrder P] : Set (P × P) := {(a, b) | ledot a b }
-
-@[deprecated List.adjPairs]
-def List_pair {P : Type*} [PartialOrder P] : List P → List (P × P)
-  | [] => []
-  | _ :: []  => []
-  | a :: b :: l =>  ((a, b) : P × P) :: (List_pair (b :: l))
 
 
 /- Definition: We define an edge labelling of P as a function from the set of relations to another poset A.-/
@@ -105,6 +95,8 @@ Lemma: If a chain L : x₀ < x₁ < ⋯ < x_n is maximal, then we have x_0 ⋖ x
 lemma maximal_chain_ledot {P : Type*} [PartialOrder P] {L: List P} :
   maximal_chain L → List.Chain' ledot L := sorry
 
+lemma maximal_chain_of_ledot_chain {P :Type*} [PartialOrder P] [BoundedOrder P] {L: List P} :
+  List.Chain' ledot L ∧ L.head? = some ⊥ ∧ L.getLast? = some ⊤ → maximal_chain L := sorry
 
 /-
 Lemma: Let P be a bounded finite poset. Then a maximal chain exsits.
@@ -190,7 +182,7 @@ lemma GradedPoset.corank {P : Type*} [PartialOrder P] [Fintype P] [GradedPoset P
 end GradedPoset
 
 section labeling
-namespace ParticalOrder
+namespace PartialOrder
 variable {P : Type*} [PartialOrder P] --[Fintype P] [GradedPoset P]
 variable {A : Type*} [PartialOrder A]
 
@@ -203,7 +195,8 @@ def mapMaxChain (l : edgeLabeling P A) (m : maximalChains P)  : List A := List.m
 
 def mapMaxChain_interval (l : edgeLabeling P A) {x y : P} (m : maximalChains <| Set.Icc x y)  : List A := List.map (fun e : edges (Set.Icc x y) => l (e : edges P)) <| edgePairs m
 
-abbrev risingChains (l : edgeLabeling P A) (x y: P) := {m : maximalChains <| Set.Icc x y | chain <| mapMaxChain_interval l m}
+/-Defines the set of risingChians in an interval [x,y]-/
+abbrev risingChains (l : edgeLabeling P A) (x y: P) := {m : maximalChains <| Set.Icc x y | List.Chain' (. ≤ .) <| mapMaxChain_interval l m}
 
 /-
 Definition: An edge labelling of P is called an EL-labelling if for every interval [x,y] in P,
@@ -215,9 +208,29 @@ class EL_labeling (l : edgeLabeling P A) where
   unique {x y: P} (h : x<y) : Unique (risingChains l x y)
   unique_min {x y: P} (h : x<y): ∀ (m' : maximalChains <| Set.Icc x y), m' ≠ (unique h).default → (mapMaxChain_interval l (unique h).default.val < mapMaxChain_interval l m')
 
-end ParticalOrder
+end PartialOrder
 end labeling
 
+
+section Shellable
+
+def Delta (P : Type*) [PartialOrder P] : Set (List P) := {L : List P | chain L}
+
+instance Delta.partialOrder {P : Type*} [PartialOrder P] : PartialOrder (Delta P) where
+  le := fun x y =>  List.Sublist x.1 y.1
+  le_refl := fun x => List.Sublist.refl x.1
+  le_trans := sorry
+  le_antisymm := sorry
+  lt_iff_le_not_le := sorry
+
+
+def shelling {P : Type*} [PartialOrder P] [Fintype P] (L : List (maximalChains P)) (h : L ≠ []) : Prop := (L.head h ∩ (foldr ∪ ∅ List.tail)).card  = L.head.length -1
+
+def Shellable (P : Type*) [PartialOrder P] [Fintype P] := ∃ m: ℕ, ∃  L: Fin m ≃ maximalChains P,
+  (∀ i : Fin m, ((L i).val.toFinset ∩ (⋃  j : Fin i.val, (L ⟨j.val,by sorry⟩).val.toFinset)).card = (L i).toFinset.length  -1)
+
+
+end Shellable
 
 /-
 Definition: A graded poset P is called shellable if there is an ordering L_1, ⋯ , L_m of all maximal
