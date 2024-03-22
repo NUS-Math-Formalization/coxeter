@@ -212,9 +212,56 @@ end PartialOrder
 end labeling
 
 
+section ASC
+
+/-
+An abstract simplicial complex is a pair (V,F) where V is a set and F is a set of finite subsets of V such that
+  (1) ∅ ∈ F,
+  (2) {v} ∈ F for all v ∈ V, (This is to ensure that ∪ F = V.)
+  (3) if s ∈ F and t ⊆ s, then t ∈ F.
+-/
+class AbstractSimplicialComplex {V : Type*} (F : Set (Finset V))where
+  empty_mem : ∅ ∈ F
+  singleton_mem : ∀ v : V, {v} ∈ F
+  subset_mem : ∀ s ∈ F, ∀ t ⊆ s, t ∈ F
+
+namespace AbstractSimplicialComplex
+
+variable {V : Type*} (F : Set (Finset V)) [AbstractSimplicialComplex F]
+
+def maximal_facet {V : Type*} (F : Set (Finset V)) [AbstractSimplicialComplex F] (s : Finset V) := s ∈ F ∧  ∀ t ∈ F, s ⊆ t → s = t
+
+def maximalFacets : Set (Finset V) := { s | AbstractSimplicialComplex.maximal_facet F s}
+
+--instance coe_maximalFacets : CoeOut (maximalFacets F) (Finset V) :=
+--  ⟨fun s => s.val⟩
+
+noncomputable def rank : ℕ := iSup fun s : F => s.1.card
+
+
+/- Definition: A pure abstract simplicial complex is an abstract simplicial complex where all maximal facets have the same cardinality. -/
+class Pure (F : Set (Finset V)) [AbstractSimplicialComplex F] where
+  pure : ∀ s t : maximalFacets F, s.1.card = t.1.card
+
+def shelling {V : Type*} (F : Set (Finset V)) [AbstractSimplicialComplex F] [Pure F]  {m : ℕ } (l : Fin m ≃ maximalFacets F) :=
+  ∀ i : Fin m, ((l i).1 ∩ (Finset.biUnion (Finset.filter (. < i) (Finset.univ : Finset (Fin m))) (fun j => (l j).1))).card = (l i).1.card -1
+
+def shellable {V : Type*} (F : Set (Finset V)) [AbstractSimplicialComplex F] [Pure F] := ∃ (m: ℕ) (l : Fin m ≃ maximalFacets F), shelling F l
+
+end AbstractSimplicialComplex
+
+end ASC
+
 section Shellable
 
+variable {P : Type*} [PartialOrder P] --[Fintype P] [GradedPoset P]
+
+@[simp]
 def Delta (P : Type*) [PartialOrder P] : Set (List P) := {L : List P | chain L}
+
+@[simp]
+def Delta.ASC (P : Type*) [PartialOrder P] : Set (Finset P) := List.toFinset '' Delta P
+
 
 instance Delta.partialOrder {P : Type*} [PartialOrder P] : PartialOrder (Delta P) where
   le := fun x y =>  List.Sublist x.1 y.1
@@ -223,12 +270,28 @@ instance Delta.partialOrder {P : Type*} [PartialOrder P] : PartialOrder (Delta P
   le_antisymm := sorry
   lt_iff_le_not_le := sorry
 
+instance Delta.AbstractSimplicialComplex {P : Type*} [PartialOrder P] : AbstractSimplicialComplex (Delta.ASC P) where
+  empty_mem := by simp only [ASC, Delta, Set.mem_image, Set.mem_setOf_eq,
+    List.toFinset_eq_empty_iff, exists_eq_right,chain,List.Chain']
+  singleton_mem := by
+    intro v; simp only [ASC, Set.mem_image]
+    use [v]
+    constructor
+    . simp only [Delta, Set.mem_setOf_eq,chain,List.chain'_singleton]
+    . trivial
+  subset_mem := by
+    intro s h1 t h2
+    simp only [ASC, Set.mem_image] at h1 h2
+    rcases h1 with ⟨L, h1, h1'⟩
+    dsimp
+    use (List.filter (fun (x : P) => x ∈ t) L)
+    sorry
 
-def shelling {P : Type*} [PartialOrder P] [Fintype P] (L : List (maximalChains P)) (h : L ≠ []) : Prop := (L.head h ∩ (foldr ∪ ∅ List.tail)).card  = L.head.length -1
+instance Delta.ASC.Pure {P : Type*} [PartialOrder P] [Fintype P] [GradedPoset P]: AbstractSimplicialComplex.Pure (Delta.ASC P) where
+  pure := sorry
 
-def Shellable (P : Type*) [PartialOrder P] [Fintype P] := ∃ m: ℕ, ∃  L: Fin m ≃ maximalChains P,
-  (∀ i : Fin m, ((L i).val.toFinset ∩ (⋃  j : Fin i.val, (L ⟨j.val,by sorry⟩).val.toFinset)).card = (L i).toFinset.length  -1)
-
+def Shellable (P : Type*) [PartialOrder P] [Fintype P] [GradedPoset P] :=
+  AbstractSimplicialComplex.shellable (Delta.ASC P)
 
 end Shellable
 
