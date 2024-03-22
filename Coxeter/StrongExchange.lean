@@ -66,6 +66,7 @@ instance CoxeterMatrix {S:Set G} [CoxeterSystem S]: CoxeterMatrix (toMatrix S) w
   symmetric := by sorry
   oneIff := by sorry
 
+
 namespace Presentation
 
 
@@ -172,29 +173,6 @@ theorem _root_.CoxeterSystem.strong_exchange : ∀ (L : List S) (t : Refl S), �
   simp only [map_mul,gprod_eq,<-equiv.Refl.def,hi,List.map_removeNth_comm]
 
 end Presentation
-
--- Better to establish properties of morphisms between Coxeter systems
-
-noncomputable section Morphism
-variable {H : Type*} [Group H] {S' : Set H} [hS': CoxeterSystem S']
-
-class Morphism {G:Type*} [Group G] {S : Set G} [CoxeterSystem S] {H :Type*} [Group H] {S' : Set H} [CoxeterSystem S']
-(f : S → S') where
-  preservesOrder : ∀ s1 s2: S, orderOf (s1.val * s2) = orderOf ((f s1).val * (f s2))
-
-namespace Morphism
-
-lemma relation (f: S → S') [Morphism f] :
-  ∀ s1 s2, ((fun s => (f s).val) s1 * (fun s => (f s).val ) s2)^(orderOf (s1.val*s2))= 1 := by sorry
-
-def toGroupHom (f : S → S') [Morphism f]  : G →* H := monoidLift.mapLift (relation f)
-
-
-
-end Morphism
-
-end Morphism
-
 
 
 end CoxeterSystem
