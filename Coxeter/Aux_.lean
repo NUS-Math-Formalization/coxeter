@@ -545,6 +545,7 @@ instance HasHMulListS : HMul (List S) S G where
 instance HasHMulGList : HMul G (List S) G where
   hMul := fun g L ↦ g * (L : G)
 
+--The following instance will cause wrong type class resolution
 --instance HasHMulST {S T: Set G}: HMul S T G where
 --  hMul := fun s t ↦ s.val*t.val
 
