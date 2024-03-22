@@ -529,7 +529,7 @@ noncomputable def eta_aux_aux''_aux (s : S) : α := by
   choose y _ using s.prop
   exact y
 
-lemma eta_aux_aux'' (s : S) (t : T) : eta_aux (eta_aux_aux''_aux s) t = eta_aux' s t := by
+/-lemma eta_aux_aux'' (s : S) (t : T) : eta_aux (eta_aux_aux''_aux s) t = eta_aux' s t := by
   choose y hy using s.prop
   have : y = s := by
     rw [toSimpleRefl]
@@ -540,7 +540,7 @@ lemma eta_aux_aux'' (s : S) (t : T) : eta_aux (eta_aux_aux''_aux s) t = eta_aux'
     sorry
   rw [← this]
   rw [eta_aux_aux', toSimpleRefl]
-  congr
+  congr-/
 
 end
 
