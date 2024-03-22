@@ -293,6 +293,22 @@ instance Delta.ASC.Pure {P : Type*} [PartialOrder P] [Fintype P] [GradedPoset P]
 def Shellable (P : Type*) [PartialOrder P] [Fintype P] [GradedPoset P] :=
   AbstractSimplicialComplex.shellable (Delta.ASC P)
 
+/-
+Definition: A graded poset P is called shellable if there is an ordering L_1, ⋯ , L_m of all maximal
+chains of P such that |L_i ∩ (∪_{j > i} L_{j})| = |L_i|- 1.
+-/
+noncomputable def shelling_aux {P : Type*} [PartialOrder P] [Fintype P] [GradedPoset P] (l : List <| maximalChains P) : Prop := match l with
+  | [] => true
+  | _ :: [] => true
+  | a :: b :: l' => (a.1.toFinset ∩ (List.foldl (fun (x : Finset P) (y : maximalChains P) => x ∪ y.1.toFinset ) Finset.empty (b :: l'))).card == a.1.length - 1
+
+/- Note that the shelling condition implies that l has no duplicates-/
+def shelling' {P :Type*} [PartialOrder P] [Fintype P] [GradedPoset P] (l : List <| maximalChains P) :=
+  (∀ x : maximalChains P, x ∈ l)
+    ∧ List.Forall shelling_aux l.tails
+
+def Shellable' (P : Type*) [PartialOrder P] [Fintype P] [GradedPoset P] := ∃ l : List (maximalChains P),  shelling' l
+
 
 
 end Shellable
@@ -367,25 +383,6 @@ end Experiement
 
 
 
-
-/-
-Definition: An edge labelling of P is called an EL-labelling if for every interval [x,y] in P,
-  (1) there is a unique increasing maximal chain c in [x,y],
-  (2) c <_L c' for all other maximal chains c' in [x,y].
-Here <_L denotes the lexicographic ordering for the tuples in the labelling poset A.
--/
-class EL_labelling (P A : Type*) [PartialOrder P] [Finite P][GradedPoset P] [PartialOrder A] where
-  edges : Set (P × P) := {(a, b) : P × P | ledot a b }
-  EL : edges → A
-  chainL : (x y : P) → (h : x ≤ y) → List (Interval x y h)
-  max : (x y : P) → (h : x ≤ y) → @maximal_chain _ (Interval.poset h) (chainL x y h)
-  chainL_edges : List.Chain' ledot (chainL x y h)
-  Inc : chain ((List_pair (chainL x y h)).map EL)
-  Unique : ∀ L1 : List (Interval x y h), (maximal_chain L1)→ chain ((List_pair L1).map EL)→ L1 = chainL x y h
-  L_min : ∀ L1 : List (Interval x y h), (maximal_chain L1)  → ((List_pair (chainL x y h)).map EL) ≤ ((List_pair L1).map EL)
-
-#check EL_labelling.chainL
-
 /-
 Definition: A graded poset P is called shellable if there is an ordering L_1, ⋯ , L_m of all maximal
 chains of P such that |L_i ∩ (∪_{j < i} L_{j})| = |L_i|- 1.
@@ -431,3 +428,4 @@ lemma EL_CL {P : Type*} [PartialOrder P] (h: EL_labelling P) : CL_labelling P :=
 /- Theorem: Let P be a graded poset. If P admits an EL-labelling, then P is shellable. -/
 
 theorem EL_shellable {P : Type*} [PartialOrder P] [BoundedOrder P] (EL_labelling P A) : shellable P := by sorry
+-/
