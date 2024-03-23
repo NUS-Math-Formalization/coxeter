@@ -32,8 +32,8 @@ lemma length_hd_tail_eq_succ_length (L : List α) (a : α) : (a :: L).length = L
 lemma append_remove_cancel_of_eq_last_index {a : α} {n : ℕ} (h : n = L.length) :
   (L ++ [a]).removeNth n = L := by
   induction L generalizing n with
-  | nil => simp at h; simp [h]
-  | cons hd tail ih => simp at h; simp [h, ih]
+  | nil => rw [h]; simp
+  | cons hd tail ih => rw [h]; simp [ih]
 
 
 lemma length_append_singleton (L : List α) (a : α) : (L ++ [a]).length = L.length + 1 := by
@@ -488,7 +488,7 @@ lemma coeM_append {l1 l2 : List α} :
 lemma coeM_reverse {l : List α} : (l.reverse : List β) = (l : List β ).reverse := by
   induction l with
   | nil => trivial
-  | cons hd tail ih => simp; congr
+  | cons hd tail ih => simp only [List.reverse_cons, coeM_append, coeM_cons]; congr
 
 @[simp]
 lemma mem_subtype_list {x : α} {S : Set α} {L : List S}: x ∈ (L : List α) → x ∈ S := by {
