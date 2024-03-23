@@ -1018,14 +1018,38 @@ lemma pi_aux_list_mul (s t : α) : ((pi_aux' s : Equiv.Perm R) * (pi_aux' t : Eq
     norm_num
     norm_num
 
+lemma alternating_word_map (s t : α) (f : α → A) (n : ℕ) :
+  (alternating_word s t n).map f = alternating_word (f s) (f t) n := by
+  induction' n with k ih generalizing s t
+  . simp only [Nat.zero_eq]
+    rfl
+  . rw [alternating_word, alternating_word, List.map_cons]
+    simp only [List.cons.injEq, true_and]
+    exact ih t s
+
 -- DLevel 3
 lemma pi_relation (s t : α) : ((pi_aux' s : Equiv.Perm R) * (pi_aux' t : Equiv.Perm R)) ^ m s t = 1 := by
   have (r : R) : (((pi_aux' s : Equiv.Perm R) * (pi_aux' t : Equiv.Perm R)) ^ m s t) r = r := by
     rw [pi_aux_list_mul, pi_aux_list]
-    -- main idea:
-    -- alternating_word_relation and simplify
-    -- pi_relation_word_nn_even
-    sorry
+    set s' := toSimpleRefl m s
+    set t' := toSimpleRefl m t
+    have : (alternating_word s t (2 * m s t)).map (toSimpleRefl m)
+      = alternating_word s' t' (2 * m s t) :=
+        alternating_word_map s t (toSimpleRefl m) (2 * m s t)
+    ext
+    . simp only []
+      rw [List.map_reverse, gprod_reverse]
+      repeat rw [this, alternating_word_relation]
+      simp only [one_mul, inv_one, mul_one]
+    . simp only [Submonoid.coe_mul, Subgroup.coe_toSubmonoid,
+      SubmonoidClass.coe_pow, Units.val_mul, Units.val_pow_eq_pow_val, Units.val_neg,
+      Units.val_one, Int.reduceNeg, ne_eq, Units.ne_zero, not_false_eq_true, mul_eq_left₀]
+      rw [List.map_reverse, this, even_alternating_word_reverse]
+      have : m s t = m t s := by apply symmetric
+      rw [this]
+      apply Even.neg_one_pow
+      apply pi_relation_word_nn_even
+      norm_num
   exact Equiv.Perm.disjoint_refl_iff.mp fun x ↦ Or.inl (this x)
 
 noncomputable def pi : G →* Equiv.Perm R := lift m (fun s ↦ pi_aux' s) (by simp [pi_relation])
