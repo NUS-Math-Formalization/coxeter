@@ -1035,9 +1035,21 @@ noncomputable def pi : G →* Equiv.Perm R := lift m (fun s ↦ pi_aux' s) (by s
 -- DLevel 5
 lemma pi_value (g : G) (L : List S) (h : g = L) (r : R) : (pi g) r
     = (⟨g * r.1 * g⁻¹, by apply Refl.conjugate_closed⟩, r.2 * μ₂.gen ^ nn L.reverse r.1) := by
-  rw [nn_prod_eta_aux, pi, h]
+  rw [h]
   -- pi_aux_list ?
-  sorry
+  have rw1 : ∃ (K : List α), (K.map (of m)).prod = L := by sorry
+  rcases rw1 with ⟨K, ek⟩
+  rw [← ek]
+  have : pi (K.map (of m)).prod r = (K.map pi_aux').prod r := by
+    rw [← List.prod_hom]
+    sorry
+  rw [this, pi_aux_list]
+  congr
+  . sorry
+  . rw [List.prod_inv_reverse, List.gprod, List.map_reverse]
+    congr
+    sorry
+  . sorry
 
 -- DLevel 3
 -- (maybe some list wrangling)
