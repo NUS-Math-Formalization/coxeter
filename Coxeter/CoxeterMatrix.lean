@@ -1100,13 +1100,13 @@ lemma pi_inj : Function.Injective (pi : G → Equiv.Perm R) := by
         simp only [SimpleRefl, toPalindrome, zero_add, List.take_cons_succ, List.take_zero,
           List.reverse_cons, List.reverse_nil, List.nil_append, List.tail_cons,
           List.singleton_append]
-      have other_fail (j : Fin (L.reverse.length)) :
+      have other_fail (j : Fin L.reverse.length) :
         j ≠ ⟨0, Fin.pos j⟩ → (toPalindrome_i L.reverse j).gprod ≠ [s] := by
         rw [← zero_works]
         have : reduced_word L.reverse := reverse_is_reduced hL
         apply distinct_toPalindrome_i_of_reduced this j ⟨0, Fin.pos j⟩
       rw [nn]
-      have (n : ℕ) : List.range (n + 1) = 0 :: (List.range (n)).map (Nat.succ) :=
+      have (n : ℕ) : List.range (n + 1) = 0 :: (List.range n).map Nat.succ :=
         List.range_succ_eq_map n
       rw [← Nat.sub_add_cancel L_rev_ge1, List.length_reverse, ← Nat.one_eq_succ_zero, this,
         List.map_cons, List.count_cons, zero_works]
