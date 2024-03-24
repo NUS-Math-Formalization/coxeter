@@ -577,7 +577,7 @@ lemma gprod_inv_eq_inv_reverse (L: List S) : (L : G)⁻¹ = inv_reverse L := by 
 lemma inv_reverse_prod_prod_eq_one {L: List S} : inv_reverse L * (L : G) = 1 :=
   by rw [inv_reverse, ← gprod_inv_eq_inv_reverse, mul_left_inv]
 
-attribute [gprod_simps] mul_assoc mul_one one_mul mul_inv_rev mul_left_inv mul_right_inv inv_inv inv_one
+attribute [gprod_simps] mul_assoc mul_one one_mul mul_inv_rev mul_left_inv mul_right_inv inv_inv inv_one mul_inv_cancel_left inv_mul_cancel_left
 
 namespace Subgroup
 
