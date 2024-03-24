@@ -41,12 +41,12 @@ lemma gen_ne_one' : ∀ (x : S), (x : G) ≠ 1 :=
 
 --lemma mul_generator_inv {s:S} {w:G} [orderTwoGen S]: (w*s)⁻¹ = s*w⁻¹:= by rw []
 
-lemma inv_reverse_eq_reverse (L : List S) : (L.reverse : List G) = inv_reverse L := by {
-  simp only [coeM_reverse, inv_reverse, List.reverse_inj]
-  calc
-  _ = List.map id (L : List G) := by simp only [List.map_id]
-  _ = _ := List.map_congr (fun x hx ↦ inv_eq_self x (mem_subtype_list hx))
-}
+lemma inv_reverse_eq_reverse (L : List S) : (L.reverse : List G) = inv_reverse L := by
+  induction' L with hd tl ih
+  . trivial
+  . simp only [List.reverse_cons, List.bind_eq_bind, List.append_bind, List.cons_bind,
+    List.nil_bind, List.append_nil, inv_reverse, List.map_append, List.reverse_append]
+    congr; simp only [inv_eq_self'']
 
 lemma reverse_prod_prod_eq_one {L : List S} : (L.reverse : G) * L = 1 := by {
   calc

@@ -161,7 +161,7 @@ theorem _root_.CoxeterSystem.strong_exchange : ∀ (L : List S) (t : Refl S), �
   ∃ (i : Fin L.length), (t : G) * L = (L.removeNth i) := by
   intro L t hl
   set L' :=  L.map equiv.SimpleRefl
-  have hl0 :L'.length = L.length := by simp only [List.length_map]
+  have hl0 :L'.length = L.length := by rw [List.length_map]
   set t' := equiv.Refl t
   have hl1 : ℓ'(t'.val * L') = ℓ(t.val * L) := by sorry
   have hl2 : ℓ'(L') = ℓ(L) := by sorry
