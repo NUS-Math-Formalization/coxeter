@@ -1060,21 +1060,42 @@ noncomputable def pi : G →* Equiv.Perm R := lift m (fun s ↦ pi_aux' s) (by s
 lemma pi_value (g : G) (L : List S) (h : g = L) (r : R) : (pi g) r
     = (⟨g * r.1 * g⁻¹, by apply Refl.conjugate_closed⟩, r.2 * μ₂.gen ^ nn L.reverse r.1) := by
   rw [h]
-  -- pi_aux_list ?
-  have rw1 : ∃ (K : List α), (K.map (of m)).prod = L := by sorry
+  have rw1 : ∃ (K : List α), (K.map (of m)).prod = L := by
+    clear h
+    induction L with
+    | nil =>
+      use []
+      simp only [List.map_nil, List.prod_nil, SimpleRefl, gprod_nil]
+    | cons hd tail ih =>
+      rcases ih with ⟨l, el⟩
+      have : ∃ (y : α), of m y = hd := by sorry
+      rcases this with ⟨y, ey⟩
+      use y :: l
+      rw [List.map_cons, List.prod_cons, gprod_cons]
+      congr
   rcases rw1 with ⟨K, ek⟩
   rw [← ek]
   have : pi (K.map (of m)).prod r = (K.map pi_aux').prod r := by
-    rw [← List.prod_hom]
-    sorry
+    clear ek
+    induction K with
+    | nil =>
+      simp only [SimpleRefl, Set.coe_setOf, List.map_nil, List.prod_nil, map_one,
+        Equiv.Perm.coe_one, id_eq]
+    | cons hd tail ih =>
+      repeat simp_rw [List.map_cons, List.prod_cons]
+      simp only [SimpleRefl, Set.coe_setOf, map_mul, Equiv.Perm.coe_mul, Function.comp_apply]
+      congr 1
   rw [this, pi_aux_list]
   congr
-  . sorry
+  . rw [List.gprod]
+    congr
+    sorry
   . rw [List.prod_inv_reverse, List.gprod, List.map_reverse]
     congr
     sorry
   . sorry
 
+#exit
 lemma reverse_head (L : List α) (h : L ≠ []) :
   L.reverse = (L.getLast h) :: (L.dropLast).reverse := by
   induction L with
