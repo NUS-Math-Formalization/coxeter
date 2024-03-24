@@ -1035,40 +1035,33 @@ noncomputable def pi : G →* Equiv.Perm R := lift m (fun s ↦ pi_aux' s) (by s
 lemma pi_value (g : G) (L : List S) (h : g = L) (r : R) : (pi g) r
     = (⟨g * r.1 * g⁻¹, by apply Refl.conjugate_closed⟩, r.2 * μ₂.gen ^ nn L.reverse r.1) := by
   rw [h]
-  have rw1 : ∃ (K : List α), (K.map (of m)).prod = L := by
+  have rw1 : ∃ (K : List α), K.map (toSimpleRefl m) = L := by
     clear h
     induction L with
-    | nil =>
-      use []
-      simp only [List.map_nil, List.prod_nil, SimpleRefl, gprod_nil]
+    | nil => simp only [SimpleRefl, List.map_eq_nil, exists_eq]
     | cons hd tail ih =>
       rcases ih with ⟨l, el⟩
-      have : ∃ (y : α), of m y = hd := by sorry
+      have : ∃ (y : α), toSimpleRefl m y = hd := by sorry
       rcases this with ⟨y, ey⟩
       use y :: l
-      rw [List.map_cons, List.prod_cons, gprod_cons]
+      rw [List.map_cons]
       congr
   rcases rw1 with ⟨K, ek⟩
   rw [← ek]
-  have : pi (K.map (of m)).prod r = (K.map pi_aux').prod r := by
+  have : pi (K.map (toSimpleRefl m)).gprod r = (K.map pi_aux').prod r := by
     clear ek
     induction K with
-    | nil =>
-      simp only [SimpleRefl, Set.coe_setOf, List.map_nil, List.prod_nil, map_one,
-        Equiv.Perm.coe_one, id_eq]
+    | nil => simp only [SimpleRefl, Set.coe_setOf, List.map_nil, gprod_nil, map_one,
+      Equiv.Perm.coe_one, id_eq, List.prod_nil]
     | cons hd tail ih =>
       repeat simp_rw [List.map_cons, List.prod_cons]
-      simp only [SimpleRefl, Set.coe_setOf, map_mul, Equiv.Perm.coe_mul, Function.comp_apply]
+      simp only [SimpleRefl, Set.coe_setOf, toSimpleRefl, Equiv.Perm.coe_mul, Function.comp_apply]
+      rw [gprod_cons, map_mul, Equiv.Perm.coe_mul, Function.comp_apply]
       congr 1
   rw [this, pi_aux_list]
   congr
-  . rw [List.gprod]
-    congr
-    sorry
-  . rw [List.prod_inv_reverse, List.gprod, List.map_reverse]
-    congr
-    sorry
-  . sorry
+  . rw [← List.reverse_map, gprod_reverse, inv_inj]
+  . rw [← List.reverse_map]
 
 #exit
 lemma reverse_head (L : List α) (h : L ≠ []) :
