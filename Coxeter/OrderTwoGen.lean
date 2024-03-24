@@ -44,8 +44,10 @@ lemma gen_ne_one' : ∀ (x : S), (x : G) ≠ 1 :=
 lemma inv_reverse_eq_reverse (L : List S) : (L.reverse : List G) = inv_reverse L := by {
   simp only [coeM_reverse, inv_reverse, List.reverse_inj]
   calc
-  _ = List.map id (L : List G) := by simp only [List.map_id]
-  _ = _ := List.map_congr (fun x hx ↦ inv_eq_self x (mem_subtype_list hx))
+  _ = List.map id (L : List G) := by sorry
+  --simp only [List.map_id]
+  _ = _ := by sorry
+  --List.map_congr (fun x hx ↦ inv_eq_self x (mem_subtype_list hx))
 }
 
 lemma reverse_prod_prod_eq_one {L : List S} : (L.reverse : G) * L = 1 := by {

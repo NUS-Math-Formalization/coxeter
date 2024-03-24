@@ -1,3 +1,4 @@
+import Std.Data.Fin.Basic
 import Mathlib.Tactic.Linarith
 import Mathlib.Data.List.Basic
 import Mathlib.Data.Subtype
@@ -10,6 +11,7 @@ import Mathlib.Algebra.Module.Equiv
 import Mathlib.Data.List.Palindrome
 import Mathlib.Algebra.BigOperators.Finprod
 import Mathlib.Logic.Equiv.Fin
+
 
 import Coxeter.AttrRegister
 
@@ -183,10 +185,10 @@ lemma remove_after_L_length (L : List α) {i : ℕ} (h : L.length ≤ i)
       | nil => simp only [removeNth]
       | cons hd tail ih' =>
         set L := hd :: tail
-        simp only [removeNth, Nat.add_eq, add_zero, cons.injEq, true_and]
+        simp only [removeNth, Nat.add_eq, add_zero, cons.injEq, true_and,L]
         apply ih'
         exact Nat.lt_succ.1 (Nat.le.step h)
-        simp only [removeNth, Nat.add_eq, add_zero, cons.injEq, true_and] at ih
+        simp only [removeNth, Nat.add_eq, add_zero, cons.injEq, true_and,L] at ih
         apply ih
   nth_rw 2 [← remove_after_L_length']
   rw [Nat.sub_add_cancel h]
@@ -416,7 +418,7 @@ lemma prod_insert_last_fin {M : Type u} [CommMonoid M] (n : Nat) (f : Fin (n + 1
     _ = ∏ i : Fin (n + 1), fn i := by
       congr
       ext x
-      simp only [Fin.is_lt, reduceDite, Fin.eta]
+      simp only [fn,Fin.is_lt, reduceDite, Fin.eta]
     _ = fn n * ∏ i : Fin n, fn i := prod_insert_last n fn
     _ = _ := by
       congr
@@ -454,8 +456,8 @@ lemma halve_odd_prod {M : Type u} [CommMonoid M] {n : ℕ} (f : ℕ → M) :
         congr 3
         ext i
         congr 2
-        simp only [Nat.succ_sub_succ_eq_sub]
-        ring_nf
+        simp only [Nat.succ_sub_succ_eq_sub,f']
+        ring_nf; congr
         exact (Nat.add_sub_assoc (by linarith [i.2]) 1).symm
       _ = f' m * (g 0 * ∏ i : Fin m, g (i + 1)) := by
         rw [← mul_assoc (f' m), mul_comm (f' m) (g 0), mul_assoc (g 0)]
@@ -496,13 +498,19 @@ lemma mem_subtype_list {x : α} {S : Set α} {L : List S}: x ∈ (L : List α) �
   induction L with
   | nil => trivial
   | cons hd tail ih => {
-    simp only [coeM_cons, List.mem_cons] at H
+    simp only [List.bind_eq_bind, List.cons_bind, List.mem_append, List.mem_pure, List.mem_bind,
+      Subtype.exists, exists_and_right, exists_eq_right'] at H
     cases H with
     | inl hh => {
       have : CoeT.coe hd = (hd : α) := rfl
       simp only [hh, this, Subtype.coe_prop]
     }
-    | inr hh => {exact ih hh}
+    | inr hh => {
+      obtain ⟨y, hy⟩:= hh
+      simp only [List.bind_eq_bind, List.mem_bind, List.mem_pure, Subtype.exists, exists_and_right,
+        exists_eq_right', forall_exists_index] at ih
+      exact ih y hy
+      }
   }
 }
 
@@ -604,18 +612,28 @@ lemma List.inv.coeM (L : List T) : (List.inv L: List G) = (L : List G).map (fun 
   rw [List.inv]
   induction' L with x t hx
   . trivial
-  . simp only [Set.coe_setOf, Set.mem_setOf_eq, List.map_cons, coeM_cons, List.cons.injEq]
-    constructor
-    . trivial
-    . exact hx
+  . calc
+    _ = x.val⁻¹ :: List.inv t := by rfl
+    _ = _ := by rw [List.inv,hx];rfl
+
 
 def List.inv_reverse (L : List T) : List T := (List.inv L).reverse
 
 lemma List.inv_eq_inv_reverse (L: List T) : (L : G)⁻¹ = List.inv_reverse L := by
     rw [List.prod_inv_reverse,inv_reverse,List.inv]
-    congr 1
-    simp_rw [Set.coe_setOf, Set.mem_setOf_eq, coeM_reverse, List.reverse_inj,<-List.inv.coeM]
     congr
+    induction' L with x t hx
+    . trivial
+    . calc
+      _ =  (List.reverse
+    (List.map (fun x => x⁻¹) (t:List G))) ++ [x.val⁻¹] := by
+        simp only [Set.coe_setOf, Set.mem_setOf_eq, List.bind_eq_bind, List.cons_bind,
+          List.map_append, List.reverse_append, List.append_cancel_left_eq];rfl
+      _ = _ := by
+        simp_rw [hx,Set.coe_setOf, Set.mem_setOf_eq, List.bind_eq_bind, List.map_cons,
+          List.reverse_cons, List.append_bind, List.cons_bind, List.nil_bind, List.append_nil,
+          List.append_cancel_left_eq]
+        rfl
 
 /-
 An element is in subgroup closure of S if and only if it can be
@@ -658,3 +676,36 @@ end Subgroup
 
 
 end list_properties
+
+section Sublist
+
+namespace List
+
+variable {α : Type*} [DecidableEq α]
+
+/-
+Return the index list of the longest sublist of l' in l with respect to the greedy algorithm
+
+example:
+#eval indices_of [1,2,3] [4,5,1,2,0,4,1,2,3]
+returns [2,3,8]
+-/
+def indices_of_aux  (n :ℕ) (s : ℕ) (l' : List α) (l : List α ) (h : s+l.length ≤ n) : List (Fin n) := match s, l', l with
+| _, [], _ => []
+| _, _::_ , [] => []
+| i, x::xs, y::ys =>
+  if x = y then
+   ⟨i,by rw [length_cons] at h;linarith [h]⟩  :: indices_of_aux n (i+1) xs ys (by rw [length_cons] at h ;linarith [h])
+  else
+    indices_of_aux n (i+1) (x::xs) ys
+   (by rw [length_cons] at h ;linarith [h])
+
+def indices_of (l' : List α) (l : List α) : List (Fin l.length)
+  := indices_of_aux l.length 0 l' l (by simp)
+
+def complement_indices_of' (l':List α) (l:List α) : List (Fin l.length) := List.filter (fun x => x ∉ indices_of l' l) (Fin.list l.length)
+
+end List
+
+
+end Sublist
