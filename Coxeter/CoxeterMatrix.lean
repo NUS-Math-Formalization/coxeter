@@ -1168,7 +1168,15 @@ lemma eta_lift_eta_aux' {s : S} {t : T} : eta_aux' s t = eta s t := by
   · rw [if_neg h, if_neg (Ne.symm h), pow_zero]-/
 
 lemma pi_eval (g : G) (t : T) (ε : μ₂): ReflRepn.pi g (t, ε) = (⟨(g : G) * t * (g : G)⁻¹, OrderTwoGen.Refl.conjugate_closed⟩, ε * eta g⁻¹ t) := by
-  sorry
+  rcases toGroup_expression m g with ⟨L, eL⟩
+  rw [ReflRepn.pi_value g L eL]
+  ext
+  . simp only [SimpleRefl, Set.mem_setOf_eq]
+  . simp only [SubmonoidClass.coe_pow, Units.val_mul, Units.val_pow_eq_pow_val,
+      Units.val_neg, Units.val_one, mul_eq_mul_left_iff, Units.ne_zero, or_false]
+    congr
+    rw [eta, inv_inv, ReflRepn.pi_value g L eL]
+    simp only [μ₂.gen, SimpleRefl, one_mul]
 
 lemma eta_equiv_nn {g : G} {t : T} : ∀ {L : List S}, g = L → eta g t = μ₂.gen ^ nn L t := by
   intro L geqL
