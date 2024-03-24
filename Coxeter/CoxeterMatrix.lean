@@ -1076,7 +1076,7 @@ lemma reverse_head (L : List α) (h : L ≠ []) :
     . push_neg at k
       rw [List.reverse_cons, List.getLast_cons k, List.dropLast, List.reverse_cons, ih k]
       . rfl
-      . exact fun tail_eq => k tail_eq
+      . exact k
 
 -- DLevel 3
 -- (maybe some list wrangling)
