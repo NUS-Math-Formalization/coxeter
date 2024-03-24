@@ -608,13 +608,13 @@ lemma nn_cons (L : List S) (s : S) (t : T) : nn (s :: L) t = (if (s : G) = t the
       · congr 1
         ext i
         simp only [Function.comp_apply, toPalindrome_i, toPalindrome, List.take_cons, List.reverse_cons]
-        rw [List.tail_append_of_ne_nil]
+        rw [List.tail_append_of_ne_nil _ _]
         simp only [gprod_simps]
         repeat rw [← mul_assoc]
         sorry
         sorry
         --rw [mul_assoc _ s.1 s.1, gen_square_eq_one s.1 s.2, one_mul, mul_one]
-        --exact List.append_singleton_ne_nil (ttail.take i).reverse th
+        --exact (List.append_singleton_ne_nil (ttail.take i).reverse th)
     _ = _ := by
       congr
       rw [List.count_singleton']
@@ -646,9 +646,8 @@ lemma nn_prod_eta_aux [CoxeterMatrix m] (L : List S) (t : T) : μ₂.gen ^ (nn L
           ⟨((tail.take i.1).reverse : G) * sts * tail.take i.1, by apply Refl_palindrome_in_Refl⟩
         have h : ∀(i : Fin tail.length), g i = f ⟨i.val + 1, add_lt_add_right i.prop 1⟩ := by
           intro x
-          simp only [g,List.get_cons_succ, Fin.eta, List.take_cons_succ, eta_aux',
-            List.reverse_cons, gprod_simps]
-          sorry
+          simp only [g, f, List.get_cons_succ, Fin.eta, List.take_cons_succ,
+            eta_aux', List.reverse_cons, gprod_simps]
         exact (prod_insert_zero_fin h).symm
 
 lemma exists_of_nn_ne_zero [CoxeterMatrix m] (L : List S) (t : T) : nn L t > 0 →
@@ -672,14 +671,11 @@ lemma eta_aux_mul_eta_aux [CoxeterMatrix m] (s : α) (r : R) :
   let f : G → G := fun x ↦ of m s * x * (of m s)⁻¹
   have : Function.Injective f := by
     intro a b hab
-    --dsimp only at hab
     exact mul_left_cancel (mul_right_cancel hab)
   have : (f (of m s) = f r.1) = (of m s = r.1) := by
     exact propext (Function.Injective.eq_iff this)
   --dsimp only at this
-  simp [mul_assoc, mul_right_inv, mul_one] at this
-  sorry
-  /-
+  simp only [f, ← mul_assoc, mul_inv_cancel_right, mul_one] at this
   apply this.symm.subst
     (motive := fun x ↦ ((if of m s = r.1 then μ₂.gen else 1) * if x then μ₂.gen else 1) = 1)
   have (p : Prop) (a1 a2 b1 b2 : μ₂) :
@@ -688,9 +684,8 @@ lemma eta_aux_mul_eta_aux [CoxeterMatrix m] (s : α) (r : R) :
     · repeat rw [if_pos h]
     · repeat rw [if_neg h]
   rw [this]
-  norm_num
+  simp only [mul_one, ite_eq_right_iff]
   exact fun _ ↦ μ₂.gen_square
-  -/
 
 lemma pi_aux_square_identity [CoxeterMatrix m] (s : α) (r : R) : pi_aux s (pi_aux s r) = r := by
   have comp1 : (pi_aux s (pi_aux s r)).1 = r.1 := by
