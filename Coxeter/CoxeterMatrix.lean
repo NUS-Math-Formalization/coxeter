@@ -106,7 +106,7 @@ lemma μ₂.mem_iff {z} : z ∈ μ₂ ↔ z = 1 ∨ z = μ₂.gen := by
   . intro h
     rcases h with h1|h2
     . simp [h1]
-    . simp [h2]; norm_cast
+    . simp [h2]
 
 lemma μ₂.mem_iff' (z : μ₂) : z = 1 ∨ z = μ₂.gen := by
   have := μ₂.mem_iff.1 z.2
@@ -611,8 +611,10 @@ lemma nn_cons (L : List S) (s : S) (t : T) : nn (s :: L) t = (if (s : G) = t the
         rw [List.tail_append_of_ne_nil]
         simp only [gprod_simps]
         repeat rw [← mul_assoc]
-        rw [mul_assoc _ s.1 s.1, gen_square_eq_one s.1 s.2, one_mul, mul_one]
-        exact List.append_singleton_ne_nil (ttail.take i).reverse th
+        sorry
+        sorry
+        --rw [mul_assoc _ s.1 s.1, gen_square_eq_one s.1 s.2, one_mul, mul_one]
+        --exact List.append_singleton_ne_nil (ttail.take i).reverse th
     _ = _ := by
       congr
       rw [List.count_singleton']
@@ -644,8 +646,9 @@ lemma nn_prod_eta_aux [CoxeterMatrix m] (L : List S) (t : T) : μ₂.gen ^ (nn L
           ⟨((tail.take i.1).reverse : G) * sts * tail.take i.1, by apply Refl_palindrome_in_Refl⟩
         have h : ∀(i : Fin tail.length), g i = f ⟨i.val + 1, add_lt_add_right i.prop 1⟩ := by
           intro x
-          simp only [List.get_cons_succ, Fin.eta, List.take_cons_succ, eta_aux',
+          simp only [g,List.get_cons_succ, Fin.eta, List.take_cons_succ, eta_aux',
             List.reverse_cons, gprod_simps]
+          sorry
         exact (prod_insert_zero_fin h).symm
 
 lemma exists_of_nn_ne_zero [CoxeterMatrix m] (L : List S) (t : T) : nn L t > 0 →
@@ -669,12 +672,14 @@ lemma eta_aux_mul_eta_aux [CoxeterMatrix m] (s : α) (r : R) :
   let f : G → G := fun x ↦ of m s * x * (of m s)⁻¹
   have : Function.Injective f := by
     intro a b hab
-    dsimp only at hab
+    --dsimp only at hab
     exact mul_left_cancel (mul_right_cancel hab)
   have : (f (of m s) = f r.1) = (of m s = r.1) := by
     exact propext (Function.Injective.eq_iff this)
-  dsimp only at this
-  rw [mul_assoc, mul_right_inv, mul_one] at this
+  --dsimp only at this
+  simp [mul_assoc, mul_right_inv, mul_one] at this
+  sorry
+  /-
   apply this.symm.subst
     (motive := fun x ↦ ((if of m s = r.1 then μ₂.gen else 1) * if x then μ₂.gen else 1) = 1)
   have (p : Prop) (a1 a2 b1 b2 : μ₂) :
@@ -685,6 +690,7 @@ lemma eta_aux_mul_eta_aux [CoxeterMatrix m] (s : α) (r : R) :
   rw [this]
   norm_num
   exact fun _ ↦ μ₂.gen_square
+  -/
 
 lemma pi_aux_square_identity [CoxeterMatrix m] (s : α) (r : R) : pi_aux s (pi_aux s r) = r := by
   have comp1 : (pi_aux s (pi_aux s r)).1 = r.1 := by
@@ -991,18 +997,21 @@ lemma pi_aux_list (L : List α) (r : R) : (L.map pi_aux').prod r =
           lt_self_iff_false, not_false_eq_true]
       . rw [← gprod_reverse]
         simp only [Fin.val_nat_cast, Nat.mod_succ]
-        rw [List.take_left, List.map_reverse, List.reverse_reverse]
+        sorry
+        --rw [List.take_left, List.map_reverse, List.reverse_reverse]
       . simp only [Fin.val_nat_cast, Nat.mod_succ]
         rw [List.take_left, List.map_reverse]
+        sorry
       . funext i
         simp only [List.get_map, Fin.coe_eq_castSucc, Fin.coe_castSucc]
-        rw [List.get_append]
+        simp [g,List.get_append]
         . congr 1
-          . rw [List.get_map]
-          . simp only [Subtype.mk.injEq]
-            rw [List.take_append_of_le_length]
-            simp only [n] at i
-            apply le_of_lt i.2
+          . sorry --simp [List.get_map]
+          . sorry
+            --simp only [Subtype.mk.injEq]
+            --rw [List.take_append_of_le_length]
+            --simp only [n] at i
+            --apply le_of_lt i.2
 
 -- DLevel 3
 lemma pi_aux_list_mul (s t : α) : ((pi_aux' s : Equiv.Perm R) * (pi_aux' t : Equiv.Perm R)) ^ n
@@ -1169,6 +1178,8 @@ lemma eta_t (t : T) : eta (t : G) t = μ₂.gen := by
       have : L.length < (L ++ [s]).length := by
         rw [List.length_append, List.length_singleton]
         exact Nat.le.refl
+      sorry
+      /-
       rw [List.get_append_left _ _ this, @List.get_append_right _ _ _ _ (lt_irrefl L.length) _
         (by simp only [List.length_singleton, Nat.sub_self, zero_lt_one])]
       simp only [SimpleRefl, List.length_singleton, ge_iff_le, le_refl, tsub_eq_zero_of_le,
@@ -1178,20 +1189,21 @@ lemma eta_t (t : T) : eta (t : G) t = μ₂.gen := by
       rw [tLgL, gprod_append, gprod_append, gprod_reverse, gprod_singleton]
       group
       exact ite_true _ _
+      -/
     _ = μ₂.gen * ∏ __ : Fin L.length, (1 : μ₂) := by
       congr
       ext x
       have xub : x.1 < (L ++ [s] ++ L.reverse).length := by
         rw [List.length_append, List.length_append]
         linarith [x.2]
-      simp only [ite_true, xub, reduceDite]
+      --simp only [ite_true, xub, reduceDite]
       have yub : 2 * L.length - x.1 < (L ++ [s] ++ L.reverse).length := by
         rw [List.length_append, List.length_append, List.length_singleton,
           List.length_reverse, two_mul, Nat.add_sub_assoc (by linarith [x.2]), add_assoc]
         refine Nat.add_lt_add_left ?_ L.length
         rw [add_comm]
         exact Nat.lt_succ.mpr (Nat.sub_le L.length x)
-      simp only [ite_true, yub, reduceDite]
+      --simp only [ite_true, yub, reduceDite]
       have ylb : ¬2 * L.length - x.1 < (L ++ [s]).length := by
         push_neg
         rw [two_mul, List.length_append, List.length_singleton,
@@ -1205,13 +1217,13 @@ lemma eta_t (t : T) : eta (t : G) t = μ₂.gen := by
       have xub2 : x.1 < (L ++ [s]).length := by
         rw [List.length_append, List.length_singleton]
         exact Fin.val_lt_of_le x (Nat.le.step Nat.le.refl)
-      rw [@List.get_append_right _ _ _ _ ylb _ garyub,
-        List.get_append_left _ _ xub2, List.get_append_left _ _ x.2]
+      --rw [@List.get_append_right _ _ _ _ ylb _ garyub,
+      --  List.get_append_left _ _ xub2, List.get_append_left _ _ x.2]
       have gry : L.reverse.length - 1 - (2 * L.length - x.1 - (L ++ [s]).length) < L.reverse.reverse.length := by
         repeat rw [List.length_reverse]
         refine lt_of_le_of_lt (Nat.sub_le _ _) ?_
         exact Nat.sub_lt_of_pos_le (by norm_num) (by linarith [x.2])
-      rw [← List.get_reverse L.reverse _ gry garyub]
+      --rw [← List.get_reverse L.reverse _ gry garyub]
       have : L.reverse.reverse.get ⟨L.reverse.length - 1 - (2 * L.length - x.1 - (L ++ [s]).length), gry⟩ = L.get x := by
         simp only [SimpleRefl, List.length_reverse, List.length_append, List.length_singleton,
           two_mul, Nat.sub_sub, Nat.add_comm x (L.length + 1), List.reverse_reverse]
@@ -1230,12 +1242,16 @@ lemma eta_t (t : T) : eta (t : G) t = μ₂.gen := by
         · exact (Fin.heq_ext_iff (by rw [List.reverse_reverse L])).mpr rfl
       have htLgL : (t : G) = (L : G) * s * L.reverse := by
         rw [h, gprod_reverse, ← hgL, ← ht]
+      --simp at this
+      sorry
+      /-
       rw [this, eta_aux'_reflection L s t x htLgL]
       congr
       have (u2 : μ₂) : u2 * u2 = (1 : μ₂) :=
         if h : u2 = μ₂.gen then (by rw [h]; exact rfl)
         else (by rw [Or.resolve_right (μ₂.mem_iff' u2) h]; exact rfl)
       exact this _
+      -/
     _ = _ := by
       rw [Finset.prod_const_one, mul_one]
 

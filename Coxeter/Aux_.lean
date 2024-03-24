@@ -690,18 +690,52 @@ example:
 #eval indices_of [1,2,3] [4,5,1,2,0,4,1,2,3]
 returns [2,3,8]
 -/
-def indices_of_aux  (n :ℕ) (s : ℕ) (l' : List α) (l : List α ) (h : s+l.length ≤ n) : List (Fin n) := match s, l', l with
-| _, [], _ => []
-| _, _::_ , [] => []
-| i, x::xs, y::ys =>
-  if x = y then
-   ⟨i,by rw [length_cons] at h;linarith [h]⟩  :: indices_of_aux n (i+1) xs ys (by rw [length_cons] at h ;linarith [h])
-  else
-    indices_of_aux n (i+1) (x::xs) ys
-   (by rw [length_cons] at h ;linarith [h])
-
 def indices_of (l' : List α) (l : List α) : List (Fin l.length)
-  := indices_of_aux l.length 0 l' l (by simp)
+  := match l', l with
+  | _, [] => []
+  | [], _ => []
+  | x::xs, y::ys =>
+    if x = y then
+      ⟨0, by simp⟩  :: List.map (Fin.succ) (indices_of xs ys)
+    else
+      List.map (Fin.succ) (indices_of l' ys)
+
+lemma indices_of_increasing (l' : List α) (l : List α) : (indices_of l' l).Pairwise (·  < ·) := by
+  induction' l with y ys ih generalizing l'
+  . simp [indices_of]
+  . match l' with
+    | [] => simp [indices_of]
+    | x::xs =>
+      rw [indices_of]
+      by_cases h : x = y
+      . rw [if_pos h,pairwise_cons]
+        constructor <;> simp [pairwise_map,ih xs]
+      . simp [if_neg h,pairwise_map, ih (x::xs)]
+
+lemma ne_cons_sublist {a b : α} (h: a≠ b) : a :: l' <+ b::l → a::l' <+ l := by
+  intro hl
+  rcases hl
+  . assumption
+  . contradiction
+
+lemma sublist_eq_map_get_index_of {l' l : List α } (h : l' <+ l) : l' = map (get l) (indices_of l' l) := by
+  induction' l with y ys ih generalizing l'
+  . simp only [sublist_nil.1 h, length_nil, indices_of, map_nil]
+  . match l' with
+    | [] => simp [indices_of]
+    | x::xs =>
+      rw [indices_of]
+      by_cases hxy: x=y
+      . rw [hxy] at h
+        have h' : xs <+ ys := cons_sublist_cons.1 h
+        simp_rw [if_pos hxy,map_cons,hxy,map_map]
+        nth_rw 1 [ih h']
+        congr
+      . rw [if_neg hxy]
+        have h' : x::xs <+ ys := ne_cons_sublist hxy h
+        have ih := ih h'
+        rw [map_map,ih]
+        congr
 
 def complement_indices_of' (l':List α) (l:List α) : List (Fin l.length) := List.filter (fun x => x ∉ indices_of l' l) (Fin.list l.length)
 
