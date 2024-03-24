@@ -342,9 +342,9 @@ lemma prod_insert_zero_fin {M : Type u} [CommMonoid M] {n : Nat} {f : Fin (n + 1
               exact x.2
             use ⟨x', this⟩
             simp only [plus1]
-            exact ⟨Set.mem_univ (⟨x', this⟩ : Fin n), (Fin.eq_iff_veq _ _).mpr hxv⟩
+            exact ⟨Set.mem_univ (⟨x', this⟩ : Fin n), Fin.ext_iff.mpr hxv⟩
         · rintro ⟨y, ⟨_, gyx⟩⟩
-          have : y.val + 1 = x := (Fin.eq_iff_veq _ _).mp gyx
+          have : y.val + 1 = x := Fin.ext_iff.mp gyx
           rw [← Nat.succ_eq_add_one] at this
           have : x.val ≠ 0 := by
             rw [← this]
@@ -355,7 +355,7 @@ lemma prod_insert_zero_fin {M : Type u} [CommMonoid M] {n : Nat} {f : Fin (n + 1
       have : Set.InjOn plus1 Set.univ := by
         intro a _ b _ hab
         simp only [plus1] at hab
-        exact (Fin.eq_iff_veq a b).mpr (Nat.add_right_cancel ((Fin.eq_iff_veq _ _).mp hab))
+        exact (@Fin.ext_iff _ a b).mpr (Nat.add_right_cancel (Fin.ext_iff.mp hab))
       rw [finprod_mem_image this]
     _ = f 0 * ∏ i : Fin n, g i := by
       rw [finprod_eq_prod_of_fintype]
@@ -390,7 +390,7 @@ lemma prod_insert_last {M : Type u} [CommMonoid M] (n : Nat) (f : Nat → M) :
   have : Set.InjOn fmap Set.univ := by
     intro a _ b _ hab
     simp only [fmap] at hab
-    exact (Fin.eq_iff_veq a b).mpr ((@Fin.eq_iff_veq (n + 1) _ _).mp hab)
+    exact (@Fin.ext_iff _ a b).mpr ((@Fin.ext_iff (n + 1) _ _).mp hab)
   have := @finprod_mem_image _ _ M _ (fun x ↦ f x.1) Set.univ fmap this
   simp only [Set.mem_univ, finprod_true] at this
   rw [← this]
@@ -406,7 +406,7 @@ lemma prod_insert_last {M : Type u} [CommMonoid M] (n : Nat) (f : Nat → M) :
       exact And.intro (Set.mem_univ _) True.intro
     · rintro ⟨y, ⟨_, gyx⟩⟩
       have : x.val ≠ n := by
-        rw [← (Fin.eq_iff_veq _ _).mp gyx]
+        rw [← Fin.ext_iff.mp gyx]
         exact Nat.ne_of_lt y.2
       exact ⟨Set.mem_univ x, (Fin.ne_iff_vne _ _).mpr this⟩
   rw [← this]
