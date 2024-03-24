@@ -477,9 +477,6 @@ lemma mul_Palindrome_i_cancel_i [CoxeterMatrix m] {L : List S} (i : Fin L.length
 lemma removeNth_of_palindrome_prod (L : List S) (n : Fin L.length) :
   (toPalindrome_i L n:G) * L = (L.removeNth n) := mul_Palindrome_i_cancel_i n
 
--- i changed this to gprod, hopefully this doesnt mess things up...
--- if you need the lists version, i'll need to include a separate lemma for that
--- but funnily enough, the proof is exactly the same...
 lemma distinct_toPalindrome_i_of_reduced [CoxeterMatrix m] {L : List S} : reduced_word L →
     (∀ (i j : Fin L.length), (hij : i ≠ j) → (toPalindrome_i L i).gprod ≠ (toPalindrome_i L j)) := by
   intro rl
@@ -1045,8 +1042,8 @@ lemma pi_relation (s t : α) : ((pi_aux' s : Equiv.Perm R) * (pi_aux' t : Equiv.
       repeat rw [this, alternating_word_relation]
       simp only [one_mul, inv_one, mul_one]
     . simp only [Submonoid.coe_mul, Subgroup.coe_toSubmonoid,
-      SubmonoidClass.coe_pow, Units.val_mul, Units.val_pow_eq_pow_val, Units.val_neg,
-      Units.val_one, Int.reduceNeg, ne_eq, Units.ne_zero, not_false_eq_true, mul_eq_left₀]
+        SubmonoidClass.coe_pow, Units.val_mul, Units.val_pow_eq_pow_val, Units.val_neg,
+        Units.val_one, Int.reduceNeg, ne_eq, Units.ne_zero, not_false_eq_true, mul_eq_left₀]
       rw [List.map_reverse, this, even_alternating_word_reverse]
       have : m s t = m t s := by apply symmetric
       rw [this]
@@ -1072,7 +1069,7 @@ lemma reverse_head (L : List α) (h : L ≠ []) :
   | nil => contradiction
   | cons hd tail ih =>
     by_cases k : tail = []
-    . aesop_subst k -- help fix this lol
+    . aesop_subst k
       simp only [ne_eq, not_true_eq_false, List.reverse_nil, List.dropLast_nil,
         IsEmpty.forall_iff, List.reverse_cons, List.nil_append, List.getLast_singleton',
         List.dropLast_single]
@@ -1110,10 +1107,10 @@ lemma pi_inj : Function.Injective (pi : G → Equiv.Perm R) := by
         have : reduced_word L.reverse := reverse_is_reduced hL
         apply distinct_toPalindrome_i_of_reduced this j ⟨0, Fin.pos j⟩
       rw [nn]
-      have (n : ℕ) : List.range (n + 1) = 0 :: (List.range (n)).map (Nat.succ) := by
-        exact List.range_succ_eq_map n
+      have (n : ℕ) : List.range (n + 1) = 0 :: (List.range (n)).map (Nat.succ) :=
+        List.range_succ_eq_map n
       rw [← Nat.sub_add_cancel L_rev_ge1, List.length_reverse, ← Nat.one_eq_succ_zero, this,
-          List.map_cons, List.count_cons, zero_works]
+        List.map_cons, List.count_cons, zero_works]
       nth_rw 3 [← zero_add 1]
       congr
       . apply List.count_eq_zero.2
@@ -1122,7 +1119,7 @@ lemma pi_inj : Function.Injective (pi : G → Equiv.Perm R) := by
         simp only [] at other_fail
         intro j k
         by_contra a
-        have : (Nat.succ j) < L.reverse.length := by
+        have : Nat.succ j < L.reverse.length := by
           rw [List.length_reverse, Nat.succ_eq_add_one]
           exact Nat.add_lt_of_lt_sub k
         apply other_fail ⟨Nat.succ j, this⟩
