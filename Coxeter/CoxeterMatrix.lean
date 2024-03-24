@@ -106,7 +106,7 @@ lemma μ₂.mem_iff {z} : z ∈ μ₂ ↔ z = 1 ∨ z = μ₂.gen := by
   . intro h
     rcases h with h1|h2
     . simp [h1]
-    . simp [h2]; norm_cast
+    . simp only [mem_rootsOfUnity, h2]; norm_cast
 
 lemma μ₂.mem_iff' (z : μ₂) : z = 1 ∨ z = μ₂.gen := by
   have := μ₂.mem_iff.1 z.2
