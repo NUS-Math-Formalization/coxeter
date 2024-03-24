@@ -240,9 +240,9 @@ lemma eq_iff_reverse_eq (L1 L2 : List α) : L1.reverse = L2.reverse ↔ L1 = L2 
   . intro h; rw [←List.reverse_reverse L1, ←List.reverse_reverse L2, h, List.reverse_reverse]
   . intro h; rw [h]
 
-#check reverse_append
+--#check reverse_append
 
-#check dropLast_concat
+--#check dropLast_concat
 
 /-
 lemma removeNth_length_sub_one (L:List α) : removeNth L (L.length - 1) = dropLast L :=by sorry
