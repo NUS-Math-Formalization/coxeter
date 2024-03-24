@@ -119,7 +119,21 @@ def Iic (w : G): Set G := Set.Iic w
 local notation "S" => (SimpleRefl G)
 
 /- Iteratively remove a list of element from -/
---def remove_list (L : List S) (L_ind_rm : List (Fin L.length)) : List S := L_ind_rm.map L.get
+noncomputable def remove_list_loop {α : Type _} (cur : ℕ) {L L' : List α} (hsub : L'.Sublist L) : List (Fin L.length) :=
+  if h : L.length ≤ cur then []
+  else
+    have : L.length - (cur + 1) < L.length - cur := Nat.sub_succ_lt_self L.length cur (Nat.not_le.mp h)
+    have : DecidableEq α := Classical.decEq α
+    match cur, L' with
+    | cur, hd :: tail =>
+      if L.get ⟨cur, Nat.not_le.mp h⟩ = hd then
+        remove_list_loop (cur + 1) (List.sublist_of_cons_sublist_cons (List.Sublist.cons hd hsub))
+      else ⟨cur, Nat.not_le.mp h⟩ :: remove_list_loop (cur + 1) hsub
+    | cur, [] => ⟨cur, Nat.not_le.mp h⟩ :: remove_list_loop (cur + 1) hsub
+termination_by L.length - cur
+
+noncomputable def remove_list {α : Type _} {L L' : List α} (hsub : L'.Sublist L) : List (Fin L.length) :=
+  remove_list_loop 0 hsub
 
 /- To say a word L' is a subword of L is just to remove a list of element from L' -/
 /-def remove_list_of_subword (L L' : List S) (hsub : List.Sublist L' L) :
@@ -127,14 +141,50 @@ local notation "S" => (SimpleRefl G)
   have := List.sublist_eq_map_get hsub
   sorry-/
 
+def fin_list_complement_loop {n : ℕ} (cur : ℕ) {L : List (Fin n)} (Lincr : L.Pairwise (fun x y => x < y)) : List (Fin n) :=
+  if h : n ≤ cur then []
+  else
+    have : n - (cur + 1) < n - cur := Nat.sub_succ_lt_self n cur (Nat.not_le.mp h)
+    match cur, L with
+    | cur, hd :: tail =>
+      if cur = hd then fin_list_complement_loop (cur + 1) (List.Pairwise.of_cons Lincr)
+      else ⟨cur, Nat.not_le.mp h⟩ :: fin_list_complement_loop (cur + 1) Lincr
+    | cur, [] => ⟨cur, Nat.not_le.mp h⟩ :: fin_list_complement_loop (cur + 1) Lincr
+termination_by n - cur
+
+def fin_list_complement {n : ℕ} {L : List (Fin n)} (Lincr : L.Pairwise (fun x y => x < y)) : List (Fin n) :=
+  fin_list_complement_loop 0 Lincr
+
+lemma fin_list_complement_loop_bound {n : ℕ} (cur : ℕ) {L : List (Fin n)} (Lincr : L.Pairwise (fun x y => x < y)) :
+    ∀ x : Fin n, x ∈ (fin_list_complement_loop cur Lincr) → cur ≤ x.1 := by
+  sorry
+
+lemma fin_list_complement_incr {n : ℕ} {L : List (Fin n)} (Lincr : L.Pairwise (fun x y => x < y)) :
+    (fin_list_complement Lincr).Pairwise (fun x y => x < y) := by
+  induction n with
+  | zero =>
+    have : (fin_list_complement Lincr) = [] :=
+      List.eq_nil_iff_forall_not_mem.mpr (fun a => (IsEmpty.false a).elim)
+    rw [this]
+    simp
+  | succ m ih =>
+    rw [fin_list_complement, fin_list_complement_loop]
+    sorry
+
+lemma fin_list_complement_complement {n : ℕ} (L : List (Fin n)) (Lincr : L.Pairwise (fun x y => x < y)) :
+    fin_list_complement (fin_list_complement_incr Lincr) = L := by
+  sorry
+
 #check CoxeterSystem.strong_exchange
 
 --  Bjorner, Brenti, Lemma 2.2.1
-lemma exists_intermediate_reduced_subword {L L' : List S} (hne: (L:G) ≠ L') (hred: reduced_word L) (hred': reduced_word L')
+lemma exists_intermediate_reduced_subword {L L' : List S} (hne: (L : G) ≠ L') (hred: reduced_word L) (hred': reduced_word L')
     (hsub: List.Sublist L' L) : ∃ (L'' : List S), reduced_word L'' ∧ (L' : G) < L'' ∧ ℓ((L'' : G)) = ℓ((L' : G)) + 1
     ∧ List.Sublist L'' L := by
-  let ⟨L_ind_rm, ⟨h_eq, Lincr⟩⟩ := List.sublist_eq_map_get hsub
-  have h_L_ind_rm_nonempty : L_ind_rm ≠ [] := sorry
+  let ⟨L_ind_in, ⟨h_eq, Lincr⟩⟩ := List.sublist_eq_map_get hsub
+  let L_ind_rm := fin_list_complement Lincr
+  have h_L_ind_rm_nonempty : L_ind_rm ≠ [] := by
+    sorry
   let t := toPalindrome_i L (L_ind_rm.getLast h_L_ind_rm_nonempty)
   let L'' := L ++ t
   have h0 : reduced_word L'' := by sorry
