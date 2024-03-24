@@ -525,9 +525,9 @@ lemma eta_aux_aux' (s : α) (t : T) : eta_aux s t = eta_aux' s t := by congr
 
 section
 --I think this section might not be required, but I'm not sure.
-noncomputable def eta_aux_aux''_aux (s : S) : α := by
+/-noncomputable def eta_aux_aux''_aux (s : S) : α := by
   choose y _ using s.prop
-  exact y
+  exact y-/
 
 /-lemma eta_aux_aux'' (s : S) (t : T) : eta_aux (eta_aux_aux''_aux s) t = eta_aux' s t := by
   choose y hy using s.prop
@@ -817,7 +817,7 @@ lemma odd_alternating_word_reverse (s t : α) (i : ℕ) (h : Odd i) :
     rfl
   . rw [Nat.succ_eq_add_one, mul_add, mul_one, add_assoc, add_comm 2 1, ← add_assoc]
     nth_rw 1 [alternating_word_append_odd s t (2 * l + 1 + 2) (2 * l + 1) (by simp) (by simp)]
-    nth_rw 1 [alternating_word_append_even s t (2 * l + 1 + 2) 2 (by simp) (by simp)]
+    rw [alternating_word_append_even s t (2 * l + 1 + 2) 2 (by simp) (by simp)]
     simp only [add_tsub_cancel_left, List.reverse_append, add_tsub_cancel_right,
       ih, List.append_cancel_right_eq]
     rfl
@@ -845,14 +845,12 @@ lemma alternating_word_palindrome (s t : α) (n : ℕ) (i : Fin n) :
   set s' := toSimpleRefl m s
   set t' := toSimpleRefl m t
   by_cases h : (Even (i.1 + 1))
-  . rw [even_alternating_word_reverse]
+  . rw [even_alternating_word_reverse _ _ _ h]
     nth_rw 2 [alternating_word]
-    rw [List.tail_cons, alternating_word_append_even s' t' (2 * i.1 + 1) (i.1 + 1)]
-    . simp only [Nat.succ_sub_succ_eq_sub, List.append_cancel_left_eq]
-      rw [two_mul, Nat.add_sub_cancel]
-    . linarith
-    . exact h
-    . exact h
+    rw [List.tail_cons, alternating_word_append_even s' t'
+      (2 * i.1 + 1) (i.1 + 1) (by linarith) h]
+    simp only [Nat.succ_sub_succ_eq_sub, List.append_cancel_left_eq]
+    rw [two_mul, Nat.add_sub_cancel]
   . rw [odd_alternating_word_reverse _ _ _ (Nat.odd_iff_not_even.mpr h)]
     nth_rw 2 [alternating_word]
     rw [List.tail_cons, alternating_word_append_odd s' t' (2 * i.1 + 1)
@@ -1046,8 +1044,7 @@ lemma pi_value (g : G) (L : List S) (h : g = L) (r : R) : (pi g) r
         have : hd = ⟨hd.1, hd.2⟩ := by rfl
         rw [this]
         simp only [Subtype.mk.injEq]
-        apply Set.mem_range.1
-        exact Subtype.mem hd
+        exact Set.mem_range.mp (Subtype.mem hd)
       rcases this with ⟨y, ey⟩
       use y :: l
       rw [List.map_cons]
@@ -1057,18 +1054,16 @@ lemma pi_value (g : G) (L : List S) (h : g = L) (r : R) : (pi g) r
   have : pi (K.map (toSimpleRefl m)).gprod r = (K.map pi_aux').prod r := by
     clear ek
     induction K with
-    | nil =>
-      simp only [SimpleRefl, Set.coe_setOf, List.map_nil, gprod_nil, map_one,
-        Equiv.Perm.coe_one, id_eq, List.prod_nil]
+    | nil => simp only [List.map_nil, gprod_nil, map_one,
+      Equiv.Perm.coe_one, id_eq, List.prod_nil]
     | cons hd tail ih =>
-      repeat simp_rw [List.map_cons, List.prod_cons]
-      simp only [SimpleRefl, Set.coe_setOf, toSimpleRefl, Equiv.Perm.coe_mul, Function.comp_apply]
-      rw [gprod_cons, map_mul, Equiv.Perm.coe_mul, Function.comp_apply]
+      simp only [List.map_cons, List.prod_cons, Equiv.Perm.coe_mul,
+        Function.comp_apply, gprod_cons, map_mul]
       congr 1
   rw [this, pi_aux_list]
   congr
-  . rw [← List.reverse_map, gprod_reverse, inv_inj]
-  . rw [← List.reverse_map]
+  · rw [← List.reverse_map, gprod_reverse, inv_inj]
+  · rw [← List.reverse_map]
 
 lemma reverse_head (L : List α) (h : L ≠ []) :
   L.reverse = (L.getLast h) :: (L.dropLast).reverse := by
@@ -1146,7 +1141,7 @@ end ReflRepn
 noncomputable def eta (g : G) (t : T) : μ₂ := (ReflRepn.pi g⁻¹ ⟨t, 1⟩).2
 
 -- DLevel 1
-lemma eta_lift_eta_aux {s : α} {t : T} : eta_aux s t = eta s t := by
+/-lemma eta_lift_eta_aux {s : α} {t : T} : eta_aux s t = eta s t := by
   rw [eta, ReflRepn.pi]
   simp only [eta_aux_aux', toSimpleRefl, SimpleRefl, Set.coe_setOf, map_inv, lift]
   rw [PresentedGroup.toGroup]
@@ -1155,7 +1150,7 @@ lemma eta_lift_eta_aux {s : α} {t : T} : eta_aux s t = eta s t := by
 
 lemma eta_lift_eta_aux' {s : S} {t : T} : eta_aux' s t = eta s t := by
   rw [eta, ReflRepn.pi]
-  sorry
+  sorry-/
 
 /-lemma eta_aux'_equiv_nn {s : S} : eta_aux' s t = μ₂.gen ^ nn [s] t := by
   have : List.tail [s] = [] := by rw [List.tail]
@@ -1171,12 +1166,11 @@ lemma pi_eval (g : G) (t : T) (ε : μ₂): ReflRepn.pi g (t, ε) = (⟨(g : G) 
   rcases toGroup_expression m g with ⟨L, eL⟩
   rw [ReflRepn.pi_value g L eL]
   ext
-  . simp only [SimpleRefl, Set.mem_setOf_eq]
+  . rfl
   . simp only [SubmonoidClass.coe_pow, Units.val_mul, Units.val_pow_eq_pow_val,
       Units.val_neg, Units.val_one, mul_eq_mul_left_iff, Units.ne_zero, or_false]
     congr
-    rw [eta, inv_inv, ReflRepn.pi_value g L eL]
-    simp only [μ₂.gen, SimpleRefl, one_mul]
+    rw [eta, inv_inv, ReflRepn.pi_value g L eL, one_mul]
 
 lemma eta_equiv_nn {g : G} {t : T} : ∀ {L : List S}, g = L → eta g t = μ₂.gen ^ nn L t := by
   intro L geqL
@@ -1198,26 +1192,28 @@ lemma eta_aux'_reflection (L : List S) (s : S) (t : T) (i : Fin L.length) (h : (
   have take2lmx : (L ++ [s] ++ L.reverse).take (2 * L.length - i.1) = L ++ [s] ++ L.reverse.take (L.length - 1 - i.1) := by
     sorry
   have Ldrop : (L.reverse.take (List.length L - 1 - i.1)) = (L.drop (1 + i.1)).reverse := by
-    --rw [List.reverse_take]
-    sorry
+    rw [Nat.sub_sub, List.reverse_take _
+      (Nat.sub_le (List.length L) (1 + i.1))]
+    congr
+    have : 1 + i.1 ≤ L.length := by
+      rw [add_comm]
+      exact i.2
+    rw [Nat.sub_sub_self this]
   simp only [h, takex, take2lmx, List.reverse_append, gprod_append, gprod_singleton,
     List.reverse_singleton, Ldrop]
   have drop_prod : (L.drop (1 + i.1) : G) = (L.get i : G) * (L.take i.1).reverse * L := by
     apply (List.take_drop_get L i.1 i.2).symm.subst
       (motive := fun (x : List S) ↦ ((L.drop (1 + i.1) : G) = (L.get i : G) * (L.take i.1).reverse * x))
-    simp only [gprod_append, gprod_reverse, gprod_singleton]
-    group
-    rw [@gen_square_eq_one' G _ S _ (L.get i)]
-    exact self_eq_mul_left.mpr rfl
+    simp only [gprod_simps]
+    rw [← mul_assoc, @gen_square_eq_one' G _ S _ (L.get i), one_mul, add_comm]
   simp only [gprod_reverse, drop_prod]
   simp only [← mul_assoc, inv_mul_cancel_right, mul_inv_cancel_right, inv_inv, mul_inv_rev]
   simp_rw [mul_assoc _ (s : G) (s : G), @gen_square_eq_one' G _ S _ s,
     mul_one, mul_assoc (L.get i : G) _ _, eta_aux']
   congr 1
-  have (s : S) (g : G) : (s : G) = g ↔ s = (s : G) * (g * (s : G)⁻¹) := by
-    refine Iff.intro ?mp ?mpr
-    · exact (fun h ↦ by rw [← h, mul_right_inv, mul_one])
-    · exact (fun h ↦ (mul_inv_eq_one.mp (self_eq_mul_right.mp h)).symm)
+  have (s : S) (g : G) : (s : G) = g ↔ s = (s : G) * (g * (s : G)⁻¹) :=
+    Iff.intro (fun h ↦ by rw [← h, mul_right_inv, mul_one])
+    (fun h ↦ (mul_inv_eq_one.mp (self_eq_mul_right.mp h)).symm)
   exact propext (this _ _)
 
 lemma eta_t (t : T) : eta (t : G) t = μ₂.gen := by
@@ -1238,7 +1234,7 @@ lemma eta_t (t : T) : eta (t : G) t = μ₂.gen := by
     _ = ∏ i : Fin (L ++ [s] ++ L.reverse).length, fnat i := by
       congr 1
       ext x
-      simp only [fnat, ite_pos, x.2, reduceDite]
+      simp only [fnat, x.2, reduceDite]
       congr
       rw [h]
     _ = ∏ i : Fin (2 * L.length + 1), fnat i := by
@@ -1248,16 +1244,16 @@ lemma eta_t (t : T) : eta (t : G) t = μ₂.gen := by
       @halve_odd_prod μ₂ _ L.length fnat
     _ = μ₂.gen * ∏ i : Fin L.length, (fnat i * fnat (2 * L.length - i)) := by
       congr
-      simp only [SimpleRefl, List.append_assoc, List.singleton_append, List.length_append,
+      simp_rw [List.append_assoc, List.singleton_append, List.length_append,
         List.length_cons, List.length_reverse, Set.mem_setOf_eq, gprod_reverse,
-        lt_add_iff_pos_right, Nat.zero_lt_succ, ↓reduceDite, List.take_left]
+        lt_add_iff_pos_right, Nat.zero_lt_succ, reduceDite, List.take_left]
       have : L.length < (L ++ [s]).length := by
         rw [List.length_append, List.length_singleton]
         exact Nat.le.refl
       rw [List.get_append_left _ _ this, @List.get_append_right _ _ _ _ (lt_irrefl L.length) _
         (by simp only [List.length_singleton, Nat.sub_self, zero_lt_one])]
-      simp only [SimpleRefl, List.length_singleton, ge_iff_le, le_refl, tsub_eq_zero_of_le,
-        Fin.zero_eta, List.get_cons_zero, Set.mem_setOf_eq, eta_aux']
+      simp only [List.length_singleton, le_refl, Nat.sub_self,
+        Fin.zero_eta, List.get_cons_zero, eta_aux']
       have : t = t' := by rw [h]
       apply this.symm.subst (motive := fun x ↦ (if ↑s = (L⁻¹ : G) * x * L then μ₂.gen else 1) = μ₂.gen)
       rw [tLgL, gprod_append, gprod_append, gprod_reverse, gprod_singleton]
