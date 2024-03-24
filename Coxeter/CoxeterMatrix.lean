@@ -1041,7 +1041,13 @@ lemma pi_value (g : G) (L : List S) (h : g = L) (r : R) : (pi g) r
     | nil => simp only [SimpleRefl, List.map_eq_nil, exists_eq]
     | cons hd tail ih =>
       rcases ih with ⟨l, el⟩
-      have : ∃ (y : α), toSimpleRefl m y = hd := by sorry
+      have : ∃ (y : α), toSimpleRefl m y = hd := by
+        simp only [toSimpleRefl]
+        have : hd = ⟨hd.1, hd.2⟩ := by rfl
+        rw [this]
+        simp only [Subtype.mk.injEq]
+        apply Set.mem_range.1
+        exact Subtype.mem hd
       rcases this with ⟨y, ey⟩
       use y :: l
       rw [List.map_cons]
@@ -1051,8 +1057,9 @@ lemma pi_value (g : G) (L : List S) (h : g = L) (r : R) : (pi g) r
   have : pi (K.map (toSimpleRefl m)).gprod r = (K.map pi_aux').prod r := by
     clear ek
     induction K with
-    | nil => simp only [SimpleRefl, Set.coe_setOf, List.map_nil, gprod_nil, map_one,
-      Equiv.Perm.coe_one, id_eq, List.prod_nil]
+    | nil =>
+      simp only [SimpleRefl, Set.coe_setOf, List.map_nil, gprod_nil, map_one,
+        Equiv.Perm.coe_one, id_eq, List.prod_nil]
     | cons hd tail ih =>
       repeat simp_rw [List.map_cons, List.prod_cons]
       simp only [SimpleRefl, Set.coe_setOf, toSimpleRefl, Equiv.Perm.coe_mul, Function.comp_apply]
@@ -1063,7 +1070,6 @@ lemma pi_value (g : G) (L : List S) (h : g = L) (r : R) : (pi g) r
   . rw [← List.reverse_map, gprod_reverse, inv_inj]
   . rw [← List.reverse_map]
 
-#exit
 lemma reverse_head (L : List α) (h : L ≠ []) :
   L.reverse = (L.getLast h) :: (L.dropLast).reverse := by
   induction L with
