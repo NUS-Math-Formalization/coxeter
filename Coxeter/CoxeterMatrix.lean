@@ -477,8 +477,11 @@ lemma mul_Palindrome_i_cancel_i [CoxeterMatrix m] {L : List S} (i : Fin L.length
 lemma removeNth_of_palindrome_prod (L : List S) (n : Fin L.length) :
   (toPalindrome_i L n:G) * L = (L.removeNth n) := mul_Palindrome_i_cancel_i n
 
+-- i changed this to gprod, hopefully this doesnt mess things up...
+-- if you need the lists version, i'll need to include a separate lemma for that
+-- but funnily enough, the proof is exactly the same...
 lemma distinct_toPalindrome_i_of_reduced [CoxeterMatrix m] {L : List S} : reduced_word L →
-    (∀ (i j : Fin L.length), (hij : i ≠ j) → (toPalindrome_i L i) ≠ (toPalindrome_i L j)) := by
+    (∀ (i j : Fin L.length), (hij : i ≠ j) → (toPalindrome_i L i).gprod ≠ (toPalindrome_i L j)) := by
   intro rl
   by_contra! eqp
   rcases eqp with ⟨i, j, ⟨inej, eqp⟩⟩
@@ -1063,6 +1066,22 @@ lemma pi_value (g : G) (L : List S) (h : g = L) (r : R) : (pi g) r
   -- pi_aux_list ?
   sorry
 
+lemma reverse_head (L : List α) (h : L ≠ []) :
+  L.reverse = (L.getLast h) :: (L.dropLast).reverse := by
+  induction L with
+  | nil => contradiction
+  | cons hd tail ih =>
+    by_cases k : tail = []
+    . aesop_subst k -- help fix this lol
+      simp only [ne_eq, not_true_eq_false, List.reverse_nil, List.dropLast_nil,
+        IsEmpty.forall_iff, List.reverse_cons, List.nil_append, List.getLast_singleton',
+        List.dropLast_single]
+    . push_neg at k
+      rw [List.reverse_cons, List.getLast_cons k, List.dropLast, List.reverse_cons, ih k]
+      rfl
+      intro k'
+      contradiction
+
 -- DLevel 3
 -- (maybe some list wrangling)
 lemma pi_inj : Function.Injective (pi : G → Equiv.Perm R) := by
@@ -1071,15 +1090,46 @@ lemma pi_inj : Function.Injective (pi : G → Equiv.Perm R) := by
   intro w wker
   by_contra! wne1
   rcases exists_reduced_word S w with ⟨L, ⟨hL, hw⟩⟩
-  have : L ≠ [] := by
+  have L_notempty: L ≠ [] := by
     contrapose! wne1
     rw [hw, wne1, gprod_nil]
+  have L_rev_notempty : L.reverse ≠ [] := reverseList_nonEmpty L_notempty
+  have L_rev_ge1 : L.reverse.length > 0 := List.length_pos.mpr L_rev_notempty
   have : pi w ≠ 1 := by
-    let s := L.getLast this
+    let s := L.getLast L_notempty
     let t : T := ⟨s, SimpleRefl_subset_Refl (Subtype.mem s)⟩
     have : nn L.reverse t = 1 := by
-      -- apply distinct_toPalindrome_i_of_reduced here
-      sorry
+      have zero_works : (toPalindrome_i L.reverse 0).gprod = [s] := by
+        rw [toPalindrome_i, reverse_head L L_notempty]
+        simp only [SimpleRefl, toPalindrome, zero_add, List.take_cons_succ, List.take_zero,
+          List.reverse_cons, List.reverse_nil, List.nil_append, List.tail_cons,
+          List.singleton_append]
+      have other_fail (j : Fin (L.reverse.length)) :
+        j ≠ ⟨0, Fin.pos j⟩ → (toPalindrome_i L.reverse j).gprod ≠ [s] := by
+        rw [← zero_works]
+        have : reduced_word L.reverse := reverse_is_reduced hL
+        apply distinct_toPalindrome_i_of_reduced this j ⟨0, Fin.pos j⟩
+      rw [nn]
+      have (n : ℕ) : List.range (n + 1) = 0 :: (List.range (n)).map (Nat.succ) := by
+        exact List.range_succ_eq_map n
+      rw [← Nat.sub_add_cancel L_rev_ge1, List.length_reverse, ← Nat.one_eq_succ_zero, this,
+          List.map_cons, List.count_cons, zero_works]
+      nth_rw 3 [← zero_add 1]
+      congr
+      . apply List.count_eq_zero.2
+        simp only [SimpleRefl, List.map_map, List.mem_map, List.mem_range, Function.comp_apply,
+          not_exists, not_and]
+        simp only [] at other_fail
+        intro j k
+        by_contra a
+        have : (Nat.succ j) < L.reverse.length := by
+          rw [List.length_reverse, Nat.succ_eq_add_one]
+          exact Nat.add_lt_of_lt_sub k
+        apply other_fail ⟨Nat.succ j, this⟩
+        . simp only [SimpleRefl, ne_eq, Fin.mk.injEq, Nat.succ_ne_zero, not_false_eq_true]
+        . simp only [gprod_singleton]
+          exact a
+      . simp only [gprod_singleton, ↓reduceIte]
     have : (pi w) (t, 1) ≠ (t, 1) := by
       rw [pi_value w L hw (t, 1), this]
       exact fun h ↦ μ₂.gen_ne_one (Prod.ext_iff.mp h).2
