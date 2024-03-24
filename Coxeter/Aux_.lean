@@ -250,7 +250,7 @@ lemma removeNth_length_sub_one (L:List α) : removeNth L (L.length - 1) = dropLa
 lemma removeNth_concat {a:α} (L:List α) : removeNth (concat L a) L.length = L:=by sorry
 -/
 
-#print List.get?_eq_get
+--#print List.get?_eq_get
 
 lemma range_map_insert_zero {α : Type u} {n : ℕ} {f : ℕ → α} {g : ℕ → α}
     (h : ∀(i : Fin n), g i = f (i + 1)) :
