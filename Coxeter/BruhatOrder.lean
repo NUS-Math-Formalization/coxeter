@@ -118,7 +118,6 @@ def Iic (w : G): Set G := Set.Iic w
 
 local notation "S" => (SimpleRefl G)
 
-/- Iteratively remove a list of element from -/
 noncomputable def remove_list_loop {α : Type _} (cur : ℕ) {L L' : List α} (hsub : L'.Sublist L) : List (Fin L.length) :=
   if h : L.length ≤ cur then []
   else
@@ -132,8 +131,38 @@ noncomputable def remove_list_loop {α : Type _} (cur : ℕ) {L L' : List α} (h
     | cur, [] => ⟨cur, Nat.not_le.mp h⟩ :: remove_list_loop (cur + 1) hsub
 termination_by L.length - cur
 
+/-
+This produces an increasing list of indices, such that removing the elements at those indices in L results in L'
+-/
 noncomputable def remove_list {α : Type _} {L L' : List α} (hsub : L'.Sublist L) : List (Fin L.length) :=
   remove_list_loop 0 hsub
+
+-- computable versions for testing
+def remove_list_loop_computable {α : Type _} [DecidableEq α] (cur : ℕ) {L L' : List α} (hsub : L'.Sublist L) : List (Fin L.length) :=
+  if h : L.length ≤ cur then []
+  else
+    have : L.length - (cur + 1) < L.length - cur := Nat.sub_succ_lt_self L.length cur (Nat.not_le.mp h)
+    match cur, L' with
+    | cur, hd :: tail =>
+      if L.get ⟨cur, Nat.not_le.mp h⟩ = hd then
+        remove_list_loop_computable (cur + 1) (List.sublist_of_cons_sublist_cons (List.Sublist.cons hd hsub))
+      else ⟨cur, Nat.not_le.mp h⟩ :: remove_list_loop_computable (cur + 1) hsub
+    | cur, [] => ⟨cur, Nat.not_le.mp h⟩ :: remove_list_loop_computable (cur + 1) hsub
+termination_by L.length - cur
+
+def remove_list_computable {α : Type _} [DecidableEq α] {L L' : List α} (hsub : L'.Sublist L) : List (Fin L.length) :=
+  remove_list_loop_computable 0 hsub
+
+-- expected [3, 5, 6, 7]
+#eval remove_list_computable (by sorry : [3, 1, 4, 5, 6].Sublist [3, 1, 4, 2, 5, 5, 9, 2, 6])
+
+-- expected [0, 1, 2, 3, 4, 5, 6, 7, 8]
+#eval remove_list_computable (by sorry : [].Sublist [3, 1, 4, 2, 5, 5, 9, 2, 6])
+
+-- expected []
+#eval remove_list_computable (by sorry : [].Sublist ([] : List ℕ))
+
+
 
 /- To say a word L' is a subword of L is just to remove a list of element from L' -/
 /-def remove_list_of_subword (L L' : List S) (hsub : List.Sublist L' L) :
@@ -152,8 +181,20 @@ def fin_list_complement_loop {n : ℕ} (cur : ℕ) {L : List (Fin n)} (Lincr : L
     | cur, [] => ⟨cur, Nat.not_le.mp h⟩ :: fin_list_complement_loop (cur + 1) Lincr
 termination_by n - cur
 
+/-
+This produces an increasing list of Fin n, consisting of all the numbers that do not appear in the original list.
+-/
 def fin_list_complement {n : ℕ} {L : List (Fin n)} (Lincr : L.Pairwise (fun x y => x < y)) : List (Fin n) :=
   fin_list_complement_loop 0 Lincr
+
+-- expected [0, 2]
+#eval fin_list_complement (by sorry : [(1 : Fin 5), (3 : Fin 5), (4 : Fin 5)].Pairwise (fun x y => x < y))
+
+-- expected [0, 1, 2]
+#eval fin_list_complement (by sorry : ([] : List (Fin 3)).Pairwise (fun x y => x < y))
+
+-- expected []
+#eval fin_list_complement (by sorry : ([] : List (Fin 0)).Pairwise (fun x y => x < y))
 
 lemma fin_list_complement_loop_bound {n : ℕ} (cur : ℕ) {L : List (Fin n)} (Lincr : L.Pairwise (fun x y => x < y)) :
     ∀ x : Fin n, x ∈ (fin_list_complement_loop cur Lincr) → cur ≤ x.1 := by
