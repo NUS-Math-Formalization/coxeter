@@ -1034,9 +1034,41 @@ noncomputable def pi : G →* Equiv.Perm R := lift m (fun s ↦ pi_aux' s) (by s
 -- DLevel 5
 lemma pi_value (g : G) (L : List S) (h : g = L) (r : R) : (pi g) r
     = (⟨g * r.1 * g⁻¹, by apply Refl.conjugate_closed⟩, r.2 * μ₂.gen ^ nn L.reverse r.1) := by
-  rw [nn_prod_eta_aux, pi, h]
-  -- pi_aux_list ?
-  sorry
+  rw [h]
+  have rw1 : ∃ (K : List α), K.map (toSimpleRefl m) = L := by
+    clear h
+    induction L with
+    | nil => simp only [SimpleRefl, List.map_eq_nil, exists_eq]
+    | cons hd tail ih =>
+      rcases ih with ⟨l, el⟩
+      have : ∃ (y : α), toSimpleRefl m y = hd := by
+        simp only [toSimpleRefl]
+        have : hd = ⟨hd.1, hd.2⟩ := by rfl
+        rw [this]
+        simp only [Subtype.mk.injEq]
+        apply Set.mem_range.1
+        exact Subtype.mem hd
+      rcases this with ⟨y, ey⟩
+      use y :: l
+      rw [List.map_cons]
+      congr
+  rcases rw1 with ⟨K, ek⟩
+  rw [← ek]
+  have : pi (K.map (toSimpleRefl m)).gprod r = (K.map pi_aux').prod r := by
+    clear ek
+    induction K with
+    | nil =>
+      simp only [SimpleRefl, Set.coe_setOf, List.map_nil, gprod_nil, map_one,
+        Equiv.Perm.coe_one, id_eq, List.prod_nil]
+    | cons hd tail ih =>
+      repeat simp_rw [List.map_cons, List.prod_cons]
+      simp only [SimpleRefl, Set.coe_setOf, toSimpleRefl, Equiv.Perm.coe_mul, Function.comp_apply]
+      rw [gprod_cons, map_mul, Equiv.Perm.coe_mul, Function.comp_apply]
+      congr 1
+  rw [this, pi_aux_list]
+  congr
+  . rw [← List.reverse_map, gprod_reverse, inv_inj]
+  . rw [← List.reverse_map]
 
 lemma reverse_head (L : List α) (h : L ≠ []) :
   L.reverse = (L.getLast h) :: (L.dropLast).reverse := by
@@ -1136,7 +1168,15 @@ lemma eta_lift_eta_aux' {s : S} {t : T} : eta_aux' s t = eta s t := by
   · rw [if_neg h, if_neg (Ne.symm h), pow_zero]-/
 
 lemma pi_eval (g : G) (t : T) (ε : μ₂): ReflRepn.pi g (t, ε) = (⟨(g : G) * t * (g : G)⁻¹, OrderTwoGen.Refl.conjugate_closed⟩, ε * eta g⁻¹ t) := by
-  sorry
+  rcases toGroup_expression m g with ⟨L, eL⟩
+  rw [ReflRepn.pi_value g L eL]
+  ext
+  . simp only [SimpleRefl, Set.mem_setOf_eq]
+  . simp only [SubmonoidClass.coe_pow, Units.val_mul, Units.val_pow_eq_pow_val,
+      Units.val_neg, Units.val_one, mul_eq_mul_left_iff, Units.ne_zero, or_false]
+    congr
+    rw [eta, inv_inv, ReflRepn.pi_value g L eL]
+    simp only [μ₂.gen, SimpleRefl, one_mul]
 
 lemma eta_equiv_nn {g : G} {t : T} : ∀ {L : List S}, g = L → eta g t = μ₂.gen ^ nn L t := by
   intro L geqL
