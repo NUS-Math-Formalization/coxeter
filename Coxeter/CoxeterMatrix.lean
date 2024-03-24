@@ -106,7 +106,7 @@ lemma μ₂.mem_iff {z} : z ∈ μ₂ ↔ z = 1 ∨ z = μ₂.gen := by
   . intro h
     rcases h with h1|h2
     . simp [h1]
-    . simp [h2]; norm_cast
+    . simp only [mem_rootsOfUnity, h2]; norm_cast
 
 lemma μ₂.mem_iff' (z : μ₂) : z = 1 ∨ z = μ₂.gen := by
   have := μ₂.mem_iff.1 z.2
@@ -816,15 +816,11 @@ lemma odd_alternating_word_reverse (s t : α) (i : ℕ) (h : Odd i) :
   . simp only [Nat.zero_eq, mul_zero, zero_add]
     rfl
   . rw [Nat.succ_eq_add_one, mul_add, mul_one, add_assoc, add_comm 2 1, ← add_assoc]
-    nth_rw 1 [alternating_word_append_odd s t (2 * l + 1 + 2) (2 * l + 1)]
-    nth_rw 1 [alternating_word_append_even s t (2 * l + 1 + 2) 2]
-    . simp only [add_tsub_cancel_left, List.reverse_append, add_tsub_cancel_right,
-        ih, List.append_cancel_right_eq]
-      rfl
-    . norm_num
-    . norm_num
-    . norm_num
-    . norm_num
+    nth_rw 1 [alternating_word_append_odd s t (2 * l + 1 + 2) (2 * l + 1) (by simp) (by simp)]
+    nth_rw 1 [alternating_word_append_even s t (2 * l + 1 + 2) 2 (by simp) (by simp)]
+    simp only [add_tsub_cancel_left, List.reverse_append, add_tsub_cancel_right,
+      ih, List.append_cancel_right_eq]
+    rfl
 
 lemma even_alternating_word_reverse (s t : α) (i : ℕ) (h : Even i) :
   (alternating_word s t i).reverse = alternating_word t s i := by
@@ -835,14 +831,11 @@ lemma even_alternating_word_reverse (s t : α) (i : ℕ) (h : Even i) :
   induction' k with l ih
   . simp only [Nat.zero_eq, mul_zero]
     rfl
-  . rw [Nat.succ_eq_add_one, mul_add, mul_one, alternating_word_append_even s t (2 * l + 2) 2,
-        alternating_word_append_even t s (2 * l + 2) (2 * l), List.reverse_append,
-        add_tsub_cancel_right, add_tsub_cancel_left, ih]
+  . rw [Nat.succ_eq_add_one, mul_add, mul_one,
+      alternating_word_append_even s t (2 * l + 2) 2 (by simp) (by simp),
+      alternating_word_append_even t s (2 * l + 2) (2 * l) (by simp) (by simp),
+      List.reverse_append, add_tsub_cancel_right, add_tsub_cancel_left, ih]
     rfl
-    . norm_num
-    . norm_num
-    . norm_num
-    . norm_num
 
 -- DLevel 3
 lemma alternating_word_palindrome (s t : α) (n : ℕ) (i : Fin n) :
@@ -860,14 +853,12 @@ lemma alternating_word_palindrome (s t : α) (n : ℕ) (i : Fin n) :
     . linarith
     . exact h
     . exact h
-  . rw [odd_alternating_word_reverse]
+  . rw [odd_alternating_word_reverse _ _ _ (Nat.odd_iff_not_even.mpr h)]
     nth_rw 2 [alternating_word]
-    rw [List.tail_cons, alternating_word_append_odd s' t' (2 * i.1 + 1) (i.1 + 1)]
-    . simp only [Nat.succ_sub_succ_eq_sub, List.append_cancel_left_eq]
-      rw [two_mul, Nat.add_sub_cancel]
-    . linarith
-    . exact Nat.odd_iff_not_even.mpr h
-    . exact Nat.odd_iff_not_even.mpr h
+    rw [List.tail_cons, alternating_word_append_odd s' t' (2 * i.1 + 1)
+      (i.1 + 1) (by linarith) (Nat.odd_iff_not_even.mpr h)]
+    simp only [Nat.succ_sub_succ_eq_sub, List.append_cancel_left_eq]
+    rw [two_mul, Nat.add_sub_cancel]
 
 lemma alternating_word_palindrome_periodic (s t : α) (i : ℕ) :
     ((alternating_word s t (2 * (i + m s t) + 1) : List S) : G)
@@ -939,13 +930,9 @@ lemma pi_aux_list (L : List α) (r : R) : (L.map pi_aux').prod r =
         List.map_append, List.map_nil, gprod_append, pi_aux]
       dsimp only [SimpleRefl, Set.mem_setOf_eq, Set.coe_setOf, id_eq, μ₂.gen, Equiv.coe_fn_mk]
       rw [gprod_cons, gprod_singleton]
-      simp only
       repeat rw [mul_assoc]
       simp only [mul_right_inj]
-      apply (mul_left_inj (of m hd)).1
-      rw [mul_left_inv]
-      apply Eq.symm
-      apply of_square_eq_one
+      exact of_inv_eq_of m
     . simp only [List.map_cons, pi_aux]
       dsimp only [id_eq, Set.mem_setOf_eq, Equiv.coe_fn_mk]
       simp only [eta_aux_aux', List.reverse_cons, List.map_append, List.map_cons, List.map_nil]
@@ -955,31 +942,19 @@ lemma pi_aux_list (L : List α) (r : R) : (L.map pi_aux').prod r =
       set t := tail.reverse.map (toSimpleRefl m)
       set th := t ++ [toSimpleRefl m hd]
       set n := t.length
-      set g := fun x : Fin (n) ↦
-        (eta_aux' (t.get x)
-          {
-            val := (↑(t.take (↑x)))⁻¹ * ↑r.1 * ↑(t.take (↑x)),
-            property := (_ : (fun x => x ∈ Refl S) ((↑(t.take (↑x)))⁻¹ * ↑r.1 * ↑(t.take (↑x))))
-          }
-        )
-      set g' := fun x : Fin (th.length) ↦
-        (eta_aux' (th.get x)
-          { val := (↑(th.take (↑x)))⁻¹ * ↑r.1 * ↑(th.take (↑x)),
-            property := (_ : (fun x => x ∈ Refl S) ((↑(th.take (↑x)))⁻¹ * ↑r.1 * ↑(th.take (↑x))))
-          }
-        )
+      set g := fun x : Fin n ↦ eta_aux' (t.get x)
+        ⟨(t.take x : G)⁻¹ * r.1 * t.take x, (_ : (fun x => x ∈ Refl S) ((t.take x : G)⁻¹ * r.1 * t.take x))⟩
+      set g' := fun x : Fin th.length ↦ eta_aux' (th.get x)
+        ⟨(th.take x : G)⁻¹ * r.1 * th.take x, (_ : (fun x => x ∈ Refl S) ((th.take x : G)⁻¹ * r.1 * th.take x))⟩
       have len : n + 1 = th.length := (List.length_append_singleton t (toSimpleRefl m hd)).symm
-      let f : Fin (n + 1) → μ₂ := fun x ↦
-        (eta_aux' (th.get ⟨x, by rw [← len]; exact x.2⟩)
-          (⟨((th.take (↑x)).gprod)⁻¹ * ↑r.1 * (th.take (↑x)).gprod,
-              by nth_rw 2 [← inv_inv (th.take (↑x)).gprod]; apply Refl.conjugate_closed⟩)
-        )
+      let f : Fin (n + 1) → μ₂ := fun x ↦ eta_aux' (th.get ⟨x, by rw [← len]; exact x.2⟩)
+        ⟨(th.take x : G)⁻¹ * r.1 * th.take x, by nth_rw 2 [← inv_inv (th.take x : G)]; apply Refl.conjugate_closed⟩
       have heqf : HEq g' f := by
         apply (Fin.heq_fun_iff len.symm).2
         have (i : Fin (th.length)) (j : Fin (n + 1)) : i.1 = j.1 → g' i = f j := by
           intro ieqj
           rw [Fin.eq_mk_iff_val_eq.mpr ieqj]
-        exact fun i => this i { val := ↑i, isLt := len.symm ▸ i.isLt } rfl
+        exact fun i => this i { val := i.1, isLt := len.symm ▸ i.isLt } rfl
       have replace_prod : ∏ i : Fin (th.length), g' i = ∏ i : Fin (n + 1), f i := by
         congr 1
         exact congrArg Fin (len.symm)
@@ -1196,8 +1171,8 @@ lemma eta_aux'_reflection (L : List S) (s : S) (t : T) (i : Fin L.length) (h : (
     exact self_eq_mul_left.mpr rfl
   simp only [gprod_reverse, drop_prod]
   simp only [← mul_assoc, inv_mul_cancel_right, mul_inv_cancel_right, inv_inv, mul_inv_rev]
-  simp only [mul_assoc _ (s : G) (s : G), @gen_square_eq_one' G _ S _ s, mul_one]
-  simp only [mul_assoc (L.get i : G) _ _, eta_aux']
+  simp_rw [mul_assoc _ (s : G) (s : G), @gen_square_eq_one' G _ S _ s,
+    mul_one, mul_assoc (L.get i : G) _ _, eta_aux']
   congr 1
   have (s : S) (g : G) : (s : G) = g ↔ s = (s : G) * (g * (s : G)⁻¹) := by
     refine Iff.intro ?mp ?mpr
@@ -1254,14 +1229,14 @@ lemma eta_t (t : T) : eta (t : G) t = μ₂.gen := by
       have xub : x.1 < (L ++ [s] ++ L.reverse).length := by
         rw [List.length_append, List.length_append]
         linarith [x.2]
-      simp only [ite_true, xub, reduceDite]
+      simp only [xub, reduceDite]
       have yub : 2 * L.length - x.1 < (L ++ [s] ++ L.reverse).length := by
         rw [List.length_append, List.length_append, List.length_singleton,
           List.length_reverse, two_mul, Nat.add_sub_assoc (by linarith [x.2]), add_assoc]
         refine Nat.add_lt_add_left ?_ L.length
         rw [add_comm]
         exact Nat.lt_succ.mpr (Nat.sub_le L.length x)
-      simp only [ite_true, yub, reduceDite]
+      simp only [yub, reduceDite]
       have ylb : ¬2 * L.length - x.1 < (L ++ [s]).length := by
         push_neg
         rw [two_mul, List.length_append, List.length_singleton,
@@ -1283,7 +1258,7 @@ lemma eta_t (t : T) : eta (t : G) t = μ₂.gen := by
         exact Nat.sub_lt_of_pos_le (by norm_num) (by linarith [x.2])
       rw [← List.get_reverse L.reverse _ gry garyub]
       have : L.reverse.reverse.get ⟨L.reverse.length - 1 - (2 * L.length - x.1 - (L ++ [s]).length), gry⟩ = L.get x := by
-        simp only [SimpleRefl, List.length_reverse, List.length_append, List.length_singleton,
+        simp only [List.length_reverse, List.length_append, List.length_singleton,
           two_mul, Nat.sub_sub, Nat.add_comm x (L.length + 1), List.reverse_reverse]
         have : L.length - (1 + (L.length + L.length - (L.length + 1 + x.1))) = x := by
           nth_rw 2 [← Nat.sub_sub]
