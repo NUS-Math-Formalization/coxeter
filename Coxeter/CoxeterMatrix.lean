@@ -478,7 +478,7 @@ lemma removeNth_of_palindrome_prod (L : List S) (n : Fin L.length) :
   (toPalindrome_i L n:G) * L = (L.removeNth n) := mul_Palindrome_i_cancel_i n
 
 lemma distinct_toPalindrome_i_of_reduced [CoxeterMatrix m] {L : List S} : reduced_word L →
-    (∀ (i j : Fin L.length), (hij : i ≠ j) → (toPalindrome_i L i) ≠ (toPalindrome_i L j)) := by
+    (∀ (i j : Fin L.length), (hij : i ≠ j) → (toPalindrome_i L i).gprod ≠ (toPalindrome_i L j)) := by
   intro rl
   by_contra! eqp
   rcases eqp with ⟨i, j, ⟨inej, eqp⟩⟩
@@ -1014,18 +1014,42 @@ lemma pi_aux_list_mul (s t : α) : ((pi_aux' s : Equiv.Perm R) * (pi_aux' t : Eq
   . rw [Nat.succ_eq_add_one, pow_succ, mul_add, add_comm, mul_one,
       alternating_word_append_even s t (2 + 2 * k) (2)]
     simp only [add_tsub_cancel_left, List.map_append, List.prod_append, ← ih, mul_left_inj]
+    . rfl
+    . norm_num
+    . norm_num
+
+lemma alternating_word_map (s t : α) (f : α → A) (n : ℕ) :
+  (alternating_word s t n).map f = alternating_word (f s) (f t) n := by
+  induction' n with k ih generalizing s t
+  . simp only [Nat.zero_eq]
     rfl
-    norm_num
-    norm_num
+  . rw [alternating_word, alternating_word, List.map_cons]
+    simp only [List.cons.injEq, true_and]
+    exact ih t s
 
 -- DLevel 3
 lemma pi_relation (s t : α) : ((pi_aux' s : Equiv.Perm R) * (pi_aux' t : Equiv.Perm R)) ^ m s t = 1 := by
   have (r : R) : (((pi_aux' s : Equiv.Perm R) * (pi_aux' t : Equiv.Perm R)) ^ m s t) r = r := by
     rw [pi_aux_list_mul, pi_aux_list]
-    -- main idea:
-    -- alternating_word_relation and simplify
-    -- pi_relation_word_nn_even
-    sorry
+    set s' := toSimpleRefl m s
+    set t' := toSimpleRefl m t
+    have : (alternating_word s t (2 * m s t)).map (toSimpleRefl m)
+      = alternating_word s' t' (2 * m s t) :=
+        alternating_word_map s t (toSimpleRefl m) (2 * m s t)
+    ext
+    . simp only []
+      rw [List.map_reverse, gprod_reverse]
+      repeat rw [this, alternating_word_relation]
+      simp only [one_mul, inv_one, mul_one]
+    . simp only [Submonoid.coe_mul, Subgroup.coe_toSubmonoid,
+        SubmonoidClass.coe_pow, Units.val_mul, Units.val_pow_eq_pow_val, Units.val_neg,
+        Units.val_one, Int.reduceNeg, ne_eq, Units.ne_zero, not_false_eq_true, mul_eq_left₀]
+      rw [List.map_reverse, this, even_alternating_word_reverse]
+      have : m s t = m t s := by apply symmetric
+      rw [this]
+      apply Even.neg_one_pow
+      apply pi_relation_word_nn_even
+      norm_num
   exact Equiv.Perm.disjoint_refl_iff.mp fun x ↦ Or.inl (this x)
 
 noncomputable def pi : G →* Equiv.Perm R := lift m (fun s ↦ pi_aux' s) (by simp [pi_relation])
@@ -1039,6 +1063,21 @@ lemma pi_value (g : G) (L : List S) (h : g = L) (r : R) : (pi g) r
   -- pi_aux_list ?
   sorry
 
+lemma reverse_head (L : List α) (h : L ≠ []) :
+  L.reverse = (L.getLast h) :: (L.dropLast).reverse := by
+  induction L with
+  | nil => contradiction
+  | cons hd tail ih =>
+    by_cases k : tail = []
+    . simp_rw [k]
+      simp only [ne_eq, not_true_eq_false, List.reverse_nil, List.dropLast_nil,
+        IsEmpty.forall_iff, List.reverse_cons, List.nil_append, List.getLast_singleton',
+        List.dropLast_single]
+    . push_neg at k
+      rw [List.reverse_cons, List.getLast_cons k, List.dropLast, List.reverse_cons, ih k]
+      . rfl
+      . exact k
+
 -- DLevel 3
 -- (maybe some list wrangling)
 lemma pi_inj : Function.Injective (pi : G → Equiv.Perm R) := by
@@ -1047,15 +1086,46 @@ lemma pi_inj : Function.Injective (pi : G → Equiv.Perm R) := by
   intro w wker
   by_contra! wne1
   rcases exists_reduced_word S w with ⟨L, ⟨hL, hw⟩⟩
-  have : L ≠ [] := by
+  have L_notempty: L ≠ [] := by
     contrapose! wne1
     rw [hw, wne1, gprod_nil]
+  have L_rev_notempty : L.reverse ≠ [] := reverseList_nonEmpty L_notempty
+  have L_rev_ge1 : L.reverse.length > 0 := List.length_pos.mpr L_rev_notempty
   have : pi w ≠ 1 := by
-    let s := L.getLast this
+    let s := L.getLast L_notempty
     let t : T := ⟨s, SimpleRefl_subset_Refl (Subtype.mem s)⟩
     have : nn L.reverse t = 1 := by
-      -- apply distinct_toPalindrome_i_of_reduced here
-      sorry
+      have zero_works : (toPalindrome_i L.reverse 0).gprod = [s] := by
+        rw [toPalindrome_i, reverse_head L L_notempty]
+        simp only [SimpleRefl, toPalindrome, zero_add, List.take_cons_succ, List.take_zero,
+          List.reverse_cons, List.reverse_nil, List.nil_append, List.tail_cons,
+          List.singleton_append]
+      have other_fail (j : Fin L.reverse.length) :
+        j ≠ ⟨0, Fin.pos j⟩ → (toPalindrome_i L.reverse j).gprod ≠ [s] := by
+        rw [← zero_works]
+        have : reduced_word L.reverse := reverse_is_reduced hL
+        apply distinct_toPalindrome_i_of_reduced this j ⟨0, Fin.pos j⟩
+      rw [nn]
+      have (n : ℕ) : List.range (n + 1) = 0 :: (List.range n).map Nat.succ :=
+        List.range_succ_eq_map n
+      rw [← Nat.sub_add_cancel L_rev_ge1, List.length_reverse, ← Nat.one_eq_succ_zero, this,
+        List.map_cons, List.count_cons, zero_works]
+      nth_rw 3 [← zero_add 1]
+      congr
+      . apply List.count_eq_zero.2
+        simp only [SimpleRefl, List.map_map, List.mem_map, List.mem_range, Function.comp_apply,
+          not_exists, not_and]
+        simp only [] at other_fail
+        intro j k
+        by_contra a
+        have : Nat.succ j < L.reverse.length := by
+          rw [List.length_reverse, Nat.succ_eq_add_one]
+          exact Nat.add_lt_of_lt_sub k
+        apply other_fail ⟨Nat.succ j, this⟩
+        . simp only [SimpleRefl, ne_eq, Fin.mk.injEq, Nat.succ_ne_zero, not_false_eq_true]
+        . simp only [gprod_singleton]
+          exact a
+      . simp only [gprod_singleton, ↓reduceIte]
     have : (pi w) (t, 1) ≠ (t, 1) := by
       rw [pi_value w L hw (t, 1), this]
       exact fun h ↦ μ₂.gen_ne_one (Prod.ext_iff.mp h).2
