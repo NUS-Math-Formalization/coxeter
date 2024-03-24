@@ -1014,9 +1014,9 @@ lemma pi_aux_list_mul (s t : α) : ((pi_aux' s : Equiv.Perm R) * (pi_aux' t : Eq
   . rw [Nat.succ_eq_add_one, pow_succ, mul_add, add_comm, mul_one,
       alternating_word_append_even s t (2 + 2 * k) (2)]
     simp only [add_tsub_cancel_left, List.map_append, List.prod_append, ← ih, mul_left_inj]
-    rfl
-    norm_num
-    norm_num
+    . rfl
+    . norm_num
+    . norm_num
 
 lemma alternating_word_map (s t : α) (f : α → A) (n : ℕ) :
   (alternating_word s t n).map f = alternating_word (f s) (f t) n := by
@@ -1069,15 +1069,14 @@ lemma reverse_head (L : List α) (h : L ≠ []) :
   | nil => contradiction
   | cons hd tail ih =>
     by_cases k : tail = []
-    . aesop_subst k
+    . simp_rw [k]
       simp only [ne_eq, not_true_eq_false, List.reverse_nil, List.dropLast_nil,
         IsEmpty.forall_iff, List.reverse_cons, List.nil_append, List.getLast_singleton',
         List.dropLast_single]
     . push_neg at k
       rw [List.reverse_cons, List.getLast_cons k, List.dropLast, List.reverse_cons, ih k]
-      rfl
-      intro k'
-      contradiction
+      . rfl
+      . exact fun tail_eq => k tail_eq
 
 -- DLevel 3
 -- (maybe some list wrangling)
