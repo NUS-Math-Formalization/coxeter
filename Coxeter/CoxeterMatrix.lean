@@ -607,14 +607,13 @@ lemma nn_cons (L : List S) (s : S) (t : T) : nn (s :: L) t = (if (s : G) = t the
       · rw [List.length_nil, List.range_zero, List.map_nil, List.map_nil]
       · congr 1
         ext i
-        simp only [Function.comp_apply, toPalindrome_i, toPalindrome, List.take_cons, List.reverse_cons]
+        simp only [hxh, ti1, Function.comp_apply, toPalindrome_i,
+          toPalindrome, List.take_cons, List.reverse_cons]
         rw [List.tail_append_of_ne_nil _ _]
         simp only [gprod_simps]
         repeat rw [← mul_assoc]
-        sorry
-        sorry
-        --rw [mul_assoc _ s.1 s.1, gen_square_eq_one s.1 s.2, one_mul, mul_one]
-        --exact (List.append_singleton_ne_nil (ttail.take i).reverse th)
+        rw [mul_assoc _ s.1 s.1, gen_square_eq_one s.1 s.2, one_mul, mul_one]
+        exact (List.append_singleton_ne_nil (ttail.take i).reverse th)
     _ = _ := by
       congr
       rw [List.count_singleton']
