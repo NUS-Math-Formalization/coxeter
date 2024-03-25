@@ -77,8 +77,8 @@ theorem gen_induction {p : G → Prop} (g : G) (Hs : ∀ s : S, p s.val) (H1 : p
     . exact Hmul
 
 /-- If `p : G → Prop` holds for the identity and it is preserved under multiplying on the left
-by a simple reflection, then it holds for all elements of `G`. -/
-theorem simple_induction_left {p : G → Prop} (g : G) (H1 : p 1)
+by a generator, then it holds for all elements of `G`. -/
+theorem gen_induction_left {p : G → Prop} (g : G) (H1 : p 1)
     (Hmul : ∀  (s : S) (g : G), p g → p (s * g)) : p g := by
       apply Submonoid.induction_of_closure_eq_top_left (p:=p) (monoid_closure_gen_eq_top (S:=S))
       . exact H1
@@ -86,8 +86,8 @@ theorem simple_induction_left {p : G → Prop} (g : G) (H1 : p 1)
 
 
 /-- If `p : G → Prop` holds for the identity and it is preserved under multiplying on the right
-by a simple reflection, then it holds for all elements of `G`. -/
-theorem simple_induction_right {p : G → Prop} (g : G) (H1 : p 1)
+by a generator, then it holds for all elements of `G`. -/
+theorem gen_induction_right {p : G → Prop} (g : G) (H1 : p 1)
     (Hmul : ∀  (g : G) (s : S)  , p g → p (g * s)) : p g := by
       apply Submonoid.induction_of_closure_eq_top_right (p:=p) (monoid_closure_gen_eq_top (S:=S))
       . exact H1
