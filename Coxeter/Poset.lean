@@ -10,7 +10,7 @@ open Classical
 
 namespace List
 
-/- The adjacent pairs of a list [a_1,a_2, ⋯, a_n] is defined to be
+/- Definition: The adjacent pairs of a list [a_1,a_2, ⋯, a_n] is defined to be
   [(a_1, a_2), (a_2, a_3), ⋯, (a_{n-1}, a_n)].
   If the list L has length less than 2, the new list will be an empty list by convention. -/
 def adjPairs {α  : Type*} : List α  → List (α × α )
@@ -18,9 +18,14 @@ def adjPairs {α  : Type*} : List α  → List (α × α )
   | _ :: []  => []
   | a :: b :: l =>  ((a, b) : α  × α) ::  (b :: l).adjPairs
 
+/-
+Lemma: Let a b ∈ α, then for any list L of α, the pair (a,b) is an adjacent pair of the list [a,b,L].
+-/
 lemma adjPairs_cons {a b :α} {L : List α} : (a,b) ∈ (a::b::L).adjPairs:= by
   simp [List.adjPairs]
 
+/-Lemma: Let h a b ∈ α and tail be a list of α. If (a,b) is an adjacent pair of tail, then (a,b) is an adjacent pair of [h, tail].
+-/
 lemma adjPairs_tail {h a b : α} {tail : List α} : (a,b) ∈ tail.adjPairs → (a,b) ∈ (h::tail).adjPairs:= by
   match tail with
   | [] => simp [adjPairs]
@@ -29,7 +34,8 @@ lemma adjPairs_tail {h a b : α} {tail : List α} : (a,b) ∈ tail.adjPairs → 
     intro h1
     right; exact h1
 
-/- The adjacent extened pairs of is a List of adjacent pairs together with the claim that e ∈ adjPairs L -/
+/- Definition (programming):
+The adjacent extened pairs of a List L is a List of adjacent pairs of L together with the claim that e ∈ adjPairs L -/
 def adjEPairs {α : Type*} (L : List α) : List ({e : α × α  | e ∈ L.adjPairs}) := match L with
   | [] => []
   | _ :: [] => []
@@ -38,9 +44,10 @@ def adjEPairs {α : Type*} (L : List α) : List ({e : α × α  | e ∈ L.adjPai
 end List
 
 
--- Add references and comments
-/- Reference : 1. Combinatorics of Coxeter groups by Anders Bjorner and Franacesco Brenti, Appendix A2
-               2. On lexicographically shellable poset by Ander Bjornder and Michelle Wachs, Transaction AMS.
+
+/- Reference for posets :
+      1. Combinatorics of Coxeter groups by Anders Bjorner and Franacesco Brenti, Appendix A2
+      2. On lexicographically shellable poset by Ander Bjornder and Michelle Wachs, Transaction AMS.
 -/
 
 open PartialOrder
@@ -54,21 +61,13 @@ variable {P : Type*} [PartialOrder P]
 
 
 /- Definition: We say a is covered by b if x < y and there is no element z such that x < z < y. -/
--- def ledot {P : Type*} [PartialOrder P] : P → P → Prop := sorry -- (a : P) → (b : P) → (a < b ∧ (∀ {c : P}, (a ≤ c ∧ c ≤ b) → (a = c ∨ b = c)))
 def ledot {P : Type*} [PartialOrder P]  (a b : P) : Prop := (∀ c : P, (a ≤ c ∧ c ≤ b) → (a = c ∨ b = c))
 
 /- Notation: We denote the cover relation by x ⋖ y. Use "\les" to type the symbol -/
 notation a " ⋖ " b => ledot a b
 
-/- Defintion: We define the set of edges of P as set of all pairs (a,b) such that a is covered by b.-/
+/- Defintion: We define the set of edges of P as the set of all pairs (a,b) such that a is covered by b.-/
 def edges (P : Type*) [PartialOrder P] : Set (P × P) := {(a, b) | ledot a b }
-
-
-/- Definition: We define an edge labelling of P as a function from the set of relations to another poset A.-/
-/- Remark: We are interested in two cases :
-  a is coverd by b;
-  or a < b with at = b for some reflection t.
--/
 
 
 /-
@@ -76,7 +75,7 @@ Definition: A chain in the poset P is a finite sequence x₀ < x₁ < ⋯ < x_n.
 -/
 def chain {P : Type*} [PartialOrder P] (L : List P) : Prop := List.Chain' (. < .) L
 
---#print List.Chain'
+
 
 
 section maximal_chain
@@ -95,6 +94,11 @@ Lemma: If a chain L : x₀ < x₁ < ⋯ < x_n is maximal, then we have x_0 ⋖ x
 lemma maximal_chain_ledot {P : Type*} [PartialOrder P] {L: List P} :
   maximal_chain L → List.Chain' ledot L := sorry
 
+/-
+Lemma: Assume P is a bounded poset. Let L : x₀ < x₁ < ⋯ < x_n  be a chain of P
+such that the adjacent relations are cover relations; x_0 is the minimal element and x_n is the maximal element.
+Then L is a maximal chain.
+-/
 lemma maximal_chain_of_ledot_chain {P :Type*} [PartialOrder P] [BoundedOrder P] {L: List P} :
   List.Chain' ledot L ∧ L.head? = some ⊥ ∧ L.getLast? = some ⊤ → maximal_chain L := sorry
 
@@ -106,17 +110,21 @@ lemma exist_maximal_chain {P : Type*} [PartialOrder P] [BoundedOrder P] [Fintype
 
 
 /-
-Note that the assumption that P is a BoundedOrder implies that P is nonempty, and so a maximal chain is nonempty.
+(Programming) Note that the assumption that P is a BoundedOrder implies that P is nonempty, and so a maximal chain is nonempty.
 -/
 lemma max_chain_nonempty {P : Type*} [PartialOrder P] [BoundedOrder P]  [Fintype P] (L: List P) :
   maximal_chain L → L≠ [] := by sorry
 
 /-
-Lemma: Let P be a bounded finite poset. Then a maximal chain exsits.
+Lemma: Let P be a bounded finite poset. Let L = [x_0, ⋯, x_m] be a list of elements in P.
+Then L is a maximal chain if and only if  x_0 is the minimal element, x_n is the maximal element, and x_i ⋖ x_{i+1} for all i.
 -/
 lemma ledot_max_chain {P : Type*} [PartialOrder P] [BoundedOrder P]  [Fintype P] (L: List P) :
   maximal_chain L ↔ ((L.head? = (⊥ : P)) ∧ (L.getLast? = (⊤ : P)) ∧ (List.Chain' ledot L)) := by sorry
 
+/-
+Lemma: Let L : x_0 < x_1 < ⋯ < x_n be a maximal chain of P. Then (x_i, x_{i+1}) is an (cover) edge of P.
+-/
 lemma max_chain_mem_edge {P : Type*} [PartialOrder P] {L: List P} {e: P × P} :
   maximal_chain L →  e ∈ L.adjPairs → e ∈ edges P:= sorry
 
@@ -126,20 +134,21 @@ We define the set of all maximal chains of P.
 -/
 abbrev maximalChains (P : Type*) [PartialOrder P] : Set (List P) := { L | maximal_chain L }
 
---def adjPairs {P:Type*} [PartialOrder P] (L : maximalChains P) :
--- List (edges P) :=  L.val.adjPairs
-
-/- Extended Chains is a pair (m,e) with e ∈ m -/
---def eChains (P : Type*) := { Le : List P × (P×P)| Le.2 ∈ List.adjPairs Le.1}
-
+/-
+(Programming)
+-/
 
 def edgePairs {P : Type*} [PartialOrder P] (L : maximalChains P) : List (edges P) :=
   List.map (fun e => ⟨e.val, max_chain_mem_edge L.prop  e.prop⟩) <| L.val.adjEPairs
 
+/-
+?? this is often called rank.
+-/
 /- Define corank to be the maximal lenght of a maximal chain
   Note that if the length is unbounded,then corank =0.
  -/
 noncomputable def corank (P : Type*) [PartialOrder P] : ℕ := iSup fun L : maximalChains P => L.val.length
+
 
 end maximal_chain
 
@@ -161,8 +170,6 @@ PartialOrder (Set.Icc x y) := by exact Subtype.partialOrder _
 instance Interval.edge_coe {P : Type*} [PartialOrder P] {x y : P} : CoeOut (edges (Set.Icc x y)) (edges P) where
   coe := fun z => ⟨(z.1.1, z.1.2),sorry ⟩
 
-/- Question: The difference between instance and theorem for the above.-/
-
 
 
 end PartialOrder
@@ -170,15 +177,20 @@ end PartialOrder
 
 section GradedPoset
 
-/- Definition: A poset P is called graded if it is pure and bounded.
+/-
+Definition: A finite poset P is called graded if it is pure and bounded.
 A poset is called pure if all maximal chains are of the same length.
 -/
 class GradedPoset (P : Type*) [PartialOrder P][Fintype P] extends BoundedOrder P where
   pure: ∀ (L₁ L₂ : List P), ((maximal_chain L₁) ∧ (maximal_chain L₂)) → (L₁.length = L₂.length)
 
-
+/-
+Definition/Lemma : The corank of a graded poset is the length of any maximal chain in P.
+-/
 lemma GradedPoset.corank {P : Type*} [PartialOrder P] [Fintype P] [GradedPoset P]: ∀ L : maximalChains P, corank P = L.val.length := by sorry
-
+/-
+?? this is often called rank.
+-/
 end GradedPoset
 
 section labeling
@@ -186,13 +198,22 @@ namespace PartialOrder
 variable {P : Type*} [PartialOrder P] --[Fintype P] [GradedPoset P]
 variable {A : Type*} [PartialOrder A]
 
-
+/-
+Definition: Let P and A be posets. An edge labelling of P in A is a map from the set of edges of P to the poset A.
+-/
 @[simp]
 abbrev edgeLabeling (P A : Type*) [PartialOrder P] := edges P  → A
 
+/-
+Definition: Let P and A be posets and l be an edge labelling of P in A.
+Then any maximal chain m : x_0 ⋖ x_1 ⋖ ⋯ ⋖ x_n in P, we define a list in A by [l(x_0 ⋖ x_1),l(x_1 ⋖ x_2), ⋯ ,l(x_{n-1} ⋖ x_n)].
+-/
 def mapMaxChain (l : edgeLabeling P A) (m : maximalChains P)  : List A := List.map (fun e => l e) <| edgePairs m
 
-
+/-
+Definition: Let P and A be posets and l be an edge labelling of P in A.
+Then any maximal chain m : x_0 ⋖ x_1 ⋖ ⋯ ⋖ x_n in [x,y] ⊂ P, we define a list in A by [l(x_0 ⋖ x_1),l(x_1 ⋖ x_2), ⋯ ,l(x_{n-1} ⋖ x_n)].
+-/
 def mapMaxChain_interval (l : edgeLabeling P A) {x y : P} (m : maximalChains <| Set.Icc x y)  : List A := List.map (fun e : edges (Set.Icc x y) => l (e : edges P)) <| edgePairs m
 
 /-Defines the set of risingChians in an interval [x,y]-/
@@ -220,7 +241,7 @@ An abstract simplicial complex is a pair (V,F) where V is a set and F is a set o
   (2) {v} ∈ F for all v ∈ V, (This is to ensure that ∪ F = V.)
   (3) if s ∈ F and t ⊆ s, then t ∈ F.
 -/
-class AbstractSimplicialComplex {V : Type*} (F : Set (Finset V))where
+class AbstractSimplicialComplex {V : Type*} (F : Set (Finset V)) where
   empty_mem : ∅ ∈ F
   singleton_mem : ∀ v : V, {v} ∈ F
   subset_mem : ∀ s ∈ F, ∀ t ⊆ s, t ∈ F
@@ -229,6 +250,9 @@ namespace AbstractSimplicialComplex
 
 variable {V : Type*} (F : Set (Finset V)) [AbstractSimplicialComplex F]
 
+/-
+?? Facet is usually by definition is the maximal face
+-/
 def maximal_facet {V : Type*} (F : Set (Finset V)) [AbstractSimplicialComplex F] (s : Finset V) := s ∈ F ∧  ∀ t ∈ F, s ⊆ t → s = t
 
 def maximalFacets : Set (Finset V) := { s | AbstractSimplicialComplex.maximal_facet F s}
@@ -243,9 +267,26 @@ noncomputable def rank : ℕ := iSup fun s : F => s.1.card
 class Pure (F : Set (Finset V)) [AbstractSimplicialComplex F] where
   pure : ∀ s t : maximalFacets F, s.1.card = t.1.card
 
+
+/- To do :  Define the closure of a face.
+            Define subcomplex
+-/
+
+/- Definition: Let F be a pure abstract simplicial complex of dim m.
+A shelling of F is an linear ordering l_1, ⋯ , l_n of all (maximal) facets of F such that
+ l_i ∩ (∪_{j < i} l_j) is pure of dimension m -1.
+
+ Remark: To be precise, we need to consider the intersection of the closure of facets.
+-/
+
+/-
+??? I do not quite follow the codes here.
+-/
 def shelling {V : Type*} (F : Set (Finset V)) [AbstractSimplicialComplex F] [Pure F]  {m : ℕ } (l : Fin m ≃ maximalFacets F) :=
   ∀ i : Fin m, ((l i).1 ∩ (Finset.biUnion (Finset.filter (. < i) (Finset.univ : Finset (Fin m))) (fun j => (l j).1))).card = (l i).1.card -1
 
+/- Definition: An abstract simplicial complex F is called shellable, if it admits a shelling.
+-/
 def shellable {V : Type*} (F : Set (Finset V)) [AbstractSimplicialComplex F] [Pure F] := ∃ (m: ℕ) (l : Fin m ≃ maximalFacets F), shelling F l
 
 end AbstractSimplicialComplex
@@ -256,19 +297,36 @@ section Shellable
 
 variable {P : Type*} [PartialOrder P] --[Fintype P] [GradedPoset P]
 
+/-
+Definition: Let P be a poset. Let Delta(P) be the set of all chains in P.
+Note that each element in Delta(P) will considered as a chain.
+-/
 @[simp]
 def Delta (P : Type*) [PartialOrder P] : Set (List P) := {L : List P | chain L}
 
+
+/-
+Definition: Let P be a poset. Let Delta.ASC (P) be the set of all chains in P.
+Note that each element in Delta.ASC (P) will considered as a subset of P.
+-/
+/-
+??? Change Delta.ASC to Delta. Change Delta to Delta.List
+-/
 @[simp]
 def Delta.ASC (P : Type*) [PartialOrder P] : Set (Finset P) := List.toFinset '' Delta P
 
-
+/- Definition: Let P be a poset. We define a partial order on Delta(P) by containment.
+-/
 instance Delta.partialOrder {P : Type*} [PartialOrder P] : PartialOrder (Delta P) where
   le := fun x y =>  List.Sublist x.1 y.1
   le_refl := fun x => List.Sublist.refl x.1
   le_trans := sorry
   le_antisymm := sorry
   lt_iff_le_not_le := sorry
+
+/-
+Definition: Let P be a poset. Then Delta.ASC (P) is an abstract simplicial complex.
+-/
 
 instance Delta.AbstractSimplicialComplex {P : Type*} [PartialOrder P] : AbstractSimplicialComplex (Delta.ASC P) where
   empty_mem := by simp only [ASC, Delta, Set.mem_image, Set.mem_setOf_eq,
@@ -287,20 +345,26 @@ instance Delta.AbstractSimplicialComplex {P : Type*} [PartialOrder P] : Abstract
     use (List.filter (fun (x : P) => x ∈ t) L)
     sorry
 
+/-
+Definition: Let P be a graded poset. Then Delta.ASC (P) is a pure abstract simplicial complex.
+-/
 instance Delta.ASC.Pure {P : Type*} [PartialOrder P] [Fintype P] [GradedPoset P]: AbstractSimplicialComplex.Pure (Delta.ASC P) where
   pure := sorry
 
+/-
+Definition: Let P be a graded poset. We say P is shellable, if the order complex Delta.ASC is shellable.
+-/
 def Shellable (P : Type*) [PartialOrder P] [Fintype P] [GradedPoset P] :=
   AbstractSimplicialComplex.shellable (Delta.ASC P)
 
 /-
-Definition: A graded poset P is called shellable if there is an ordering L_1, ⋯ , L_m of all maximal
-chains of P such that |L_i ∩ (∪_{j > i} L_{j})| = |L_i|- 1.
+Definition: ???
 -/
 noncomputable def shelling_aux {P : Type*} [PartialOrder P] [Fintype P] [GradedPoset P] (l : List <| maximalChains P) : Prop := match l with
   | [] => true
   | _ :: [] => true
-  | a :: b :: l' => (a.1.toFinset ∩ (List.foldl (fun (x : Finset P) (y : maximalChains P) => x ∪ y.1.toFinset ) Finset.empty (b :: l'))).card == a.1.length - 1
+  | a :: b :: l' => (a.1.toFinset ∩ (List.foldl (fun (x : Finset P) (y : maximalChains P)
+                => x ∪ y.1.toFinset ) Finset.empty (b :: l'))).card == a.1.length - 1
 
 /- Note that the shelling condition implies that l has no duplicates-/
 def shelling' {P :Type*} [PartialOrder P] [Fintype P] [GradedPoset P] (l : List <| maximalChains P) :=
