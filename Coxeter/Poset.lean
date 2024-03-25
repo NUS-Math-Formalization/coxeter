@@ -274,11 +274,20 @@ class Pure (F : Set (Finset V)) [AbstractSimplicialComplex F] where
 
 /- Definition: Let F be a pure abstract simplicial complex of dim m.
 A shelling of F is an linear ordering l_1, ⋯ , l_n of all (maximal) facets of F such that
- l_i ∩ (∪_{j < i} l_j) is pure of dimension m -1.
+ l_i ∩ (∪_{j < i} l_j) is an abstract simplicial complex pure of dimension m -1.
 
  Remark: To be precise, we need to consider the intersection of the closure of facets.
+ A facet is a single set, while we need a collection of sets.
+ Then the resulting intersection will be simplicial complex. This requires a proof.
 -/
 
+/-
+Definition': Let F be a pure abstract simplicial complex of dim m.
+A shelling of F is an linear ordering l_1, ⋯ , l_n of all (maximal) facets of F such that
+ for any j < i, there exists j' < i, such that l_i ∩ l_j ⊂ l_i ∩ l_{j'} and |l_i ∩ l_{j'}| = m-1.
+
+ Remark: The equivalence requires a proof.
+-/
 /-
 ??? I do not quite follow the codes here.
 -/
