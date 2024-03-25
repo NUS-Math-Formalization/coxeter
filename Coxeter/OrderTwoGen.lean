@@ -16,6 +16,7 @@ namespace OrderTwoGen
 
 variable {G : Type _} [Group G] {S : Set G} [h : OrderTwoGen S]
 
+
 @[simp]
 lemma gen_square_eq_one : ∀ x ∈ S, x * x = 1 := fun x hx ↦ (h.order_two x hx).1
 
@@ -38,6 +39,60 @@ lemma gen_ne_one : ∀ x ∈ S, x ≠ 1 :=
 
 lemma gen_ne_one' : ∀ (x : S), (x : G) ≠ 1 :=
   fun x ↦ gen_ne_one x.1 x.2
+
+
+lemma symm_gen_eq_gen (S : Set G) [hS : OrderTwoGen S]: {z | z ∈ S ∨ z⁻¹ ∈ S} = S:= by
+  ext z; constructor
+  . intro h
+    rcases h with h | h
+    . assumption
+    . have :=hS.inv_eq_self _ h; rw [inv_inv] at this;rw [<-this]; exact h
+  . intro _; left; assumption
+
+lemma monoid_closure_gen_eq_top : Submonoid.closure S = ⊤ := by
+  apply eq_top_iff.2
+  intro x _
+  obtain ⟨L, hL⟩ := h.expression x
+  have im:= (Submonoid.mem_monoid_closure_iff_prod (T:=S) x).2
+  exact im ⟨L,by assumption⟩
+
+lemma mem_monoid_closure (g: G) : g ∈ Submonoid.closure S := by rw [monoid_closure_gen_eq_top]; exact Submonoid.mem_top g
+
+
+lemma closure_gen_eq_top : Subgroup.closure S = ⊤ := by
+  apply eq_top_iff.2
+  rw [<-Subgroup.toSubmonoid_le,Subgroup.top_toSubmonoid, Subgroup.closure_toSubmonoid S]
+  calc
+  _ = Submonoid.closure S:= by rw [monoid_closure_gen_eq_top (S := S)]
+  _ ≤ _ := Submonoid.closure_mono (by simp : S ⊆ S ∪ S⁻¹)
+
+
+/-- If `p : G → Prop` holds for all elements in S, it holds for the identity, and it is
+preserved under multiplication, then it holds for all elements of `G`. -/
+theorem gen_induction {p : G → Prop} (g : G) (Hs : ∀ s : S, p s.val) (H1 : p 1)
+    (Hmul : ∀ g g', p g → p g' → p (g * g')) : p g := by
+    apply Submonoid.closure_induction (p:=p) (mem_monoid_closure (S := S) g)
+    . exact fun x hx => Hs ⟨x,hx⟩
+    . exact H1
+    . exact Hmul
+
+/-- If `p : G → Prop` holds for the identity and it is preserved under multiplying on the left
+by a simple reflection, then it holds for all elements of `G`. -/
+theorem simple_induction_left {p : G → Prop} (g : G) (H1 : p 1)
+    (Hmul : ∀  (s : S) (g : G), p g → p (s * g)) : p g := by
+      apply Submonoid.induction_of_closure_eq_top_left (p:=p) (monoid_closure_gen_eq_top (S:=S))
+      . exact H1
+      . exact fun x hx => Hmul ⟨x,hx⟩
+
+
+/-- If `p : G → Prop` holds for the identity and it is preserved under multiplying on the right
+by a simple reflection, then it holds for all elements of `G`. -/
+theorem simple_induction_right {p : G → Prop} (g : G) (H1 : p 1)
+    (Hmul : ∀  (g : G) (s : S)  , p g → p (g * s)) : p g := by
+      apply Submonoid.induction_of_closure_eq_top_right (p:=p) (monoid_closure_gen_eq_top (S:=S))
+      . exact H1
+      . exact fun g x hx => Hmul g ⟨x,hx⟩
+
 
 --lemma mul_generator_inv {s:S} {w:G} [orderTwoGen S]: (w*s)⁻¹ = s*w⁻¹:= by rw []
 
@@ -435,7 +490,7 @@ lemma Refl.square_eq_one [OrderTwoGen S] {t : Refl S} : (t : G) ^ 2 = 1 := by
   rw [sq, teqgsg]
   group
   have hs : s * s = (1 : G) := by
-    apply @gen_square_eq_one G _ S
+    apply gen_square_eq_one (S := S)
     exact Subtype.mem s
   rw [mul_assoc g s, hs]
   group
@@ -447,7 +502,7 @@ lemma sq_refl_eq_one [OrderTwoGen S] {t : Refl S} : (t : G) ^ 2 = 1 := by
   rw [sq, teqgsg]
   group
   have hs : s * s = (1 : G) := by
-    apply @gen_square_eq_one G _ S
+    apply gen_square_eq_one (S := S)
     exact Subtype.mem s
   rw [mul_assoc g s, hs]
   group
