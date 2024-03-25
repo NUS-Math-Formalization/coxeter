@@ -479,6 +479,19 @@ def ReflSet (S : Set G) [OrderTwoGen S] (g : G) : Set (Refl S) := {t | length S 
 
 local notation "T" => Refl S
 
+
+lemma SimpleRefl_is_Refl : ∀ {g : G}, g ∈ S → g ∈ T := by
+  intro g hg
+  use 1, ⟨g, hg⟩
+  simp
+
+
+lemma SimpleRefl_subseteq_Refl : S ⊆ T := by
+  simp_rw [Set.subset_def]
+  exact fun g => SimpleRefl_is_Refl  (S:=S) (g:=g)
+
+
+@[deprecated SimpleRefl_is_Refl]
 lemma SimpleRefl_subset_Refl : ∀ {g : G}, g ∈ S → g ∈ T := by
   intro g hg
   use 1, ⟨g, hg⟩
@@ -538,5 +551,42 @@ mul_eq_one_iff_inv_eq.1 (by rw [← sq]; convert Refl.square_eq_one)
 lemma Refl.mul_SimpleRefl_in_Refl (s : S) (t : T) : (s : G) * t * (s : G) ∈ T := by
   convert Refl.conjugate_closed
   rw [inv_eq_self'']
+
+/--
+Let `T` be the set of reflections in `G`.
+If `p : G → Prop` holds for all elements in `S`, and it is
+preserved under conjugate by ` s∈ S`, then it holds for all elements of `T`. -/
+theorem refl_induction {p : G → Prop} {t : G} (ht : t ∈ T) (Hs : ∀ s, s ∈ S → p s)
+(Hconj : ∀ s t, s ∈ S → t ∈ T → p t → p (s * t * s⁻¹)) :
+   p t := by
+  obtain ⟨g, s0, hs0⟩ := ht
+  revert t
+  apply gen_induction_left (S := S) g
+  . intro t ht
+    replace ht: t = s0.val := by rw [ht];group
+    rw [ht]
+    exact Hs s0.val s0.prop
+  . intro s g ht t' ht'
+    let t := g * s0 * g⁻¹
+    have pt := ht (t:=t) rfl
+    have := Hconj s t s.prop (by use g,s0) pt
+    have tt' : t' = s.val * t * s.val⁻¹ := by simp_rw [ht',t];group
+    convert this
+
+
+theorem refl_induction' {p : T → Prop} (t : T) (Hs : ∀ s : S, p ⟨s,SimpleRefl_is_Refl s.prop⟩)
+(Hconj : ∀ (s : S) (t : T), p t → p ⟨s.val * t * s.val⁻¹,Refl.conjugate_closed⟩ )
+  : p t := by
+  obtain ⟨g,s0,hs0⟩ := t.prop
+  revert t
+  induction' g using gen_induction_left with s g ht
+  . exact fun t ht => Hs ⟨t.val, by simp [ht,s0.prop]⟩
+  . intro t' ht'
+    let t : T := ⟨g * s0 * g⁻¹, by use g, s0⟩
+    have pt := ht t (rfl)
+    have := Hconj s t pt
+    have tt': t' = s.val * t * s.val⁻¹ := by rw [ht']; group
+    convert this
+  assumption
 
 end OrderTwoGen
