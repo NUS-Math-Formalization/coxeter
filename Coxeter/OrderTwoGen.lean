@@ -71,27 +71,27 @@ lemma closure_gen_eq_top : Subgroup.closure S = ⊤ := by
 preserved under multiplication, then it holds for all elements of `G`. -/
 theorem gen_induction {p : G → Prop} (g : G) (Hs : ∀ s : S, p s.val) (H1 : p 1)
     (Hmul : ∀ g g', p g → p g' → p (g * g')) : p g := by
-    apply Submonoid.closure_induction (p:=p) (mem_monoid_closure (S := S) g)
-    . exact fun x hx => Hs ⟨x,hx⟩
-    . exact H1
-    . exact Hmul
+  apply Submonoid.closure_induction (p:=p) (mem_monoid_closure (S := S) g)
+  . exact fun x hx => Hs ⟨x,hx⟩
+  . exact H1
+  . exact Hmul
 
 /-- If `p : G → Prop` holds for the identity and it is preserved under multiplying on the left
 by a generator, then it holds for all elements of `G`. -/
 theorem gen_induction_left {p : G → Prop} (g : G) (H1 : p 1)
     (Hmul : ∀  (s : S) (g : G), p g → p (s * g)) : p g := by
-      apply Submonoid.induction_of_closure_eq_top_left (p:=p) (monoid_closure_gen_eq_top (S:=S))
-      . exact H1
-      . exact fun x hx => Hmul ⟨x,hx⟩
+  apply Submonoid.induction_of_closure_eq_top_left (p:=p) (monoid_closure_gen_eq_top (S:=S))
+  . exact H1
+  . exact fun x hx => Hmul ⟨x,hx⟩
 
 
 /-- If `p : G → Prop` holds for the identity and it is preserved under multiplying on the right
 by a generator, then it holds for all elements of `G`. -/
 theorem gen_induction_right {p : G → Prop} (g : G) (H1 : p 1)
     (Hmul : ∀  (g : G) (s : S)  , p g → p (g * s)) : p g := by
-      apply Submonoid.induction_of_closure_eq_top_right (p:=p) (monoid_closure_gen_eq_top (S:=S))
-      . exact H1
-      . exact fun g x hx => Hmul g ⟨x,hx⟩
+  apply Submonoid.induction_of_closure_eq_top_right (p:=p) (monoid_closure_gen_eq_top (S:=S))
+  . exact H1
+  . exact fun g x hx => Hmul g ⟨x,hx⟩
 
 
 --lemma mul_generator_inv {s:S} {w:G} [orderTwoGen S]: (w*s)⁻¹ = s*w⁻¹:= by rw []
@@ -497,6 +497,71 @@ lemma SimpleRefl_subset_Refl : ∀ {g : G}, g ∈ S → g ∈ T := by
   use 1, ⟨g, hg⟩
   simp
 
+lemma Refl.simplify {t : G} : t ∈ T ↔ ∃ g : G, ∃ s : S, g * s * g⁻¹ = t := by
+  constructor
+  · intro h1
+    rcases h1 with ⟨g, s, hgs⟩
+    use g, s; rw [hgs]
+  · intro h1
+    rcases h1 with ⟨g, s, hgs⟩
+    use g, s; rw [hgs]
+
+@[simp]
+lemma Refl.conjugate_closed {g : G} {t : T} : g * t * g⁻¹ ∈ T := by
+  dsimp
+  have h1 : ∃ g1 : G, ∃ s1 : S, g1 * (s1 : G) * g1⁻¹ = (t : G) := by
+    apply Refl.simplify.mp
+    apply Subtype.mem
+  rcases h1 with ⟨g1, s1, h2⟩
+  have h3 : (g * g1) * ↑s1 * (g * g1)⁻¹ = g * ↑t * g⁻¹ := by
+    rw [← h2]
+    group
+  use g * g1, s1; rw [h3]
+
+lemma Refl.mul_SimpleRefl_in_Refl (s : S) (t : T) : (s : G) * t * (s : G) ∈ T := by
+  convert Refl.conjugate_closed
+  rw [inv_eq_self'']
+
+/-- If `p : T → Prop` holds for all elements in S and it is preserved under
+multiplication on both sides by elements in s, then it holds for all elements
+of `T`. -/
+theorem Refl.induction' {p : T → Prop} (t : T) (Hs : ∀ s : S, p ⟨s.val, SimpleRefl_subset_Refl (Subtype.mem s)⟩)
+    (Hmul : ∀ (t : T) (s : S), p t → p ⟨(s : G) * t * s, Refl.mul_SimpleRefl_in_Refl s t⟩) : p t := by
+  rcases Subtype.mem t with ⟨g, s, tgsg⟩
+  have : t = ⟨t.1, ⟨g, s, tgsg⟩⟩ := rfl
+  rw [this]
+  simp only [tgsg]
+  have gsgT (g : G) (s : S) : g * s * g⁻¹ ∈ T :=
+    @Refl.conjugate_closed _ _ _ _ g ⟨s.val, SimpleRefl_subset_Refl (Subtype.mem s)⟩
+  refine @gen_induction_left G _ S _ (fun g ↦ p ⟨g * s * g⁻¹, gsgT g s⟩) g ?h1 ?hmul
+  · group; exact Hs s
+  · intro s' g' hp
+    dsimp only
+    have := (Hmul ⟨g' * s * g'⁻¹, gsgT g' s⟩ s') hp
+    convert this using 2
+    simp_rw [mul_assoc, mul_left_cancel_iff, mul_inv_rev]
+    congr 1
+    exact inv_eq_self'' s'
+
+/-- If `p : G → Prop` holds for all elements in S and it is preserved under
+multiplication on both sides by elements in s, then it holds for all elements
+of `T`. -/
+theorem Refl.induction {p : G → Prop} (t : T) (Hs : ∀ s : S, p s.val)
+    (Hmul : ∀ (g : G) (s : S), p g → p ((s : G) * g * s)) : p t := by
+  rcases Subtype.mem t with ⟨g, s, tgsg⟩
+  have : t = ⟨t.1, ⟨g, s, tgsg⟩⟩ := rfl
+  rw [this]
+  simp only [tgsg]
+  refine @gen_induction_left G _ S _ (fun g ↦ p (g * s * g⁻¹)) g ?h1 ?hmul
+  · group; exact Hs s
+  · intro s' g' hp
+    dsimp only
+    have := (Hmul (g' * s * g'⁻¹) s') hp
+    convert this using 1
+    simp_rw [mul_assoc, mul_left_cancel_iff, mul_inv_rev]
+    congr 1
+    exact inv_eq_self'' s'
+
 lemma Refl.square_eq_one [OrderTwoGen S] {t : Refl S} : (t : G) ^ 2 = 1 := by
   rcases t with ⟨t, g, s, teqgsg⟩
   simp only []
@@ -520,37 +585,12 @@ lemma sq_refl_eq_one [OrderTwoGen S] {t : Refl S} : (t : G) ^ 2 = 1 := by
   rw [mul_assoc g s, hs]
   group
 
-lemma Refl.simplify {t : G} : t ∈ T ↔ ∃ g : G, ∃ s : S, g * s * g⁻¹ = t := by
-  constructor
-  · intro h1
-    rcases h1 with ⟨g, s, hgs⟩
-    use g, s; rw [hgs]
-  · intro h1
-    rcases h1 with ⟨g, s, hgs⟩
-    use g, s; rw [hgs]
-
-@[simp]
-lemma Refl.conjugate_closed {g : G} {t : T} : g * t * g⁻¹ ∈ T := by
-  dsimp
-  have h1 : ∃ g1 : G, ∃ s1 : S, g1 * (s1 : G) * g1⁻¹ = (t : G) := by
-    apply Refl.simplify.mp
-    apply Subtype.mem
-  rcases h1 with ⟨g1, s1, h2⟩
-  have h3 : (g * g1) * ↑s1 * (g * g1)⁻¹ = g * ↑t * g⁻¹ := by
-    rw [← h2]
-    group
-  use g * g1, s1; rw [h3]
-
 lemma Refl.inv_eq_self {t : T} : (t : G)⁻¹ = t :=
 mul_eq_one_iff_inv_eq.1 (by rw [← sq]; convert Refl.square_eq_one)
 
 @[deprecated Refl.inv_eq_self]
 lemma inv_refl_eq_self {t : T} : (t : G)⁻¹ = t :=
 mul_eq_one_iff_inv_eq.1 (by rw [← sq]; convert Refl.square_eq_one)
-
-lemma Refl.mul_SimpleRefl_in_Refl (s : S) (t : T) : (s : G) * t * (s : G) ∈ T := by
-  convert Refl.conjugate_closed
-  rw [inv_eq_self'']
 
 /--
 Let `T` be the set of reflections in `G`.

@@ -596,8 +596,8 @@ variable {M : Type*} {M : Type*} [Monoid M] (T : Set M)
 
 
 /-
-An element is in submonid closure of T⊂M if and only if it can be
-written as a product of elements in T}
+An element is in the submonoid closure of T ⊂ M if and only if it can be
+written as a product of elements in T
 -/
 lemma mem_monoid_closure_iff_prod {M : Type*} [Monoid M] (T : Set M) (z : M) :
   z ∈ closure T ↔ (∃ L : List T, z = (L : List M).prod) := by
