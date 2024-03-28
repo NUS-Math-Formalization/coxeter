@@ -990,11 +990,9 @@ lemma pi_aux_list_mul (s t : α) : ((pi_aux' s : Equiv.Perm R) * (pi_aux' t : Eq
   . simp only [pow_zero, alternating_word, Nat.zero_eq, mul_zero, List.range_zero, List.map_nil,
       List.prod_nil]
   . rw [Nat.succ_eq_add_one, pow_succ, mul_add, add_comm, mul_one,
-      alternating_word_append_even s t (2 + 2 * k) (2)]
+      alternating_word_append_even s t (2 + 2 * k) (2) (by norm_num) (by norm_num)]
     simp only [add_tsub_cancel_left, List.map_append, List.prod_append, ← ih, mul_left_inj]
-    . rfl
-    . norm_num
-    . norm_num
+    rfl
 
 lemma alternating_word_map (s t : α) (f : α → A) (n : ℕ) :
   (alternating_word s t n).map f = alternating_word (f s) (f t) n := by
