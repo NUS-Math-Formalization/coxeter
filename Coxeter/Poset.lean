@@ -258,9 +258,6 @@ A shelling of F is an linear ordering l_1, ⋯ , l_n of all (maximal) facets of 
  Then the resulting intersection will be simplicial complex. This requires a proof.
 -/
 
-/-
-??? I do not know what happend to the " and " command. Each individual statement works.
--/
 def shelling {V : Type*} (F : Set (Finset V)) [AbstractSimplicialComplex F] [Pure F]  {m : ℕ } (l : Fin m ≃ Facets F) :=
   ∀ i : Fin m, isPure (closure F ((l i).1 ∩ (Finset.biUnion (Finset.filter (. < i) (Finset.univ : Finset (Fin m))) (fun j => (l j).1))))
   ∧ rank (closure F ((l i).1 ∩ (Finset.biUnion (Finset.filter (. < i) (Finset.univ : Finset (Fin m))) (fun j => (l j).1)))) = rank F - 1
@@ -268,7 +265,6 @@ def shelling {V : Type*} (F : Set (Finset V)) [AbstractSimplicialComplex F] [Pur
 Definition': Let F be a pure abstract simplicial complex of dim m.
 A shelling of F is an linear ordering l_1, ⋯ , l_n of all (maximal) facets of F such that
  for any j < i, there exists j' < i, such that l_i ∩ l_j ⊂ l_i ∩ l_{j'} and |l_i ∩ l_{j'}| = m-1.
-
 -/
 def shelling' {V : Type*} (F : Set (Finset V)) [AbstractSimplicialComplex F] [Pure F]  {m : ℕ } (l : Fin m ≃ Facets F) :=
   ∀ i j : Fin m, j < i → ∃ k : Fin m, k < i ∧ ((l i).1 ∩ (l j).1 ⊂ (l i).1 ∩ (l k).1) ∧ ((l i).1 ∩ (l k).1).card = (l i).1.card - 1
@@ -278,9 +274,6 @@ def shelling' {V : Type*} (F : Set (Finset V)) [AbstractSimplicialComplex F] [Pu
 -/
 lemma equiv_shelling {V : Type*} (F : Set (Finset V)) [AbstractSimplicialComplex F] [Pure F]  {m : ℕ } (l : Fin m ≃ Facets F) :
     shelling F l ↔ shelling' F l := by sorry
-
--- def shelling {V : Type*} (F : Set (Finset V)) [AbstractSimplicialComplex F] [Pure F]  {m : ℕ } (l : Fin m ≃ Facets F) :=
---   ∀ i : Fin m, ((l i).1 ∩ (Finset.biUnion (Finset.filter (. < i) (Finset.univ : Finset (Fin m))) (fun j => (l j).1))).card = (l i).1.card -1
 
 /- Definition: An abstract simplicial complex F is called shellable, if it admits a shelling.
 -/
@@ -304,22 +297,20 @@ Definition: Let P be a poset. Let Delta(P) be the set of all chains in P.
 Note that each element in Delta(P) will considered as a chain.
 -/
 @[simp]
-def Delta (P : Type*) [PartialOrder P] : Set (List P) := {L : List P | chain L}
+def Delta_List (P : Type*) [PartialOrder P] : Set (List P) := {L : List P | chain L}
 
 
 /-
 Definition: Let P be a poset. Let Delta.ASC (P) be the set of all chains in P.
 Note that each element in Delta.ASC (P) will considered as a subset of P.
 -/
-/-
-??? Change Delta.ASC to Delta. Change Delta to Delta.List
--/
-@[simp]
-def Delta.ASC (P : Type*) [PartialOrder P] : Set (Finset P) := List.toFinset '' Delta P
 
-/- Definition: Let P be a poset. We define a partial order on Delta(P) by containment.
+@[simp]
+def Delta (P : Type*) [PartialOrder P] : Set (Finset P) := List.toFinset '' Delta_List P
+
+/- Definition: Let P be a poset. We define a partial order on Delta_List(P) by containment.
 -/
-instance Delta.partialOrder {P : Type*} [PartialOrder P] : PartialOrder (Delta P) where
+instance Delta_List.partialOrder {P : Type*} [PartialOrder P] : PartialOrder (Delta_List P) where
   le := fun x y =>  List.Sublist x.1 y.1
   le_refl := fun x => List.Sublist.refl x.1
   le_trans := sorry
@@ -327,21 +318,21 @@ instance Delta.partialOrder {P : Type*} [PartialOrder P] : PartialOrder (Delta P
   lt_iff_le_not_le := sorry
 
 /-
-Definition: Let P be a poset. Then Delta.ASC (P) is an abstract simplicial complex.
+Definition: Let P be a poset. Then Delta (P) is an abstract simplicial complex.
 -/
 
-instance Delta.AbstractSimplicialComplex {P : Type*} [PartialOrder P] : AbstractSimplicialComplex (Delta.ASC P) where
-  empty_mem := by simp only [ASC, Delta, Set.mem_image, Set.mem_setOf_eq,
+instance Delta_List.AbstractSimplicialComplex {P : Type*} [PartialOrder P] : AbstractSimplicialComplex (Delta P) where
+  empty_mem := by simp only [Delta, Delta_List, Set.mem_image, Set.mem_setOf_eq,
     List.toFinset_eq_empty_iff, exists_eq_right,chain,List.Chain']
   singleton_mem := by
-    intro v; simp only [ASC, Set.mem_image]
+    intro v; simp only [Delta, Set.mem_image]
     use [v]
     constructor
-    . simp only [Delta, Set.mem_setOf_eq,chain,List.chain'_singleton]
+    . simp only [Delta_List, Set.mem_setOf_eq,chain,List.chain'_singleton]
     . trivial
   subset_mem := by
     intro s h1 t h2
-    simp only [ASC, Set.mem_image] at h1 h2
+    simp only [Delta, Set.mem_image] at h1 h2
     rcases h1 with ⟨L, h1, h1'⟩
     dsimp
     use (List.filter (fun (x : P) => x ∈ t) L)
@@ -350,30 +341,30 @@ instance Delta.AbstractSimplicialComplex {P : Type*} [PartialOrder P] : Abstract
 /-
 Definition: Let P be a graded poset. Then Delta.ASC (P) is a pure abstract simplicial complex.
 -/
-instance Delta.ASC.Pure {P : Type*} [PartialOrder P] [Fintype P] [GradedPoset P]: AbstractSimplicialComplex.Pure (Delta.ASC P) where
+instance Delta.Pure {P : Type*} [PartialOrder P] [Fintype P] [GradedPoset P]: AbstractSimplicialComplex.Pure (Delta P) where
   pure := sorry
 
 /-
 Definition: Let P be a graded poset. We say P is shellable, if the order complex Delta.ASC is shellable.
 -/
 def Shellable (P : Type*) [PartialOrder P] [Fintype P] [GradedPoset P] :=
-  AbstractSimplicialComplex.shellable (Delta.ASC P)
+  AbstractSimplicialComplex.shellable (Delta P)
 
-/-
-Definition: ???
--/
-noncomputable def shelling_aux {P : Type*} [PartialOrder P] [Fintype P] [GradedPoset P] (l : List <| maximalChains P) : Prop := match l with
-  | [] => true
-  | _ :: [] => true
-  | a :: b :: l' => (a.1.toFinset ∩ (List.foldl (fun (x : Finset P) (y : maximalChains P)
-                => x ∪ y.1.toFinset ) Finset.empty (b :: l'))).card == a.1.length - 1
+-- /-
+-- ??? The following is incorrect. But one might want to add some preliminary lemma for shellable posets.
+-- -/
+-- noncomputable def shelling_aux {P : Type*} [PartialOrder P] [Fintype P] [GradedPoset P] (l : List <| maximalChains P) : Prop := match l with
+--   | [] => true
+--   | _ :: [] => true
+--   | a :: b :: l' => (a.1.toFinset ∩ (List.foldl (fun (x : Finset P) (y : maximalChains P)
+--                 => x ∪ y.1.toFinset ) Finset.empty (b :: l'))).card == a.1.length - 1
 
-/- Note that the shelling condition implies that l has no duplicates-/
-def shelling' {P :Type*} [PartialOrder P] [Fintype P] [GradedPoset P] (l : List <| maximalChains P) :=
-  (∀ x : maximalChains P, x ∈ l)
-    ∧ List.Forall shelling_aux l.tails
+-- /- Note that the shelling condition implies that l has no duplicates-/
+-- def shelling' {P :Type*} [PartialOrder P] [Fintype P] [GradedPoset P] (l : List <| maximalChains P) :=
+--   (∀ x : maximalChains P, x ∈ l)
+--     ∧ List.Forall shelling_aux l.tails
 
-def Shellable' (P : Type*) [PartialOrder P] [Fintype P] [GradedPoset P] := ∃ l : List (maximalChains P),  shelling' l
+-- def Shellable' (P : Type*) [PartialOrder P] [Fintype P] [GradedPoset P] := ∃ l : List (maximalChains P),  shelling' l
 
 
 
