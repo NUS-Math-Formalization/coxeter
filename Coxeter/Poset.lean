@@ -47,7 +47,6 @@ end List
 
 /- Reference for posets :
       1. Combinatorics of Coxeter groups by Anders Bjorner and Franacesco Brenti, Appendix A2
-      2. On lexicographically shellable poset by Ander Bjornder and Michelle Wachs, Transaction AMS.
 -/
 
 open PartialOrder
@@ -193,45 +192,6 @@ lemma GradedPoset.corank {P : Type*} [PartialOrder P] [Fintype P] [GradedPoset P
 -/
 end GradedPoset
 
-section labeling
-namespace PartialOrder
-variable {P : Type*} [PartialOrder P] --[Fintype P] [GradedPoset P]
-variable {A : Type*} [PartialOrder A]
-
-/-
-Definition: Let P and A be posets. An edge labelling of P in A is a map from the set of edges of P to the poset A.
--/
-@[simp]
-abbrev edgeLabeling (P A : Type*) [PartialOrder P] := edges P  → A
-
-/-
-Definition: Let P and A be posets and l be an edge labelling of P in A.
-Then any maximal chain m : x_0 ⋖ x_1 ⋖ ⋯ ⋖ x_n in P, we define a list in A by [l(x_0 ⋖ x_1),l(x_1 ⋖ x_2), ⋯ ,l(x_{n-1} ⋖ x_n)].
--/
-def mapMaxChain (l : edgeLabeling P A) (m : maximalChains P)  : List A := List.map (fun e => l e) <| edgePairs m
-
-/-
-Definition: Let P and A be posets and l be an edge labelling of P in A.
-Then any maximal chain m : x_0 ⋖ x_1 ⋖ ⋯ ⋖ x_n in [x,y] ⊂ P, we define a list in A by [l(x_0 ⋖ x_1),l(x_1 ⋖ x_2), ⋯ ,l(x_{n-1} ⋖ x_n)].
--/
-def mapMaxChain_interval (l : edgeLabeling P A) {x y : P} (m : maximalChains <| Set.Icc x y)  : List A := List.map (fun e : edges (Set.Icc x y) => l (e : edges P)) <| edgePairs m
-
-/-Defines the set of risingChians in an interval [x,y]-/
-abbrev risingChains (l : edgeLabeling P A) (x y: P) := {m : maximalChains <| Set.Icc x y | List.Chain' (. ≤ .) <| mapMaxChain_interval l m}
-
-/-
-Definition: An edge labelling of P is called an EL-labelling if for every interval [x,y] in P,
-  (1) there is a unique increasing maximal chain c in [x,y],
-  (2) c <_L c' for all other maximal chains c' in [x,y].
-Here <_L denotes the lexicographic ordering for the tuples in the labelling poset A.
--/
-class EL_labeling (l : edgeLabeling P A) where
-  unique {x y: P} (h : x<y) : Unique (risingChains l x y)
-  unique_min {x y: P} (h : x<y): ∀ (m' : maximalChains <| Set.Icc x y), m' ≠ (unique h).default → (mapMaxChain_interval l (unique h).default.val < mapMaxChain_interval l m')
-
-end PartialOrder
-end labeling
-
 
 section ASC
 
@@ -251,21 +211,37 @@ namespace AbstractSimplicialComplex
 variable {V : Type*} (F : Set (Finset V)) [AbstractSimplicialComplex F]
 
 /-
-?? Facet is usually by definition is the maximal face
+Definition: We define a facet as a maximal face of an abstract simplicial complex F.
 -/
-def maximal_facet {V : Type*} (F : Set (Finset V)) [AbstractSimplicialComplex F] (s : Finset V) := s ∈ F ∧  ∀ t ∈ F, s ⊆ t → s = t
+def facet {V : Type*} (F : Set (Finset V)) [AbstractSimplicialComplex F] (s : Finset V) := s ∈ F ∧  ∀ t ∈ F, s ⊆ t → s = t
 
-def maximalFacets : Set (Finset V) := { s | AbstractSimplicialComplex.maximal_facet F s}
+def Facets : Set (Finset V) := { s | AbstractSimplicialComplex.facet F s}
 
---instance coe_maximalFacets : CoeOut (maximalFacets F) (Finset V) :=
+def closure {V : Type*} (F : Set (Finset V)) [AbstractSimplicialComplex F] (s : Finset V) :
+  Set (Finset V) := {t ∈ F | t ⊆ s}
+
+
+instance closure_ASC {V : Type*} (F : Set (Finset V)) [AbstractSimplicialComplex F] (s : Finset V)
+  : @AbstractSimplicialComplex _ (closure F s) where
+  empty_mem := sorry
+  singleton_mem := sorry
+  subset_mem := sorry
+
+/-
+?? I think we should remove singleton_mem in the defintion. Or how to make s to be type?
+-/
+
+--instance coe_Facets : CoeOut (Facets F) (Finset V) :=
 --  ⟨fun s => s.val⟩
 
-noncomputable def rank : ℕ := iSup fun s : F => s.1.card
-
+noncomputable def rank (F : Set (Finset V)) : ℕ := iSup fun s : F => s.1.card
+/-
+?? So by definition rank if finite?
+-/
 
 /- Definition: A pure abstract simplicial complex is an abstract simplicial complex where all maximal facets have the same cardinality. -/
 class Pure (F : Set (Finset V)) [AbstractSimplicialComplex F] where
-  pure : ∀ s t : maximalFacets F, s.1.card = t.1.card
+  pure : ∀ s t : Facets F, s.1.card = t.1.card
 
 
 /- To do :  Define the closure of a face.
@@ -282,25 +258,42 @@ A shelling of F is an linear ordering l_1, ⋯ , l_n of all (maximal) facets of 
 -/
 
 /-
+??? I do not know what happend to the and command.
+-/
+def shelling {V : Type*} (F : Set (Finset V)) [AbstractSimplicialComplex F] [Pure F]  {m : ℕ } (l : Fin m ≃ Facets F) :=
+  ∀ i : Fin m, ((rank (closure F ((l i).1 ∩ (Finset.biUnion (Finset.filter (. < i) (Finset.univ : Finset (Fin m))) (fun j => (l j).1))))) = rank F - 1)
+  ∧ Pure (closure F ((l i).1 ∩ (Finset.biUnion (Finset.filter (. < i) (Finset.univ : Finset (Fin m))) (fun j => (l j).1))))
+
+/-
 Definition': Let F be a pure abstract simplicial complex of dim m.
 A shelling of F is an linear ordering l_1, ⋯ , l_n of all (maximal) facets of F such that
  for any j < i, there exists j' < i, such that l_i ∩ l_j ⊂ l_i ∩ l_{j'} and |l_i ∩ l_{j'}| = m-1.
 
- Remark: The equivalence requires a proof.
 -/
-/-
-??? I do not quite follow the codes here.
+def shelling' {V : Type*} (F : Set (Finset V)) [AbstractSimplicialComplex F] [Pure F]  {m : ℕ } (l : Fin m ≃ Facets F) :=
+  ∀ i j : Fin m, j < i → ∃ k : Fin m, k < i ∧ ((l i).1 ∩ (l j).1 ⊂ (l i).1 ∩ (l k).1) ∧ ((l i).1 ∩ (l k).1).card = (l i).1.card - 1
+
+
+/- Lemma: The two definitions of shellings are equivalent.
 -/
-def shelling {V : Type*} (F : Set (Finset V)) [AbstractSimplicialComplex F] [Pure F]  {m : ℕ } (l : Fin m ≃ maximalFacets F) :=
-  ∀ i : Fin m, ((l i).1 ∩ (Finset.biUnion (Finset.filter (. < i) (Finset.univ : Finset (Fin m))) (fun j => (l j).1))).card = (l i).1.card -1
+lemma equiv_shelling {V : Type*} (F : Set (Finset V)) [AbstractSimplicialComplex F] [Pure F]  {m : ℕ } (l : Fin m ≃ Facets F) :
+    shelling F l ↔ shelling' F l := by sorry
+
+-- def shelling {V : Type*} (F : Set (Finset V)) [AbstractSimplicialComplex F] [Pure F]  {m : ℕ } (l : Fin m ≃ Facets F) :=
+--   ∀ i : Fin m, ((l i).1 ∩ (Finset.biUnion (Finset.filter (. < i) (Finset.univ : Finset (Fin m))) (fun j => (l j).1))).card = (l i).1.card -1
 
 /- Definition: An abstract simplicial complex F is called shellable, if it admits a shelling.
 -/
-def shellable {V : Type*} (F : Set (Finset V)) [AbstractSimplicialComplex F] [Pure F] := ∃ (m: ℕ) (l : Fin m ≃ maximalFacets F), shelling F l
+def shellable {V : Type*} (F : Set (Finset V)) [AbstractSimplicialComplex F] [Pure F] := ∃ (m: ℕ) (l : Fin m ≃ Facets F), shelling F l
 
 end AbstractSimplicialComplex
 
 end ASC
+
+
+/-
+Reference : 1. On lexicographically shellable poset by Ander Bjornder and Michelle Wachs, Transaction AMS.
+-/
 
 section Shellable
 
@@ -386,119 +379,48 @@ def Shellable' (P : Type*) [PartialOrder P] [Fintype P] [GradedPoset P] := ∃ l
 
 end Shellable
 
-/-
-Definition: A graded poset P is called shellable if there is an ordering L_1, ⋯ , L_m of all maximal
-chains of P such that |L_i ∩ (∪_{j < i} L_{j})| = |L_i|- 1.
--/
-/-
-def Shellable (P : Type*) [PartialOrder P] [Fintype P] extends GradedPoset P where
-  L: Fin m ≃ maximalChains P,
-  (∀ i : Fin m, ((L i).val.toFinset ∩ (⋃  j : Fin i.val, (L ⟨j.val,by sorry⟩).val.toFinset)).card = (L i).toFinset.length -1)
--/
 
 
+section labeling
+namespace PartialOrder
+variable {P : Type*} [PartialOrder P] --[Fintype P] [GradedPoset P]
+variable {A : Type*} [PartialOrder A]
 
 /-
-class EL_labelling (P A : Type*) [PartialOrder P] [Finite P] [PartialOrder A] where
-  edges : Set (P × P) := {(a, b) : P × P | ledot a b }
-  EL : edges → A
-  chainL : (x y : P) → (h : x ≤ y) → List (Interval x y h)
-  max : (x y : P) → (h : x ≤ y) → @maximal_chain _ (Interval.poset h) (chainL x y h)
-  chainL_edges : List.Chain' ledot (chainL x y h)
-  Inc : chain ((List_pair (chainL x y h)).map EL)
-  Unique : ∀ L1 : List (Interval x y h), (maximal_chain L1)→ chain ((List_pair L1).map EL)→ L1 = chainL x y h
-  L_min : ∀ L1 : List (Interval x y h), (maximal_chain L1)  → ((List_pair (chainL x y h)).map EL) ≤ ((List_pair L1).map EL)
-
-#check EL_labelling.chainL
-
-
-
-
-
---- begin experiment
-section Experiement
-variable (P : Type*) [PartialOrder P] (x y z: P) (h : x ≤ y)
-
-def Interval.poset1 {P : Type*} [PartialOrder P] {x y : P} :
-PartialOrder ({z | x ≤ z ∧ z ≤ y}) := by exact Subtype.partialOrder _
-
-/- Question: can we just define the poset directly? Then the question is if we can pick out the carrier set.
+Definition: Let P and A be posets. An edge labelling of P in A is a map from the set of edges of P to the poset A.
 -/
-
--- instance Interval.poset1 {P : Type*} [PartialOrder P] {x y : P} (h : x ≤ y) :
--- PartialOrder (Interval x y h) := by exact Subtype.partialOrder _
-
-#check Interval x y h
-example (a: z ∈ Interval x y h) : z ≤ y := by
-  rw [Interval] at a
-  rcases a with ⟨_, h2⟩
-  exact h2
-
-example : PartialOrder (Interval x y h) := by sorry
-
-example (Q : Type*) [LE Q] [BoundedOrder Q] : PartialOrder Q := by apply?
-
-class PartialBoundedOrder (P : Type*) extends PartialOrder P, BoundedOrder P
-
-
-example : ∀ z ∈ Interval x y h, z ≤ y := by
-  intro z h1
-  rw [Interval] at h1
-  exact h1.2
-
-
-end Experiement
------- end experiment
-
-
-
-
-
-
+@[simp]
+abbrev edgeLabeling (P A : Type*) [PartialOrder P] := edges P  → A
 
 /-
-Definition: A graded poset P is called shellable if there is an ordering L_1, ⋯ , L_m of all maximal
-chains of P such that |L_i ∩ (∪_{j < i} L_{j})| = |L_i|- 1.
+Definition: Let P and A be posets and l be an edge labelling of P in A.
+Then any maximal chain m : x_0 ⋖ x_1 ⋖ ⋯ ⋖ x_n in P, we define a list in A by [l(x_0 ⋖ x_1),l(x_1 ⋖ x_2), ⋯ ,l(x_{n-1} ⋖ x_n)].
 -/
-def shellable (P : Type*) [PartialOrder P][Finite P] [GradedPoset P]: Prop := sorry
- --∃ (m:ℕ) (L: Fin m ≃ maximalChains P),
-  --(∀ i : Fin m, ((L i).val.toFinset ∩ (⋃  j : Fin i.val, (L ⟨j.val,by sorry⟩).val.toFinset)).card = (L i).toFinset.length -1)
-
-
-
-
-/- Get elements out of the list L-/
-
-def pick_i {P : Type*} [PartialOrder P] (L : List P) (i : (Fin (L.length-1))) : P×P :=
-   ((L.get ⟨i.1,by linarith [i.2]⟩),L.get ⟨i.1+1, by (linarith [i.2])⟩)
-
-
-def EL_maximal_chain (P A : Type*) [PartialOrder P] [PartialOrder A][Finite P] [GradedPoset P] (L: List P) (h: maximal_chain L)
-  (el : EL P A):= ∀ i, el ⟨((L.get ⟨i, by sorry⟩ ),(L.get ⟨i+1, by sorry⟩)),by sorry⟩ → (Fin n→ A)
+def mapMaxChain (l : edgeLabeling P A) (m : maximalChains P)  : List A := List.map (fun e => l e) <| edgePairs m
 
 /-
-Definition: Let λ be an edge labelling of P and let x_0 ⋖ x_1 ⋖ ⋯ ⋖ x_n be a maximal chain. The
-chain is called increasing if λ(x_0 ⋖ x_1) ≤ λ(x_1 ⋖ x_2) ≤ ⋯ ≤ λ(x_{n-1}} ⋖ x_n).
+Definition: Let P and A be posets and l be an edge labelling of P in A.
+Then any maximal chain m : x_0 ⋖ x_1 ⋖ ⋯ ⋖ x_n in [x,y] ⊂ P, we define a list in A by [l(x_0 ⋖ x_1),l(x_1 ⋖ x_2), ⋯ ,l(x_{n-1} ⋖ x_n)].
 -/
+def mapMaxChain_interval (l : edgeLabeling P A) {x y : P} (m : maximalChains <| Set.Icc x y)  : List A := List.map (fun e : edges (Set.Icc x y) => l (e : edges P)) <| edgePairs m
 
-def Increasing_chain  (P A : Type*) [PartialOrder P] [PartialOrder A] (L: List P) (h: maximal_chain L) : Prop
-  := List.chain' ledot L
+/-Defines the set of risingChians in an interval [x,y]-/
+abbrev risingChains (l : edgeLabeling P A) (x y: P) := {m : maximalChains <| Set.Icc x y | List.Chain' (. ≤ .) <| mapMaxChain_interval l m}
 
-#print List.chain'_iff_get
-
-/- Needs to define lexicographically ordering. -/
-
-
-
-/- Theorem: Let P be a graded poset. If P admits an CL-labelling, then P is shellable. -/
-
-theorem CL_shellable {P : Type*} [PartialOrder P] (h: CL_labelling P): shellable P:= by sorry
-
-
-/- Theorem: Let P be a graded poset. If P admits an EL-labelling, then P admits an CL-labeling. -/
-lemma EL_CL {P : Type*} [PartialOrder P] (h: EL_labelling P) : CL_labelling P := by sorry
-
-/- Theorem: Let P be a graded poset. If P admits an EL-labelling, then P is shellable. -/
-
-theorem EL_shellable {P : Type*} [PartialOrder P] [BoundedOrder P] (EL_labelling P A) : shellable P := by sorry
+/-
+Definition: An edge labelling of P is called an EL-labelling if for every interval [x,y] in P,
+  (1) there is a unique increasing maximal chain c in [x,y],
+  (2) c <_L c' for all other maximal chains c' in [x,y].
+Here <_L denotes the lexicographic ordering for the tuples in the labelling poset A.
 -/
+class EL_labeling (l : edgeLabeling P A) where
+  unique {x y: P} (h : x<y) : Unique (risingChains l x y)
+  unique_min {x y: P} (h : x<y): ∀ (m' : maximalChains <| Set.Icc x y), m' ≠ (unique h).default → (mapMaxChain_interval l (unique h).default.val < mapMaxChain_interval l m')
+
+/-Theorem: Let P be a graded finite poset with an EL-labelling l to a poset A. Then P is shellable.
+-/
+theorem EL_shellable {P : Type*} [PartialOrder P] [PartialOrder A] [Fintype P] [GradedPoset P] (l : edgeLabeling P A) (h: EL_labeling l): Shellable P :=sorry
+
+
+end PartialOrder
+end labeling
