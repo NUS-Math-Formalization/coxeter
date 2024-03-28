@@ -801,9 +801,13 @@ lemma alternating_word_power (s t : α) (n : ℕ) : (alternating_word s t (2 * n
   | zero => simp only [alternating_word, Nat.zero_eq, mul_zero,
     List.range_zero, List.map_nil, pow_zero, gprod_nil]
   | succ k ih =>
-    -- split the power, use pow_add, alternating_word_append_even, gprod_append
-    -- handle the easy case of n = 1
-    sorry
+    rw [Nat.succ_eq_add_one, pow_add, pow_one, mul_add, mul_one,
+      alternating_word_append_even (toSimpleRefl m s) (toSimpleRefl m t) (2 * k + 2) (2 * k),
+      add_tsub_cancel_left, gprod_append, ih, mul_right_inj]
+    repeat rw [alternating_word]
+    rfl
+    . linarith
+    . simp only [even_two, Even.mul_right]
 
 lemma alternating_word_relation (s t : α) : (alternating_word s t (2 * m s t) : List S).gprod = 1 := by
   rw [alternating_word_power s t (m s t), of_relation]
