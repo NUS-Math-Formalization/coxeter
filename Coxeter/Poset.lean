@@ -243,6 +243,7 @@ noncomputable def rank (F : Set (Finset V)) : ℕ := iSup fun s : F => s.1.card
 class Pure (F : Set (Finset V)) [AbstractSimplicialComplex F] where
   pure : ∀ s t : Facets F, s.1.card = t.1.card
 
+def isPure (F : Set (Finset V)) [AbstractSimplicialComplex F] : Prop := ∀ s t : Facets F, s.1.card = t.1.card
 
 /- To do :  Define the closure of a face.
             Define subcomplex
@@ -258,12 +259,11 @@ A shelling of F is an linear ordering l_1, ⋯ , l_n of all (maximal) facets of 
 -/
 
 /-
-??? I do not know what happend to the and command.
+??? I do not know what happend to the " and " command. Each individual statement works.
 -/
 def shelling {V : Type*} (F : Set (Finset V)) [AbstractSimplicialComplex F] [Pure F]  {m : ℕ } (l : Fin m ≃ Facets F) :=
-  ∀ i : Fin m, ((rank (closure F ((l i).1 ∩ (Finset.biUnion (Finset.filter (. < i) (Finset.univ : Finset (Fin m))) (fun j => (l j).1))))) = rank F - 1)
-  ∧ Pure (closure F ((l i).1 ∩ (Finset.biUnion (Finset.filter (. < i) (Finset.univ : Finset (Fin m))) (fun j => (l j).1))))
-
+  ∀ i : Fin m, isPure (closure F ((l i).1 ∩ (Finset.biUnion (Finset.filter (. < i) (Finset.univ : Finset (Fin m))) (fun j => (l j).1))))
+  ∧ rank (closure F ((l i).1 ∩ (Finset.biUnion (Finset.filter (. < i) (Finset.univ : Finset (Fin m))) (fun j => (l j).1)))) = rank F - 1
 /-
 Definition': Let F be a pure abstract simplicial complex of dim m.
 A shelling of F is an linear ordering l_1, ⋯ , l_n of all (maximal) facets of F such that
