@@ -966,22 +966,21 @@ lemma pi_aux_list (L : List α) (r : R) : (L.map pi_aux').prod r =
         simp only [List.length_map, List.length_reverse, Fin.val_nat_cast, Nat.mod_succ,
           lt_self_iff_false, not_false_eq_true]
       . rw [← gprod_reverse]
-        simp only [Fin.val_nat_cast, Nat.mod_succ]
-        sorry
-        --rw [List.take_left, List.map_reverse, List.reverse_reverse]
+        simp only [Fin.val_nat_cast, Nat.mod_succ, th, n, t]
+        rw [List.take_append_of_le_length (by rfl), List.take_length,
+          List.map_reverse, List.reverse_reverse]
       . simp only [Fin.val_nat_cast, Nat.mod_succ]
-        rw [List.take_left, List.map_reverse]
-        sorry
+        rw [List.take_left]
       . funext i
         simp only [List.get_map, Fin.coe_eq_castSucc, Fin.coe_castSucc]
         simp [g,List.get_append]
         . congr 1
-          . sorry --simp [List.get_map]
-          . sorry
-            --simp only [Subtype.mk.injEq]
-            --rw [List.take_append_of_le_length]
-            --simp only [n] at i
-            --apply le_of_lt i.2
+          . simp only [Fin.coe_castSucc, th]
+            rw [List.get_append]
+          . simp only [Fin.coe_castSucc, Subtype.mk.injEq, th]
+            rw [List.take_append_of_le_length]
+            simp only [n] at i
+            apply le_of_lt i.2
 
 -- DLevel 3
 lemma pi_aux_list_mul (s t : α) : ((pi_aux' s : Equiv.Perm R) * (pi_aux' t : Equiv.Perm R)) ^ n
