@@ -20,7 +20,7 @@ noncomputable section
 - k(s, s') = 0 if m(s, s') = 2;
 - k(s, s') ≥ 0 if m(s, s') = 0 or m(s, s') ≥ 3;
 - k(s, s') * k(s', s) ≥ 4 cos²(π / m(s, s')) if m(s, s') ≥ 3;
-- k(s, s') * k(s', s) ≥ 4 if m(s, s') = 0-/
+- k(s, s') * k(s', s) ≥ 4 if m(s, s') = 0. -/
 class Splitting (k : Matrix α α ℝ) where
   m_eq_one : ∀ s s': α, m s s' = 1
     → k s s' = -2
@@ -100,7 +100,7 @@ instance kk.split : Splitting m (kk m) := by sorry
 
 -- Having established the existence of such a splitting,
 -- from now on let k be one such splitting.
-variable (k : Matrix α α ℕ → Matrix α α ℝ) [Splitting m (k m)]
+variable (k : Matrix α α ℝ) [kh : Splitting m k]
 
 local notation:130 "V⋆" => α → ℝ
 
@@ -121,25 +121,75 @@ instance : (Module ℝ (V⋆)) where
 
 noncomputable def sigma_star (s:α) : (V⋆) →ₗ[ℝ] (V⋆) where
   toFun := fun p =>
-    p + (p s) • (∑ s', (k m s s') • (fun s' => if s = s' then 1 else 0))
-  map_add' := by sorry
-  map_smul' := by sorry
+    p + (p s) • (∑ s', (k s s') • (fun s'' => if s' = s'' then 1 else 0))
+  map_add' := by
+    intro x y; funext s'';
+    simp only [Pi.add_apply, Pi.smul_apply,
+      Finset.sum_apply, smul_eq_mul,
+      mul_ite, mul_one, mul_zero, Finset.sum_ite_irrel, Finset.sum_const_zero]
+    apply_fun (fun z => z - x s'' - y s'')
+    ring_nf
+    intro a b
+    simp
+  map_smul' := by
+    intro x y; funext s'';
+    simp only [Pi.smul_apply, smul_eq_mul, Pi.add_apply, Finset.sum_apply,
+      mul_ite, mul_one, mul_zero, Finset.sum_ite_irrel, Finset.sum_const_zero,
+      RingHom.id_apply]
+    apply_fun (fun z => z - x * y s'')
+    ring_nf
+    intro a b; simp
 
-local notation "σ⋆" => sigma_star m
+local notation "σ⋆" => sigma_star k
+
+@[simp]
+lemma sigma_star_one {s s': α} {p : V⋆} (hyp : m s s' = 1)
+  : (σ⋆ s p) s' = - (p s) := by
+  unfold sigma_star
+  simp only [LinearMap.coe_mk, AddHom.coe_mk, Pi.add_apply, Pi.smul_apply,
+    Finset.sum_apply, smul_eq_mul, mul_ite, mul_one, mul_zero,
+    Finset.sum_ite_irrel, Finset.sum_const_zero]
+
+  have := @Splitting.m_eq_one α m k kh s s' hyp
+  simp only [Finset.sum_ite_eq', Finset.mem_univ, ↓reduceIte, *]
+  have := (CoxeterMatrix.one_iff m s s').mp hyp
+  rw [this]
+  ring_nf
+
+
+@[simp]
+lemma sigma_star_two {s s': α} {p : V⋆} (hyp : m s s' = 2)
+  : (σ⋆ s p) s' = p s' := by
+  unfold sigma_star
+  simp only [LinearMap.coe_mk, AddHom.coe_mk, Pi.add_apply, Pi.smul_apply,
+    Finset.sum_apply, smul_eq_mul, mul_ite, mul_one, mul_zero,
+    Finset.sum_ite_eq', Finset.mem_univ, ↓reduceIte, add_right_eq_self,
+    mul_eq_zero]
+  right
+  exact @Splitting.m_eq_two α m k kh s s' hyp
+
+@[simp]
+lemma sigma_star_value {s s': α} {p : V⋆}
+  : (σ⋆ s p) s' = p s' + p s * (k s s') := by
+  unfold sigma_star; simp
+
+
+lemma sigma_star_order_two : (σ⋆ s)^2 = LinearMap.id := by
+  apply LinearMap.ext_iff.mpr
+  intro p
+  funext s'
+  simp only [LinearMap.id_coe, id_eq]
+
+  have := @Splitting.m_eq_one _ _ _ kh s s
+    ((CoxeterMatrix.one_iff m s s).mpr (by rfl))
+  sorry
+  -- rw [this]; ring_nf
+
+
+
 /-
-@[simp]
-lemma sigma_star_one  {s s': α} {p : V⋆} : m s s' = 1 →  (σ⋆ s p) s' = - (p s) := by sorry
-
-@[simp]
-lemma sigma_star_two  : ∀ (s s': α) (p : V⋆), m s s' = 2 → (σ⋆ s p) s' = p s' := by sorry
-
-
-@[simp]
-lemma sigma_star_gt_tree  : ∀ (s s': α) (p : V⋆), 3 ≤ m s s' ∨ m s s' = 0 → (σ⋆ s p) s' = p s'+ p s * (k s s') := by sorry
-
-lemma sigma_star_order_two : (σ⋆ s)^2 = 1:= by sorry
-
-lemma sigma_star_mul_apply_s'_eq_two  {p : V⋆} (h: m s s' = 2) : ((σ⋆ s) * (σ⋆ s')) p s' = - p s' := by sorry
+lemma sigma_star_mul_apply_s'_eq_two  {p : V⋆} (h: m s s' = 2)
+  : ((σ⋆ s) * (σ⋆ s')) p s' = - p s' := by sorry
 
 
 -- add some other lemmas
@@ -161,6 +211,6 @@ lemma of_injective (a b :α) : of m a = of m b ↔ a = b:= by
     have : (of m a) * (of m b) = 1 := by simp [h2]
     rw [<-orderOf_eq_one_iff,order_generator_mul,one_iff] at this
     exact h this
-  . intro ;congr
+  . intro; congr
 
 end CoxeterMatrix
