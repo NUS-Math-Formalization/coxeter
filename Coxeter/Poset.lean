@@ -251,16 +251,15 @@ def isPure (F : Set (Finset V)) [AbstractSimplicialComplex F] : Prop := ∀ s t 
 
 /- Definition: Let F be a pure abstract simplicial complex of dim m.
 A shelling of F is an linear ordering l_1, ⋯ , l_n of all (maximal) facets of F such that
- l_i ∩ (∪_{j < i} l_j) is an abstract simplicial complex pure of dimension m -1.
-
- Remark: To be precise, we need to consider the intersection of the closure of facets.
- A facet is a single set, while we need a collection of sets.
- Then the resulting intersection will be simplicial complex. This requires a proof.
+ l_i ∩ (∪_{j < i} l_j) (=Hi) is an abstract simplicial complex pure of dimension m -1.
 -/
 
 def shelling {V : Type*} (F : Set (Finset V)) [AbstractSimplicialComplex F] [Pure F]  {m : ℕ } (l : Fin m ≃ Facets F) :=
-  ∀ i : Fin m, isPure (closure F ((l i).1 ∩ (Finset.biUnion (Finset.filter (. < i) (Finset.univ : Finset (Fin m))) (fun j => (l j).1))))
-  ∧ rank (closure F ((l i).1 ∩ (Finset.biUnion (Finset.filter (. < i) (Finset.univ : Finset (Fin m))) (fun j => (l j).1)))) = rank F - 1
+  ∀ i : Fin m, let Hi := (closure F ((l i).1 ∩ (Finset.biUnion (Finset.filter (. < i) (Finset.univ : Finset (Fin m))) (fun j => (l j).1))))
+  isPure Hi ∧ rank Hi = rank F - 1
+
+/- I think this definition is not 100% correct. We need to assume F is not empty.-/
+
 /-
 Definition': Let F be a pure abstract simplicial complex of dim m.
 A shelling of F is an linear ordering l_1, ⋯ , l_n of all (maximal) facets of F such that
