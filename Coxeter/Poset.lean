@@ -158,7 +158,11 @@ Then L is a maximal chain.
 lemma maximal_chain_of_ledot_chain {P :Type*} [PartialOrder P] [BoundedOrder P] {L: List P} :
   List.Chain' ledot L ∧ L.head? = some ⊥ ∧ L.getLast? = some ⊤ → maximal_chain L := by
   rintro ⟨h1, h2, h3⟩
+  by_contra h4
+  rw [maximal_chain] at h4
+  push_neg at h4
   sorry
+
 
 /-
 Lemma: Let P be a bounded finite poset. Then a maximal chain exsits.
@@ -171,7 +175,22 @@ lemma exist_maximal_chain {P : Type*} [PartialOrder P] [BoundedOrder P] [Fintype
 (Programming) Note that the assumption that P is a BoundedOrder implies that P is nonempty, and so a maximal chain is nonempty.
 -/
 lemma max_chain_nonempty {P : Type*} [PartialOrder P] [BoundedOrder P]  [Fintype P] (L: List P) :
-  maximal_chain L → L≠ [] := by sorry
+  maximal_chain L → L ≠ [] := by
+  intro h1
+  by_contra h2
+  rw [h2] at h1
+  simp only [maximal_chain] at h1
+  have h3 : List.Sublist [] (⊥ :: []) := by
+    apply List.nil_sublist ((⊥ : P) :: [])
+  have h4 : chain (⊥ :: []) := by
+    exact List.chain'_singleton (⊥ : P)
+  have h5 : [] = (⊥ :: []) := by
+    apply h1.2
+    · exact h4
+    · exact h3
+  have h6 : 0 = 1 := by
+    rw [←List.length_nil, h5, List.length_singleton]
+  linarith
 
 /-
 Lemma: Let P be a bounded finite poset. Let L = [x_0, ⋯, x_m] be a list of elements in P.
