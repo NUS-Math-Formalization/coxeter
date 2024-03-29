@@ -5,6 +5,7 @@ import Mathlib.Data.SetLike.Basic
 import Mathlib.Data.Set.Card
 import Mathlib.Init.Data.Ordering.Basic
 import Mathlib.Data.List.Lex
+import Coxeter.Aux_
 
 open Classical
 
@@ -86,12 +87,68 @@ In other words, all relations are cover relations with x_0 being a minimal eleme
 def maximal_chain {P : Type*} [PartialOrder P] (L: List P) : Prop := chain L ∧
   ∀ L' : List P, chain L' -> List.Sublist L L' -> L = L'
 
-
 /-
 Lemma: If a chain L : x₀ < x₁ < ⋯ < x_n is maximal, then we have x_0 ⋖ x_1 ⋖ x_2 ⋯ ⋖ x_n.
 -/
 lemma maximal_chain_ledot {P : Type*} [PartialOrder P] {L: List P} :
-  maximal_chain L → List.Chain' ledot L := sorry
+  maximal_chain L → List.Chain' ledot L := by
+  intro h1
+  by_contra h2
+  simp only [List.chain'_iff_get] at h2
+  push_neg at h2
+  rcases h2 with ⟨i,h,h3⟩
+  simp only [ledot] at h3
+  push_neg at h3
+  rcases h3 with ⟨c, h4⟩
+  have ⟨g1,g2,g3⟩ := h4
+  have h7 : i < List.length L := by
+    apply lt_trans h
+    omega
+  have h12 : i + 1 < List.length L := by
+    omega
+  have h5 : chain (L.take (i) ++ [L.get { val := i, isLt := h7 }]) := by
+    rw [← List.take_get_lt]
+    apply List.Chain'.sublist
+    · exact h1.left
+    · exact List.take_sublist (i+1) L
+  have h6 : chain (c :: (L.drop (i+1))) := by
+    rw [List.drop_eq_get_cons]
+    apply List.chain'_cons.2
+    constructor
+    · apply lt_of_le_of_ne
+      · exact g1.2
+      · apply Ne.symm
+        exact g3
+    · rw [← List.drop_eq_get_cons]
+      apply List.Chain'.sublist
+      exact h1.left
+      exact List.drop_sublist (i+1) L
+  have h8 : chain (List.take (i+1) L ++ c :: List.drop (i+1) L) := by
+    rw [List.take_get_lt, ← List.append_cons]
+    · apply List.chain'_append_cons_cons.2
+      · constructor
+        · exact h5
+        · constructor
+          · apply lt_of_le_of_ne
+            · exact g1.1
+            · exact g2
+          · exact h6
+  have h9 : List.Sublist L (List.take (i+1) L ++ c :: List.drop (i+1) L) := by
+    nth_rw 1 [← List.take_append_drop (i+1) L]
+    simp only [List.append_sublist_append_left]
+    rename_i P_1 inst inst_1
+    simp_all only [and_self, ne_eq, not_false_eq_true, List.sublist_cons]
+  have h10 : L = (List.take (i+1) L ++ c :: List.drop (i+1) L) := by
+    apply h1.right
+    exact h8
+    exact h9
+  have h11 : L.length = L.length + 1 := by
+    nth_rw 1 [h10]
+    rw [List.length_append, List.length_take, List.length_cons, List.length_drop]
+    rw [Nat.min_eq_left]
+    omega
+    linarith
+  linarith
 
 /-
 Lemma: Assume P is a bounded poset. Let L : x₀ < x₁ < ⋯ < x_n  be a chain of P
@@ -99,7 +156,9 @@ such that the adjacent relations are cover relations; x_0 is the minimal element
 Then L is a maximal chain.
 -/
 lemma maximal_chain_of_ledot_chain {P :Type*} [PartialOrder P] [BoundedOrder P] {L: List P} :
-  List.Chain' ledot L ∧ L.head? = some ⊥ ∧ L.getLast? = some ⊤ → maximal_chain L := sorry
+  List.Chain' ledot L ∧ L.head? = some ⊥ ∧ L.getLast? = some ⊤ → maximal_chain L := by
+  rintro ⟨h1, h2, h3⟩
+  sorry
 
 /-
 Lemma: Let P be a bounded finite poset. Then a maximal chain exsits.
