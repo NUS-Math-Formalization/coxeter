@@ -237,6 +237,31 @@ lemma toGroup_expression : ∀ (x : G), ∃ L : List S, x = L.gprod := by
         rfl
   apply this
 
+lemma toGroup_expression' : ∀ (x : G), ∃ L : List S, x = L.gprod := by
+  intro x
+  apply (Submonoid.mem_monoid_closure_iff_prod S x).1
+  have h₀ : S = S⁻¹ := by
+    ext y
+    constructor
+    . rintro ⟨w, hw⟩
+      use w
+      rw [← hw, of_inv_eq_of]
+    . rintro ⟨w, hw⟩
+      use w
+      rw [← inv_inj, ← hw, of_inv_eq_of]
+  have h₁ : S = S ∪ S⁻¹ := by rw [← h₀, Set.union_self]
+  have h₂ : G = Subgroup.closure S := by
+    rw [SimpleRefl, Set.range]
+    simp only [of, toGroup, PresentedGroup]
+    have : Subgroup.closure {x | ∃ y, (QuotientGroup.mk' N) (FreeGroup.of y) = x}
+      = Subgroup.closure (Set.range (PresentedGroup.of)) := rfl
+    rw [this, PresentedGroup.closure_range_of]
+    simp only [Subgroup.mem_top]
+    sorry
+  rw [h₁, ← Subgroup.closure_toSubmonoid, Subgroup.mem_toSubmonoid]
+  sorry
+#exit
+
 lemma generator_ne_one (s : α) : of m s ≠ 1 := by
   intro h
   have h1 : epsilon m (of m s) = 1 := by rw [h]; simp
@@ -966,22 +991,21 @@ lemma pi_aux_list (L : List α) (r : R) : (L.map pi_aux').prod r =
         simp only [List.length_map, List.length_reverse, Fin.val_nat_cast, Nat.mod_succ,
           lt_self_iff_false, not_false_eq_true]
       . rw [← gprod_reverse]
-        simp only [Fin.val_nat_cast, Nat.mod_succ]
-        sorry
-        --rw [List.take_left, List.map_reverse, List.reverse_reverse]
+        simp only [Fin.val_nat_cast, Nat.mod_succ, th, n, t]
+        rw [List.take_append_of_le_length (by rfl), List.take_length,
+          List.map_reverse, List.reverse_reverse]
       . simp only [Fin.val_nat_cast, Nat.mod_succ]
-        rw [List.take_left, List.map_reverse]
-        sorry
+        rw [List.take_left]
       . funext i
         simp only [List.get_map, Fin.coe_eq_castSucc, Fin.coe_castSucc]
         simp [g,List.get_append]
         . congr 1
-          . sorry --simp [List.get_map]
-          . sorry
-            --simp only [Subtype.mk.injEq]
-            --rw [List.take_append_of_le_length]
-            --simp only [n] at i
-            --apply le_of_lt i.2
+          . simp only [Fin.coe_castSucc, th]
+            rw [List.get_append]
+          . simp only [Fin.coe_castSucc, Subtype.mk.injEq, th]
+            rw [List.take_append_of_le_length]
+            simp only [n] at i
+            apply le_of_lt i.2
 
 -- DLevel 3
 lemma pi_aux_list_mul (s t : α) : ((pi_aux' s : Equiv.Perm R) * (pi_aux' t : Equiv.Perm R)) ^ n
@@ -991,11 +1015,9 @@ lemma pi_aux_list_mul (s t : α) : ((pi_aux' s : Equiv.Perm R) * (pi_aux' t : Eq
   . simp only [pow_zero, alternating_word, Nat.zero_eq, mul_zero, List.range_zero, List.map_nil,
       List.prod_nil]
   . rw [Nat.succ_eq_add_one, pow_succ, mul_add, add_comm, mul_one,
-      alternating_word_append_even s t (2 + 2 * k) (2)]
+      alternating_word_append_even s t (2 + 2 * k) (2) (by norm_num) (by norm_num)]
     simp only [add_tsub_cancel_left, List.map_append, List.prod_append, ← ih, mul_left_inj]
-    . rfl
-    . norm_num
-    . norm_num
+    rfl
 
 lemma alternating_word_map (s t : α) (f : α → A) (n : ℕ) :
   (alternating_word s t n).map f = alternating_word (f s) (f t) n := by
