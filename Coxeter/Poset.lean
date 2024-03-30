@@ -5,6 +5,7 @@ import Mathlib.Data.SetLike.Basic
 import Mathlib.Data.Set.Card
 import Mathlib.Init.Data.Ordering.Basic
 import Mathlib.Data.List.Lex
+import Mathlib.Order.Cover
 import Coxeter.Aux_
 
 open Classical
@@ -60,23 +61,17 @@ variable {P : Type*} [PartialOrder P]
 #print BoundedOrder
 
 
-/- Definition: We say a is covered by b if x < y and there is no element z such that x < z < y. -/
-def ledot {P : Type*} [PartialOrder P]  (a b : P) : Prop := (∀ c : P, (a ≤ c ∧ c ≤ b) → (a = c ∨ b = c))
-
+/- Recall that : We say a is covered by b if x < y and there is no element z such that x < z < y. -/
 /- Notation: We denote the cover relation by x ⋖ y. Use "\les" to type the symbol -/
-notation a " ⋖ " b => ledot a b
 
 /- Defintion: We define the set of edges of P as the set of all pairs (a,b) such that a is covered by b.-/
-def edges (P : Type*) [PartialOrder P] : Set (P × P) := {(a, b) | ledot a b }
+def edges (P : Type*) [PartialOrder P] : Set (P × P) := {(a, b) | a ⋖ b }
 
 
 /-
 Definition: A chain in the poset P is a finite sequence x₀ < x₁ < ⋯ < x_n.
 -/
-def chain {P : Type*} [PartialOrder P] (L : List P) : Prop := List.Chain' (. < .) L
-
-
-
+abbrev chain (L : List P) : Prop := List.Chain' (· < ·) L
 
 section maximal_chain
 /-
@@ -84,79 +79,136 @@ Definition: A chain in the poset P is maximal if it is not a proper subset of an
 In other words, all relations are cover relations with x_0 being a minimal element and x_n be a maximal element.
 -/
 
-def maximal_chain {P : Type*} [PartialOrder P] (L: List P) : Prop := chain L ∧
+abbrev maximal_chain (L: List P) : Prop := chain L ∧
   ∀ L' : List P, chain L' -> List.Sublist L L' -> L = L'
+
+/-
+We also define the notion of maximal_chain' in the sense that if for any chain L' whose head and tail are the same as that of L, then L is sublist of L' implies L = L'.
+ -/
+abbrev maximal_chain' (L: List P) : Prop := chain L ∧ ∀ L' : List P, chain L' → (L.head? = L'.head? ∧ L.getLast? = L'.getLast?) → List.Sublist L L' -> L = L'
+
+lemma maximal_chain'_of_maximal_chain {L: List P} : maximal_chain L → maximal_chain' L := by
+  intro h
+  constructor
+  . exact h.1
+  . intro L' hL' _ h2
+    exact h.2 L' hL' h2
+
+lemma chain_singleton {a : P} : chain [a] := by
+  constructor
+
+lemma chain_singleton_of_head_eq_tail  {L : List P} (a : P) : chain L → L.head? = some a → L.getLast? = some a → L.length = 1  := by
+  sorry
+
+lemma maximal_chain'_singleton {a : P}: maximal_chain' [a] := by
+  sorry
+
+lemma maximal_chain'_nil : maximal_chain' ([] : List P) := by
+  constructor
+  . simp
+  . intro L' hL' h1 h2
+    have : L'.head? = none := by simp [<-h1.1]
+    cases L'
+    . simp
+    . simp at this
+
+
+lemma maximal_chain'_head {a b: P} {tail : List P} : maximal_chain' (a :: b :: tail) → a ⋖ b := by
+  apply Function.mtr
+  intro h H
+  have hab : a < b := (List.chain'_cons.1 H.1).1
+  obtain ⟨c, hc1⟩ := (not_covBy_iff hab).1 h
+  let L' := a :: c :: b :: tail
+  have chainL' : chain L' := by
+    rw [ (by simp : L' = [a,c] ++ b:: tail)]
+    apply (List.chain'_split (a := b) (l₂ := tail)).2
+    constructor
+    . simp [hc1]
+    . exact (List.chain'_cons.1 H.1).2
+  have hL' : List.Sublist (a :: b :: tail) L' := by
+    apply  List.cons_sublist_cons.2
+    apply  List.sublist_cons
+  have neqL' : a :: b :: tail ≠ L' := by
+    intro h
+    rw [List.cons_eq_cons,List.cons_eq_cons] at h
+    exact List.cons_ne_self _ _ (Eq.symm h.2.2)
+  exact H.2 L' chainL' ⟨rfl, rfl⟩ hL' |> neqL'
+
+
+lemma maximal_chain'_tail {a : P} {tail : List P} : maximal_chain' (a :: tail) → maximal_chain' tail := by
+  rintro ⟨C, MAX⟩
+  cases tail with
+  | nil => exact maximal_chain'_nil
+  | cons b t =>
+  constructor
+  . exact List.Chain'.tail C
+  . intros L' hL' h1 h2
+    let tail := b ::t
+    let L'' := a :: L'
+    have chainL'' : chain L'' := by
+      apply List.chain'_cons'.2
+      constructor
+      . intro t ht
+        rw [<-h1.1] at ht
+        have : b=t := by simp [List.head?_cons] at ht; exact ht
+        rw [<-this]
+        exact (List.chain'_cons.1 C).1
+      . exact hL'
+    have htL''1 : (a :: tail).head? = L''.head?  := by simp
+    have htL''2 : (a :: tail).getLast? = L''.getLast? := by
+      cases L' with
+      | nil => simp at h2
+      | cons c d =>
+        simp only [List.getLast?_cons_cons, h1.2]
+    have sublistL'' : List.Sublist (a :: tail) L'' := by
+      apply List.cons_sublist_cons.2
+      exact h2
+    have : a :: tail = L'' := MAX L'' chainL'' ⟨htL''1, htL''2⟩ sublistL''
+    exact (List.cons_eq_cons.1 this).2
+
+lemma maximal_chain'_cons {a b : P} {L : List P} : maximal_chain' (b :: L) → a ⋖ b → maximal_chain' (a :: b :: L) := by sorry
+
+/-
+a pair of element is a maximal chain if and only if the pair is a cover relation.
+-/
+lemma maximal_chain'₂_iff_ledot {a b : P} : maximal_chain' [a,b] ↔ (a ⋖ b) := by sorry
+
+/-
+Lemma: If a chain L : x₀ < x₁ < ⋯ < x_n is maximal', then we have x_0 ⋖ x_1 ⋖ x_2 ⋯ ⋖ x_n.
+-/
+lemma maximal_chain'_cover {P : Type*} [PartialOrder P] {L: List P} :
+  maximal_chain' L → List.Chain' (· ⋖ ·) L := by
+  intro h
+  induction' L with a t ih
+  . simp
+  . match t with
+    | [] => simp
+    | b :: t' =>
+      apply List.chain'_cons.2
+      exact ⟨maximal_chain'_head h, ih (maximal_chain'_tail h)⟩
 
 /-
 Lemma: If a chain L : x₀ < x₁ < ⋯ < x_n is maximal, then we have x_0 ⋖ x_1 ⋖ x_2 ⋯ ⋖ x_n.
 -/
-lemma maximal_chain_ledot {P : Type*} [PartialOrder P] {L: List P} :
-  maximal_chain L → List.Chain' ledot L := by
-  intro h1
-  by_contra h2
-  simp only [List.chain'_iff_get] at h2
-  push_neg at h2
-  rcases h2 with ⟨i,h,h3⟩
-  simp only [ledot] at h3
-  push_neg at h3
-  rcases h3 with ⟨c, h4⟩
-  have ⟨g1,g2,g3⟩ := h4
-  have h7 : i < List.length L := by
-    apply lt_trans h
-    omega
-  have h12 : i + 1 < List.length L := by
-    omega
-  have h5 : chain (L.take (i) ++ [L.get { val := i, isLt := h7 }]) := by
-    rw [← List.take_get_lt]
-    apply List.Chain'.sublist
-    · exact h1.left
-    · exact List.take_sublist (i+1) L
-  have h6 : chain (c :: (L.drop (i+1))) := by
-    rw [List.drop_eq_get_cons]
-    apply List.chain'_cons.2
-    constructor
-    · apply lt_of_le_of_ne
-      · exact g1.2
-      · apply Ne.symm
-        exact g3
-    · rw [← List.drop_eq_get_cons]
-      apply List.Chain'.sublist
-      exact h1.left
-      exact List.drop_sublist (i+1) L
-  have h8 : chain (List.take (i+1) L ++ c :: List.drop (i+1) L) := by
-    rw [List.take_get_lt, ← List.append_cons]
-    · apply List.chain'_append_cons_cons.2
-      · constructor
-        · exact h5
-        · constructor
-          · apply lt_of_le_of_ne
-            · exact g1.1
-            · exact g2
-          · exact h6
-  have h9 : List.Sublist L (List.take (i+1) L ++ c :: List.drop (i+1) L) := by
-    nth_rw 1 [← List.take_append_drop (i+1) L]
-    simp only [List.append_sublist_append_left]
-    rename_i P_1 inst inst_1
-    simp_all only [and_self, ne_eq, not_false_eq_true, List.sublist_cons]
-  have h10 : L = (List.take (i+1) L ++ c :: List.drop (i+1) L) := by
-    apply h1.right
-    exact h8
-    exact h9
-  have h11 : L.length = L.length + 1 := by
-    nth_rw 1 [h10]
-    rw [List.length_append, List.length_take, List.length_cons, List.length_drop]
-    rw [Nat.min_eq_left]
-    omega
-    linarith
-  linarith
+lemma maximal_chain_cover {P : Type*} [PartialOrder P] {L: List P} :
+  maximal_chain L → List.Chain' (· ⋖ · ) L := fun h =>
+  maximal_chain'_cover <| maximal_chain'_of_maximal_chain h
+
 
 /-
 Lemma: Assume P is a bounded poset. Let L : x₀ < x₁ < ⋯ < x_n  be a chain of P
 such that the adjacent relations are cover relations; x_0 is the minimal element and x_n is the maximal element.
 Then L is a maximal chain.
 -/
+lemma maximal_chain'_of_cover_chain {P :Type*} [PartialOrder P]  {L: List P} :
+  List.Chain' (· ⋖ ·) L → maximal_chain' L := by sorry
+/-
+Lemma: Assume P is a bounded poset. Let L : x₀ < x₁ < ⋯ < x_n  be a chain of P
+such that the adjacent relations are cover relations; x_0 is the minimal element and x_n is the maximal element.
+Then L is a maximal chain.
+-/
 lemma maximal_chain_of_ledot_chain {P :Type*} [PartialOrder P] [BoundedOrder P] {L: List P} :
-  List.Chain' ledot L ∧ L.head? = some ⊥ ∧ L.getLast? = some ⊤ → maximal_chain L := by
+  List.Chain' (· ⋖ · ) L ∧ L.head? = some ⊥ ∧ L.getLast? = some ⊤ → maximal_chain L := by
   rintro ⟨h1, h2, h3⟩
   by_contra h4
   rw [maximal_chain] at h4
@@ -276,34 +328,127 @@ section ASC
 /-
 An abstract simplicial complex is a pair (V,F) where V is a set and F is a set of finite subsets of V such that
   (1) ∅ ∈ F,
-  (2) {v} ∈ F for all v ∈ V, (This is to ensure that ∪ F = V.)
-  (3) if s ∈ F and t ⊆ s, then t ∈ F.
+  (2) if s ∈ F and t ⊆ s, then t ∈ F.
 -/
-class AbstractSimplicialComplex {V : Type*} (F : Set (Finset V)) where
-  empty_mem : ∅ ∈ F
-  singleton_mem : ∀ v : V, {v} ∈ F
-  subset_mem : ∀ s ∈ F, ∀ t ⊆ s, t ∈ F
+structure AbstractSimplicialComplex (V : Type*)  where
+  faces : Set (Finset V) -- the set of faces
+  empty_mem : ∅ ∈ faces
+  subset_mem : ∀ {s t}, s ∈ faces →  t ⊆ s → t ∈ faces
+
 
 namespace AbstractSimplicialComplex
 
-variable {V : Type*} (F : Set (Finset V)) [AbstractSimplicialComplex F]
+variable {V : Type*}
+
+instance : SetLike (AbstractSimplicialComplex V) (Finset V) where
+  coe F := F.faces
+  coe_injective' p q h := by
+    obtain ⟨_, _⟩ := p
+    obtain ⟨_, _⟩ := q
+    congr
+
+@[simp, nolint simpNF]
+theorem mem_faces {F : AbstractSimplicialComplex V} {x : Finset V} : x ∈ F.faces ↔ x ∈ F :=
+  Iff.rfl
+
+@[simp]
+def le (G F : AbstractSimplicialComplex V) := G.faces ⊆ F.faces
+
+instance partialOrder : PartialOrder (AbstractSimplicialComplex V) where
+  le := le
+  le_refl := fun _ => by simp only [le, refl]
+  le_trans := fun _ _ _ => by simp only [le]; exact Set.Subset.trans
+  le_antisymm := fun G F => by
+    simp only [le]
+    intro h1 h2
+    have h3 : G.faces = F.faces := Set.Subset.antisymm h1 h2
+    exact SetLike.ext' h3
+
+
+
+def facet (F : AbstractSimplicialComplex V) (s : Finset V) := s ∈ F ∧  ∀ t ∈ F, s ⊆ t → s = t
+
+def Facets (F : AbstractSimplicialComplex V) : Set (Finset V) := { s | facet F s}
+
+/- Definition: A pure abstract simplicial complex is an abstract simplicial complex where all facets have the same cardinality. -/
+def isPure (F : AbstractSimplicialComplex F) :=
+  ∀ s t : Facets F, s.1.card = t.1.card
+
+class Pure (F : AbstractSimplicialComplex F) where
+  pure : ∀ s t : Facets F, s.1.card = t.1.card
+
+lemma pure_eq {F : AbstractSimplicialComplex V} [Pure F] {s t : Facets F} : s.1.card = t.1.card := by
+  exact Pure.pure s t
+
+lemma pure_isPure {F : AbstractSimplicialComplex V} [Pure F] : isPure F := by intro s t; exact pure_eq
 
 /-
-Definition: We define a facet as a maximal face of an abstract simplicial complex F.
+If the size of simplices in F is unbounded, it has rank 0 by definition.
 -/
-def facet {V : Type*} (F : Set (Finset V)) [AbstractSimplicialComplex F] (s : Finset V) := s ∈ F ∧  ∀ t ∈ F, s ⊆ t → s = t
-
-def Facets : Set (Finset V) := { s | AbstractSimplicialComplex.facet F s}
-
-def closure {V : Type*} (F : Set (Finset V)) [AbstractSimplicialComplex F] (s : Finset V) :
-  Set (Finset V) := {t ∈ F | t ⊆ s}
+noncomputable def rank (F : AbstractSimplicialComplex V) : ℕ := iSup fun s : F.faces => s.1.card
 
 
-instance closure_ASC {V : Type*} (F : Set (Finset V)) [AbstractSimplicialComplex F] (s : Finset V)
-  : @AbstractSimplicialComplex _ (closure F s) where
-  empty_mem := sorry
-  singleton_mem := sorry
-  subset_mem := sorry
+def intersect (F : AbstractSimplicialComplex V) (s : Set V) : AbstractSimplicialComplex V where
+  faces := {t | t ∈ F.faces ∧ t.toSet ⊆ s}
+  empty_mem := by
+    exact ⟨F.empty_mem, by simp only [Finset.coe_empty, Set.empty_subset]⟩
+  subset_mem := by
+    intro a b h1 h2
+    constructor
+    . exact F.subset_mem h1.1 h2
+    . refine' Set.Subset.trans ?_ h1.2
+      congr
+
+--def clousre (F: AbstractSimplic)
+
+-- F is ASC, complete s is ASC.
+-- F ∩ s = F ∩ (complete s)
+
+instance lattice : CompleteLattice (AbstractSimplicialComplex V) := sorry
+
+def closure (s : Set (Finset V))
+  : AbstractSimplicialComplex V := sInf { K | s ⊂ K.faces}
+
+lemma closure_self {F : AbstractSimplicialComplex V} : closure (F.faces) = F := by sorry
+
+lemma closure_mono {s t: Set (Finset V)} : s ⊆ t → closure s ≤ closure t := by sorry
+
+
+#check Subgroup.closure
+/-
+The complete complex of a subset s of V is the complex of all finite subsets of s.
+-/
+def complete (s : Set V) : AbstractSimplicialComplex V where
+  faces := {t | t.toSet ⊆ s}
+  empty_mem := by simp
+  subset_mem := by
+    intro a b h1 h2
+    refine' Set.Subset.trans ?_ h1
+    congr
+
+@[simp]
+lemma complete_face' {s : Set V} {a : Finset V} : a ∈ (complete s).faces ↔ a.toSet ⊆ s := by
+  simp only [complete, Set.mem_setOf_eq]
+
+@[simp]
+lemma complete_face {s : Set V} {a : Finset V} : a ∈ (complete s) ↔ a.toSet ⊆ s := by
+  refine complete_face'
+
+/-
+The closure of a facet is the complete complex of the facet.
+-/
+lemma closure_face_eq_complete {F : AbstractSimplicialComplex V} {s : Finset V} (h : s ∈ F) : (closure F s) = complete s := by
+  apply SetLike.ext';ext a
+  constructor
+  . intro ha
+    exact complete_face.2 ha.2
+  . intro ha
+    have ha' : a ⊆ s := complete_face.1 ha
+    rw [closure]
+    constructor
+    . exact subset_mem F h ha'
+    . congr
+
 
 /-
 ?? I think we should remove singleton_mem in the defintion. Or how to make s to be type?
@@ -312,51 +457,65 @@ instance closure_ASC {V : Type*} (F : Set (Finset V)) [AbstractSimplicialComplex
 --instance coe_Facets : CoeOut (Facets F) (Finset V) :=
 --  ⟨fun s => s.val⟩
 
-noncomputable def rank (F : Set (Finset V)) : ℕ := iSup fun s : F => s.1.card
-/-
-?? So by definition rank if finite?
--/
-
-/- Definition: A pure abstract simplicial complex is an abstract simplicial complex where all maximal facets have the same cardinality. -/
-class Pure (F : Set (Finset V)) [AbstractSimplicialComplex F] where
-  pure : ∀ s t : Facets F, s.1.card = t.1.card
-
-def isPure (F : Set (Finset V)) [AbstractSimplicialComplex F] : Prop := ∀ s t : Facets F, s.1.card = t.1.card
-
-/- To do :  Define the closure of a face.
-            Define subcomplex
--/
 
 /- Definition: Let F be a pure abstract simplicial complex of dim m.
 A shelling of F is an linear ordering l_1, ⋯ , l_n of all (maximal) facets of F such that
  l_i ∩ (∪_{j < i} l_j) (=Hi) is an abstract simplicial complex pure of dimension m -1.
 -/
 
-def shelling {V : Type*} (F : Set (Finset V)) [AbstractSimplicialComplex F] [Pure F]  {m : ℕ } (l : Fin m ≃ Facets F) :=
+def shelling (F : AbstractSimplicialComplex V)  [Pure F]  {m : ℕ } (l : Fin m ≃ Facets F) :=
   ∀ i : Fin m, let Hi := (closure F ((l i).1 ∩ (Finset.biUnion (Finset.filter (. < i) (Finset.univ : Finset (Fin m))) (fun j => (l j).1))))
   isPure Hi ∧ rank Hi = rank F - 1
-
-/- I think this definition is not 100% correct. We need to assume F is not empty.-/
 
 /-
 Definition': Let F be a pure abstract simplicial complex of dim m.
 A shelling of F is an linear ordering l_1, ⋯ , l_n of all (maximal) facets of F such that
  for any j < i, there exists j' < i, such that l_i ∩ l_j ⊂ l_i ∩ l_{j'} and |l_i ∩ l_{j'}| = m-1.
 -/
-def shelling' {V : Type*} (F : Set (Finset V)) [AbstractSimplicialComplex F] [Pure F]  {m : ℕ } (l : Fin m ≃ Facets F) :=
-  ∀ i j : Fin m, j < i → ∃ k : Fin m, k < i ∧ ((l i).1 ∩ (l j).1 ⊂ (l i).1 ∩ (l k).1) ∧ ((l i).1 ∩ (l k).1).card = (l i).1.card - 1
+def shelling' (F :  AbstractSimplicialComplex F)
+ [Pure F]  {m : ℕ } (l : Fin m ≃ Facets F) := ∀ i j : Fin m, j < i → ∃ k : Fin m, k < i ∧ ((l i).1 ∩ (l j).1 ⊂ (l i).1 ∩ (l k).1) ∧ ((l i).1 ∩ (l k).1).card = (l i).1.card - 1
 
 
 /- Lemma: The two definitions of shellings are equivalent.
 -/
-lemma equiv_shelling {V : Type*} (F : Set (Finset V)) [AbstractSimplicialComplex F] [Pure F]  {m : ℕ } (l : Fin m ≃ Facets F) :
+lemma equiv_shelling {V : Type*} (F : AbstractSimplicialComplex F) [Pure F]  {m : ℕ } (l : Fin m ≃ Facets F) :
     shelling F l ↔ shelling' F l := by sorry
 
 /- Definition: An abstract simplicial complex F is called shellable, if it admits a shelling.
 -/
-def shellable {V : Type*} (F : Set (Finset V)) [AbstractSimplicialComplex F] [Pure F] := ∃ (m: ℕ) (l : Fin m ≃ Facets F), shelling F l
+def shellable (F : AbstractSimplicialComplex F) [Pure F] := ∃ (m: ℕ) (l : Fin m ≃ Facets F), shelling F l
 
 end AbstractSimplicialComplex
+
+section Coe
+
+/- Suppose s t are a finset in V.
+  Then the descent t' of t is the element in Finset s
+  such that {x.val  : x ∈ t' } = t ∩ s.
+-/
+noncomputable def finset_descent {V : Type*} (s t : Finset V) : Finset s := Finset.filter (fun x:s => x.1 ∈ t) (Finset.univ :Finset s)
+
+@[simp]
+lemma finset_descent_eq {V : Type*} {s t : Finset V} : Finset.image (·.val) (finset_descent s t)  = t ∩ s := by
+  rw [finset_descent]
+  ext x
+  constructor <;> simp
+
+lemma finset_descent_eq_subset {V : Type*} {s t : Finset V} (h : t ⊆ s): Finset.image (·.val) (finset_descent s t)  = t := by
+  rw [finset_descent_eq]
+  exact Finset.inter_eq_left.2 h
+
+def closure' {V : Type*} (F : Set (Finset V)) [AbstractSimplicialComplex F] (s : Finset V) :
+  Set (Finset s) := (finset_descent s ·) '' closure F s
+
+
+instance closure_ASC {V : Type*} (F : Set (Finset V)) [AbstractSimplicialComplex F] (s : Finset V)
+  : @AbstractSimplicialComplex _ (closure F s) where
+  empty_mem := sorry
+  singleton_mem := sorry
+  subset_mem := sorry
+
+end Coe
 
 end ASC
 
@@ -364,6 +523,8 @@ end ASC
 /-
 Reference : 1. On lexicographically shellable poset by Ander Bjornder and Michelle Wachs, Transaction AMS.
 -/
+
+
 
 section Shellable
 
