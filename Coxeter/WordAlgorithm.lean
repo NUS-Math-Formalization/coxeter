@@ -5,19 +5,16 @@ import Mathlib.Data.MLList.DepthFirst
 
 import Coxeter.CoxeterMatrix
 
-abbrev S' := Fin 3
+abbrev N := 3
 
-def m : Matrix (Fin 3) (Fin 3) ℕ :=
-  Matrix.of fun i j => match i, j with
-  | 0, 0 => 1
-  | 0, 1 => 5
-  | 0, 2 => 2
-  | 1, 0 => 5
-  | 1, 1 => 1
-  | 1, 2 => 3
-  | 2, 0 => 2
-  | 2, 1 => 3
-  | 2, 2 => 1
+abbrev S' := Fin N
+
+structure Pattern where
+  pattern1 : List S'
+  pattern2 : List S'
+  deriving Repr
+
+def m := ![![1, 5, 2], ![5, 1, 3], ![2, 3, 1]]
 
 instance : CoxeterMatrix m where
   symmetric := fun i j => match i, j with
@@ -30,7 +27,47 @@ instance : CoxeterMatrix m where
   | 2, 2 => by rfl
   | 1, 1 => by rfl
   | 0, 0 => by rfl
-  oneIff := by sorry
+  oneIff := by
+    intro i j
+    constructor
+    . contrapose!
+      intro h; sorry;
+    sorry
+
+def braid_pattern_aux (s1 s2 : S') (m12 : ℕ) : S' × Pattern :=
+  match m12 with
+  | 0 => (s1, Pattern.mk [] [])
+  | 1 => (s2, Pattern.mk [s1] [s2])
+  | n + 1 =>
+    let (s, pattern) := braid_pattern_aux s1 s2 n
+    match s == s1 with
+    | true => (s2, Pattern.mk (s1 :: pattern.1) (s2 :: pattern.2))
+    | false => (s1, Pattern.mk (s2 :: pattern.1) (s1 :: pattern.2))
+
+def braid_pattern (m : Matrix S' S' ℕ) (s1 s2 : S') : Pattern :=
+  (braid_pattern_aux s2 s1 (m s1 s2)).2
+
+def nil_pattern (s : S') : Pattern := Pattern.mk [s, s] []
+
+def pattern_gen_aux (m : Matrix S' S' ℕ) (n : ℕ)(i j : ℕ) : List Pattern :=
+  match i, j with
+  | 0, 0 =>  nil_pattern 0 :: []
+  | 0, s + 1 =>
+    braid_pattern m 0 (s+1) :: pattern_gen_aux m n 0 s
+  | t + 1, 0 =>
+    braid_pattern m (t+1) 0 :: pattern_gen_aux m n t n
+  | s + 1, t + 1 =>
+    if s = t then
+      nil_pattern s :: pattern_gen_aux m n (s+1) t
+    else
+      braid_pattern m (s+1) (t+1) :: pattern_gen_aux m n (s+1) t
+
+def pattern_gen (m : Matrix S' S' ℕ) : List Pattern :=
+  pattern_gen_aux m (N-1) (N-1) (N-1)
+
+#eval (pattern_gen m)
+
+
 
 
 inductive S : Type :=
@@ -79,9 +116,6 @@ def br31 : BraidRelation := { s1 := S.c, s2 := S.a, m12 := 2 }
 def br32 : BraidRelation := { s1 := S.c, s2 := S.b, m12 := 3 }
 
 
-structure Pattern where
-  pattern1 : List S'
-  pattern2 : List S'
 
 
 def brs : List BraidRelation := [br12, br23, br13, br21, br31, br32]
