@@ -474,7 +474,11 @@ section CoeM
 universe u
 variable {α β : Type u} [(a : α) -> CoeT α a β]
 
+@[simp]
 lemma coeM_nil_eq_nil : (([] : List α) : List β) = ([] : List β) := by rfl
+
+@[simp]
+lemma coeM_singleton {x : α}: (([x] : List α) : List β) = ([(x : β)] : List β) := by rfl
 
 @[simp]
 lemma coeM_cons {hd : α} {tail : List α} :
@@ -586,6 +590,38 @@ lemma inv_reverse_prod_prod_eq_one {L: List S} : inv_reverse L * (L : G) = 1 :=
   by rw [inv_reverse, ← gprod_inv_eq_inv_reverse, mul_left_inv]
 
 attribute [gprod_simps] mul_assoc mul_one one_mul mul_inv_rev mul_left_inv mul_right_inv inv_inv inv_one mul_inv_cancel_left inv_mul_cancel_left
+
+namespace Submonoid
+variable {M : Type*} {M : Type*} [Monoid M] (T : Set M)
+
+
+/-
+An element is in the submonoid closure of T ⊂ M if and only if it can be
+written as a product of elements in T
+-/
+lemma mem_monoid_closure_iff_prod {M : Type*} [Monoid M] (T : Set M) (z : M) :
+  z ∈ closure T ↔ (∃ L : List T, z = (L : List M).prod) := by
+    constructor
+    . intro hz ; induction' hz using closure_induction' with s hs x _ y _ hx hy x _ hx
+      . use [⟨s,hs⟩]; simp [List.prod_singleton,pure,List.ret]
+      . use []; simp [List.prod_nil]
+      . obtain ⟨Lx,hLx⟩ := hx
+        obtain ⟨Ly,hLy⟩ := hy
+        use Lx++Ly
+        rw [hLx,hLy,<-List.prod_append]
+        congr;simp only [List.bind_eq_bind, List.append_bind]
+    . rintro ⟨L,hL⟩
+      induction' L with x L' ih generalizing z
+      . have : z= 1 := by simp only [hL, List.bind_eq_bind, List.nil_bind, List.prod_nil]
+        simp only [this, Submonoid.one_mem]
+      . have : z = x * (L' : List M).prod := by
+          rw [hL,<-List.prod_cons]; congr
+        rw [this]
+        apply mul_mem
+        . exact Set.mem_of_mem_of_subset x.prop Submonoid.subset_closure
+        . exact ih (L' : List M).prod rfl
+
+end Submonoid
 
 namespace Subgroup
 
