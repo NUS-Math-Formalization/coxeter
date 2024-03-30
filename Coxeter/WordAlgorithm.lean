@@ -7,34 +7,41 @@ import Coxeter.CoxeterMatrix
 
 abbrev N := 3
 
-abbrev S' := Fin N
-
-structure Pattern where
-  pattern1 : List S'
-  pattern2 : List S'
-  deriving Repr
-
+/- Consider only finite case -/
+abbrev S := Fin N
+/- Specifying a matrix [H₃] for example -/
 def m := ![![1, 5, 2], ![5, 1, 3], ![2, 3, 1]]
 
+/- Proof that Given matrix is a Coxeter Matrix (Should be simpler) -/
 instance : CoxeterMatrix m where
-  symmetric := fun i j => match i, j with
-  | 0, 1 => by rfl
-  | 1, 0 => by rfl
-  | 0, 2 => by rfl
-  | 2, 0 => by rfl
-  | 1, 2 => by rfl
-  | 2, 1 => by rfl
-  | 2, 2 => by rfl
-  | 1, 1 => by rfl
-  | 0, 0 => by rfl
+  symmetric := by
+    intro i j; fin_cases i;
+    fin_cases j; simp[m]; simp[m]; simp[m]
+    fin_cases j; simp[m]; simp[m]; simp[m]
+    fin_cases j; simp[m]; simp[m]; simp[m]
   oneIff := by
-    intro i j
-    constructor
-    . contrapose!
-      intro h; sorry;
-    sorry
+    intro i j; constructor;
+    . contrapose!; intro h; fin_cases i;
+      fin_cases j; simp [m]; contradiction; simp [m]; simp [m]; simp [m];
+      fin_cases j; simp [m]; contradiction; simp [m]; simp [m];
+      fin_cases j; simp [m]; simp [m]; contradiction;
+    . intro h; fin_cases i;
+      fin_cases j; simp [m]; contradiction; contradiction;
+      fin_cases j; simp [m]; contradiction; simp [m]; contradiction;
+      fin_cases j; simp [m]; contradiction; contradiction; simp [m]
 
-def braid_pattern_aux (s1 s2 : S') (m12 : ℕ) : S' × Pattern :=
+abbrev G := CoxeterMatrix.toGroup m
+abbrev S' := CoxeterMatrix.SimpleRefl m
+
+section tits_solution
+/- Define a substution pattern (apply for arbituary presentation group) -/
+structure Pattern where
+  pattern1 : List S
+  pattern2 : List S
+  deriving Repr
+
+/- Braid move recursion for Coxeter group [αₛₜ] [αₜₛ]-/
+def braid_pattern_aux (s1 s2 : S) (m12 : ℕ) : S × Pattern :=
   match m12 with
   | 0 => (s1, Pattern.mk [] [])
   | 1 => (s2, Pattern.mk [s1] [s2])
@@ -44,12 +51,15 @@ def braid_pattern_aux (s1 s2 : S') (m12 : ℕ) : S' × Pattern :=
     | true => (s2, Pattern.mk (s1 :: pattern.1) (s2 :: pattern.2))
     | false => (s1, Pattern.mk (s2 :: pattern.1) (s1 :: pattern.2))
 
-def braid_pattern (m : Matrix S' S' ℕ) (s1 s2 : S') : Pattern :=
+/- Pattern for braid move -/
+def braid_pattern (m : Matrix S S ℕ) (s1 s2 : S) : Pattern :=
   (braid_pattern_aux s2 s1 (m s1 s2)).2
 
-def nil_pattern (s : S') : Pattern := Pattern.mk [s, s] []
+/- Pattern for nil-move-/
+def nil_pattern (s : S) : Pattern := Pattern.mk [s, s] []
 
-def pattern_gen_aux (m : Matrix S' S' ℕ) (n : ℕ)(i j : ℕ) : List Pattern :=
+
+def pattern_gen_aux (m : Matrix S S ℕ) (n : ℕ)(i j : ℕ) : List Pattern :=
   match i, j with
   | 0, 0 =>  nil_pattern 0 :: []
   | 0, s + 1 =>
@@ -62,142 +72,10 @@ def pattern_gen_aux (m : Matrix S' S' ℕ) (n : ℕ)(i j : ℕ) : List Pattern :
     else
       braid_pattern m (s+1) (t+1) :: pattern_gen_aux m n (s+1) t
 
-def pattern_gen (m : Matrix S' S' ℕ) : List Pattern :=
+def pattern_gen (m : Matrix S S ℕ) : List Pattern :=
   pattern_gen_aux m (N-1) (N-1) (N-1)
 
-#eval (pattern_gen m)
-
-
-
-
-inductive S : Type :=
-  | a : S
-  | b : S
-  | c : S
-  deriving Repr
-
-#eval S.a
-
-instance beqs : BEq S where
-  beq := fun x y => match x, y with
-  | S.a, S.a => true
-  | S.b, S.b => true
-  | S.c, S.c => true
-  | _, _ => false
-
-instance HashableS : Hashable S where
-  hash s := match s with
-  | S.a => 1
-  | S.b => 2
-  | S.c => 3
-
--- instance : LawfulBEq S where
---   eq_of_beq :=
---   fun x y => match x, y with
---   | S.a, S.a => isTrue rfl
---   | S.b, S.b => isTrue rfl
---   | S.c, S.c => isTrue rfl
---   | u, v => sorry
-
-instance : Inhabited S where
-  default := S.a
-
-structure BraidRelation where
-  s1 : S
-  s2 : S
-  m12 : Nat
-
--- Primitive way to define a Coxeter System
-def br12 : BraidRelation := { s1 := S.a, s2 := S.b, m12 := 5 }
-def br13 : BraidRelation := { s1 := S.a, s2 := S.c, m12 := 2 }
-def br23 : BraidRelation := { s1 := S.b, s2 := S.c, m12 := 3 }
-def br21 : BraidRelation := { s1 := S.b, s2 := S.a, m12 := 5 }
-def br31 : BraidRelation := { s1 := S.c, s2 := S.a, m12 := 2 }
-def br32 : BraidRelation := { s1 := S.c, s2 := S.b, m12 := 3 }
-
-
-
-
-def brs : List BraidRelation := [br12, br23, br13, br21, br31, br32]
-
-
-open S
-
-def w : List S := [a, b, c, c, b, a, b, a, b, a]
-def w' : List S' := [0, 1, 2, 2, 1, 0, 1, 0, 1, 0]
-def w_ttt : List S := [a, a, a, a, a, a, a, a, a, a]
-
-def nil_move : List S → List S :=
-  fun l => match l with
-  | [] => []
-  | [x] => [x]
-  | x :: y :: xs =>
-    match x == y with
-    | true => nil_move xs
-    | false => x :: nil_move (y :: xs)
-
-def nil_move_Nth (s : S) (w : List S) (n : Nat) : List S :=
-  match n with
-  | 0 => nil_move w
-  | n + 1 => match w with
-    | [] => []
-    | x :: xs =>
-      match nil_move_Nth s xs n with
-      | [] => [x]
-      | y :: ys =>
-        match x == y with
-        | true => ys
-        | false => x :: y :: ys
-
-
-def pattern (s1 : S) (s2 : S) (m12 : Nat) : S × List S × List S :=
-  match m12 with
-  | 0 => (s1, [], [])
-  | 1 => (s2, [s1], [s2])
-  | n + 1 =>
-    let (s, p1, p2) := pattern s1 s2 n
-    match s == s1 with
-    | true => (s2, s1 :: p1, s2 :: p2)
-    | false => (s1, s2 :: p1, s1 :: p2)
-
-def braid_move_aux (pattern1 : List S) (pattern2 : List S) (pattern_length : Nat) : List S → List S :=
-  fun l => match l with
-  | [] => []
-  | [x] => [x]
-  | x :: xs =>
-    match l.take pattern_length == pattern1 with
-    | true => pattern2 ++ l.drop pattern_length
-    | false => x :: braid_move_aux pattern1 pattern2 pattern_length xs
-
-
-def braid_move (br : BraidRelation) : List S → List S :=
-  fun l =>
-    let (_, p1, p2) := pattern br.s1 br.s2 br.m12
-    braid_move_aux p1 p2 p1.length l
-
-def braid_move_Nth (br : BraidRelation) (w : List S) (n : Nat) : List S :=
-  match n with
-  | 0 => braid_move br w
-  | n + 1 => match w with
-    | [] => []
-    | x :: xs =>
-      let p1 := (pattern br.s1 br.s2 br.m12).2.1
-      match w.take p1.length == p1 with
-      | true => x :: (braid_move_Nth br xs n)
-      | false => x :: (braid_move_Nth br xs (n+1))
-
-
-def nil_move_rec (w : List S) : List S :=
-  if (nil_move w).length < w.length then nil_move_rec (nil_move w) else w
-  termination_by w.length
-
-#eval nil_move_rec w
-
-def pattern_any (gens : List S) (brl : List BraidRelation) : List (List S × List S) :=
-  gens.map (fun s => ([s, s], [])) ++
-  brl.map (fun br => (pattern br.s1 br.s2 br.m12).2)
-
-def move_aux (pattern : List S × List S) (w : List S) : List S :=
+def move_aux (pattern : Pattern) (w : List S) : List S :=
   match w with
   | [] => []
   | [x] => [x]
@@ -206,7 +84,8 @@ def move_aux (pattern : List S × List S) (w : List S) : List S :=
     | true => pattern.2 ++ w.drop pattern.1.length
     | false => wh :: move_aux pattern wt
 
-def move_Nth (pattern : List S × List S) (w : List S) (n : Nat) : List S :=
+/- Apply a substitution to the word (apply to all presentation group) -/
+def move_Nth (pattern : Pattern) (w : List S) (n : Nat) : List S :=
     match n with
     | 0 => move_aux pattern w
     | n_pos + 1 => match w with
@@ -216,47 +95,63 @@ def move_Nth (pattern : List S × List S) (w : List S) (n : Nat) : List S :=
         | true => x :: (move_Nth pattern xs n_pos)
         | false => x :: (move_Nth pattern xs (n_pos+1))
 
--- return a list of removing all possible moves of a specific pattern
-partial def move_loop_pos_aux (pattern : List S × List S) (w : List S) (n : Nat) : List (List S) :=
+/- Get a list of removing all possible moves of a specific pattern (Sub-loop) -/
+partial def move_loop_pos_aux (pattern : Pattern) (w : List S) (n : Nat) : List (List S) :=
   let w' := move_Nth pattern w n
-  if w' == w then [] else w' :: move_loop_pos_aux pattern w (n+1)
+  if w' = w then [] else w' :: move_loop_pos_aux pattern w (n+1)
 
-def move_gen_aux (l_pattern : List (List S × List S)) (w : List S) : List (List S) :=
+def move_gen_aux (l_pattern : List Pattern) (w : List S) : List (List S) :=
   match l_pattern with
   | [] => []
   | pattern :: l_pattern_t =>
     let l_w := move_loop_pos_aux pattern w 0
     l_w ++ move_gen_aux l_pattern_t w
 
-def nodup' (l : List (List S)) : List (List S) :=
-  l.foldr (fun x IH => if ¬ List.elem x IH then x :: IH else IH) []
-
-def move_gen (l_pattern : List (List S × List S)) (w : List S) : List (List S) :=
+/- Graph generating function -/
+def move_gen (m : Matrix S S ℕ) (w : List S) : List (List S) :=
+  let l_pattern := pattern_gen m
   let l_w := move_gen_aux l_pattern w
-  nodup' l_w
+  List.eraseDup l_w
+
+/- All possible words resulted by braid-move and nil-move, trigger built-in depthfirst graph search -/
+def WD (m : Matrix S S ℕ) (w : List S) : List (List S) :=
+  @depthFirstRemovingDuplicates' (List S) _ _ (fun x => move_gen m x) w none
 
 
-def WD (l_pattern : List (List S × List S)) (w : List S) : List (List S) :=
-  @depthFirstRemovingDuplicates' (List S) _ _ (fun x => move_gen l_pattern x) w none
+
+/- A strateforward realization for ℓ function -/
+def length_aux (m : Matrix S S ℕ) (w : List S) : Nat :=
+  (List.map (fun x => x.length) (WD m w)).minimum.getD 1
+
+def is_reduced (m : Matrix S S ℕ) (w : List S) : Bool :=
+  length_aux m w = w.length
+
+def RD (m : Matrix S S ℕ) (w : List S) : List (List S) :=
+  let l := length_aux m w
+  List.filter (fun x => x.length = l) (WD m w)
+
+/- Get reduced word arithmatically -/
+def reduced_word (m : Matrix S S ℕ) (w : List S) : List S :=
+  (RD m w).head!
+
+def group_eq (m : Matrix S S ℕ) (w1 w2 : List S) : Bool :=
+  List.inter (RD m w1) (RD m w2) ≠ []
 
 
-def length_aux (l_pattern : List (List S × List S)) (w : List S) : Nat :=
-  (List.map (fun x => x.length) (WD l_pattern w)).minimum.getD 1
+-- theorem word (m : Matrix S S ℕ) : ℓ((List.map (CoxeterMatrix.toSimpleRefl m) w).gprod) = length_aux m w := by
+--   simp[length_aux, WD, depthFirstRemovingDuplicates', depthFirstRemovingDuplicates]
 
 #check depthFirstRemovingDuplicates'
 
-def w3 := [c, b, c, a, c, b, a, b, a, c]
+def w3 := [2, 1, 2, 0, 2, 1, 0, 1, 0, 2]
+def w31 := [0, 2, 1, 0, 1, 2]
+def w4 := [0, 1, 2, 0, 2, 0]
 
-#eval @depthFirstRemovingDuplicates' (List S) _ _ (fun x => move_gen (pattern_any [a, b, c] brs) x) w3 none
+#eval WD m w3
+#eval length_aux m w3
+#eval RD m w3
+#eval is_reduced m w3
+#eval group_eq m w3 w31
+#eval group_eq m w3 w4
 
-#eval pattern_any [a, b, c] brs
-
-
-#eval move_loop_pos_aux (pattern_any [a, b, c] brs)[7] w3 0
-#eval move_loop_pos_aux (pattern_any [a, b, c] brs)[0] w_ttt 0
-
--- #eval @depthFirstRemovingDuplicates' (List S) _ _ (fun x => move_gen (pattern_any [a, b, c] brs) x) w none
-
-
-#eval braid_move_Nth br23 w3 0
-#eval pattern brs[0].s1 brs[0].s2 brs[0].m12
+end tits_solution
