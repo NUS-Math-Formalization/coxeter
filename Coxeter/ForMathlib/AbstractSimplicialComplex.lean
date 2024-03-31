@@ -12,6 +12,7 @@ structure AbstractSimplicialComplex (V : Type*)  where
   empty_mem : ∅ ∈ faces
   lower' : IsLowerSet faces -- The set of faces is a lower set under the inclusion relation.
 
+open Classical
 
 namespace AbstractSimplicialComplex
 
@@ -94,6 +95,7 @@ where
 @[simp]
 lemma sSup_faces (s : Set (AbstractSimplicialComplex V)) : (sSup s).faces = ⋃ F ∈ s, F.faces := by sorry
 
+def vertices (F : AbstractSimplicialComplex V) : Set V := ⋃ s ∈ F.faces, s.toSet
 
 def IsFacet (F : AbstractSimplicialComplex V) (s : Finset V) := s ∈ F ∧  ∀ t ∈ F, s ⊆ t → s = t
 
@@ -101,15 +103,25 @@ def Facets (F : AbstractSimplicialComplex V) : Set (Finset V) := { s | F.IsFacet
 
 /- Definition: A pure abstract simplicial complex is an abstract simplicial complex where all facets have the same cardinality. -/
 def IsPure (F : AbstractSimplicialComplex F) :=
-  ∀ s t : Facets F, s.1.card = t.1.card
+  ∀ s∈ Facets F, ∀ t ∈ Facets F, s.card = t.card
 
 class Pure (F : AbstractSimplicialComplex F) where
-  pure : ∀ s t : Facets F, s.1.card = t.1.card
+  pure : ∀ s ∈ F.Facets, ∀ t ∈  F.Facets, s.card = t.card
 
-lemma pure_eq {F : AbstractSimplicialComplex V} [Pure F] {s t : Facets F} : s.1.card = t.1.card := by
-  exact Pure.pure s t
+/-We will call an ASC pure of rank `d` if all its facets has `d` elements-/
+def IsPure' (F : AbstractSimplicialComplex F) (d : ℕ):=
+  ∀ s ∈ F.faces, s.card = d
 
-lemma pure_isPure {F : AbstractSimplicialComplex V} [Pure F] : IsPure F := by intro s t; exact pure_eq
+class Pure' (F : AbstractSimplicialComplex F) (d :ℕ) where
+  pure : ∀ s ∈ F.Facets, s.card = d
+
+lemma isPure_iff_isPure' {F : AbstractSimplicialComplex F} : F.IsPure ↔ ∃ d, F.IsPure' d := by
+  sorry
+
+
+lemma pure_def {F : AbstractSimplicialComplex V} [Pure F] : ∀ s ∈ F.Facets, ∀  t ∈ F.Facets,  s.card = t.card := Pure.pure
+
+lemma pure_isPure {F : AbstractSimplicialComplex V} [Pure F] : IsPure F := pure_def
 
 /-
 If the size of simplices in F is unbounded, it has rank 0 by definition.
@@ -127,7 +139,7 @@ abbrev closure (s : Set (Finset V))
 -- For a finset f, the closure of {f} is the simplex of f.
 lemma closure_simplex (f : Finset V) : closure {f} =  simplex s := by sorry
 
-lemma closure_eq_iSup (s : Set (Finset V)) : closure s =  ⨆ (f : s),  closure {f.1} := by sorry
+lemma closure_eq_iSup (s : Set (Finset V)) : closure s =  ⨆ f ∈ s,  closure {f} := by sorry
 
 lemma closure_self {F : AbstractSimplicialComplex V} : closure (F.faces) = F := by
   sorry
@@ -138,40 +150,15 @@ lemma closure_mono {s t: Set (Finset V)} : s ⊆ t → closure s ≤ closure t :
   rw [Set.setOf_subset_setOf]
   intro _ h; exact Set.Subset.trans hst h
 
-
 /-
-?? I think we should remove singleton_mem in the defintion. Or how to make s to be type?
+G is a cone over F with cone point x if
+x ∈ G.vertices - F.vertices
+s ∈ F ⇔ s ∪ {x} ∈ G.
 -/
+def Cone (F G: AbstractSimplicialComplex V) (x : V) :=
+  x ∈ G.vertices \ F.vertices ∧
+  ∀ s, s ∈ F.faces ↔ s ∪ {x} ∈ G.faces
 
---instance coe_Facets : CoeOut (Facets F) (Finset V) :=
---  ⟨fun s => s.val⟩
-
-
-/- Definition: Let F be a pure abstract simplicial complex of dim m.
-A shelling of F is an linear ordering l_1, ⋯ , l_n of all (maximal) facets of F such that
- l_i ∩ (∪_{j < i} l_j) (=Hi) is an abstract simplicial complex pure of dimension m -1.
--/
-
-def shelling (F : AbstractSimplicialComplex V)  [Pure F]  {m : ℕ } (l : Fin m ≃ Facets F) :=
-  ∀ i : Fin m, let Hi := (closure F ((l i).1 ∩ (Finset.biUnion (Finset.filter (. < i) (Finset.univ : Finset (Fin m))) (fun j => (l j).1))))
-  isPure Hi ∧ rank Hi = rank F - 1
-
-/-
-Definition': Let F be a pure abstract simplicial complex of dim m.
-A shelling of F is an linear ordering l_1, ⋯ , l_n of all (maximal) facets of F such that
- for any j < i, there exists j' < i, such that l_i ∩ l_j ⊂ l_i ∩ l_{j'} and |l_i ∩ l_{j'}| = m-1.
--/
-def shelling' (F :  AbstractSimplicialComplex F)
- [Pure F]  {m : ℕ } (l : Fin m ≃ Facets F) := ∀ i j : Fin m, j < i → ∃ k : Fin m, k < i ∧ ((l i).1 ∩ (l j).1 ⊂ (l i).1 ∩ (l k).1) ∧ ((l i).1 ∩ (l k).1).card = (l i).1.card - 1
-
-
-/- Lemma: The two definitions of shellings are equivalent.
--/
-lemma equiv_shelling {V : Type*} (F : AbstractSimplicialComplex F) [Pure F]  {m : ℕ } (l : Fin m ≃ Facets F) :
-    shelling F l ↔ shelling' F l := by sorry
-
-/- Definition: An abstract simplicial complex F is called shellable, if it admits a shelling.
--/
-def shellable (F : AbstractSimplicialComplex F) [Pure F] := ∃ (m: ℕ) (l : Fin m ≃ Facets F), shelling F l
+def isCone (G: AbstractSimplicialComplex V) := ∃ F x, Cone F G x
 
 end AbstractSimplicialComplex
