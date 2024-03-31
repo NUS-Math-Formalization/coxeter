@@ -8,7 +8,6 @@ import Mathlib.Order.Cover
 import Mathlib.Tactic.Linarith.Frontend
 import Coxeter.ForMathlib.AdjacentPair
 
-open PartialOrder
 
 namespace PartialOrder
 /- Let P be a finite poet. -/
@@ -26,6 +25,16 @@ def edges (P : Type*) [PartialOrder P] : Set (P × P) := {(a, b) | a ⋖ b }
 Definition: A chain in the poset P is a finite sequence x₀ < x₁ < ⋯ < x_n.
 -/
 abbrev chain (L : List P) : Prop := List.Chain' (· < ·) L
+
+abbrev Chains (P : Type*) [PartialOrder P] : Set (List P) := { L | chain L}
+
+section chain
+
+instance poset_chain {P : Type*} [PartialOrder P] : PartialOrder (Chains P) := sorry
+
+instance lattice_chain {P : Type*} [PartialOrder P] : Lattice (Chains P) := sorry
+
+end chain
 
 section maximal_chain
 /-
@@ -227,19 +236,14 @@ abbrev maximalChains (P : Type*) [PartialOrder P] : Set (List P) := { L | maxima
 def edgePairs {P : Type*} [PartialOrder P] (L : maximalChains P) : List (edges P) :=
   List.map (fun e => ⟨e.val, max_chain_mem_edge L.prop  e.prop⟩) <| L.val.adjEPairs
 
-/-
-?? this is often called rank.
--/
-/- Define corank to be the maximal lenght of a maximal chain
-  Note that if the length is unbounded,then corank =0.
+/- Define rank to be the Sup of the lenghts of all maximal chains.
+  Note that if the length is unbounded,then rank = 0.
  -/
-noncomputable def corank (P : Type*) [PartialOrder P] : ℕ := iSup fun L : maximalChains P => L.val.length
+noncomputable def rank (P : Type*) [PartialOrder P] : ℕ :=
+⨆ L ∈ maximalChains P, L.length
 
 
 end maximal_chain
-
-
-
 
 @[deprecated Set.Icc]
 def Interval {P : Type*} [PartialOrder P] (x y : P) : Set P := {z | x ≤ z ∧ z ≤ y}

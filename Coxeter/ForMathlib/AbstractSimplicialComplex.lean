@@ -176,4 +176,8 @@ def Cone (F G: AbstractSimplicialComplex V) (x : V) :=
 
 def isCone (G: AbstractSimplicialComplex V) := ∃ F x, Cone F G x
 
+instance cons_pure {h : Cone F G x} : Pure G := by sorry
+
+instance cons_pure' {h : isCone G} : Pure G := by sorry
+
 end AbstractSimplicialComplex
