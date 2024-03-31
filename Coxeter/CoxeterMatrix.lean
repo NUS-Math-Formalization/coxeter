@@ -257,10 +257,10 @@ lemma toGroup_expression' : ∀ (x : G), ∃ L : List S, x = L.gprod := by
       = Subgroup.closure (Set.range (PresentedGroup.of)) := rfl
     rw [this, PresentedGroup.closure_range_of]
     simp only [Subgroup.mem_top]
+
     sorry
   rw [h₁, ← Subgroup.closure_toSubmonoid, Subgroup.mem_toSubmonoid]
   sorry
-#exit
 
 lemma generator_ne_one (s : α) : of m s ≠ 1 := by
   intro h
