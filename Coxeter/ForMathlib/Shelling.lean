@@ -16,6 +16,7 @@ A shelling of F is an linear ordering l_1, ⋯ , l_m of all (maximal) facets of 
 def shelling {F : AbstractSimplicialComplex V} (r : ℕ) [Pure' F r] {m : ℕ } (l : Fin m ≃ Facets F) := r > 0 ∧
   ∀ i : Fin m, 1 < i.val → IsPure' ((⨆ j ∈ {j | j<i}, closure {(l j).val}) ⊓ (closure {(l i).val})) (r-1)
 
+
 /-
 Definition': Let F be a pure abstract simplicial complex of rank d+1.
 A shelling of F is an linear ordering l_1, ⋯ , l_m of all (maximal) facets of F such that

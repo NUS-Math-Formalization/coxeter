@@ -152,14 +152,18 @@ lemma closure_mono {s t: Set (Finset V)} : s ⊆ t → closure s ≤ closure t :
   rw [Set.setOf_subset_setOf]
   intro _ h; exact Set.Subset.trans hst h
 
+/-
+??
+-- -/
+-- def closure' {F : AbstractSimplicialComplex V} (s : Set (F.faces))
+--   : AbstractSimplicialComplex V := by sorry
 
-def closure' {F : AbstractSimplicialComplex V} (s : Set (F.faces))
-  : AbstractSimplicialComplex V := by sorry
+-- lemma closure'_eq_closure {F : AbstractSimplicialComplex V} (s : Set (F.faces)) : closure' s = F ⊓ closure s := by sorry
 
-def closure_face {F : AbstractSimplicialComplex V} (s : F.faces)
-  : AbstractSimplicialComplex V := by sorry
+-- def closure_face {F : AbstractSimplicialComplex V} (s : F.faces)
+--   : AbstractSimplicialComplex V := by sorry
 
-
+lemma closure_le {F : AbstractSimplicialComplex V} (h: s ⊆ F.faces) : closure s ≤ F := by sorry
 
 /-
 G is a cone over F with cone point x if
