@@ -9,6 +9,7 @@ import Mathlib.Order.Cover
 import Coxeter.Aux_
 import Coxeter.ForMathlib.AdjacentPair
 
+
 open Classical
 
 

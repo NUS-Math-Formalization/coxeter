@@ -125,6 +125,8 @@ lemma pure_isPure {F : AbstractSimplicialComplex V} [Pure F] : IsPure F := pure_
 
 /-
 If the size of simplices in F is unbounded, it has rank 0 by definition.
+
+Remark: We should general be careful with the unbounded case.
 -/
 noncomputable def rank (F : AbstractSimplicialComplex V) : ℕ := iSup fun s : F.faces => s.1.card
 
@@ -137,7 +139,7 @@ abbrev closure (s : Set (Finset V))
   : AbstractSimplicialComplex V := sInf { K | s ⊆  K.faces}
 
 -- For a finset f, the closure of {f} is the simplex of f.
-lemma closure_simplex (f : Finset V) : closure {f} =  simplex s := by sorry
+lemma closure_simplex (f : Finset V) : closure {f} =  simplex f := by sorry
 
 lemma closure_eq_iSup (s : Set (Finset V)) : closure s =  ⨆ f ∈ s,  closure {f} := by sorry
 
@@ -149,6 +151,15 @@ lemma closure_mono {s t: Set (Finset V)} : s ⊆ t → closure s ≤ closure t :
   apply sInf_le_sInf
   rw [Set.setOf_subset_setOf]
   intro _ h; exact Set.Subset.trans hst h
+
+
+def closure' {F : AbstractSimplicialComplex V} (s : Set (F.faces))
+  : AbstractSimplicialComplex V := by sorry
+
+def closure_face {F : AbstractSimplicialComplex V} (s : F.faces)
+  : AbstractSimplicialComplex V := by sorry
+
+
 
 /-
 G is a cone over F with cone point x if
