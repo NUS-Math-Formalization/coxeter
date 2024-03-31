@@ -1,4 +1,4 @@
-import Coxeter.CoxeterSystem
+simport Coxeter.CoxeterSystem
 import Mathlib.Data.Set.Intervals.Basic
 import Mathlib.Data.Set.Lattice
 import Mathlib.Data.SetLike.Basic
