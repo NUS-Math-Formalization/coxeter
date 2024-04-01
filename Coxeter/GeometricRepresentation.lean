@@ -1,3 +1,4 @@
+import Mathlib.Algebra.Module.LinearMap.End
 import Mathlib.Tactic.Rify
 
 import Coxeter.CoxeterMatrix
@@ -38,8 +39,8 @@ def splitting_example : Matrix α α ℝ := fun s s' => match m s s' with
 | 0 => 2
 | _ => 2 * Real.cos ( Real.pi / (m s s'))
 
-lemma splitting_example_symmetric (s s': α):
-  splitting_example m s s' = splitting_example m s' s := by
+lemma splitting_example_symmetric (s s': α)
+  : splitting_example m s s' = splitting_example m s' s := by
   unfold splitting_example
   have := @CoxeterMatrix.symmetric α m mh s s'
   rw [this]
@@ -83,6 +84,11 @@ instance : Splitting m (splitting_example m) where
     repeat rw [this]
     apply And.intro <;> linarith
 
+lemma splitting_same_arg (k : Matrix α α ℝ) [kh : Splitting m k] (s : α)
+  : k s s = -2 := by
+  exact @Splitting.m_eq_one _ _ _ kh s s
+    ((CoxeterMatrix.one_iff m s s).mpr (rfl))
+
 /-
 @[simp]
 abbrev kk_aux : ℕ → ℝ
@@ -119,9 +125,9 @@ instance : (Module ℝ (V⋆)) where
 -- local notation "k" => k m
 --local notation:120 a:121 "⋆" => Pi.single a 1
 
-noncomputable def sigma_star (s:α) : (V⋆) →ₗ[ℝ] (V⋆) where
-  toFun := fun p =>
-    p + (p s) • (∑ s', (k s s') • (fun s'' => if s' = s'' then 1 else 0))
+noncomputable def sigma_star (s:α) : Module.End ℝ (V⋆) where
+  toFun := fun p s'' =>
+    p s'' + (p s) • (∑ s', (k s s') • (if s' = s'' then 1 else 0))
   map_add' := by
     intro x y; funext s'';
     simp only [Pi.add_apply, Pi.smul_apply,
@@ -174,7 +180,7 @@ lemma sigma_star_value {s s': α} {p : V⋆}
   unfold sigma_star; simp
 
 
-lemma sigma_star_order_two : (σ⋆ s)^2 = LinearMap.id := by
+lemma sigma_star_order_two : (σ⋆ s) • (σ⋆ s) = LinearMap.id := by
   apply LinearMap.ext_iff.mpr
   intro p
   funext s'
@@ -182,26 +188,59 @@ lemma sigma_star_order_two : (σ⋆ s)^2 = LinearMap.id := by
 
   have := @Splitting.m_eq_one _ _ _ kh s s
     ((CoxeterMatrix.one_iff m s s).mpr (by rfl))
-  sorry
-  -- rw [this]; ring_nf
+  unfold sigma_star
+  simp only [LinearMap.mul_apply, LinearMap.coe_mk, AddHom.coe_mk,
+    map_add, map_smul, map_sum, ite_smul, one_smul, zero_smul, smul_add,
+    smul_ite, smul_zero, Pi.add_apply, Pi.smul_apply, Finset.sum_apply,
+    smul_eq_mul, mul_ite, mul_one, mul_zero, Finset.sum_ite_eq',
+    Finset.mem_univ, ↓reduceIte, *]
+  ring_nf
 
+#check CoxeterMatrix.symmetric
 
+lemma sigma_star_mul_apply_s'_eq_two (h: m s s' = 2)
+  : orderOf ((σ⋆ s) • (σ⋆ s')) = 2 := by
+  apply orderOf_eq_prime
+  have : ((σ⋆ s) • (σ⋆ s'))^2 = LinearMap.id := by
+    apply LinearMap.ext_iff.mpr
+    intro p
+    funext s''
+    rw [@LinearMap.iterate_succ, pow_one]
+    have h' : m s' s = 2 := by rwa [@CoxeterMatrix.symmetric α m _ s' s]
+    have := @Splitting.m_eq_two _ m k kh s s' h
+    have := @Splitting.m_eq_two _ m k kh s' s h'
+    have := @Splitting.m_eq_one _ m k kh s s
+     ((CoxeterMatrix.one_iff m s s).mpr (by rfl))
+    have := @Splitting.m_eq_one _ m k kh s' s'
+     ((CoxeterMatrix.one_iff m s' s').mpr (by rfl))
+    simp only [smul_eq_mul, pow_one, LinearMap.coe_comp, Function.comp_apply,
+      LinearMap.mul_apply, sigma_star_value, LinearMap.id_coe, id_eq, *]
+    ring_nf
+  assumption
+  intro h'
+  have := LinearMap.ext_iff.mp h' (fun s'' => if s'' = s then 1 else 0)
+  apply Function.funext_iff.mp at this
+  specialize this s
+  simp at this
+  have fact : s' ≠ s := by
+    have := (CoxeterMatrix.one_iff m s s').mpr
+    by_contra b
+    specialize this (symm b)
+    linarith
+  simp [*] at this
+  have := splitting_same_arg m k s
+  linarith
 
 /-
-lemma sigma_star_mul_apply_s'_eq_two  {p : V⋆} (h: m s s' = 2)
-  : ((σ⋆ s) * (σ⋆ s')) p s' = - p s' := by sorry
-
-
 -- add some other lemmas
 -- The final goal is
 lemma order_sigma_star_mul : orderOf ((σ⋆ s) * (σ⋆ s')) = m s s' := by sorry
 -/
-end
-end GeometricRepresentation
+end namespace GeometricRepresentation
 
 
 namespace CoxeterMatrix
-
+/-
 lemma order_generator_mul (s t :α) :
   orderOf (CoxeterMatrix.of m s * CoxeterMatrix.of m t) = m s t := by sorry
 
@@ -212,5 +251,5 @@ lemma of_injective (a b :α) : of m a = of m b ↔ a = b:= by
     rw [<-orderOf_eq_one_iff,order_generator_mul,one_iff] at this
     exact h this
   . intro; congr
-
+-/
 end CoxeterMatrix
