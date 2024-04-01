@@ -15,7 +15,6 @@ variable {P : Type*} [PartialOrder P]
 
 
 /- Recall that : We say a is covered by b if x < y and there is no element z such that x < z < y. -/
-/- Notation: We denote the cover relation by x ⋖ y. Use "\les" to type the symbol -/
 
 /- Defintion: We define the set of edges of P as the set of all pairs (a,b) such that a is covered by b.-/
 def edges (P : Type*) [PartialOrder P] : Set (P × P) := {(a, b) | a ⋖ b }
@@ -29,14 +28,20 @@ abbrev chain (L : List P) : Prop := List.Chain' (· < ·) L
 abbrev Chains (P : Type*) [PartialOrder P] : Set (List P) := { L | chain L}
 
 section chain
-
+/-
+instance: The set of all chains in P admits a partial ordering by set-theoretical inclusion.
+-/
 instance poset_chain {P : Type*} [PartialOrder P] : PartialOrder (Chains P) := sorry
 
+/-
+instance: The set of all chains in P is a lattice.
+-/
 instance lattice_chain {P : Type*} [PartialOrder P] : Lattice (Chains P) := sorry
 
 end chain
 
 section maximal_chain
+
 /-
 Definition: A chain in the poset P is maximal if it is not a proper subset of any other chains.
 In other words, all relations are cover relations with x_0 being a minimal element and x_n be a maximal element.
@@ -50,6 +55,9 @@ We also define the notion of maximal_chain' in the sense that if for any chain L
  -/
 abbrev maximal_chain' (L: List P) : Prop := chain L ∧ ∀ L' : List P, chain L' → (L.head? = L'.head? ∧ L.getLast? = L'.getLast?) → List.Sublist L L' -> L = L'
 
+/-
+Lemma: If a chain L in P is maximal, then its adjacent relations are cover relations.
+-/
 lemma maximal_chain'_of_maximal_chain {L: List P} : maximal_chain L → maximal_chain' L := by
   intro h
   constructor
@@ -57,6 +65,9 @@ lemma maximal_chain'_of_maximal_chain {L: List P} : maximal_chain L → maximal_
   . intro L' hL' _ h2
     exact h.2 L' hL' h2
 
+/-
+Lemma: A singleton is a chain by definition.
+-/
 lemma chain_singleton {a : P} : chain [a] := by simp
 
 lemma chain_singleton_of_head_eq_tail  {L : List P} (a : P) : chain L → L.head? = some a → L.getLast? = some a → L.length = 1  := by
@@ -64,6 +75,7 @@ lemma chain_singleton_of_head_eq_tail  {L : List P} (a : P) : chain L → L.head
 
 lemma maximal_chain'_singleton {a : P}: maximal_chain' [a] := by
   sorry
+
 
 lemma maximal_chain'_nil : maximal_chain' ([] : List P) := by
   constructor
@@ -131,7 +143,7 @@ lemma maximal_chain'_tail {a : P} {tail : List P} : maximal_chain' (a :: tail) �
 lemma maximal_chain'_cons {a b : P} {L : List P} : maximal_chain' (b :: L) → a ⋖ b → maximal_chain' (a :: b :: L) := by sorry
 
 /-
-a pair of element is a maximal chain if and only if the pair is a cover relation.
+Lemma: A pair of element is a maximal chain if and only if the pair is a cover relation.
 -/
 lemma maximal_chain'₂_iff_ledot {a b : P} : maximal_chain' [a,b] ↔ (a ⋖ b) := by sorry
 
@@ -236,7 +248,8 @@ abbrev maximalChains (P : Type*) [PartialOrder P] : Set (List P) := { L | maxima
 def edgePairs {P : Type*} [PartialOrder P] (L : maximalChains P) : List (edges P) :=
   List.map (fun e => ⟨e.val, max_chain_mem_edge L.prop  e.prop⟩) <| L.val.adjEPairs
 
-/- Define rank to be the Sup of the lenghts of all maximal chains.
+/- Definition: Define rank to be the Sup of the lenghts of all maximal chains.
+
   Note that if the length is unbounded,then rank = 0.
  -/
 noncomputable def rank (P : Type*) [PartialOrder P] : ℕ :=
@@ -245,20 +258,20 @@ noncomputable def rank (P : Type*) [PartialOrder P] : ℕ :=
 
 end maximal_chain
 
-@[deprecated Set.Icc]
-def Interval {P : Type*} [PartialOrder P] (x y : P) : Set P := {z | x ≤ z ∧ z ≤ y}
+-- @[deprecated Set.Icc]
+-- def Interval {P : Type*} [PartialOrder P] (x y : P) : Set P := {z | x ≤ z ∧ z ≤ y}
 
-instance Interval.bounded {P : Type*} [PartialOrder P] {x y : P} (h : x ≤ y) : BoundedOrder (Set.Icc x y) where
-  top := ⟨y, And.intro h (le_refl y)⟩
-  bot := ⟨x, And.intro (le_refl x) h⟩
-  le_top := fun x ↦ x.2.2
-  bot_le := fun x ↦ x.2.1
+-- instance Interval.bounded {P : Type*} [PartialOrder P] {x y : P} (h : x ≤ y) : BoundedOrder (Set.Icc x y) where
+--   top := ⟨y, And.intro h (le_refl y)⟩
+--   bot := ⟨x, And.intro (le_refl x) h⟩
+--   le_top := fun x ↦ x.2.2
+--   bot_le := fun x ↦ x.2.1
 
-instance Interval.poset {P : Type*} [PartialOrder P] {x y : P} :
-PartialOrder (Set.Icc x y) := by exact Subtype.partialOrder _
+-- instance Interval.poset {P : Type*} [PartialOrder P] {x y : P} :
+-- PartialOrder (Set.Icc x y) := by exact Subtype.partialOrder _
 
-instance Interval.edge_coe {P : Type*} [PartialOrder P] {x y : P} : CoeOut (edges (Set.Icc x y)) (edges P) where
-  coe := fun z => ⟨(z.1.1, z.1.2),sorry ⟩
+-- instance Interval.edge_coe {P : Type*} [PartialOrder P] {x y : P} : CoeOut (edges (Set.Icc x y)) (edges P) where
+--   coe := fun z => ⟨(z.1.1, z.1.2),sorry ⟩
 
 
 

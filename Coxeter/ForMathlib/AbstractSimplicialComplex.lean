@@ -18,7 +18,8 @@ namespace AbstractSimplicialComplex
 
 variable {V : Type*}
 
-lemma subset_mem (F : AbstractSimplicialComplex V) : ∀ {s t}, s ∈ F.faces →  t ⊆ s → t ∈ F.faces := fun hs hst => F.lower' hst hs
+lemma subset_mem (F : AbstractSimplicialComplex V) : ∀ {s t}, s ∈ F.faces →  t ⊆ s → t ∈ F.faces
+  := fun hs hst => F.lower' hst hs
 
 instance : SetLike (AbstractSimplicialComplex V) (Finset V) where
   coe F := F.faces
@@ -36,6 +37,9 @@ theorem mem_faces {F : AbstractSimplicialComplex V} {x : Finset V} : x ∈ F.fac
 @[simp]
 def le (G F : AbstractSimplicialComplex V) := G.faces ⊆ F.faces
 
+/-
+The set of all ASC over V admits a partial ordering by inclusion of the set of faces. We denote this relation by G ≤ F.
+-/
 instance partialOrder : PartialOrder (AbstractSimplicialComplex V) where
   le := le
   le_refl := fun _ => by simp only [le, refl]
@@ -50,7 +54,7 @@ instance partialOrder : PartialOrder (AbstractSimplicialComplex V) where
 lemma le_def {G F : AbstractSimplicialComplex V} : G ≤ F ↔ G.faces ⊆ F.faces := by rfl
 
 /-
-The simplex with verteces s ⊆ V is the complex of all finite subsets of s.
+Definition: The simplex with verteces s ⊆ V is the complex of all finite subsets of s.
 -/
 def simplex (s : Set V) : AbstractSimplicialComplex V where
   faces := {t | t.toSet ⊆ s}
@@ -81,6 +85,9 @@ lemma sInf_isGLB (s : Set (AbstractSimplicialComplex V)) : IsGLB s (sInf s) := b
     simp only [Set.subset_iInter_iff]
     exact hG
 
+
+/- instance: The set of all ASCs on V is a complete lattice with intersections and unions of the set of faces.
+-/
 instance complete_lattice : CompleteLattice (AbstractSimplicialComplex V)
 where
   inf := fun F G => ⟨F.faces ∩ G.faces, Set.mem_inter F.empty_mem G.empty_mem, IsLowerSet.inter F.lower' G.lower'⟩
@@ -95,20 +102,30 @@ where
 @[simp]
 lemma sSup_faces (s : Set (AbstractSimplicialComplex V)) : (sSup s).faces = ⋃ F ∈ s, F.faces := by sorry
 
+/-
+Definition: For any ASC F, we denote by vertices F the set of vertices of F.
+-/
 def vertices (F : AbstractSimplicialComplex V) : Set V := ⋃ s ∈ F.faces, s.toSet
 
+/-
+Definition: Let F be an ASC. A maximal face of F is called a facet of F.
+-/
 def IsFacet (F : AbstractSimplicialComplex V) (s : Finset V) := s ∈ F ∧  ∀ t ∈ F, s ⊆ t → s = t
 
+/-
+Definition: For any ASC F, we denote by Facets F the set of facets of F.
+-/
 def Facets (F : AbstractSimplicialComplex V) : Set (Finset V) := { s | F.IsFacet s}
 
 /- Definition: A pure abstract simplicial complex is an abstract simplicial complex where all facets have the same cardinality. -/
 def IsPure (F : AbstractSimplicialComplex F) :=
   ∀ s∈ Facets F, ∀ t ∈ Facets F, s.card = t.card
 
+
 class Pure (F : AbstractSimplicialComplex F) where
   pure : ∀ s ∈ F.Facets, ∀ t ∈  F.Facets, s.card = t.card
 
-/-We will call an ASC pure of rank `d` if all its facets has `d` elements-/
+/-Definition: We will call an ASC pure of rank `d` if all its facets has `d` elements-/
 def IsPure' (F : AbstractSimplicialComplex F) (d : ℕ):=
   ∀ s ∈ F.faces, s.card = d
 
@@ -130,21 +147,32 @@ Remark: We should general be careful with the unbounded case.
 -/
 noncomputable def rank (F : AbstractSimplicialComplex V) : ℕ := iSup fun s : F.faces => s.1.card
 
---def clousre (F: AbstractSimplic)
+/-Definition: For a collection s of subsets of V, we denote by closure s the smallest ASC over V containing all elements in s
+as faces.
 
--- F is ASC, complete s is ASC.
--- F ∩ s = F ∩ (complete s)
-
+Remark: Here we secretly consider the ambient space as the simplex with vertex set V.
+-/
 abbrev closure (s : Set (Finset V))
   : AbstractSimplicialComplex V := sInf { K | s ⊆  K.faces}
 
--- For a finset f, the closure of {f} is the simplex of f.
+/-
+Lemma: For a finset f, the closure of {f} is the simplex of f.
+-/
 lemma closure_simplex (f : Finset V) : closure {f} =  simplex f := by sorry
 
+/-
+Lemma: Let s be a collection of finsets in V. Then the closure of s is just the union of the closure of elements in s.
+
+Remark: So taking closure commuts with taking union.
+-/
 lemma closure_eq_iSup (s : Set (Finset V)) : closure s =  ⨆ f ∈ s,  closure {f} := by sorry
 
+/-
+Lemma: Let F be an ASC. Then the closure of the set of faces is just F.
+-/
 lemma closure_self {F : AbstractSimplicialComplex V} : closure (F.faces) = F := by
   sorry
+
 
 lemma closure_mono {s t: Set (Finset V)} : s ⊆ t → closure s ≤ closure t := by
   intro hst; repeat rw [closure]
@@ -152,21 +180,12 @@ lemma closure_mono {s t: Set (Finset V)} : s ⊆ t → closure s ≤ closure t :
   rw [Set.setOf_subset_setOf]
   intro _ h; exact Set.Subset.trans hst h
 
-/-
-??
--- -/
--- def closure' {F : AbstractSimplicialComplex V} (s : Set (F.faces))
---   : AbstractSimplicialComplex V := by sorry
 
--- lemma closure'_eq_closure {F : AbstractSimplicialComplex V} (s : Set (F.faces)) : closure' s = F ⊓ closure s := by sorry
-
--- def closure_face {F : AbstractSimplicialComplex V} (s : F.faces)
---   : AbstractSimplicialComplex V := by sorry
 
 lemma closure_le {F : AbstractSimplicialComplex V} (h: s ⊆ F.faces) : closure s ≤ F := by sorry
 
 /-
-G is a cone over F with cone point x if
+Definition: G is a cone over F with cone point x if
 x ∈ G.vertices - F.vertices
 s ∈ F ⇔ s ∪ {x} ∈ G.
 -/
