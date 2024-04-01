@@ -187,9 +187,33 @@ lemma of_square_eq_one' : s ∈ SimpleRefl m → s * s = 1 := by
 lemma of_inv_eq_of {x : α} : (of m x)⁻¹ = of m x :=
   inv_eq_of_mul_eq_one_left (@of_square_eq_one α m hm x)
 
-def getS (L: List (α × Bool)) := L.map (fun (a, _) => toSimpleRefl m a)
+lemma SimpleRefl_closed_under_inverse : S = S⁻¹ := by
+  ext y
+  constructor
+  . rintro ⟨w, hw⟩
+    use w
+    rw [← hw, of_inv_eq_of]
+  . rintro ⟨w, hw⟩
+    use w
+    rw [← inv_inj, ← hw, of_inv_eq_of]
 
 lemma toGroup_expression : ∀ (x : G), ∃ L : List S, x = L.gprod := by
+  intro x
+  apply (Submonoid.mem_monoid_closure_iff_prod S x).1
+  have h₀ : S = S ∪ S⁻¹ := by rw [← SimpleRefl_closed_under_inverse, Set.union_self]
+  have h₁ : Subgroup.closure S = ⊤ := by
+    rw [SimpleRefl, Set.range]
+    simp only [of, toGroup, PresentedGroup]
+    have : Subgroup.closure {x | ∃ y, (QuotientGroup.mk' N) (FreeGroup.of y) = x}
+      = Subgroup.closure (Set.range (PresentedGroup.of)) := rfl
+    rw [this, PresentedGroup.closure_range_of]
+  rw [h₀, ← Subgroup.closure_toSubmonoid, Subgroup.mem_toSubmonoid, h₁]
+  trivial
+
+def getS (L: List (α × Bool)) := L.map (fun (a, _) => toSimpleRefl m a)
+
+@[deprecated toGroup_expression]
+lemma toGroup_expression' : ∀ (x : G), ∃ L : List S, x = L.gprod := by
   intro x
   have k : ∃ y : F, QuotientGroup.mk y = x := by exact Quot.exists_rep x
   rcases k with ⟨y, rep⟩
