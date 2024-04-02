@@ -8,6 +8,7 @@ package Coxeter {
 require mathlib from git
   "https://github.com/leanprover-community/mathlib4.git"
 
+require ssreflect from git "https://github.com/verse-lab/lean-ssr" @ "master"
 
 -- require mathlib from git
 --   "https://gitee.com/zzsj01/mathlib4.git"
