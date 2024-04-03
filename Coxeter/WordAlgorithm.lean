@@ -5,33 +5,32 @@ import Mathlib.Data.MLList.DepthFirst
 
 import Coxeter.CoxeterMatrix
 
-abbrev N := 3
+abbrev N := 5
 
 /- Consider only finite case -/
 abbrev S := Fin N
-/- Specifying a matrix [H₃] for example -/
-def m := ![![1, 5, 2], ![5, 1, 3], ![2, 3, 1]]
+
 
 /- Proof that Given matrix is a Coxeter Matrix (Should be simpler) -/
-instance : CoxeterMatrix m where
-  symmetric := by
-    intro i j; fin_cases i;
-    fin_cases j; simp[m]; simp[m]; simp[m]
-    fin_cases j; simp[m]; simp[m]; simp[m]
-    fin_cases j; simp[m]; simp[m]; simp[m]
-  oneIff := by
-    intro i j; constructor;
-    . contrapose!; intro h; fin_cases i;
-      fin_cases j; simp [m]; contradiction; simp [m]; simp [m]; simp [m];
-      fin_cases j; simp [m]; contradiction; simp [m]; simp [m];
-      fin_cases j; simp [m]; simp [m]; contradiction;
-    . intro h; fin_cases i;
-      fin_cases j; simp [m]; contradiction; contradiction;
-      fin_cases j; simp [m]; contradiction; simp [m]; contradiction;
-      fin_cases j; simp [m]; contradiction; contradiction; simp [m]
+-- instance : CoxeterMatrix m where
+--   symmetric := by
+--     intro i j; fin_cases i;
+--     fin_cases j; simp[m]; simp[m]; simp[m]
+--     fin_cases j; simp[m]; simp[m]; simp[m]
+--     fin_cases j; simp[m]; simp[m]; simp[m]
+--   oneIff := by
+--     intro i j; constructor;
+--     . contrapose!; intro h; fin_cases i;
+--       fin_cases j; simp [m]; contradiction; simp [m]; simp [m]; simp [m];
+--       fin_cases j; simp [m]; contradiction; simp [m]; simp [m];
+--       fin_cases j; simp [m]; simp [m]; contradiction;
+--     . intro h; fin_cases i;
+--       fin_cases j; simp [m]; contradiction; contradiction;
+--       fin_cases j; simp [m]; contradiction; simp [m]; contradiction;
+--       fin_cases j; simp [m]; contradiction; contradiction; simp [m]
 
-abbrev G := CoxeterMatrix.toGroup m
-abbrev S' := CoxeterMatrix.SimpleRefl m
+-- abbrev G := CoxeterMatrix.toGroup m
+-- abbrev S' := CoxeterMatrix.SimpleRefl m
 
 section tits_solution
 /- Define a substution pattern (apply for arbituary presentation group) -/
@@ -143,6 +142,13 @@ def group_eq (m : Matrix S S ℕ) (w1 w2 : List S) : Bool :=
 
 #check depthFirstRemovingDuplicates'
 
+/- Specifying a matrix [H₃] for example -/
+def m := ![![1, 3, 2, 2, 2],
+           ![3, 1, 3, 2, 2],
+           ![2, 3, 1, 3, 2],
+           ![2, 2, 3, 1, 3],
+           ![2, 2, 2, 3, 1]]
+
 def w3 := [2, 1, 2, 0, 2, 1, 0, 1, 0, 2]
 def w31 := [0, 2, 1, 0, 1, 2]
 def w4 := [0, 1, 2, 0, 2, 0]
@@ -153,5 +159,6 @@ def w4 := [0, 1, 2, 0, 2, 0]
 #eval is_reduced m w3
 #eval group_eq m w3 w31
 #eval group_eq m w3 w4
-
+#eval WD m [0, 2, 3, 2]
+#eval RD m [1, 0, 3, 2]
 end tits_solution
