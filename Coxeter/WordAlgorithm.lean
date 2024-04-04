@@ -59,6 +59,14 @@ def braid_pattern (m : Matrix S S ℕ) (s1 s2 : S) : Pattern :=
 /- Pattern for nil-move-/
 def nil_pattern (s : S) : Pattern := Pattern.mk [s, s] []
 
+def nil_move : List S → List S :=
+  fun l => match l with
+  | [] => []
+  | [x] => [x]
+  | x :: y :: xs =>
+    match x == y with
+    | true => nil_move xs
+    | false => x :: nil_move (y :: xs)
 
 def pattern_gen_aux (m : Matrix S S ℕ) (n : ℕ)(i j : ℕ) : List Pattern :=
   match i, j with
@@ -172,20 +180,25 @@ end tits_solution
 section GroupComputation
 
 def mul (m : Matrix S S ℕ) (w u : List S) : List S := NF m (w ++ u)
+/- Convenient for reflection computing -/
+def mul' (m : Matrix S S ℕ) (w u v : List S) : List S := NF m (w ++ u ++ v)
 def inv (m : Matrix S S ℕ) (w : List S) : List S := NF m w.reverse
 
-def List.combinations_aux (w : List S) (n : ℕ) : List (List S) :=
-  match n with
-  | 0 => [[]]
-  | k + 1 => List.join <| List.map (fun x => List.map (
-      fun y : List S => x :: y
-      ) (List.combinations_aux w k)) w
+def group_gen_fun (m : Matrix S S ℕ) (gen : List S) (w : List S) : (List (List S)) :=
+  List.map (fun s => mul m [s] w) gen
 
-#eval List.combinations_aux [0,1,2] 8
+def refl_gen_fun (m : Matrix S S ℕ) (gen : List S) (w : List S) : List (List S) :=
+  List.map (fun s => mul' m [s] w [s]) gen
 
-def elem (m : Matrix S S ℕ) : List (List S) :=
-  let l := List.range N
-  sorry
+/- Enumerate all group elements by Graph search algorithm -/
+def elements (m : Matrix S S ℕ) (gen : List S) : List (List S) :=
+  depthFirstRemovingDuplicates' (group_gen_fun m gen) []
+
+/- Enumerate all reflections by Graph search algorithm -/
+def reflections (m : Matrix S S ℕ) (gen : List S) : List (List S) :=
+  --List.eraseDup $
+  depthFirstRemovingDuplicates' (refl_gen_fun m gen) [0]
+
 
 end GroupComputation
 
@@ -213,11 +226,14 @@ def w3 := [2, 1, 2, 0, 2, 1, 0, 1, 0, 2]
 def w31 := [0, 2, 1, 0, 1, 2]
 def w4 := [0, 1, 2, 0, 2, 0]
 
+
+#eval elements m [0,1,2]
 #eval [2,3,4] > [2,2,4]
+#eval reflections m [0,1,2]
 #eval (graph.getEdge (move_gen' m) (WD m w3)).toString
 #eval pattern_gen m
 #eval move_loop_pos_aux (pattern_gen m)[0] 0 [1,2,2,2,0]
-#eval move_gen m [1,2,2,1,0, 2, 1, 0, 1, 2]
+#eval move_gen m [1, 2, 2, 1, 0, 2, 1, 0, 1, 2]
 #eval (WD m w4)
 #eval NF m w4
 #eval inv m w4
