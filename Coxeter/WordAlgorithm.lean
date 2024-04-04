@@ -4,8 +4,10 @@ import Mathlib.Data.List.MinMax
 import Mathlib.Data.MLList.DepthFirst
 
 import Coxeter.CoxeterMatrix
+import Coxeter.GraphSearchAux
+import Coxeter.Aux_
 
-abbrev N := 5
+abbrev N := 3
 
 /- Consider only finite case -/
 abbrev S := Fin N
@@ -67,7 +69,7 @@ def pattern_gen_aux (m : Matrix S S ℕ) (n : ℕ)(i j : ℕ) : List Pattern :=
     braid_pattern m (t+1) 0 :: pattern_gen_aux m n t n
   | s + 1, t + 1 =>
     if s = t then
-      nil_pattern s :: pattern_gen_aux m n (s+1) t
+      nil_pattern (s+1) :: pattern_gen_aux m n (s+1) t
     else
       braid_pattern m (s+1) (t+1) :: pattern_gen_aux m n (s+1) t
 
@@ -95,22 +97,30 @@ def move_Nth (pattern : Pattern) (w : List S) (n : Nat) : List S :=
         | false => x :: (move_Nth pattern xs (n_pos+1))
 
 /- Get a list of removing all possible moves of a specific pattern (Sub-loop) -/
-partial def move_loop_pos_aux (pattern : Pattern) (w : List S) (n : Nat) : List (List S) :=
+partial def move_loop_pos_aux (pattern : Pattern) (n : Nat) (w : List S) : List (List S × Pattern × Nat) :=
   let w' := move_Nth pattern w n
-  if w' = w then [] else w' :: move_loop_pos_aux pattern w (n+1)
+  if w' = w then [] else (w', pattern, n) :: move_loop_pos_aux pattern (n+1) w
 
-def move_gen_aux (l_pattern : List Pattern) (w : List S) : List (List S) :=
+def move_gen_aux (l_pattern : List Pattern) (w : List S) : List (List S × Pattern × Nat) :=
   match l_pattern with
   | [] => []
   | pattern :: l_pattern_t =>
-    let l_w := move_loop_pos_aux pattern w 0
+    let l_w := move_loop_pos_aux pattern 0 w
     l_w ++ move_gen_aux l_pattern_t w
 
 /- Graph generating function -/
 def move_gen (m : Matrix S S ℕ) (w : List S) : List (List S) :=
   let l_pattern := pattern_gen m
   let l_w := move_gen_aux l_pattern w
-  List.eraseDup l_w
+  List.eraseDup $
+  List.map Prod.fst l_w
+
+def move_gen' (m : Matrix S S ℕ) (w : List S) : List (List S × Pattern × Nat) :=
+  let l_pattern := pattern_gen m
+  let l_w := move_gen_aux l_pattern w
+  --List.pwFilter (fun x y => x.1 = y.1)
+  l_w
+
 
 /- All possible words resulted by braid-move and nil-move, trigger built-in depthfirst graph search -/
 def WD (m : Matrix S S ℕ) (w : List S) : List (List S) :=
@@ -129,6 +139,12 @@ def RD (m : Matrix S S ℕ) (w : List S) : List (List S) :=
   let l := length_aux m w
   List.filter (fun x => x.length = l) (WD m w)
 
+def NF (m : Matrix S S ℕ) (w : List S) : List S :=
+  let min := List.minimum (RD m w)
+  match min with
+  | none => w
+  | some x => x
+
 /- Get reduced word arithmatically -/
 def reduced_word (m : Matrix S S ℕ) (w : List S) : List S :=
   (RD m w).head!
@@ -136,14 +152,58 @@ def reduced_word (m : Matrix S S ℕ) (w : List S) : List S :=
 def group_eq (m : Matrix S S ℕ) (w1 w2 : List S) : Bool :=
   List.inter (RD m w1) (RD m w2) ≠ []
 
+def getEdge {α β : Type} [DecidableEq α] (g : α → List (α × β)) (vl : List α) : List (α × α × β) :=
+  List.pwFilter (fun e1 e2 => True)
+    (List.join $ List.map (fun v : α => (List.map (fun e : α × β => (v, e)) (g v))) vl)
 
+def Pattern.toString (p : Pattern) : String :=
+  "[" ++ p.1.toString ++ ", " ++ p.2.toString ++ "]"
+
+instance : ToString (List S × List S × Pattern × ℕ) :=
+  ⟨fun x => "{"
+    ++ "'v1': " ++ x.1.toString ++ ", "
+    ++ "'v2': " ++ x.2.1.toString ++ ", "
+    ++ "'e': " ++ x.2.2.1.toString ++ "}"⟩
 -- theorem word (m : Matrix S S ℕ) : ℓ((List.map (CoxeterMatrix.toSimpleRefl m) w).gprod) = length_aux m w := by
 --   simp[length_aux, WD, depthFirstRemovingDuplicates', depthFirstRemovingDuplicates]
+
+end tits_solution
+
+section GroupComputation
+
+def mul (m : Matrix S S ℕ) (w u : List S) : List S := NF m (w ++ u)
+def inv (m : Matrix S S ℕ) (w : List S) : List S := NF m w.reverse
+
+def List.combinations_aux (w : List S) (n : ℕ) : List (List S) :=
+  match n with
+  | 0 => [[]]
+  | k + 1 => List.join <| List.map (fun x => List.map (
+      fun y : List S => x :: y
+      ) (List.combinations_aux w k)) w
+
+#eval List.combinations_aux [0,1,2] 8
+
+def elem (m : Matrix S S ℕ) : List (List S) :=
+  let l := List.range N
+  sorry
+
+end GroupComputation
+
+
+section BruhatOrder
+
+
+
+end BruhatOrder
+
 
 #check depthFirstRemovingDuplicates'
 
 /- Specifying a matrix [H₃] for example -/
-def m := ![![1, 3, 2, 2, 2],
+def m := ![![1, 5, 2],
+            ![5, 1, 3],
+            ![2, 3, 1]]
+def m0 := ![![1, 3, 2, 2, 2],
            ![3, 1, 3, 2, 2],
            ![2, 3, 1, 3, 2],
            ![2, 2, 3, 1, 3],
@@ -153,12 +213,16 @@ def w3 := [2, 1, 2, 0, 2, 1, 0, 1, 0, 2]
 def w31 := [0, 2, 1, 0, 1, 2]
 def w4 := [0, 1, 2, 0, 2, 0]
 
-#eval WD m w3
+#eval [2,3,4] > [2,2,4]
+#eval (graph.getEdge (move_gen' m) (WD m w3)).toString
+#eval pattern_gen m
+#eval move_loop_pos_aux (pattern_gen m)[0] 0 [1,2,2,2,0]
+#eval move_gen m [1,2,2,1,0, 2, 1, 0, 1, 2]
+#eval (WD m w4)
+#eval NF m w4
+#eval inv m w4
 #eval length_aux m w3
 #eval RD m w3
 #eval is_reduced m w3
 #eval group_eq m w3 w31
 #eval group_eq m w3 w4
-#eval WD m [0, 2, 3, 2]
-#eval RD m [1, 0, 3, 2]
-end tits_solution

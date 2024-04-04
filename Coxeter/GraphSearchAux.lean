@@ -1,5 +1,6 @@
 --import Mathlib.Init.Control.Combinators
-
+import Mathlib.Data.MLList.DepthFirst
+import Std.Data.List.Basic
 /-!
 # Graph search and graph algorithms with edge labeling
 
@@ -9,42 +10,41 @@ This file is a more advanced version of `Std.Data.MLList.Basic` that supports gr
 
 --set_option autoImplicit true
 
-partial def depthFirst {α: Type} (g : α → List α) (start : α) : List α :=
+
+namespace graph
+
+/- A Depth-first graph search based on List. For the time being, I fail to adapt the nodup version. -/
+partial def depthFirstList {α: Type} (g : α → List α) (start : α) : List α :=
   match g start with
   | [] => [start]
-  | _ => start :: (List.join $ List.map (depthFirst g) (g start))
+  | _ => start :: (List.join $ List.map (depthFirstList g) (g start))
 
 
-partial def depthFirstNoDup {α : Type} [BEq α] (g : α → List α) (start : α) (s : List α) : List α :=
-  match g start with
-  | [] => [start]
-  | _ =>
-    let f_nodup := fun a => (g a).filter (fun x => !s.contains x)
-    start :: (List.join $ List.map (fun a => depthFirstNoDup g a (s ++ f_nodup a)) (f_nodup start))
+-- partial def depthFirstListLabeling {α β : Type} (g : α → List (α × β)) (start : α) : List α × List (α × α × β) :=
+--   match g start with
+--   | [] => ([start], [])
+--   | _ =>
+--     let v := start :: (List.join $ List.map (fun a => (depthFirstListLabeling g a).1) (List.map Prod.fst (g start)))
+--     let e := List.map (fun l => (start, l)) (g start) ++
+--       (List.join $ List.map (fun a => (depthFirstListLabeling g a).2) (List.map Prod.fst (g start)))
+--     (v, e)
 
-partial def depthFirstLabeling {α β : Type} (g : α → List (α × β)) (start : α) : List α × List (α × α × β) :=
-  match g start with
-  | [] => ([start], [])
-  | _ =>
-    let v := start :: (List.join $ List.map (fun a => (depthFirstLabeling g a).1) (List.map Prod.fst (g start)))
-    let e := List.map (fun l => (start, l)) (g start) ++
-      (List.join $ List.map (fun a => (depthFirstLabeling g a).2) (List.map Prod.fst (g start)))
-    (v, e)
+def getEdge {α β : Type} [DecidableEq α] (g : α → List (α × β)) (vl : List α) : List (α × α × β) :=
+  List.pwFilter (fun e1 e2 => ¬ (e1.1 = e2.2.1 ∧ e1.2.1 = e2.1))
+    (List.join $ List.map (fun v : α => (List.map (fun e : α × β => (v, e)) (g v))) vl)
 
-partial def depthFirstLabelingNoDup {α β : Type} [BEq α] (g : α → List (α × β)) (start : α) (s : List α) : List α × List (α × α × β) :=
-  match g start with
-  | [] => ([start], [])
-  | _ =>
-    let f_nodup := fun a => (List.map Prod.fst (g a)).filter (fun x => !s.contains x)
-    let v := start :: (List.join $ List.map (fun a => (depthFirstLabelingNoDup g a (s ++ f_nodup a)).1) (f_nodup start))
-    let e := List.map (fun l => (start, l)) (g start) ++ (List.join $ List.map (fun a => (depthFirstLabelingNoDup g a (s ++ f_nodup a)).2) (f_nodup start))
-    (v, e)
 
-def a1 (a : Fin 3) : List (Fin 3) :=
+
+
+
+end graph
+open graph
+def a1 (a : Fin 4) : List (Fin 4) :=
   match a with
   | 0 => []
-  | 1 => [0, 0, 0]
-  | 2 => [1, 0]
+  | 1 => [0]
+  | 2 => [1]
+  | 3 => [1, 2]
 
 def a1_labeling (a : Fin 3) : List (Fin 3 × String) :=
   match a with
@@ -52,19 +52,20 @@ def a1_labeling (a : Fin 3) : List (Fin 3 × String) :=
   | 1 => [(0, "move0"), (0, "move1"), (0, "move2")]
   | 2 => [(1, "move1")]
 
-def a1_dup (a : Fin 3) : List (Fin 3) :=
+def a1_dup (a : Fin 4) : List (Fin 4) :=
   match a with
-  | 0 => [1, 1]
-  | 1 => [0, 0, 0]
-  | 2 => [1, 0, 0]
+  | 0 => [3, 1]
+  | 1 => [2]
+  | 2 => [1, 0]
+  | 3 => [1, 0]
 
-def a1_dup_labeling (a : Fin 3) : List (Fin 3 × String) :=
+def a1_dup_labeling (a : Fin 4) : List (Fin 4 × String) :=
   match a with
-  | 0 => [(1, "move1"), (1, "move10")]
-  | 1 => [(0, "move01"), (0, "move14"), (0, "move2")]
-  | 2 => [(1, "move1"), (0, "move30")]
+  | 0 => [(3, "move9"), (1, "move8")]
+  | 1 => [(0, "move5"), (0, "move6"), (0, "move7")]
+  | 2 => [(1, "move3"), (0, "move4")]
+  | 3 => [(1, "move1"), (0, "move2")]
 -- #eval a1 2
-#eval depthFirstLabeling a1_labeling 2
-#eval depthFirstNoDup a1_dup 2 []
-#eval depthFirstLabelingNoDup a1_dup_labeling 2 [2]
--- #eval @depthFirst (Fin 3) a1 2
+-- #eval depthFirstLabeling a1_labeling 2
+-- #eval depthFirstLabelingNoDup a1_dup_labeling 3 [3]
+-- #eval depthFirst a1 3
