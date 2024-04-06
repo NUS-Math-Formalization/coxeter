@@ -11,6 +11,7 @@ import Mathlib.RingTheory.RootsOfUnity.Basic
 
 import Coxeter.CoxeterSystem
 import Coxeter.OrderTwoGen
+import Coxeter.AlternatingWord
 
 open BigOperators
 
@@ -427,45 +428,13 @@ lemma toPalindrome_length {L : List β} : (toPalindrome L).length = 2 * L.length
     zify; ring_nf
     apply Nat.pos_of_ne_zero h
 
-lemma reverseList_nonEmpty {L : List S} (hL : L ≠ []) : L.reverse ≠ [] := by
-  apply List.length_pos.1
-  rw [List.length_reverse]
-  exact List.length_pos.2 hL
-
-lemma dropLast_eq_reverse_tail_reverse {L : List S} : L.dropLast = L.reverse.tail.reverse := by
-  induction L with
-  | nil => simp only [List.dropLast_nil, List.reverse_nil, List.tail_nil]
-  | cons hd tail ih =>
-    by_cases k : tail = []
-    . rw [k]
-      simp only [List.dropLast_single, List.reverse_cons, List.reverse_nil,
-        List.nil_append, List.tail_cons]
-    . push_neg at k
-      have htd : (hd :: tail).dropLast = hd :: (tail.dropLast) := by
-        exact List.dropLast_cons_of_ne_nil k
-      rw [htd]
-      have trht : (tail.reverse ++ [hd]).tail = (tail.reverse.tail) ++ [hd] :=
-        List.tail_append_of_ne_nil _ _ (reverseList_nonEmpty k)
-      have : (hd :: tail).reverse.tail = (hd :: tail).dropLast.reverse := by
-        rw [htd]
-        simp only [List.reverse_cons]
-        rw [trht]
-        apply (List.append_left_inj [hd]).2
-        exact List.reverse_eq_iff.1 ih.symm
-      rw [this, List.reverse_reverse, htd]
-
-lemma reverse_tail_reverse_append {L : List S} (hL : L ≠ []) :
-  L.reverse.tail.reverse ++ [L.getLast hL] = L := by
-  rw [← dropLast_eq_reverse_tail_reverse]
-  exact List.dropLast_append_getLast hL
-
 lemma toPalindrome_in_Refl [CoxeterMatrix m] {L:List S} (hL : L ≠ []) : (toPalindrome L:G) ∈ T := by
   apply OrderTwoGen.Refl.simplify.mpr
   use L.reverse.tail.reverse.gprod, (L.getLast hL)
   rw [← gprod_reverse, List.reverse_reverse]
   have : L.reverse.tail.reverse.gprod * (L.getLast hL) = L.gprod := by
     have : L = L.reverse.tail.reverse ++ [L.getLast hL] :=
-      (reverse_tail_reverse_append hL).symm
+      (List.reverse_tail_reverse_append hL).symm
     nth_rw 3 [this]
     exact gprod_append_singleton.symm
   rw [this, toPalindrome, gprod_append]
@@ -485,9 +454,11 @@ lemma toPalindrome_i_in_Refl [CoxeterMatrix m] {L : List S} (i : Fin L.length) :
     exact List.length_eq_zero.mpr tkpos
   exact toPalindrome_in_Refl h
 
-lemma mul_Palindrome_i_cancel_i [CoxeterMatrix m] {L : List S} (i : Fin L.length) : (t(L, i) : G) * L = (L.removeNth i) := by
+lemma mul_Palindrome_i_cancel_i [CoxeterMatrix m] {L : List S} (i : Fin L.length) :
+  (t(L, i) : G) * L = (L.removeNth i) := by
   rw [toPalindrome_i, toPalindrome, List.removeNth_eq_take_drop, List.take_get_lt _ _ i.2]
-  simp only [gprod_append, gprod_singleton, List.reverse_append, List.reverse_singleton, List.singleton_append, List.tail]
+  simp only [gprod_append, gprod_singleton, List.reverse_append, List.reverse_singleton,
+    List.singleton_append, List.tail]
   have : L = (L.take i).gprod * (L.drop i).gprod := by
     nth_rw 1 [← List.take_append_drop i L]
     rw [gprod_append]
@@ -739,85 +710,7 @@ noncomputable def pi_aux' [CoxeterMatrix m] (s : α) : Equiv.Perm R where
 /-noncomputable def alternating_word (s t : α) (n : ℕ) : List α :=
   (List.range n).map (fun x ↦ if x % 2 = 0 then s else t)-/
 
-def alternating_word (s t : α) (n : ℕ) : List α :=
-  match n with
-  | 0 => []
-  | m + 1 => s :: alternating_word t s m
-
-lemma alternating_word_range (s t : α) (n : ℕ) : alternating_word s t n = (List.range n).map (fun x ↦ if x % 2 = 0 then s else t) := by
-  induction' n with m ih generalizing s t
-  · simp only [Nat.zero_eq, List.range_zero, List.map_nil, alternating_word]
-  · rw [alternating_word, ih t s, List.range_eq_range', List.range_eq_range',
-      ← List.range'_append_1 0 1 m, List.map_append, List.range'_eq_map_range 1 m, List.range_eq_range']
-    simp only [List.range'_one, List.map_cons, Nat.zero_mod, reduceIte, List.map_nil, List.map_map,
-      List.singleton_append, List.cons.injEq, true_and]
-    congr
-    ext x
-    dsimp only [Function.comp_apply]
-    have : (if ¬¬(1 + x) % 2 = 0 then s else t) = if x % 2 = 0 then t else s := by
-      rw [ite_not]
-      congr
-      simp only [Nat.mod_two_ne_zero, eq_iff_iff]
-      rw [add_comm, ← Nat.succ_eq_add_one]
-      exact Nat.succ_mod_two_eq_one_iff
-    rw [← this]
-    congr
-    rw [not_not]
-
-lemma alternating_word_nil (s t : α) : alternating_word s t 0 = [] := by
-  rw [alternating_word]
-
-lemma alternating_word_singleton (s t : α) : alternating_word s t 1 = [s] := by
-  rw [alternating_word, alternating_word_nil]
-
-lemma alternating_word_length (s t : α) (n : ℕ) : (alternating_word s t n).length = n := by
-  induction' n with m ih generalizing s t
-  rw [alternating_word_nil, List.length_nil]
-  rw [alternating_word, List.length_cons, ih t s]
-
-lemma alternating_word_take (s t : α) (n i : ℕ) (h : i ≤ n) :
-    (alternating_word s t n).take i = alternating_word s t i := by
-  rw [alternating_word_range, alternating_word_range, ← List.map_take, List.take_range h]
-
--- DLevel 2
-lemma alternating_word_append_odd (s t : α) (n m : ℕ) (h1 : m ≤ n) (h2 : Odd m) :
-    alternating_word s t n = alternating_word s t m ++ alternating_word t s (n - m) := by
-  nth_rw 1 [← Nat.sub_add_cancel (h1)]
-  set d := n - m
-  rcases h2 with ⟨k, ek⟩
-  rw [ek]
-  clear ek
-  induction k with
-  | zero =>
-    rw [Nat.mul_zero, Nat.zero_add, Nat.add_one, Nat.succ_eq_add_one]
-    rw [alternating_word_singleton, alternating_word, List.singleton_append]
-  | succ y ih =>
-    rw [Nat.add_one, Nat.succ_eq_add_one, Nat.succ_eq_add_one, mul_add]
-    nth_rw 2 [two_mul]
-    nth_rw 3 [two_mul]
-    repeat rw [← add_assoc]
-    rw [alternating_word, alternating_word]
-    rw [add_assoc, ih]
-    rw [alternating_word, alternating_word]
-    repeat rw [← List.cons_append]
-
--- DLevel 2
-lemma alternating_word_append_even (s t : α) (n m : ℕ) (h1 : m ≤ n) (h2 : Even m) :
-    alternating_word s t n = alternating_word s t m ++ alternating_word s t (n - m) := by
-  nth_rw 1 [← Nat.sub_add_cancel (h1)]
-  set d := n - m
-  rcases h2 with ⟨k, ek⟩
-  rw [ek, ← two_mul]
-  clear ek
-  induction k with
-  | zero =>
-    rw [Nat.mul_zero, Nat.add_zero, alternating_word_nil, List.nil_append]
-  | succ y ih =>
-    rw [Nat.succ_eq_add_one, mul_add, two_mul, two_mul, ← add_assoc]
-    repeat rw [alternating_word]
-    rw [← two_mul, ih]
-    repeat rw [← List.cons_append]
-
+open AlternatingWord
 -- DLevel 2
 lemma alternating_word_power (s t : α) (n : ℕ) : (alternating_word s t (2 * n) : List S).gprod
     = (of m s * of m t) ^ n := by
@@ -833,36 +726,6 @@ lemma alternating_word_power (s t : α) (n : ℕ) : (alternating_word s t (2 * n
 
 lemma alternating_word_relation (s t : α) : (alternating_word s t (2 * m s t) : List S).gprod = 1 := by
   rw [alternating_word_power s t (m s t), of_relation]
-
-lemma odd_alternating_word_reverse (s t : α) (i : ℕ) (h : Odd i) :
-  (alternating_word s t i).reverse = alternating_word s t i := by
-  rcases h with ⟨k, ek⟩
-  rw [ek]
-  clear ek
-  induction' k with l ih
-  . simp only [Nat.zero_eq, mul_zero, zero_add]
-    rfl
-  . rw [Nat.succ_eq_add_one, mul_add, mul_one, add_assoc, add_comm 2 1, ← add_assoc]
-    nth_rw 1 [alternating_word_append_odd s t (2 * l + 1 + 2) (2 * l + 1) (by simp) (by simp)]
-    rw [alternating_word_append_even s t (2 * l + 1 + 2) 2 (by simp) (by simp)]
-    simp only [add_tsub_cancel_left, List.reverse_append, add_tsub_cancel_right,
-      ih, List.append_cancel_right_eq]
-    rfl
-
-lemma even_alternating_word_reverse (s t : α) (i : ℕ) (h : Even i) :
-  (alternating_word s t i).reverse = alternating_word t s i := by
-  rcases h with ⟨k, ek⟩
-  rw [← two_mul] at ek
-  rw [ek]
-  clear ek
-  induction' k with l ih
-  . simp only [Nat.zero_eq, mul_zero]
-    rfl
-  . rw [Nat.succ_eq_add_one, mul_add, mul_one,
-      alternating_word_append_even s t (2 * l + 2) 2 (by simp) (by simp),
-      alternating_word_append_even t s (2 * l + 2) (2 * l) (by simp) (by simp),
-      List.reverse_append, add_tsub_cancel_right, add_tsub_cancel_left, ih]
-    rfl
 
 -- DLevel 3
 lemma alternating_word_palindrome (s t : α) (n : ℕ) (i : Fin n) :
@@ -1018,15 +881,6 @@ lemma pi_aux_list_mul (s t : α) : ((pi_aux' s : Equiv.Perm R) * (pi_aux' t : Eq
     simp only [add_tsub_cancel_left, List.map_append, List.prod_append, ← ih, mul_left_inj]
     rfl
 
-lemma alternating_word_map (s t : α) (f : α → A) (n : ℕ) :
-  (alternating_word s t n).map f = alternating_word (f s) (f t) n := by
-  induction' n with k ih generalizing s t
-  . simp only [Nat.zero_eq]
-    rfl
-  . rw [alternating_word, alternating_word, List.map_cons]
-    simp only [List.cons.injEq, true_and]
-    exact ih t s
-
 -- DLevel 3
 lemma pi_relation (s t : α) : ((pi_aux' s : Equiv.Perm R) * (pi_aux' t : Equiv.Perm R)) ^ m s t = 1 := by
   have (r : R) : (((pi_aux' s : Equiv.Perm R) * (pi_aux' t : Equiv.Perm R)) ^ m s t) r = r := by
@@ -1092,21 +946,6 @@ lemma pi_value (g : G) (L : List S) (h : g = L) (r : R) : (pi g) r
   · rw [← List.reverse_map, gprod_reverse, inv_inj]
   · rw [← List.reverse_map]
 
-lemma reverse_head (L : List α) (h : L ≠ []) :
-  L.reverse = (L.getLast h) :: (L.dropLast).reverse := by
-  induction L with
-  | nil => contradiction
-  | cons hd tail ih =>
-    by_cases k : tail = []
-    . simp_rw [k]
-      simp only [ne_eq, not_true_eq_false, List.reverse_nil, List.dropLast_nil,
-        IsEmpty.forall_iff, List.reverse_cons, List.nil_append, List.getLast_singleton',
-        List.dropLast_single]
-    . push_neg at k
-      rw [List.reverse_cons, List.getLast_cons k, List.dropLast, List.reverse_cons, ih k]
-      . rfl
-      . exact k
-
 -- DLevel 3
 -- (maybe some list wrangling)
 lemma pi_inj : Function.Injective (pi : G → Equiv.Perm R) := by
@@ -1118,14 +957,14 @@ lemma pi_inj : Function.Injective (pi : G → Equiv.Perm R) := by
   have L_notempty: L ≠ [] := by
     contrapose! wne1
     rw [hw, wne1, gprod_nil]
-  have L_rev_notempty : L.reverse ≠ [] := reverseList_nonEmpty L_notempty
+  have L_rev_notempty : L.reverse ≠ [] := List.reverseList_nonEmpty L_notempty
   have L_rev_ge1 : L.reverse.length > 0 := List.length_pos.mpr L_rev_notempty
   have : pi w ≠ 1 := by
     let s := L.getLast L_notempty
-    let t : T := ⟨s, SimpleRefl_subset_Refl (Subtype.mem s)⟩
+    let t : T := ⟨s, SimpleRefl_is_Refl (Subtype.mem s)⟩
     have : nn L.reverse t = 1 := by
       have zero_works : (toPalindrome_i L.reverse 0).gprod = [s] := by
-        rw [toPalindrome_i, reverse_head L L_notempty]
+        rw [toPalindrome_i, List.reverse_head L L_notempty]
         simp only [SimpleRefl, toPalindrome, zero_add, List.take_cons_succ, List.take_zero,
           List.reverse_cons, List.reverse_nil, List.nil_append, List.tail_cons,
           List.singleton_append]
