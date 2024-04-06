@@ -235,10 +235,57 @@ lemma removeNth_reverse (L : List α) (n : ℕ) (h : n < L.length) :
 lemma reverse_cons'' (L : List α) (a : α) : (L ++ [a]).reverse = a :: L.reverse := by
   rw [List.reverse_append, List.reverse_singleton]; simp;
 
+lemma reverseList_nonEmpty {L : List S} (hL : L ≠ []) : L.reverse ≠ [] := by
+  apply List.length_pos.1
+  rw [List.length_reverse]
+  exact List.length_pos.2 hL
+
 lemma eq_iff_reverse_eq (L1 L2 : List α) : L1.reverse = L2.reverse ↔ L1 = L2 := by
   constructor
   . intro h; rw [←List.reverse_reverse L1, ←List.reverse_reverse L2, h, List.reverse_reverse]
   . intro h; rw [h]
+
+lemma reverse_head (L : List α) (h : L ≠ []) :
+  L.reverse = (L.getLast h) :: (L.dropLast).reverse := by
+  induction L with
+  | nil => contradiction
+  | cons hd tail ih =>
+    by_cases k : tail = []
+    . simp_rw [k]
+      simp only [ne_eq, not_true_eq_false, List.reverse_nil, List.dropLast_nil,
+        IsEmpty.forall_iff, List.reverse_cons, List.nil_append, List.getLast_singleton',
+        List.dropLast_single]
+    . push_neg at k
+      rw [List.reverse_cons, List.getLast_cons k, List.dropLast, List.reverse_cons, ih k]
+      . rfl
+      . exact k
+
+lemma dropLast_eq_reverse_tail_reverse {L : List S} : L.dropLast = L.reverse.tail.reverse := by
+  induction L with
+  | nil => simp only [List.dropLast_nil, List.reverse_nil, List.tail_nil]
+  | cons hd tail ih =>
+    by_cases k : tail = []
+    . rw [k]
+      simp only [List.dropLast_single, List.reverse_cons, List.reverse_nil,
+        List.nil_append, List.tail_cons]
+    . push_neg at k
+      have htd : (hd :: tail).dropLast = hd :: (tail.dropLast) := by
+        exact List.dropLast_cons_of_ne_nil k
+      rw [htd]
+      have trht : (tail.reverse ++ [hd]).tail = (tail.reverse.tail) ++ [hd] :=
+        List.tail_append_of_ne_nil _ _ (reverseList_nonEmpty k)
+      have : (hd :: tail).reverse.tail = (hd :: tail).dropLast.reverse := by
+        rw [htd]
+        simp only [List.reverse_cons]
+        rw [trht]
+        apply (List.append_left_inj [hd]).2
+        exact List.reverse_eq_iff.1 ih.symm
+      rw [this, List.reverse_reverse, htd]
+
+lemma reverse_tail_reverse_append {L : List S} (hL : L ≠ []) :
+  L.reverse.tail.reverse ++ [L.getLast hL] = L := by
+  rw [← dropLast_eq_reverse_tail_reverse]
+  exact List.dropLast_append_getLast hL
 
 --#check reverse_append
 
