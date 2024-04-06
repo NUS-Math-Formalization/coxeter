@@ -59,8 +59,7 @@ lemma alpha.odd {f : S → M} {s s' : S} {l : ℕ} :
         Nat.one_lt_ofNat]
     _ = l := by
       simp only [Nat.ofNat_pos, Nat.mul_div_right, Nat.reduceDiv, add_zero]
-  . have : ((2 * l + 1) % 2) = 1 := by
-      simp only [Nat.add_mod, Nat.mul_mod_right, Nat.mod_succ, zero_add]
+  . have : ((2 * l + 1) % 2) = 1 := by apply Nat.odd_iff.1; norm_num
     rw [this, pow_one]
 
 def constant (f : S → M) (h : ∀ s s', alpha f s s' = alpha f s' s) :
