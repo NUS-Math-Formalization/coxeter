@@ -22,22 +22,45 @@ namespace CoxeterSystem
 
 variable {M: Type*} [Monoid M]
 
-def reducedWords (w : G) := { L : List S| w = L ∧ reduced_word L}
+def reducedWords (w : G) := { L : List S | w = L ∧ reduced_word L }
 
 namespace monoidLift
 def alpha (f : S → M) (s s' : S) : M := if orderOf ((s :G) * s') = 0 then 1 else
- (f s * f s')^(orderOf ((s :G) * s') /2 ) * (f s')^(orderOf ((s :G) * s') % 2)
+ (f s * f s') ^ (orderOf ((s : G) * s') / 2) * (f s')^(orderOf ((s : G) * s') % 2)
 
-lemma alpha.zero {f : S → M} {s s' :S} :
-  orderOf ((s:G) * s') =0 → alpha f s s' = 1 := by
+lemma alpha.zero {f : S → M} {s s' : S} :
+  orderOf ((s : G) * s') =0 → alpha f s s' = 1 := by
   intro h; simp only [↓alpha,↓h,↓reduceIte]
 
-lemma alpha.even {f : S → M} {s s' :S} {l : ℕ} :
-  orderOf ((s:G) * s') = 2*l → alpha f s s' = (f s * f s')^l := by sorry
+lemma alpha.even {f : S → M} {s s' : S} {l : ℕ} :
+  orderOf ((s : G) * s') = 2 * l → alpha f s s' = (f s * f s') ^ l := by
+  intro h
+  by_cases h' : l = 0
+  . rw [h']
+    rw [h'] at h
+    simp only [mul_zero, pow_zero] at *
+    apply alpha.zero h
+  . push_neg at h'
+    rw [alpha, if_neg, h]
+    simp only [Nat.ofNat_pos, Nat.mul_div_right, Nat.mul_mod_right, pow_zero, mul_one]
+    push_neg
+    rw [h, ← mul_zero 2, Nat.mul_ne_mul_right (by norm_num)]
+    exact h'
 
-lemma alpha.odd {f : S → M} {s s' :S} {l : ℕ} :
-  orderOf ((s:G) * s') = 2*l+1 → alpha f s s' = (f s * f s')^l*f s' := by sorry
-
+lemma alpha.odd {f : S → M} {s s' : S} {l : ℕ} :
+  orderOf ((s : G) * s') = 2 * l + 1 → alpha f s s' = (f s * f s') ^ l * f s' := by
+  intro h
+  have : orderOf ((s : G) * s') ≠ 0 := by rw [h]; norm_num
+  rw [alpha, if_neg this, h]
+  congr
+  . calc
+    _ = (2 * l) / 2 + 1 / 2 := by
+      simp only [Nat.add_div_eq_of_add_mod_lt, Nat.mul_mod_right, Nat.mod_succ, zero_add,
+        Nat.one_lt_ofNat]
+    _ = l := by
+      simp only [Nat.ofNat_pos, Nat.mul_div_right, Nat.reduceDiv, add_zero]
+  . have : ((2 * l + 1) % 2) = 1 := by apply Nat.odd_iff.1; norm_num
+    rw [this, pow_one]
 
 def constant (f : S → M) (h : ∀ s s', alpha f s s' = alpha f s' s) :
   ∀ w:G,  ∀ L L' : List S, L ∈ reducedWords w → L' ∈ reducedWords w →
