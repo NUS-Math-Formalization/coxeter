@@ -109,6 +109,7 @@ partial def move_loop_pos_aux (pattern : Pattern) (n : Nat) (w : List S) : List 
   let w' := move_Nth pattern w n
   if w' = w then [] else (w', pattern, n) :: move_loop_pos_aux pattern (n+1) w
 
+
 def move_gen_aux (l_pattern : List Pattern) (w : List S) : List (List S × Pattern × Nat) :=
   match l_pattern with
   | [] => []
@@ -133,8 +134,6 @@ def move_gen' (m : Matrix S S ℕ) (w : List S) : List (List S × Pattern × Nat
 /- All possible words resulted by braid-move and nil-move, trigger built-in depthfirst graph search -/
 def WD (m : Matrix S S ℕ) (w : List S) : List (List S) :=
   @depthFirstRemovingDuplicates' (List S) _ _ (fun x => move_gen m x) w none
-
-
 
 /- A strateforward realization for ℓ function -/
 def length_aux (m : Matrix S S ℕ) (w : List S) : Nat :=
