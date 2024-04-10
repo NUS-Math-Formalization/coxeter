@@ -12,7 +12,8 @@ import Mathlib.Algebra.DirectSum.Basic
 import Mathlib.Algebra.Ring.Defs
 import Mathlib.Algebra.Algebra.Hom
 import Mathlib.Algebra.Algebra.Equiv
-
+import Mathlib.Init.Data.List.Instances
+import Mathlib.Data.Finsupp.Pointwise
 
 open Classical List CoxeterSystem OrderTwoGen CoxeterGroup HOrderTwoGenGroup CoxeterMatrix
 
@@ -22,24 +23,25 @@ variable {w:G}
 --#check CoxeterMatrix.length_smul_neq (m:=toMatrix hG.S) (g:=equiv.invFun w)
 --#check Presentation.map hG.S
 
-noncomputable def q :=@LaurentPolynomial.T ℤ _ 1
+local notation : max "q" => @LaurentPolynomial.T ℤ _ 1
 
 local notation : max "q⁻¹" => @LaurentPolynomial.T ℤ _ (-1)
 
 @[simp] lemma q_inv_mul : q⁻¹ * q = 1 := by
-  simp only [q,←LaurentPolynomial.T_add]
+  simp only [←LaurentPolynomial.T_add]
   apply LaurentPolynomial.T_zero
 
 @[simp] lemma mul_q_inv : q * q⁻¹ = 1 := by
-  simp only [q,←LaurentPolynomial.T_add]
+  simp only [←LaurentPolynomial.T_add]
   apply LaurentPolynomial.T_zero
+
 def Hecke (G : Type*) [CoxeterGroup G] := G →₀ (LaurentPolynomial ℤ)
 
 namespace Hecke
 
 noncomputable def TT : G → Hecke G:= fun w => Finsupp.single w 1
 
-noncomputable instance Hecke.AddCommMonoid : AddCommMonoid (Hecke G):= Finsupp.addCommMonoid
+noncomputable instance Hecke.AddCommMonoid : AddCommMonoid (Hecke G):= Finsupp.instAddCommMonoid
 
 noncomputable instance Hecke.Module : Module (LaurentPolynomial ℤ) (Hecke G):= Finsupp.module _ _
 
@@ -47,7 +49,7 @@ noncomputable instance Hecke.AddCommGroup : AddCommGroup (Hecke G) := Module.add
 
 noncomputable instance Hecke.Module.Free : Module.Free (LaurentPolynomial ℤ) (Hecke G):= Module.Free.finsupp _ _ _
 
-instance Hecke.funLike : FunLike (Hecke G) G (LaurentPolynomial ℤ):= Finsupp.instFunLike
+instance funLike : FunLike (Hecke G) G (LaurentPolynomial ℤ):= Finsupp.instFunLike
 
 noncomputable instance LaurentPolynomial.CommSemiring : CommSemiring (LaurentPolynomial ℤ):=
 AddMonoidAlgebra.commSemiring
@@ -68,9 +70,11 @@ lemma Hecke.repr_respect_TT : ∀ h:Hecke G, h = Finsupp.sum h (fun w =>(fun p =
 }
 
 @[simp]
-lemma TT_apply_self {w : G} : (TT w) w = 1 := by rw [TT,Finsupp.single_apply];simp [ite_true]
+lemma TT_apply_self {w : G} : (TT w) w = 1 := by
+  rw [TT,Finsupp.single_apply];simp [ite_true]
 
---Ts *Tw = Ts*Ts*Tu= (q-1)Ts*Tu+qTu=(qSS1) Tw + qT(s*w) if s∈D_L w
+lemma TT_apply_ne_self {w x:G} (hne : w ≠ x) : (TT w) x = 0 := by
+  rw [TT,Finsupp.single_apply]; simp [ite_false]; assumption
 
 section HeckeMul
 --DFinsupp.single w (q-1) + DFinsupp.single (s*w) q))
@@ -263,7 +267,7 @@ lemma opl_commute_opr : ∀ s t:hG.S, LinearMap.comp (opr' t) (opl' s) = LinearM
           simp_rw[TT_muls_eq_mul_of_length_gt h1,LinearMap.map_add,LinearMap.map_smul,TT_muls_right_eq_mul_of_length_gt h2,TT_muls_right_eq_mul_of_length_lt h3,LinearMap.map_add,LinearMap.map_smul,TT_muls_eq_mul_of_length_gt h1,TT_muls_eq_mul_of_length_lt h4,←mul_assoc]
           nth_rewrite 2 [smul_eq_muls_of_length_eq s t w]
           rfl
-          exact ⟨h,(by rw[length_smul_of_length_lt wne1 h1,length_muls_of_length_lt wne1 h2])⟩
+          exact ⟨h,(by rw[length_smul_of_length_lt h1,length_muls_of_length_lt h2])⟩
         }
         --(e) length (↑s * w) < length w = ℓ(s*w*t) < length (w * ↑t)
         {
@@ -418,7 +422,7 @@ lemma TT_subset_image_of_alg_hom_aux'_aux : ∀ l, ∀ w:G, l = ℓ(w) →∃ f:
     have hw:w≠1:= Function.mt length_zero_iff_one.2 (h ▸ Nat.succ_ne_zero n)
     let s:= Classical.choice (rightDescent_NE_of_ne_one hw)
     have :s.val ∈ S:= Set.mem_of_mem_of_subset s.2 (Set.inter_subset_right _ S)
-    have h1:=length_muls_of_mem_rightDescent hw s
+    have h1:=length_muls_of_mem_rightDescent s
     rw [←h,Nat.succ_sub_one] at h1
     have h2:= hn (w * s) (eq_comm.1 h1)
     rcases h2 with ⟨f',hf⟩
@@ -512,7 +516,7 @@ LinearEquiv (@RingHom.id (LaurentPolynomial ℤ) _) (subalg G) (Hecke G) where
   left_inv := Function.leftInverse_surjInv alg_hom_aux_bijective
   right_inv := Function.rightInverse_surjInv alg_hom_aux_surjective
 
-lemma alg_hom_id : alg_hom G 1 = TT 1 := by simp [alg_hom]
+lemma alg_hom_id : (alg_hom G) 1 = TT 1 := by sorry
 
 lemma subalg.id_eq :(alg_hom G).symm (TT 1) = 1:=by
   simp_rw [←alg_hom_id, LinearEquiv.symm_apply_eq]
@@ -532,8 +536,12 @@ noncomputable instance (F : Type*)  (R : outParam (Type*)) (M : outParam (Type*)
 noncomputable instance : Mul (Hecke G) where
   mul := HeckeMul
 
-@[simp]
-lemma heckeMul {x y : Hecke G} : HeckeMul x y = x * y := rfl
+noncomputable instance : One (Hecke G) where
+  one := TT (1:G)
+
+lemma one_eq : (1:Hecke G) = TT 1 := rfl
+
+@[simp] lemma heckeMul {x y : Hecke G} : HeckeMul x y = x * y := rfl
 
 lemma mul_zero : ∀ (a : Hecke G), HeckeMul a 0 = 0 := by
   intro a
@@ -563,6 +571,10 @@ lemma Hecke.mul_one : ∀ (a : Hecke G), HeckeMul a (TT 1) = a := by
   rw [HeckeMul,subalg.id_eq]
   simp
 
+noncomputable instance : MulOneClass (Hecke G) where
+  one_mul := Hecke.one_mul
+  mul_one := Hecke.mul_one
+
 lemma Hecke.left_distrib : ∀ (a b c : Hecke G), HeckeMul a (b + c) = HeckeMul a b + HeckeMul a c := by
   intro a b c
   simp only[HeckeMul]
@@ -589,9 +601,7 @@ noncomputable instance : NonUnitalSemiring (Hecke G) := Semiring.toNonUnitalSemi
 
 noncomputable instance : NonUnitalNonAssocSemiring (Hecke G) := NonUnitalSemiring.toNonUnitalNonAssocSemiring (α := Hecke G)
 
-noncomputable instance : NonUnitalNonAssocRing (Hecke G) :=
-  {instNonUnitalNonAssocSemiringHecke with
-    add_left_neg := by simp}
+noncomputable instance : NonUnitalNonAssocRing (Hecke G) := Finsupp.instNonUnitalNonAssocRingFinsuppToZeroToMulZeroClassToNonUnitalNonAssocSemiring
 
 lemma Hecke.smul_assoc : ∀ (r : LaurentPolynomial ℤ) (x y : Hecke G), HeckeMul (r • x) y = r • (HeckeMul x y):=by
   intro r x y
@@ -607,12 +617,12 @@ noncomputable instance Hecke.algebra : Algebra (LaurentPolynomial ℤ) (Hecke G)
 Algebra.ofModule (Hecke.smul_assoc) (Hecke.smul_comm)
 
 --how to simp * to def?
-lemma HeckeMul.gt : ℓ(w) < ℓ(s*w) → TT s.1 * TT w = TT (s.1*w) := by
+lemma mul_gt : ℓ(w) < ℓ(s*w) → TT s.1 * TT w = TT (s.1*w) := by
   intro hl
   --unfold Hecke.Mul
   sorry
 
-lemma HeckeMul.lt : ℓ(s*w) < ℓ(w) → TT s.1 * TT w = (q-1) • (TT w) + q • (TT (s*w)) := sorry
+lemma mul_lt : ℓ(s*w) < ℓ(w) → TT s.1 * TT w = (q-1) • (TT w) + q • (TT (s*w)) := sorry
 
 @[simp]
 lemma Ts_square : TT s.1 * TT s.1 = (q - 1) • TT s.1 + q • 1 := sorry
@@ -621,11 +631,11 @@ noncomputable def listToHecke : List hG.S → Hecke G := fun L => (List.map (TT 
 
 noncomputable def TT' : G → Hecke G := fun g => listToHecke (@choose_reduced_word G _ hG.S (@SimpleRefls.toOrderTwoGen' G _) g)
 
+@[simp] theorem pure_def (a : α) : pure a = [a] := rfl
+
 @[simp]
 lemma listToHecke_cons : listToHecke (s :: L) = TT s.1 * listToHecke L :=by
-  dsimp [listToHecke]
-  rw [List.prod_cons]
-  rfl
+  simp [listToHecke]
 
 @[simp]
 lemma listToHecke_nil_eq_one : listToHecke ([] : List hG.S) = 1 :=rfl
@@ -641,7 +651,7 @@ theorem TTw_eq_reduced_word_TTmul : ∀ L : List S,∀ w:G, reduced_word L → w
     have lgt: ℓ(L.gprod) < ℓ(((s :: L):G)) := sorry
     rw [gprod_cons] at heq lgt
     have : L.gprod = L.gprod := rfl
-    rw [heq,←HeckeMul.gt s lgt,listToHecke_cons,←hL L.gprod redL this]
+    rw [heq,←mul_gt s lgt,listToHecke_cons,←hL L.gprod redL this]
 
 --define (TT s)⁻¹
 
@@ -651,8 +661,11 @@ noncomputable def TT_inv_s (s:hG.S) := q⁻¹ • (TT s.val) - (1-q⁻¹) • 1
 lemma TT_inv_mul {s:hG.S}:  TT s.1 * (TT_inv_s s) = 1 := by
   dsimp [TT_inv_s]
   set qinv := @LaurentPolynomial.T ℤ _ (-1)
-  simp_rw [mul_sub (TT s.1),mul_smul_comm,Ts_square,smul_add,smul_smul,mul_sub,mul_one,q_inv_mul,add_sub_right_comm,sub_self]
-  simp
+  --rw [mul_sub (TT s.1) (qinv • TT s.1) ((1 - qinv) • 1)]
+  sorry
+  -- rw [sub_eq_add_neg,mul_add,mul_smul_comm,Ts_square,smul_add,smul_smul,mul_sub,mul_one,q_inv_mul,add_comm,mul_neg (TT s),sub_self]
+
+
 
 noncomputable def listToHeckeInv : List hG.S → Hecke G := fun L => (List.map TT_inv_s L.reverse).prod
 
@@ -675,6 +688,10 @@ theorem is_inv_aux' (red : reduced_word L) :  (listToHeckeInv L) * listToHecke (
 
 noncomputable def TTInv : G → Hecke G := fun g =>  listToHeckeInv <| choose_reduced_word hG.S g
 
+lemma TTInv_s_eq {s:hG.S}: TTInv s.1 = q⁻¹ • (TT s.val) - (1-q⁻¹) • 1 := sorry
+
+lemma TTInv_s_eq' {s:G} {h : s∈hG.S} : TTInv s = q⁻¹ • (TT s) - (1-q⁻¹) • 1 := sorry
+
 lemma mul_TTInv {w : G} : TT w * TTInv w = 1 := by
   dsimp [TTInv]
   set L := choose_reduced_word hG.S w
@@ -687,4 +704,12 @@ lemma TTInv_mul {w : G} : TTInv w * TT w = 1 := by
   rw [TTw_eq_reduced_word_TTmul L w (choose_reduced_word_spec w).1 (choose_reduced_word_spec w).2]
   exact is_inv_aux' (choose_reduced_word_spec w).1
 
+lemma TTInv_unique : TT w * h = 1 → h = TTInv w := by
+  have := mul_TTInv (w:=w)
+  intro h1
+  have h2 : TTInv w * TT w * h = TTInv w := by rw [mul_assoc,h1];simp
+  rw [TTInv_mul,one_mul] at h2
+  assumption
+
+#check mul_eq_mul_left_iff
 end Hecke
