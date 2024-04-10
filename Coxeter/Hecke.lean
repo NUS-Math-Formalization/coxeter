@@ -96,14 +96,14 @@ noncomputable def mulws (w:G) (s:hG.S) : Hecke G :=
 noncomputable def muls_right (h:Hecke G) (s:hG.S)  : Hecke G:=
 finsum (fun w:G =>  (h w) • (mulws w s) )
 
-noncomputable def mulw.F {G:Type*} [CoxeterGroup G] (u :G) (F:(w:G) → adjL w u → Hecke G → Hecke G) (v:Hecke G): Hecke G:=
-if h:u =1 then v
-  else(
-    let s:= Classical.choice (@leftDescent_NE_of_ne_one G u _ (by rwa [ne_eq]))
-    have :s.val ∈ HOrderTwoGenGroup.SimpleRefl G:= Set.mem_of_mem_inter_right s.2
-    muls ⟨s,this⟩ (F (s.val*u) (@adjL_of_mem_leftDescent G _ _ u s ) v))
+-- noncomputable def mulw.F {G:Type*} [CoxeterGroup G] (u :G) (F:(w:G) → adjL w u → Hecke G → Hecke G) (v:Hecke G): Hecke G:=
+-- if h:u =1 then v
+--   else(
+--     let s:= Classical.choice (@leftDescent_NE_of_ne_one G u _ (by rwa [ne_eq]))
+--     have :s.val ∈ HOrderTwoGenGroup.SimpleRefl G:= Set.mem_of_mem_inter_right s.2
+--     muls ⟨s,this⟩ (F (s.val*u) (@adjL_of_mem_leftDescent G _ _ u s ) v))
 
-noncomputable def mulw {G:Type*} [CoxeterGroup G]:G → Hecke G → Hecke G := @WellFounded.fix G (fun _ => Hecke G → Hecke G) adjL well_founded_adjL (mulw.F (G:=G))
+-- noncomputable def mulw {G:Type*} [CoxeterGroup G]:G → Hecke G → Hecke G := @WellFounded.fix G (fun _ => Hecke G → Hecke G) adjL well_founded_adjL (mulw.F (G:=G))
 
 lemma mulsw_apply_of_length_lt {s:hG.S} (h:ℓ(w)<ℓ((s*w))):mulsw s w = TT (s*w):=sorry
 
@@ -147,14 +147,14 @@ lemma finsupp_mulws_of_finsupp_Hecke (x:Hecke G) :Set.Finite (Function.support (
   exact Set.Finite.subset (Finsupp.finite_support x) this
 }
 
-lemma finsupp_mul_of_directsum  (a c: Hecke G): Function.support (fun w ↦ ↑(a w) • mulw w c) ⊆  {i | ↑(a i) ≠ 0} := by {
-  simp only [ne_eq, Function.support_subset_iff, Set.mem_setOf_eq]
-  intro x
-  apply Function.mt
-  intro h
-  rw [h]
-  simp
-}
+-- lemma finsupp_mul_of_directsum  (a c: Hecke G): Function.support (fun w ↦ ↑(a w) • mulw w c) ⊆  {i | ↑(a i) ≠ 0} := by {
+--   simp only [ne_eq, Function.support_subset_iff, Set.mem_setOf_eq]
+--   intro x
+--   apply Function.mt
+--   intro h
+--   rw [h]
+--   simp
+-- }
 end HeckeMul
 
 end Hecke
