@@ -232,12 +232,13 @@ instance SimpleRefls.toOrderTwoGen'  : @OrderTwoGen H _ (hH.S) where
 
 noncomputable def length  (g :H) := OrderTwoGen.length (hH.S) g
 
-notation:65 "ℓ(" g:66 ")" => (length g)
+notation:max "ℓ(" g:66 ")" => (length g)
 variable (s w :G)
 #check ℓ(s*w)
 #check ℓ((s*w))
 #check ℓ(s) - 1
 #check w^(ℓ(w))
+#check ℓ(w) + ℓ(s)
 end HOrderTwoGenGroup
 
 class CoxeterGroup (G:Type*) extends HOrderTwoGenGroup G where
@@ -289,7 +290,11 @@ variable {G : Type*} {w : G} [hG:CoxeterGroup G]
 -- this section only contain lemmas that needed in Hecke.lean, you can also formulate the symms if u want.
 lemma leftDescent_NE_of_ne_one  (h : w ≠ 1) : Nonempty $ leftDescent w:= sorry
 
+lemma leftDescent_NE_iff_ne_one  : w ≠ 1 ↔ Nonempty (leftDescent w) := sorry
+
 lemma rightDescent_NE_of_ne_one  (h : w ≠ 1) : Nonempty $ rightDescent w:= sorry
+
+lemma rightDescent_NE_iff_ne_one  : w ≠ 1 ↔ Nonempty (rightDescent w) := sorry
 
 lemma ne_one_of_length_smul_lt {s : hG.S} {w:G} (lt: ℓ(s*w) < ℓ(w)) : w ≠ 1:= sorry
 
@@ -299,17 +304,27 @@ lemma length_muls_neq (w:G) (t:hG.S) : ℓ(w*t) ≠ ℓ(w) := sorry
 
 lemma length_diff_one {s:hG.S} {g : G} : ℓ(s*g) = ℓ(g) + 1  ∨ ℓ(g) = ℓ(s*g) + 1 :=sorry
 
-lemma length_smul_of_length_lt {s : hG.S} {w:G} (h : w ≠ 1) (lt: ℓ(s*w) < ℓ(w)) : ℓ(s*w) = ℓ(w) - 1 := sorry
+lemma length_smul_of_length_lt {s : hG.S} {w:G} (lt: ℓ(s*w) < ℓ(w)) : ℓ(s*w) = ℓ(w) - 1 := sorry
 
-lemma length_muls_of_length_lt {s : hG.S} {w:G} (h : w ≠ 1) (lt: ℓ(w*s) < ℓ(w)) : ℓ(w*s) = ℓ(w) - 1 := sorry
+lemma length_muls_of_length_lt {s : hG.S} {w:G} (lt: ℓ(w*s) < ℓ(w)) : ℓ(w*s) = ℓ(w) - 1 := sorry
 
 lemma length_smul_of_length_gt {s : hG.S} {w:G} (gt: ℓ(w) < ℓ(s*w)) : ℓ(s*w) = ℓ(w) + 1 := sorry
 
 lemma length_muls_of_length_gt {s : hG.S} {w:G} (gt: ℓ(w) < ℓ(w*s)) : ℓ(w*s) = ℓ(w) + 1 := sorry
 
-lemma length_muls_of_mem_leftDescent  (h : w ≠ 1) (s : leftDescent w) : ℓ(s*w) = ℓ(w) - 1 :=sorry
+lemma length_muls_of_mem_leftDescent (s : leftDescent w) : ℓ(s*w) = ℓ(w) - 1 :=sorry
 
-lemma length_muls_of_mem_rightDescent  (h : w ≠ 1) (s : rightDescent w) : ℓ(w*s) = ℓ(w) - 1 :=sorry
+lemma length_muls_of_mem_rightDescent (s : rightDescent w) : ℓ(w*s) = ℓ(w) - 1 :=sorry
+
+lemma length_muls_lt_of_mem_rightDescent (s : rightDescent w) : ℓ(w*s) < ℓ(w) := by
+  rw [length_muls_of_mem_rightDescent]
+  have hwne1: w ≠ 1 := rightDescent_NE_iff_ne_one.2 (Nonempty.intro s)
+  have : 0 < ℓ(w) := Nat.ne_zero_iff_zero_lt.1 $ (Function.mt length_zero_iff_one.1) hwne1
+  rw [←Nat.pred_eq_sub_one]
+  exact Nat.pred_lt_self this
+
+lemma mem_rightDescent_of_length_muls_lt {w:G} {s: hG.S} (h: ℓ(w*s) < ℓ(w)) : s.1 ∈ rightDescent w := by
+  sorry
 
 lemma muls_twice (w:G) (s:hG.S) : w*s*s = w := sorry
 
