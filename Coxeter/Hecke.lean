@@ -59,9 +59,9 @@ noncomputable instance TT.Basis : Basis G (LaurentPolynomial ℤ) (Hecke G) := F
 @[simp]
 lemma TT.Basis_on {w : G} : TT.Basis w = TT w:=rfl
 
---lemma Hecke.repr_respect_TT : ∀ h:Hecke G, h = finsum (fun w =>(h w) • TT w) :=sorry
+--lemma repr_respect_TT : ∀ h:Hecke G, h = finsum (fun w =>(h w) • TT w) :=sorry
 -- ∀ h:Hecke G, h = ∑ᶠ w, (h w) * TT w
-lemma Hecke.repr_respect_TT : ∀ h:Hecke G, h = Finsupp.sum h (fun w =>(fun p =>p • TT w)) :=by{
+lemma repr_respect_TT : ∀ h:Hecke G, h = Finsupp.sum h (fun w p => p • TT w) :=by{
   intro h
   rw [←Finsupp.total_apply]
   conv =>
@@ -453,7 +453,7 @@ lemma alg_hom_aux_surjective: Function.Surjective (@alg_hom_aux G _ ) := by {
 lemma alg_hom_aux'_surjective: Function.Surjective (@alg_hom_aux' G _ ) := by
   rw [Function.Surjective]
   intro b
-  rw [Hecke.repr_respect_TT b]
+  rw [repr_respect_TT b]
   use (Finsupp.sum b fun w p => p • (preimage w))
   simp_rw [preimage_apply]
   simp [alg_hom_aux']
@@ -491,7 +491,7 @@ lemma alg_hom_injective_aux (f: subalg G) (h: alg_hom_aux f = 0) : f = 0 := by {
   }
   ext x
   simp
-  rw [Hecke.repr_respect_TT x,map_finsupp_sum]
+  rw [repr_respect_TT x,map_finsupp_sum]
   simp[@IsLinearMap.map_smul (LaurentPolynomial ℤ),this]
 }
 
@@ -653,8 +653,6 @@ theorem TTw_eq_reduced_word_TTmul : ∀ L : List S,∀ w:G, reduced_word L → w
     have : L.gprod = L.gprod := rfl
     rw [heq,←mul_gt s lgt,listToHecke_cons,←hL L.gprod redL this]
 
---define (TT s)⁻¹
-
 noncomputable def TT_inv_s (s:hG.S) := q⁻¹ • (TT s.val) - (1-q⁻¹) • 1
 
 @[simp]
@@ -664,8 +662,6 @@ lemma TT_inv_mul {s:hG.S}:  TT s.1 * (TT_inv_s s) = 1 := by
   --rw [mul_sub (TT s.1) (qinv • TT s.1) ((1 - qinv) • 1)]
   sorry
   -- rw [sub_eq_add_neg,mul_add,mul_smul_comm,Ts_square,smul_add,smul_smul,mul_sub,mul_one,q_inv_mul,add_comm,mul_neg (TT s),sub_self]
-
-
 
 noncomputable def listToHeckeInv : List hG.S → Hecke G := fun L => (List.map TT_inv_s L.reverse).prod
 
