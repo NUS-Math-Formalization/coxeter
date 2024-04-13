@@ -1,0 +1,33 @@
+
+\tableofcontents
+((* set introduction = structure_dict.introduction *))
+((* set sections = structure_dict.main *))
+
+\section{Introduction}
+((( introduction )))
+
+\section{Main}
+((* for section_name, statements in sections.items() *))
+\section{((( section_name )))}
+((* for statement in statements *))
+((* if statement.type_TeX in ["theorem", "lemma", "definition"] *))
+\begin{((( statement.type_TeX )))}\label{((( statement.name )))}
+    \leanok
+    \lean{((( statement.name )))}
+    ((* if statement.dependent_lemmas *))
+    \uses{((( statement.dependent_lemmas )))}
+    ((* endif *))
+    ((* if statement.informal_statement *))
+        ((( statement.informal_statement )))
+    ((* else *))
+        See Lean statement.
+    ((* endif *))
+\end{((( statement.type_TeX )))}
+((* endif *))
+((* if statement.type_TeX in ["theorem", "lemma"] and not statement.sorry *))
+\begin{proof}
+    \leanok
+\end{proof}
+((* endif *))
+((* endfor *))
+((* endfor *))

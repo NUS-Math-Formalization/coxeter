@@ -5,3 +5,8 @@ lakefile.olean
 *.olean
 .lake/
 .lake/lakefile.olean.trace
+Blueprint/.venv/*
+Blueprint/leanblueprint/*
+Blueprint/test/*
+Blueprint/src/*
+Blueprint/print/*

@@ -1254,7 +1254,7 @@ lemma strong_exchange : ∀ (L : List S) (t : T), ℓ((t:G) * L) < ℓ(L) →
   obtain ⟨i, hi⟩ := this; use i; rw [← hi]
   exact removeNth_of_palindrome_prod L i
 
-lemma exchange: OrderTwoGen.ExchangeProp S := by
+lemma exchange : OrderTwoGen.ExchangeProp S := by
   intro L t _ h2
   obtain ⟨i, hi⟩ := strong_exchange L ⟨t.val, (OrderTwoGen.SimpleRefl_subset_Refl t.prop)⟩ (length_smul_lt_of_le h2)
   exact ⟨i, hi⟩
