@@ -361,6 +361,8 @@ lemma epsilon_list_length {L : List S} : epsilon m L = μ₂.gen ^ L.length := b
         _ = μ₂.gen * epsilon m L0 := by
           rw [epsilon_S]
     rw [h2, ih, pow_succ μ₂.gen L0.length]
+    nth_rw 1 [ ←pow_one (μ₂.gen)]
+    rw [pow_mul_comm, pow_one μ₂.gen]
 
 lemma epsilon_length {g : G} : epsilon m g = μ₂.gen ^ ℓ(g) := by
   let ⟨L, h1, h2⟩ := Nat.find_spec (@length_aux G _ S _ g)
@@ -892,7 +894,9 @@ lemma pi_aux_list_mul (s t : α) : ((pi_aux' s : Equiv.Perm R) * (pi_aux' t : Eq
       List.prod_nil]
   . rw [Nat.succ_eq_add_one, pow_succ, mul_add, add_comm, mul_one,
       alternating_word_append_even s t (2 + 2 * k) (2) (by norm_num) (by norm_num)]
-    simp only [add_tsub_cancel_left, List.map_append, List.prod_append, ← ih, mul_left_inj]
+    simp only [add_tsub_cancel_left, List.map_append, List.prod_append, ← ih, mul_left_inj,
+      AlternatingWord.alternating_word]
+    rw [pow_mul_comm']
     rfl
 
 -- DLevel 3

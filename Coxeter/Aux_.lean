@@ -73,6 +73,7 @@ lemma reverse_take_eq_drop_reverse {α : Type _} (L : List α) (i : Fin L.length
   have : 1 + i.1 ≤ L.length := by rw [add_comm]; exact i.2
   rw [Nat.sub_sub_self this]
 
+
 /-map and removeNth are commute with each other-/
 lemma map_removeNth_comm {α : Type*} {β : Type*} {f : α → β } (L : List α) (i : ℕ)
 : (L.removeNth i).map f = (L.map f).removeNth i := by
@@ -153,8 +154,8 @@ lemma take_drop_get {α : Type _} (L: List α) (n : ℕ) (h : n < L.length):
 
 @[simp]
 lemma drop_take_nil {α : Type _} {L : List α} {n : ℕ} : (L.take n).drop n = [] := by
-  have h := drop_take n 0 L
-  simp only [add_zero, take] at h
+  have h := drop_take n n L
+  simp at h
   exact h
 
 
@@ -528,8 +529,9 @@ lemma halve_odd_prod {M : Type u} [CommMonoid M] {n : ℕ} (f : ℕ → M) :
         ext i
         congr 2
         simp only [Nat.succ_sub_succ_eq_sub,f']
-        ring_nf; congr
-        exact (Nat.add_sub_assoc (by linarith [i.2]) 1).symm
+        congr
+        rw [Nat.sub_add_comm];
+        exact le_trans (Nat.le_of_lt i.2) (@Nat.le_mul_of_pos_left 2 m (by linarith))
       _ = f' m * (g 0 * ∏ i : Fin m, g (i + 1)) := by
         rw [← mul_assoc (f' m), mul_comm (f' m) (g 0), mul_assoc (g 0)]
       _ = f' m * ∏ i : Fin (m + 1), g i := by
@@ -674,7 +676,7 @@ lemma mem_monoid_closure_iff_prod {M : Type*} [Monoid M] (T : Set M) (z : M) :
   z ∈ closure T ↔ (∃ L : List T, z = (L : List M).prod) := by
     constructor
     . intro hz ; induction' hz using closure_induction' with s hs x _ y _ hx hy x _ hx
-      . use [⟨s,hs⟩]; simp [List.prod_singleton,pure,List.ret]
+      . use [⟨s,hs⟩]; simp [List.prod_singleton,pure,List.pure]
       . use []; simp [List.prod_nil]
       . obtain ⟨Lx,hLx⟩ := hx
         obtain ⟨Ly,hLy⟩ := hy
