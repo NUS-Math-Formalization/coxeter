@@ -97,6 +97,23 @@ local notation "S" => (SimpleRefl m)
 @[simp]
 def toSimpleRefl (a : α) : SimpleRefl m := ⟨of m a, by simp⟩
 
+lemma toSimpleRefl_surj (s : S) : ∃ (y : α), toSimpleRefl m y = s := by
+  simp only [toSimpleRefl]
+  have : s = ⟨s.1, s.2⟩ := by rfl
+  rw [this]
+  simp only [Subtype.mk.injEq]
+  exact Set.mem_range.mp (Subtype.mem s)
+
+lemma toSimpleRefl_surj_list (L : List S) : ∃ (K : List α), K.map (toSimpleRefl m) = L := by
+  induction L with
+  | nil => simp only [SimpleRefl, List.map_eq_nil, exists_eq]
+  | cons hd tail ih =>
+    rcases ih with ⟨l, el⟩
+    rcases (toSimpleRefl_surj m hd) with ⟨y, ey⟩
+    use y :: l
+    rw [List.map_cons]
+    congr
+
 instance coe_group: Coe α (toGroup m) where
   coe := of m
 
@@ -114,10 +131,6 @@ def lift {A : Type _} [Group A] (f : α → A) (h : ∀ (s t : α), (f s * f t) 
 
 lemma lift.of {A : Type _} [Group A] (f : α → A) (h : ∀ (s t : α), (f s * f t) ^ (m s t) = 1) (s : α) : lift m f h (of m s) = f s := by
   apply PresentedGroup.toGroup.of
-
--------------------------------------------------------------------
-
---------------------------------------We should have a new section for the test group.
 
 /- We define (and prove) a group homomorphism from G to μ₂
 by mapping each simple reflection to the generator of μ₂.
@@ -909,40 +922,25 @@ lemma pi_relation (s t : α) : ((pi_aux' s : Equiv.Perm R) * (pi_aux' t : Equiv.
 
 noncomputable def pi : G →* Equiv.Perm R := lift m (fun s ↦ pi_aux' s) (by simp [pi_relation])
 
+lemma map_gprod_eq_map_prod (r : R) (L : List α) :
+  pi (L.map (toSimpleRefl m)).gprod r = (L.map pi_aux').prod r := by
+  induction L with
+  | nil => simp only [List.map_nil, gprod_nil, map_one,
+      Equiv.Perm.coe_one, id_eq, List.prod_nil]
+  | cons hd tail ih =>
+    simp only [List.map_cons, List.prod_cons, Equiv.Perm.coe_mul,
+      Function.comp_apply, gprod_cons, map_mul]
+    congr 1
+
 -- Equation 1.16
 -- Probably needs induction and wrangling with Finset.prod
 -- DLevel 5
-lemma pi_value (g : G) (L : List S) (h : g = L) (r : R) : (pi g) r
-    = (⟨g * r.1 * g⁻¹, by apply Refl.conjugate_closed⟩, r.2 * μ₂.gen ^ nn L.reverse r.1) := by
+lemma pi_value (g : G) (L : List S) (h : g = L) (r : R) :
+  (pi g) r = (⟨g * r.1 * g⁻¹, by apply Refl.conjugate_closed⟩, r.2 * μ₂.gen ^ nn L.reverse r.1)
+  := by
   rw [h]
-  have rw1 : ∃ (K : List α), K.map (toSimpleRefl m) = L := by
-    clear h
-    induction L with
-    | nil => simp only [SimpleRefl, List.map_eq_nil, exists_eq]
-    | cons hd tail ih =>
-      rcases ih with ⟨l, el⟩
-      have : ∃ (y : α), toSimpleRefl m y = hd := by
-        simp only [toSimpleRefl]
-        have : hd = ⟨hd.1, hd.2⟩ := by rfl
-        rw [this]
-        simp only [Subtype.mk.injEq]
-        exact Set.mem_range.mp (Subtype.mem hd)
-      rcases this with ⟨y, ey⟩
-      use y :: l
-      rw [List.map_cons]
-      congr
-  rcases rw1 with ⟨K, ek⟩
-  rw [← ek]
-  have : pi (K.map (toSimpleRefl m)).gprod r = (K.map pi_aux').prod r := by
-    clear ek
-    induction K with
-    | nil => simp only [List.map_nil, gprod_nil, map_one,
-      Equiv.Perm.coe_one, id_eq, List.prod_nil]
-    | cons hd tail ih =>
-      simp only [List.map_cons, List.prod_cons, Equiv.Perm.coe_mul,
-        Function.comp_apply, gprod_cons, map_mul]
-      congr 1
-  rw [this, pi_aux_list]
+  rcases (toSimpleRefl_surj_list m L) with ⟨K, ek⟩
+  rw [← ek, map_gprod_eq_map_prod, pi_aux_list]
   congr
   · rw [← List.reverse_map, gprod_reverse, inv_inj]
   · rw [← List.reverse_map]
