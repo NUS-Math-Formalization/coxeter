@@ -49,6 +49,30 @@ lemma length_append_singleton (L : List α) (a : α) : (L ++ [a]).length = L.len
 lemma take_le_length (L : List α) (h : n ≤ L.length)  : (L.take n).length = n := by
   simp only [length_take,ge_iff_le, h, min_eq_left]
 
+lemma takeFront {α : Type _} (s : α) (L : List α) (i : Fin L.length) :
+  (L ++ [s] ++ L.reverse).take i.1 = L.take i.1 := by
+  rw [List.append_assoc, List.take_append_of_le_length]
+  exact Nat.le_of_lt i.2
+
+lemma takeBehind {α : Type _} (s : α) (L : List α) (i : Fin L.length) :
+  (L ++ [s] ++ L.reverse).take (2 * L.length - i.1) = L ++ [s] ++ L.reverse.take (L.length - 1 - i.1) := by
+  rw [two_mul, Nat.add_sub_assoc (by exact le_of_lt i.2)]
+  rw [List.append_assoc]
+  rw [List.take_append]
+  have : List.length L - i = 1 + List.length L - 1 - i := by
+    rw [Nat.add_comm, Nat.add_one_sub_one]
+  rw [this]
+  nth_rw 1 [←List.length_singleton s]
+  rw [Nat.add_sub_assoc (by exact Nat.one_le_of_lt (i.2)), Nat.add_sub_assoc (by exact Nat.le_sub_one_of_lt i.2)]
+  rw [List.take_append, List.append_assoc]
+
+lemma reverse_take_eq_drop_reverse {α : Type _} (L : List α) (i : Fin L.length)
+  : (L.reverse.take (List.length L - 1 - i.1)) = (L.drop (1 + i.1)).reverse := by
+  rw [Nat.sub_sub, List.reverse_take _ (Nat.sub_le (List.length L) (1 + i.1))]
+  congr
+  have : 1 + i.1 ≤ L.length := by rw [add_comm]; exact i.2
+  rw [Nat.sub_sub_self this]
+
 /-map and removeNth are commute with each other-/
 lemma map_removeNth_comm {α : Type*} {β : Type*} {f : α → β } (L : List α) (i : ℕ)
 : (L.removeNth i).map f = (L.map f).removeNth i := by
