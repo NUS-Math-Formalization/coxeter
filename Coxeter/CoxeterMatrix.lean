@@ -899,20 +899,15 @@ lemma pi_aux_list_mul (s t : α) : ((pi_aux' s : Equiv.Perm R) * (pi_aux' t : Eq
 lemma pi_relation (s t : α) : ((pi_aux' s : Equiv.Perm R) * (pi_aux' t : Equiv.Perm R)) ^ m s t = 1 := by
   have (r : R) : (((pi_aux' s : Equiv.Perm R) * (pi_aux' t : Equiv.Perm R)) ^ m s t) r = r := by
     rw [pi_aux_list_mul, pi_aux_list]
-    set s' := toSimpleRefl m s
-    set t' := toSimpleRefl m t
-    have : (alternating_word s t (2 * m s t)).map (toSimpleRefl m)
-      = alternating_word s' t' (2 * m s t) :=
-        alternating_word_map s t (toSimpleRefl m) (2 * m s t)
     ext
     . simp only []
       rw [List.map_reverse, gprod_reverse]
-      repeat rw [this, alternating_word_relation]
+      repeat rw [alternating_word_map, alternating_word_relation]
       simp only [one_mul, inv_one, mul_one]
     . simp only [Submonoid.coe_mul, Subgroup.coe_toSubmonoid,
         SubmonoidClass.coe_pow, Units.val_mul, Units.val_pow_eq_pow_val, Units.val_neg,
         Units.val_one, Int.reduceNeg, ne_eq, Units.ne_zero, not_false_eq_true, mul_eq_left₀]
-      rw [List.map_reverse, this, even_alternating_word_reverse]
+      rw [List.map_reverse, alternating_word_map, even_alternating_word_reverse]
       have : m s t = m t s := by apply symmetric
       rw [this]
       apply Even.neg_one_pow
