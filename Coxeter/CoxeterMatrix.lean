@@ -12,6 +12,7 @@ import Mathlib.RingTheory.RootsOfUnity.Basic
 import Coxeter.CoxeterSystem
 import Coxeter.OrderTwoGen
 import Coxeter.AlternatingWord
+import Coxeter.TestGroup
 
 open BigOperators
 
@@ -117,67 +118,11 @@ lemma lift.of {A : Type _} [Group A] (f : α → A) (h : ∀ (s t : α), (f s * 
 -------------------------------------------------------------------
 
 --------------------------------------We should have a new section for the test group.
-/- Let μ₂ be the group of ℤ/2ℤ. (μ₂ is usually for the algebra group. Maybe we change to ℤ/2ℤ.)
--/
-abbrev μ₂ := rootsOfUnity 2 ℤ
-@[simp]
-abbrev μ₂.gen :μ₂ := ⟨-1, by norm_cast⟩
-
-lemma μ₂.gen_ne_one : μ₂.gen ≠ 1 := by rw [μ₂.gen]; norm_cast
-
-lemma μ₂.mem_iff {z} : z ∈ μ₂ ↔ z = 1 ∨ z = μ₂.gen := by
-  constructor
-  . intro _
-    have : z.val^2 = 1 := by norm_cast; simp only [Int.units_sq, Units.val_one]
-    replace := sq_eq_one_iff.1 this
-    rcases this with h1|h2
-    . exact Or.inl (by simp only [Units.val_eq_one] at h1; exact h1)
-    . right; ext; rw [h2]; rfl
-  . intro h
-    rcases h with h1|h2
-    . simp [h1]
-    . simp [h2]
-
-lemma μ₂.mem_iff' (z : μ₂) : z = 1 ∨ z = μ₂.gen := by
-  have := μ₂.mem_iff.1 z.2
-  rcases this with h1|h2
-  . left; norm_cast at h1
-  . right; norm_cast at h2
-
-lemma μ₂.not_iff_not : ∀ (z : μ₂), ¬z = 1 ↔ z = μ₂.gen := by
-  intro z
-  constructor
-  . have := (μ₂.mem_iff' z)
-    rcases this with h1|h2
-    . intro h; contradiction
-    . intro _; exact h2
-  . intro h; rw [h]; simp [gen_ne_one]
-
-
-lemma μ₂.not_iff_not' : ∀ (z : μ₂), ¬z = μ₂.gen ↔ z = 1 := by
-  intro z
-  constructor
-  . contrapose; rw [not_not]; exact (μ₂.not_iff_not z).mp
-  contrapose; rw [not_not]; exact (μ₂.not_iff_not z).mpr
-
-lemma μ₂.gen_square : μ₂.gen * μ₂.gen = 1 := by rw [μ₂.gen]; norm_cast
-
-lemma μ₂.gen_inv : μ₂.gen⁻¹ = μ₂.gen := by rw [μ₂.gen]; norm_cast
-
-lemma μ₂.gen_order_two : orderOf μ₂.gen = 2 := by
-  apply orderOf_eq_prime
-  . norm_cast
-  . exact gen_ne_one
-
-lemma μ₂.even_pow_iff_eq_one {n : ℕ} : μ₂.gen ^ n = 1 ↔ Even n := by
-  rw [even_iff_two_dvd, ← μ₂.gen_order_two, orderOf_dvd_iff_pow_eq_one]
-
-lemma μ₂.odd_pow_iff_eq_gen {n : ℕ} : μ₂.gen ^ n = μ₂.gen ↔ Odd n := by
-  rw [Nat.odd_iff_not_even, ← μ₂.even_pow_iff_eq_one, not_iff_not]
 
 /- We define (and prove) a group homomorphism from G to μ₂
 by mapping each simple reflection to the generator of μ₂.
 -/
+open TestGroup
 @[simp]
 def epsilon : G →* μ₂ := lift m (fun _=> μ₂.gen) (by intro s t; ext; simp)
 
@@ -332,6 +277,7 @@ end CoxeterMatrix
 
 namespace CoxeterMatrix
 open OrderTwoGen
+open TestGroup
 
 /-
 Let m be a Coxeter matrix.
@@ -1083,7 +1029,8 @@ lemma eta_lift_eta_aux' {s : S} {t : T} : eta_aux' s t = eta s t := by
   · rw [if_pos h, if_pos h.symm, pow_one]
   · rw [if_neg h, if_neg (Ne.symm h), pow_zero]-/
 
-lemma pi_eval (g : G) (t : T) (ε : μ₂): ReflRepn.pi g (t, ε) = (⟨(g : G) * t * (g : G)⁻¹, OrderTwoGen.Refl.conjugate_closed⟩, ε * eta g⁻¹ t) := by
+lemma pi_eval (g : G) (t : T) (ε : μ₂): ReflRepn.pi g (t, ε)
+  = (⟨(g : G) * t * (g : G)⁻¹, OrderTwoGen.Refl.conjugate_closed⟩, ε * eta g⁻¹ t) := by
   rcases toGroup_expression m g with ⟨L, eL⟩
   rw [ReflRepn.pi_value g L eL]
   ext
@@ -1104,41 +1051,23 @@ lemma eta_equiv_nn {g : G} {t : T} : ∀ {L : List S}, g = L → eta g t = μ₂
 
 lemma eta_equiv_nn' {L : List S} {t : T} : eta L t = μ₂.gen ^ nn L t := eta_equiv_nn rfl
 
-lemma eta_aux'_reflection (L : List S) (s : S) (t : T) (i : Fin L.length) (h : (t : G) = (L : G) * s * L.reverse) :
-    eta_aux' (L.get i) ⟨((L ++ [s] ++ L.reverse).take i).reverse * t * (L ++ [s] ++ L.reverse).take i, by apply Refl_palindrome_in_Refl⟩
-    = eta_aux' (L.get i) ⟨((L ++ [s] ++ L.reverse).take (2 * L.length - i)).reverse * t * (L ++ [s] ++ L.reverse).take (2 * L.length - i), by apply Refl_palindrome_in_Refl⟩
+lemma eta_aux'_reflection (L : List S) (s : S) (t : T) (i : Fin L.length)
+  (h : (t : G) = (L : G) * s * L.reverse) :
+    eta_aux' (L.get i) ⟨((L ++ [s] ++ L.reverse).take i).reverse * t *
+      (L ++ [s] ++ L.reverse).take i, by apply Refl_palindrome_in_Refl⟩
+    = eta_aux' (L.get i) ⟨((L ++ [s] ++ L.reverse).take (2 * L.length - i)).reverse
+      * t * (L ++ [s] ++ L.reverse).take (2 * L.length - i), by apply Refl_palindrome_in_Refl⟩
     := by
-  have takex : (L ++ [s] ++ L.reverse).take i.1 = L.take i.1 := by
-    rw [List.append_assoc, List.take_append_of_le_length]
-    exact Nat.le_of_lt i.2
-  have take2lmx : (L ++ [s] ++ L.reverse).take (2 * L.length - i.1) = L ++ [s] ++ L.reverse.take (L.length - 1 - i.1) := by
-    rw [two_mul, Nat.add_sub_assoc (by exact le_of_lt i.2)]
-    rw [List.append_assoc]
-    rw [List.take_append]
-    have : List.length L - i = 1 + List.length L - 1 - i := by
-      rw [Nat.add_comm, Nat.add_one_sub_one]
-    rw [this]
-    nth_rw 1 [←List.length_singleton s]
-    rw [Nat.add_sub_assoc (by exact Nat.one_le_of_lt (i.2)), Nat.add_sub_assoc (by exact Nat.le_sub_one_of_lt i.2)]
-    rw [List.take_append, List.append_assoc]
-
-  have Ldrop : (L.reverse.take (List.length L - 1 - i.1)) = (L.drop (1 + i.1)).reverse := by
-    rw [Nat.sub_sub, List.reverse_take _
-      (Nat.sub_le (List.length L) (1 + i.1))]
-    congr
-    have : 1 + i.1 ≤ L.length := by
-      rw [add_comm]
-      exact i.2
-    rw [Nat.sub_sub_self this]
-  simp only [h, takex, take2lmx, List.reverse_append, gprod_append, gprod_singleton,
-    List.reverse_singleton, Ldrop]
+  simp only [h, List.takeFront, List.takeBehind, List.reverse_append, gprod_append,
+    gprod_singleton, List.reverse_singleton, List.reverse_take_eq_drop_reverse]
   have drop_prod : (L.drop (1 + i.1) : G) = (L.get i : G) * (L.take i.1).reverse * L := by
     apply (List.take_drop_get L i.1 i.2).symm.subst
-      (motive := fun (x : List S) ↦ ((L.drop (1 + i.1) : G) = (L.get i : G) * (L.take i.1).reverse * x))
+      (motive := fun (x : List S) ↦
+      ((L.drop (1 + i.1) : G) = (L.get i : G) * (L.take i.1).reverse * x))
     simp only [gprod_simps]
     rw [← mul_assoc, @gen_square_eq_one' G _ S _ (L.get i), one_mul, add_comm]
-  simp only [gprod_reverse, drop_prod]
-  simp only [← mul_assoc, inv_mul_cancel_right, mul_inv_cancel_right, inv_inv, mul_inv_rev]
+  simp only [gprod_reverse, drop_prod, ← mul_assoc, inv_mul_cancel_right, mul_inv_cancel_right,
+    inv_inv, mul_inv_rev]
   simp_rw [mul_assoc _ (s : G) (s : G), @gen_square_eq_one' G _ S _ s,
     mul_one, mul_assoc (L.get i : G) _ _, eta_aux']
   congr 1
@@ -1159,7 +1088,8 @@ lemma eta_t (t : T) : eta (t : G) t = μ₂.gen := by
     rw [List.length_append, List.length_append, List.length_reverse, List.length_singleton]
     ring
   let f : Fin (L ++ [s] ++ L.reverse).length → μ₂ := fun i ↦ eta_aux' ((L ++ [s] ++ L.reverse).get i)
-    ⟨((L ++ [s] ++ L.reverse).take i).reverse * t * (L ++ [s] ++ L.reverse).take i, by apply Refl_palindrome_in_Refl⟩
+    ⟨((L ++ [s] ++ L.reverse).take i).reverse * t * (L ++ [s] ++ L.reverse).take i,
+    by apply Refl_palindrome_in_Refl⟩
   let fnat : ℕ → μ₂ := fun i ↦ if h : i < (L ++ [s] ++ L.reverse).length then f ⟨i, h⟩ else 1
   calc
     _ = ∏ i : Fin (L ++ [s] ++ L.reverse).length, fnat i := by
