@@ -11,8 +11,8 @@ import Mathlib.RingTheory.RootsOfUnity.Basic
 
 import Coxeter.CoxeterSystem
 import Coxeter.OrderTwoGen
-import Coxeter.AlternatingWord
-import Coxeter.TestGroup
+import Coxeter.CoxeterMatrix.AlternatingWord
+import Coxeter.CoxeterMatrix.TestGroup
 
 open BigOperators
 
