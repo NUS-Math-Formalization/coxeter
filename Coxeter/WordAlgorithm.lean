@@ -3,7 +3,7 @@ import Mathlib.Data.List.Basic
 import Mathlib.Data.List.MinMax
 import Mathlib.Data.MLList.DepthFirst
 
-import Coxeter.CoxeterMatrix
+import Coxeter.CoxeterMatrix.CoxeterMatrix
 import Coxeter.GraphSearchAux
 import Coxeter.Aux_
 
