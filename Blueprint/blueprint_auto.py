@@ -173,6 +173,7 @@ class LeanFile:
 
         # sections
         if section_mode == False:
+            # If there is no section format, add a main section to mark content
             content = "section main\n" + content + "\nend main\n"
         pattern_sections = r"section\s+([^\n]+)\n(.*?)\nend\s+\1"
         self.sections = re.findall(pattern_sections, content, re.DOTALL)
