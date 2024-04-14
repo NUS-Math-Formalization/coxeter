@@ -1,5 +1,5 @@
 import Coxeter.CoxeterSystem
-import Coxeter.CoxeterMatrix
+import Coxeter.CoxeterMatrix.CoxeterMatrix
 import Coxeter.WellFounded
 --import Coxeter.Morphism
 

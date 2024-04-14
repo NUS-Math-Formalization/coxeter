@@ -1,4 +1,4 @@
-import Coxeter.CoxeterMatrix
+import Coxeter.CoxeterMatrix.CoxeterMatrix
 
 
 variable {α : Type*} [DecidableEq α]
