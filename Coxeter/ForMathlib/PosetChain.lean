@@ -82,6 +82,7 @@ lemma getLast_eq_of_getLast?_eq_coe {L : List P} (h : L ≠ []) (h' : L.getLast?
     simp at *
     assumption
 
+/-Lemma: A chain has no duplicates.-/
 lemma chain_nodup {L : List P} (h : chain L) : L.Nodup := by
   induction L with
   | nil => simp
@@ -191,7 +192,26 @@ lemma maximal_chain'_cons {a b : P} {L : List P} : maximal_chain' (b :: L) → a
 /-
 Lemma: A pair of element is a maximal chain if and only if the pair is a cover relation.
 -/
-lemma maximal_chain'₂_iff_ledot {a b : P} : maximal_chain' [a,b] ↔ (a ⋖ b) := sorry
+lemma maximal_chain'₂_iff_ledot {a b : P} : maximal_chain' [a,b] ↔ (a ⋖ b) := by
+  constructor
+  · simp [maximal_chain']
+    intro aleb maxchain
+    constructor
+    · assumption
+    · intro c altc cltb
+      have : chain [a, c, b] := by
+        rw [chain]
+        simp [altc, cltb]
+      have : [a, b] = [a, c, b] := by
+        apply maxchain [a, c, b] this
+        simp; simp
+        apply List.cons_sublist_cons.mpr
+        rw [show [b] = List.tail [c, b] by simp]
+        apply List.tail_sublist [c, b]
+      simp at this
+  · intro h
+    apply maximal_chain'_cons maximal_chain'_singleton h
+
 
 /-
 Lemma: If a chain L : x₀ < x₁ < ⋯ < x_n is maximal', then we have x_0 ⋖ x_1 ⋖ x_2 ⋯ ⋖ x_n.
@@ -273,7 +293,54 @@ Lemma: Let P be a bounded finite poset. Let L = [x_0, ⋯, x_m] be a list of ele
 Then L is a maximal chain if and only if  x_0 is the minimal element, x_n is the maximal element, and x_i ⋖ x_{i+1} for all i.
 -/
 lemma maximal_chain_iff_cover {P : Type*} [PartialOrder P] [BoundedOrder P]  [Fintype P] (L: List P) :
-  maximal_chain L ↔ ((L.head? = (⊥ : P)) ∧ (L.getLast? = (⊤ : P)) ∧ (List.Chain' (· ⋖ · ) L)) := by sorry
+  maximal_chain L ↔ ((L.head? = (⊥ : P)) ∧ (L.getLast? = (⊤ : P)) ∧ (List.Chain' (· ⋖ · ) L)) := by
+  simp [maximal_chain]
+  constructor
+  · intro maxchain
+    constructor
+    · by_contra h
+      have h₁ : chain (⊥ :: L) := by
+        match L with
+        | [] => simp
+        | a :: L' =>
+            have : a ≠ ⊥ := by
+              intro abot
+              rw [abot] at h
+              simp at h
+            apply List.Chain'.cons (lt_of_le_of_ne bot_le this.symm) maxchain.1
+      have h₂: L.Sublist (⊥ :: L) := by simp
+      have : L = (⊥ :: L) := by apply maxchain.2 _ h₁ h₂
+      match L with
+      | [] => simp at this
+      | a :: L' =>
+          simp at this
+          absurd this.1
+          intro e
+          rw [e] at h
+          simp at h
+    · constructor
+      · by_contra h
+        have h₁ : chain (L ++ [⊤]) := by
+          apply List.Chain'.append maxchain.1
+          simp
+          intro x hx y hy
+          simp at hy
+          subst hy
+          apply lt_of_le_of_ne le_top
+          intro e
+          simp [e] at *
+          exact h hx
+        have h₂ : L.Sublist (L ++ [⊤]) := by simp
+        have : L = L ++ [⊤] := maxchain.2 _ h₁ h₂
+        simp at this
+      · apply maximal_chain_cover maxchain
+  · rintro ⟨h₁, h₂, h₃⟩
+    constructor
+    · exact (maximal_chain'_of_cover_chain h₃).1
+    · intro L' chain_l' sublst
+      have : maximal_chain L := maximal_chain_of_cover_chain ⟨h₃, h₁, h₂⟩
+      apply this.2 L' chain_l' sublst
+
 
 /-
 Lemma: Let L : x_0 < x_1 < ⋯ < x_n be a maximal chain of P. Then (x_i, x_{i+1}) is an (cover) edge of P.
