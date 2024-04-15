@@ -198,22 +198,15 @@ Then L is a maximal chain.
 -/
 lemma maximal_chain_of_cover_chain {P :Type*} [PartialOrder P] [BoundedOrder P] {L: List P} :
   List.Chain' (· ⋖ · ) L ∧ L.head? = some ⊥ ∧ L.getLast? = some ⊤ → maximal_chain L := by
-  rintro ⟨h1, h2, h3⟩
-  by_contra h4
-  rw [maximal_chain] at h4
-  push_neg at h4
+  rintro ⟨h₁, h₂, h₃⟩
+  by_contra h₄
+  rw [maximal_chain] at h₄
+  push_neg at h₄
+  have g₁ : List.Chain' (· < ·) L := by sorry
+  have g₂ : chain L := by exact g₁
+  rcases h₄ g₂ with ⟨L', g₄, g₅, g₆⟩
   sorry
-  -- cases L with
-  -- | nil =>
-  --   rw [maximal_chain]
-  --   constructor
-  --   · exact h1
-  --   · intro g₁ g₂ g₃
-  --     sorry
-  -- | cons head tail =>
-  --   rw [maximal_chain]
-  --   constructor
-  --   ·
+
 
 
 /- Definition: We say a poset P is bounded, if it has a unique minimal and a unique maximal element. -/
