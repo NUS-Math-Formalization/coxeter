@@ -121,7 +121,7 @@ lemma maximal_chain'_tail {a : P} {tail : List P} : maximal_chain' (a :: tail) �
   constructor
   . exact List.Chain'.tail C
   . intros L' hL' h1 h2
-    let tail := b ::t
+    let tail := b :: t
     let L'' := a :: L'
     have chainL'' : chain L'' := by
       apply List.chain'_cons'.2
@@ -132,11 +132,18 @@ lemma maximal_chain'_tail {a : P} {tail : List P} : maximal_chain' (a :: tail) �
         rw [<-this]
         exact (List.chain'_cons.1 C).1
       . exact hL'
-    have htL''1 : (a :: tail).head? = L''.head?  := by sorry
+    have htL''1 : (a :: tail).head? = L''.head?  := by
+      exact rfl
     have htL''2 : (a :: tail).getLast? = L''.getLast? := by
       cases L' with
       | nil => simp at h2
-      | cons c d => sorry
+      | cons c d =>
+        calc
+          List.getLast? (a :: tail) = List.getLast? (a :: b :: t) := by exact rfl
+          _ = List.getLast? (b :: t) := by simp [List.getLast?_cons_cons]
+          _ = List.getLast? (c :: d) := by simp [h1.2]
+          _ = List.getLast? (a :: c :: d) := by simp [List.getLast?_cons_cons]
+          _ = List.getLast? L'' := by exact rfl
         -- simp only [List.getLast?_cons_cons, h1.2]
     have sublistL'' : List.Sublist (a :: tail) L'' := by
       apply List.cons_sublist_cons.2
@@ -164,6 +171,7 @@ lemma cover_chain_of_maximal_chain' {P : Type*} [PartialOrder P] {L: List P} :
     | b :: t' =>
       apply List.chain'_cons.2
       exact ⟨maximal_chain'_head h, ih (maximal_chain'_tail h)⟩
+
 
 
 
@@ -195,6 +203,17 @@ lemma maximal_chain_of_cover_chain {P :Type*} [PartialOrder P] [BoundedOrder P] 
   rw [maximal_chain] at h4
   push_neg at h4
   sorry
+  -- cases L with
+  -- | nil =>
+  --   rw [maximal_chain]
+  --   constructor
+  --   · exact h1
+  --   · intro g₁ g₂ g₃
+  --     sorry
+  -- | cons head tail =>
+  --   rw [maximal_chain]
+  --   constructor
+  --   ·
 
 
 /- Definition: We say a poset P is bounded, if it has a unique minimal and a unique maximal element. -/
