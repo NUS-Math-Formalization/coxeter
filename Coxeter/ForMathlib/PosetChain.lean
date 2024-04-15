@@ -74,8 +74,50 @@ Lemma: A singleton is a chain by definition.
 -/
 lemma chain_singleton {a : P} : chain [a] := by simp
 
+lemma getLast_eq_of_getLast?_eq_coe {L : List P} (h : L ≠ []) (h' : L.getLast? = .some a) : L.getLast h = a := by
+  unfold List.getLast? at *
+  match L with
+  | [] => simp at *
+  | b :: L' =>
+    simp at *
+    assumption
+
+lemma chain_nodup {L : List P} (h : chain L) : L.Nodup := by
+  induction L with
+  | nil => simp
+  | cons a L' hl' =>
+    simp [List.Nodup]
+    constructor
+    · intro ain
+      have : a < a := by
+        apply List.Chain.rel (l :=  L')
+        exact h
+        exact ain
+      simp at this
+    · have : chain L' := by
+        simp [chain] at *
+        rw [show L' = List.tail (a :: L') by rfl]
+        apply List.Chain'.tail h
+      exact hl' this
+
+-- May not be needed, use chain_nodup
 lemma chain_singleton_of_head_eq_tail  {L : List P} (a : P) : chain L → L.head? = some a → L.getLast? = some a → L.length = 1  := by
-  sorry
+  rintro chain_l lha lta
+  match L with
+  | [] => simp at lha
+  | [_] => simp at *
+  | b :: c :: L'' =>
+      simp at lta
+      apply getLast_eq_of_getLast?_eq_coe at lta <;> simp at *
+      subst lha
+      have : b < b := by
+        nth_rw 2 [← lta]
+        apply List.Chain.rel (l := (c :: L''))
+        simp
+        exact chain_l
+        exact List.getLast_mem _
+      simp at this
+
 
 lemma maximal_chain'_singleton {a : P}: maximal_chain' [a] := by
   sorry
@@ -149,7 +191,7 @@ lemma maximal_chain'_cons {a b : P} {L : List P} : maximal_chain' (b :: L) → a
 /-
 Lemma: A pair of element is a maximal chain if and only if the pair is a cover relation.
 -/
-lemma maximal_chain'₂_iff_ledot {a b : P} : maximal_chain' [a,b] ↔ (a ⋖ b) := by sorry
+lemma maximal_chain'₂_iff_ledot {a b : P} : maximal_chain' [a,b] ↔ (a ⋖ b) := sorry
 
 /-
 Lemma: If a chain L : x₀ < x₁ < ⋯ < x_n is maximal', then we have x_0 ⋖ x_1 ⋖ x_2 ⋯ ⋖ x_n.
