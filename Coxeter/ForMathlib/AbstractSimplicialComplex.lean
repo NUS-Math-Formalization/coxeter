@@ -12,6 +12,18 @@ structure AbstractSimplicialComplex (V : Type*)  where
   empty_mem : ∅ ∈ faces
   lower' : IsLowerSet faces -- The set of faces is a lower set under the inclusion relation.
 
+theorem isLowerSet_singleton_empty (α : Type*):
+IsLowerSet {(∅ : Set α)} := by
+  intro _ _ blea ain
+  rw [ain, ← Set.bot_eq_empty, ← eq_bot_iff, Set.bot_eq_empty] at blea
+  rw [blea]; rfl
+
+theorem Finset.isLowerSet_singleton_empty (α : Type*):
+IsLowerSet {(∅ : Finset α)} := by
+  intro _ _ blea ain
+  rw [ain, ← Finset.bot_eq_empty, ← eq_bot_iff, Finset.bot_eq_empty] at blea
+  rw [blea]; rfl
+
 open Classical
 
 namespace AbstractSimplicialComplex
@@ -96,9 +108,44 @@ where
   inf_le_left := fun _ _ _ ha => ha.1
   __ := completeLatticeOfInf (AbstractSimplicialComplex V) sInf_isGLB
 
+def unionSubset {s : Set <| AbstractSimplicialComplex V} (hs : s.Nonempty) : AbstractSimplicialComplex V where
+  faces := ⋃ F ∈ s, F.faces
+  empty_mem := by
+    simp [Set.mem_iUnion]
+    rcases hs with ⟨e, he⟩
+    exact ⟨e, he, e.empty_mem⟩
+  lower' := isLowerSet_iUnion fun i ↦ isLowerSet_iUnion fun _ ↦ i.lower'
+
+lemma sSup_eq_unionSubset {s : Set <| AbstractSimplicialComplex V} (hs : s.Nonempty) : sSup s = unionSubset hs  := by
+  apply le_antisymm
+  · apply sSup_le
+    intro b bs
+    rw [le_def]
+    refine Set.subset_iUnion_of_subset b ?_
+    refine Set.subset_iUnion_of_subset bs ?_
+    rfl
+  · rw [le_sSup_iff]
+    intro b hb
+    rw [le_def]
+    exact Set.iUnion_subset fun i ↦ Set.iUnion_subset fun hi ↦ hb hi
+
+def OfEmpty : AbstractSimplicialComplex V where
+  faces := {∅}
+  empty_mem := rfl
+  lower' := Finset.isLowerSet_singleton_empty V
+
+lemma bot_eq_ofEmpty : (⊥ : AbstractSimplicialComplex V) = OfEmpty := by
+  symm
+  rw [eq_bot_iff, le_def, show OfEmpty.faces = {∅} by rfl, Set.singleton_subset_iff]
+  apply (⊥ : AbstractSimplicialComplex V).empty_mem
+
+
+theorem bot_faces_eq_empty : (⊥ : AbstractSimplicialComplex V).faces = {∅} := by
+  rw [bot_eq_ofEmpty]; rfl
 
 @[simp]
-lemma sSup_faces (s : Set (AbstractSimplicialComplex V)) : (sSup s).faces = ⋃ F ∈ s, F.faces := by sorry
+lemma sSup_faces_of_nonempty {s : Set (AbstractSimplicialComplex V)} (h : s.Nonempty) : (sSup s).faces = ⋃ F ∈ s, F.faces := by
+  rw [sSup_eq_unionSubset h]; rfl
 
 /--
 Definition: For any ASC F, we denote by vertices F the set of vertices of F.
