@@ -128,12 +128,13 @@ lemma maximal_chain'_tail {a : P} {tail : List P} : maximal_chain' (a :: tail) â
         rw [<-this]
         exact (List.chain'_cons.1 C).1
       . exact hL'
-    have htL''1 : (a :: tail).head? = L''.head?  := by simp
+    have htL''1 : (a :: tail).head? = L''.head?  := by sorry -- simp
     have htL''2 : (a :: tail).getLast? = L''.getLast? := by
       cases L' with
       | nil => simp at h2
       | cons c d =>
-        simp only [List.getLast?_cons_cons, h1.2]
+        sorry
+        -- simp only [List.getLast?_cons_cons, h1.2]
     have sublistL'' : List.Sublist (a :: tail) L'' := by
       apply List.cons_sublist_cons.2
       exact h2

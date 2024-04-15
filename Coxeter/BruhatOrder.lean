@@ -258,6 +258,9 @@ instance Interval.fintype {x y : G} : Fintype (Interval x y) where
     --subword_property
     sorry
 
+
+lemma BruhatOrder.adj {G} [cox : CoxeterGroup G] (u w : G) (h: u ⋖ w) : u * w⁻¹ ∈ Refl cox.S := sorry
+
 end Bruhat
 
 end CoxeterGroup
@@ -322,6 +325,8 @@ lemma Bruhat'Congr' (x y :G) (t:T S) (hlt: x < x*t) (hlt: y < (t:G)*y) : x * y <
   -- let ⟨L1,hL1⟩ := hredx
   -- let ⟨L2,hL2⟩ := hredy
 -/
+
+
 
 section test
 variable (G:Type*) [hG:CoxeterGroup G]
