@@ -42,11 +42,6 @@ instance poset_chain {P : Type*} [PartialOrder P] : PartialOrder (Chains P) wher
   le_trans := fun _ _ _ h1 h2 ↦ List.Sublist.trans h1 h2
   le_antisymm := fun _ _ h1 h2 => Subtype.ext <| List.Sublist.antisymm h1 h2
 
-/-
-instance: The set of all chains in P is a lattice.
--/
-instance lattice_chain {P : Type*} [PartialOrder P] : Lattice (Chains P) := sorry
-
 end chain
 
 section maximal_chain
