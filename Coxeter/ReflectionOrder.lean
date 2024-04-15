@@ -18,7 +18,7 @@ structure _root_.ReflectionOrder (G : Type*) [h : CoxeterGroup G] extends Partia
   is_refl_order : ∀ (s t : Refl h.S) (w : Subgroup.closure {s.1, t.1}),
     ℓ( (s:G) ) ≤ ℓ( (w : G) ) ∧  ℓ( (t : G) ) ≤ ℓ( (w : G) )
 
-def Lexico (lino: LinearOrder cox.S) : ReflectionOrder G := by sorry
+def Lexico (lino: LinearOrder cox.S) : ReflectionOrder G := by sorry -- not so important
 
 -- instance : Inhabited (ReflectionOrder G) := sorry
 
