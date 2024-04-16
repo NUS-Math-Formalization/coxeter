@@ -156,9 +156,11 @@ def next (g : α → List α) (last : α) (current : Option α) : Option α :=
     | .none => .none -- impossible case if our input is legal
     | .some n => (g last).get? (n+1)
 
+/- next without going deeper -/
 partial def nodup_parallel_next (g : α → List α) (path : List α) (visited : List α) (current : Option α) : Option α := -- path and visited will not be changed in this function
+-- If there is dup in (g current), it may never stop
   match current, path with
-  | .some _, [] => .none -- impossible
+  | _ , [] => .none -- no next possible
   | .some a, z :: _ =>
     match next g z a with
     | .none => .none
@@ -167,45 +169,65 @@ partial def nodup_parallel_next (g : α → List α) (path : List α) (visited :
         nodup_parallel_next g path visited b
       else
         .some b
-  | .none, [] => .none -- impossible
   | .none, z :: _ =>
-    match (g z).head? with
-    | .none => .none
-    | .some b =>
+    match g z with
+    | [] => .none
+    | b :: _ =>
       if b ∈ visited then
         nodup_parallel_next g path visited b
       else
         .some b
 
-partial def nodup_next (g : α → List α) (path : List α) (visited : List α) (current : α) : Option α := -- visited and path does not include current, visited should contain path
+def nodup_next (g : α → List α) (path : List α) (visited : List α) (current : α) : Option α × Bool := -- visited and path does not include current, visited should contain path
+-- Bool indicates this move is parallel (false) or depth-wise (true)
   match g current with
-  | [] => nodup_parallel_next g path visited current
+  | [] => (nodup_parallel_next g path visited current, false)
   | a :: _ =>
     if a ∈ visited then
-      nodup_parallel_next g (current :: path) (current :: visited) a
+      match nodup_parallel_next g (current :: path) (current :: visited) a with
+      | .none => (nodup_parallel_next g path visited current, false)
+      | .some b => (b, true)
     else
-      a
+      (a, true)
 
-def g₅ (x : Fin 5) : List (Fin 5) :=
+def g₅ (x : Fin 6) : List (Fin 6) :=
   match x with
   | 0 => [1, 2]
   | 1 => [0, 2 , 3]
   | 2 => [0, 1 , 3 , 4]
-  | 3 => [1, 2]
+  | 3 => [1, 5, 2]
   | 4 => [2]
+  | 5 => [3]
 
-#eval nodup_next g₅ (path := [0,1]) (visited := [0,1, 3, 4]) (2)
+#eval nodup_next g₅ (path := [0,1]) (visited := [0, 1, 3, 4]) (2)
 
-/- A Depth-first graph search based on List. For the time being, I fail to adapt the nodup version. -/
-partial def depthFirstList' (g : List α → List α → α → List α) (path : List α) (visited : List α) (current : α) : (List α) :=
-  match path, nodup_next (g visited path) path visited current with
-  | [], .none => current :: depthFirstList'
-  | [], .some a => sorry
-  | z :: past_path, .none => sorry
-  | z :: past_path, .some a => sorry
+/- A nodup depth-first graph search based on List. -/
+partial def depthFirstList' (g :  α → List α) (path : List α) (visited : List α) (current : α) : (List α) :=
+  let new := if current ∈ visited then [] else [current]
+  let new_visited := new ++ visited
+  let (next, depthwise) := nodup_next g path visited current
+  match path, next, depthwise with
+  | _, .none, true => [] -- impossible
+  | _, .some a, true => new ++ depthFirstList' g (current :: path) new_visited a
+  | _, .some a, false => new ++ depthFirstList' g path new_visited a
+  | [], .none, false => new -- one point case
+  | z :: past_path, .none, false => new ++ depthFirstList' g (past_path) (new_visited) z
+
+partial def depthFirstPathList' (g :  α → List α) (path : List α) (visited : List α) (current : α) : List (List α) :=
+  let attempted_path := current :: path
+  let new := if current ∈ visited then [] else [current]
+  let new_visited := new ++ visited
+  let (next, depthwise) := nodup_next g path visited current
+  match path, next, depthwise with
+  | _, .none, true => [] -- impossible
+  | _, .some a, true => attempted_path :: depthFirstPathList' g (current :: path) new_visited a
+  | _, .some a, false => attempted_path :: depthFirstPathList' g path new_visited a
+  | [], .none, false => [attempted_path] -- one point case
+  | z :: past_path, .none, false => attempted_path :: depthFirstPathList' g (past_path) (new_visited) z
 
 
-#eval depthFirstList' (nodup_g' g₅)  ([] : List (Fin 5)) 0
+#eval depthFirstList' (g₅) [] [] 0
+#eval depthFirstPathList' (g₅) [] [] 0
 
 
 end Attempt2
