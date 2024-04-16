@@ -28,10 +28,19 @@ abbrev chain (L : List P) : Prop := List.Chain' (· < ·) L
 abbrev Chains (P : Type*) [PartialOrder P] : Set (List P) := { L | chain L}
 
 section chain
+
+attribute [-instance] List.instLEList
+attribute [-instance] List.LT'
+attribute [-instance] List.instLTList
+
 /-
 instance: The set of all chains in P admits a partial ordering by set-theoretical inclusion.
 -/
-instance poset_chain {P : Type*} [PartialOrder P] : PartialOrder (Chains P) := sorry
+instance poset_chain {P : Type*} [PartialOrder P] : PartialOrder (Chains P) where
+  le := fun C₁ C₂ => C₁.val.Sublist C₂.val
+  le_refl := by simp
+  le_trans := fun _ _ _ h1 h2 ↦ List.Sublist.trans h1 h2
+  le_antisymm := fun _ _ h1 h2 => Subtype.ext <| List.Sublist.antisymm h1 h2
 
 /-
 instance: The set of all chains in P is a lattice.
