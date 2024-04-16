@@ -8,7 +8,7 @@ import Mathlib.GroupTheory.Subgroup.Basic
 import Mathlib.GroupTheory.Submonoid.Membership
 import Mathlib.Data.List.Range
 import Mathlib.Algebra.Module.Equiv
-import Mathlib.Data.List.Palindrome
+--import Mathlib.Data.List.Palindrome
 import Mathlib.Algebra.BigOperators.Finprod
 import Mathlib.Logic.Equiv.Fin
 
