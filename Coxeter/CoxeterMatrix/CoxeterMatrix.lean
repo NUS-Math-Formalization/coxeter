@@ -1040,10 +1040,6 @@ lemma eta_equiv_nn {g : G} {t : T} : ∀ {L : List S}, g = L → eta g t = μ₂
   have := (geqL.symm.subst (motive := fun x ↦ x⁻¹ = _) (gprod_reverse L).symm)
   rw [eta, ReflRepn.pi_value g⁻¹ L.reverse this (t, 1), List.reverse_reverse, one_mul]
 
-#print Finset.prod_hom_rel
-  -- probably some group hom stuff gotta check
-  -- Finset.prod_hom_rel
-
 lemma eta_equiv_nn' {L : List S} {t : T} : eta L t = μ₂.gen ^ nn L t := eta_equiv_nn rfl
 
 lemma eta_aux'_reflection (L : List S) (s : S) (t : T) (i : Fin L.length)
