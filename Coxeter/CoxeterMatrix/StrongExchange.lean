@@ -1,290 +1,12 @@
-import Mathlib.Data.Matrix.Basic
-import Mathlib.GroupTheory.OrderOfElement
-import Mathlib.GroupTheory.PresentedGroup
-import Mathlib.GroupTheory.Perm.Basic
-import Mathlib.Data.Matrix.Notation
-import Mathlib.GroupTheory.PresentedGroup
-import Mathlib.LinearAlgebra.Matrix.Symmetric
-import Mathlib.Analysis.SpecialFunctions.Trigonometric.Basic
-import Mathlib.Data.Complex.Exponential
-import Mathlib.RingTheory.RootsOfUnity.Basic
-
-import Coxeter.CoxeterSystem
-import Coxeter.OrderTwoGen
-
-open BigOperators
-
--- open Classical
--- test222
-
-section
-variable {α : Type*} [DecidableEq α]
-
-variable (m : Matrix α α ℕ)
-
-class CoxeterMatrix : Prop where
-  symmetric : ∀ (a b : α), m a b = m b a
-  oneIff : ∀ (a b : α), m a b = 1 ↔ a = b
-end
-
+import Coxeter.CoxeterMatrix.CoxeterMatrix
 open Classical
-
-namespace CoxeterMatrix
-variable {α} (m : Matrix α α ℕ) [hm : CoxeterMatrix m]
-
---variable {m' : Matrix α α ℕ} [hm' : CoxeterMatrix m']
-
-lemma one_iff : ∀ (a b : α), m a b = 1 ↔ a = b := hm.oneIff
-
-lemma diagonal_one {s : α} : m s s = 1 := by rw [hm.oneIff]
-
-lemma off_diagonal_ne_one {s : α} : s ≠ t → m s t ≠ 1 := by simp [hm.oneIff]
-
-local notation "F" => FreeGroup α
-
-@[simp] def toRelation (s t : α) (n : ℕ) : F := (FreeGroup.of s * FreeGroup.of t) ^ n
-
-@[simp] def toRelation' (s : α × α) : F := toRelation s.1 s.2 (m s.1 s.2)
-
-def toRelationSet : (Set F) := Set.range <| toRelation' m
-
-def toGroup := PresentedGroup <| toRelationSet m
-
-local notation "N" => Subgroup.normalClosure (toRelationSet m)
-local notation "G" => toGroup m
-
-instance : Group <| toGroup m := QuotientGroup.Quotient.group _
-
-def of (x : α) : G := QuotientGroup.mk' N (FreeGroup.of x)
-
--- The set of simple reflections
-@[simp]
-abbrev SimpleRefl := Set.range (of m)
-
-local notation "S" => (SimpleRefl m)
-
---@[simp]
---abbrev Refl : Set G := Set.range <| fun ((g, s) : G × S) => g * s * g⁻¹
-
---local notation "T" => (Refl m)
-
-@[simp]
-def toSimpleRefl (a : α) : SimpleRefl m := ⟨of m a, by simp⟩
-
-instance coe_group: Coe α (toGroup m) where
-  coe := of m
-
-instance coe_simple_refl: Coe α (SimpleRefl m) where
-  coe := toSimpleRefl m
-
-lemma liftHom_aux {A:Type*} [Group A] (f : α → A) (h : ∀ (s t : α), (f s * f t) ^ (m s t) = 1) : ∀ r ∈ toRelationSet m, (FreeGroup.lift f) r = 1 := by
-  intro r hr
-  obtain ⟨⟨s, t⟩, hst⟩ := hr
-  simp only [toRelation', toRelation] at hst
-  simp only [← hst, map_pow, map_mul, FreeGroup.lift.of, h]
-
--- Lift map from α→ A to Coxeter group → A
-def lift {A : Type _} [Group A] (f : α → A) (h : ∀ (s t : α), (f s * f t) ^ (m s t) = 1) : G →* A := PresentedGroup.toGroup <| liftHom_aux m f h
-
-lemma lift.of {A : Type _} [Group A] (f : α → A) (h : ∀ (s t : α), (f s * f t) ^ (m s t) = 1) (s : α) : lift m f h (of m s) = f s := by
-  apply PresentedGroup.toGroup.of
-
-abbrev μ₂ := rootsOfUnity 2 ℤ
-@[simp]
-abbrev μ₂.gen :μ₂ := ⟨-1, by norm_cast⟩
-
-lemma μ₂.gen_ne_one : μ₂.gen ≠ 1 := by rw [μ₂.gen]; norm_cast
-
-lemma μ₂.mem_iff {z} : z ∈ μ₂ ↔ z = 1 ∨ z = μ₂.gen := by
-  constructor
-  . intro _
-    have : z.val^2 = 1 := by norm_cast; simp only [Int.units_sq, Units.val_one]
-    replace := sq_eq_one_iff.1 this
-    rcases this with h1|h2
-    . exact Or.inl (by simp only [Units.val_eq_one] at h1; exact h1)
-    . right; ext; rw [h2]; rfl
-  . intro h
-    rcases h with h1|h2
-    . simp [h1]
-    . simp [h2]
-
-lemma μ₂.mem_iff' (z : μ₂) : z = 1 ∨ z = μ₂.gen := by
-  have := μ₂.mem_iff.1 z.2
-  rcases this with h1|h2
-  . left; norm_cast at h1
-  . right; norm_cast at h2
-
-lemma μ₂.not_iff_not : ∀ (z : μ₂), ¬z = 1 ↔ z = μ₂.gen := by
-  intro z
-  constructor
-  . have := (μ₂.mem_iff' z)
-    rcases this with h1|h2
-    . intro h; contradiction
-    . intro _; exact h2
-  . intro h; rw [h]; simp [gen_ne_one]
-
-
-lemma μ₂.not_iff_not' : ∀ (z : μ₂), ¬z = μ₂.gen ↔ z = 1 := by
-  intro z
-  constructor
-  . contrapose; rw [not_not]; exact (μ₂.not_iff_not z).mp
-  contrapose; rw [not_not]; exact (μ₂.not_iff_not z).mpr
-
-lemma μ₂.gen_square : μ₂.gen * μ₂.gen = 1 := by rw [μ₂.gen]; norm_cast
-
-lemma μ₂.gen_inv : μ₂.gen⁻¹ = μ₂.gen := by rw [μ₂.gen]; norm_cast
-
-lemma μ₂.gen_order_two : orderOf μ₂.gen = 2 := by
-  apply orderOf_eq_prime
-  . norm_cast
-  . exact gen_ne_one
-
-lemma μ₂.even_pow_iff_eq_one {n : ℕ} : μ₂.gen ^ n = 1 ↔ Even n := by
-  rw [even_iff_two_dvd, ← μ₂.gen_order_two, orderOf_dvd_iff_pow_eq_one]
-
-lemma μ₂.odd_pow_iff_eq_gen {n : ℕ} : μ₂.gen ^ n = μ₂.gen ↔ Odd n := by
-  rw [Nat.odd_iff_not_even, ← μ₂.even_pow_iff_eq_one, not_iff_not]
-
-@[simp]
-def epsilon : G →* μ₂ := lift m (fun _=> μ₂.gen) (by intro s t; ext; simp)
-
-lemma epsilon_of (s : α) : epsilon m (of m s) = μ₂.gen := by
-  simp only [epsilon, lift.of m]
-
-lemma epsilon_S {a : S} : epsilon m a = μ₂.gen := by
-  simp only [epsilon, lift.of m]
-  aesop
-
---@[simp] lemma of_mul (x y: α) : (of m x) * (of m y) =
---QuotientGroup.mk' _ (FreeGroup.mk [(x,tt), (y,tt)]):= by rw [of];
-
-@[simp]
-lemma of_relation (s t: α) : ((of m s) * (of m t))^(m s t) = 1 := by
-  set M := toRelationSet m
-  set k := ((FreeGroup.of s) * (FreeGroup.of t))^(m s t)
-  have kM : (k ∈ M) := by exact Exists.intro (s, t) rfl
-  have MN : (M ⊆ N) := by exact Subgroup.subset_normalClosure
-  have kN : (k ∈ N) := by exact MN kM
-  rw [of, of]
-  have : (((QuotientGroup.mk' N) (FreeGroup.of s) * (QuotientGroup.mk' N) (FreeGroup.of t)) ^ (m s t)
-    = (QuotientGroup.mk' N) ((FreeGroup.of (s) * FreeGroup.of (t)) ^ (m s t))) := by rfl
-  rw [this]
-  apply (QuotientGroup.eq_one_iff k).2
-  exact kN
-
--- @[simp] "simp can prove this"
-lemma of_square_eq_one {s : α} : (of m s) * (of m s) = 1 := by
-  have : m s s = 1 := diagonal_one m
-  rw [← pow_one ((of m s) * (of m s)), ←this]
-  apply of_relation m s s
-
-@[simp]
-lemma of_square_eq_one' : s ∈ SimpleRefl m → s * s = 1 := by
-  simp only [SimpleRefl, Set.mem_range, forall_exists_index]
-  intro x h
-  simp_all only [← h, of_square_eq_one]
-
-lemma of_inv_eq_of {x : α} : (of m x)⁻¹ = of m x :=
-  inv_eq_of_mul_eq_one_left (@of_square_eq_one α m hm x)
-
-lemma SimpleRefl_closed_under_inverse : S = S⁻¹ := by
-  ext y
-  constructor
-  . rintro ⟨w, hw⟩
-    use w
-    rw [← hw, of_inv_eq_of]
-  . rintro ⟨w, hw⟩
-    use w
-    rw [← inv_inj, ← hw, of_inv_eq_of]
-
-lemma toGroup_expression : ∀ (x : G), ∃ L : List S, x = L.gprod := by
-  intro x
-  apply (Submonoid.mem_monoid_closure_iff_prod S x).1
-  have h₀ : S = S ∪ S⁻¹ := by rw [← SimpleRefl_closed_under_inverse, Set.union_self]
-  have h₁ : Subgroup.closure S = ⊤ := by
-    rw [SimpleRefl, Set.range]
-    simp only [of, toGroup, PresentedGroup]
-    have : Subgroup.closure {x | ∃ y, (QuotientGroup.mk' N) (FreeGroup.of y) = x}
-      = Subgroup.closure (Set.range (PresentedGroup.of)) := rfl
-    rw [this, PresentedGroup.closure_range_of]
-  rw [h₀, ← Subgroup.closure_toSubmonoid, Subgroup.mem_toSubmonoid, h₁]
-  trivial
-
-def getS (L: List (α × Bool)) := L.map (fun (a, _) => toSimpleRefl m a)
-
-@[deprecated toGroup_expression]
-lemma toGroup_expression' : ∀ (x : G), ∃ L : List S, x = L.gprod := by
-  intro x
-  have k : ∃ y : F, QuotientGroup.mk y = x := by exact Quot.exists_rep x
-  rcases k with ⟨y, rep⟩
-  set a := getS m y.toWord
-  use a
-  have : x = a.gprod := by
-    simp only [a]
-    rw [getS, ← rep]
-    set L := FreeGroup.toWord y with hL
-    have : FreeGroup.mk L = y := by
-      rw [hL]
-      exact FreeGroup.mk_toWord
-    rw [← this]
-    induction L with
-    | nil =>
-      norm_num1
-      rw [← FreeGroup.toWord_one, FreeGroup.mk_toWord]
-      simp only [QuotientGroup.mk_one, SimpleRefl, toSimpleRefl,
-        FreeGroup.toWord_one, List.map_nil, gprod_nil]
-    | cons hd tail ih =>
-      rw [List.map_cons, ← List.singleton_append, ← FreeGroup.mul_mk]
-      rw [gprod_cons, ← ih]
-      rw [QuotientGroup.mk_mul]
-      simp only [mul_left_inj]
-      by_cases h : hd.2
-      · congr
-        exact Prod.snd_eq_iff.mp h
-      · push_neg at h
-        have h' : hd.2 = false := Bool.eq_false_iff.mpr h
-        have h'' : QuotientGroup.mk' N (FreeGroup.mk ([(hd.1, true)] ++ [(hd.1, true)])) = 1 := by
-          rw [← FreeGroup.mul_mk, ← FreeGroup.of]
-          have : (QuotientGroup.mk' N) (FreeGroup.of hd.1 * FreeGroup.of hd.1) =
-            (QuotientGroup.mk' N) (FreeGroup.of hd.1) * (QuotientGroup.mk' N) (FreeGroup.of hd.1)
-            := rfl
-          rw [this, ← of, of_square_eq_one]
-        simp only [QuotientGroup.mk'_apply] at h''
-        rw [← FreeGroup.mul_mk, QuotientGroup.mk_mul,
-          ← mul_right_inv (↑(FreeGroup.mk [(hd.1, true)])), mul_right_inj,
-          ← QuotientGroup.mk_inv, FreeGroup.inv_mk, FreeGroup.invRev] at h''
-        simp only [List.map_cons, Bool.not_true, List.map_nil, List.reverse_cons, List.reverse_nil,
-          List.nil_append] at h''
-        have : hd = (hd.1, false) := Prod.snd_eq_iff.mp h'
-        nth_rw 1 [this]
-        rw [← h'']
-        rfl
-  apply this
-
-lemma generator_ne_one (s : α) : of m s ≠ 1 := by
-  intro h
-  have h1 : epsilon m (of m s) = 1 := by rw [h]; simp
-  have h2 : epsilon m (of m s) = μ₂.gen := by rw [epsilon_of]
-  rw [h2] at h1; exact μ₂.gen_ne_one h1
-
-lemma generator_ne_one' {x : G} : x ∈ S → x ≠ 1 := by
-  rintro ⟨s, hs⟩
-  rw [← hs]
-  exact generator_ne_one m s
-
-lemma order_two : ∀ (x : G), x ∈ S → x * x = (1 : G) ∧ x ≠ 1 := by
-  rintro x ⟨s, hs⟩
-  rw [← hs]
-  exact ⟨of_square_eq_one m, generator_ne_one m s⟩
-
-instance ofOrderTwoGen : OrderTwoGen (SimpleRefl m) where
-  order_two := order_two m
-  expression := toGroup_expression m
-
-end CoxeterMatrix
+open BigOperators
 
 namespace CoxeterMatrix
 open OrderTwoGen
+open TestGroup
+
+
 
 variable {α} {m : Matrix α α ℕ} [hm : CoxeterMatrix m]
 
@@ -292,42 +14,20 @@ local notation "G" => toGroup m
 local notation "S" => SimpleRefl m
 local notation "T" => Refl (SimpleRefl m)
 
+local notation : max "ℓ(" g ")" => (OrderTwoGen.length S g)
+
 /-
-@[simp,deprecated ]
-lemma SimpleRefl_subset_Refl : ∀ {g : G}, g ∈ S → g ∈ T := by
-  sorry
+Let m be a Coxeter matrix on type α.
+Let G be the Coxeter group associated with the Coxeter matirx m.
+Let S be the set of simple reflections/
+Let T be the set of reflections.
+Let ℓ be the length function on G, viewing G as a group generated by order 2 elements.
 
--- DLevel 1
--- Moving to OrderTwoGen?
-@[simp,deprecated OrderTwoGen.Refl.simplify]
-lemma Refl.simplify {t : G} : t ∈ T ↔ ∃ g : G, ∃ s : S, g * s * g⁻¹ = t := by
-  sorry
-
-@[simp,deprecated OrderTwoGen.Refl.conjugate_closed]
-lemma Refl.conjugate_closed {s : α} {t : T} : (s : G) * t * (s : G)⁻¹ ∈ T := by
-  dsimp
-  sorry
-
--- DLevel 1
-@[simp,deprecated OrderTwoGen.Refl.conjugate_closed]
-lemma Refl.conjugate_closed' [CoxeterMatrix m ] {s : α} {t : T} : (s : G) * t * (s : G) ∈ T := by
-  dsimp
-  sorry
-
-@[simp,deprecated OrderTwoGen.Refl.conjugate_closed]
-lemma Refl.conjugate_closed_G {g : G} {t : T} : g * t * g⁻¹ ∈ T := by
-  dsimp
-  sorry
-
-@[deprecated OrderTwoGen.Refl.square_eq_one]
-lemma sq_refl_eq_one [CoxeterMatrix m] {t : T} : (t : G) ^ 2 = 1 := by
-  sorry
-
-@[deprecated OrderTwoGen.Refl.inv_eq_self]
-lemma inv_refl_eq_self [CoxeterMatrix m] {t : T} : (t : G)⁻¹ = t := by sorry
+The content of this subsection:
+  1. We establish basic properties of length functions.
+  2. We prove the strong exchange property of the presented group G.
 -/
 
-local notation : max "ℓ(" g ")" => (OrderTwoGen.length S g)
 
 lemma epsilon_mul {a b : G} : epsilon m (a * b) = epsilon m a * epsilon m b :=
   MonoidHom.map_mul (epsilon m) a b
@@ -347,6 +47,8 @@ lemma epsilon_list_length {L : List S} : epsilon m L = μ₂.gen ^ L.length := b
         _ = μ₂.gen * epsilon m L0 := by
           rw [epsilon_S]
     rw [h2, ih, pow_succ μ₂.gen L0.length]
+    nth_rw 1 [ ←pow_one (μ₂.gen)]
+    rw [pow_mul_comm, pow_one μ₂.gen]
 
 lemma epsilon_length {g : G} : epsilon m g = μ₂.gen ^ ℓ(g) := by
   let ⟨L, h1, h2⟩ := Nat.find_spec (@length_aux G _ S _ g)
@@ -410,7 +112,10 @@ lemma length_diff_one {g : G} {s : S} : ℓ(s * g) = ℓ(g) + 1 ∨ ℓ(g) = ℓ
 lemma length_smul_lt_of_le {g : G} {s : S} (hlen : ℓ(s * g) ≤ ℓ(g)) : ℓ(s * g) < ℓ(g) :=
   Ne.lt_of_le' length_smul_neq hlen
 
--- In the following section, we prove the strong exchange property
+
+
+
+-- In the following subsection, we prove the strong exchange property for the presented group G.
 section ReflRepresentation
 
 variable {β : Type*}
@@ -427,45 +132,13 @@ lemma toPalindrome_length {L : List β} : (toPalindrome L).length = 2 * L.length
     zify; ring_nf
     apply Nat.pos_of_ne_zero h
 
-lemma reverseList_nonEmpty {L : List S} (hL : L ≠ []) : L.reverse ≠ [] := by
-  apply List.length_pos.1
-  rw [List.length_reverse]
-  exact List.length_pos.2 hL
-
-lemma dropLast_eq_reverse_tail_reverse {L : List S} : L.dropLast = L.reverse.tail.reverse := by
-  induction L with
-  | nil => simp only [List.dropLast_nil, List.reverse_nil, List.tail_nil]
-  | cons hd tail ih =>
-    by_cases k : tail = []
-    . rw [k]
-      simp only [List.dropLast_single, List.reverse_cons, List.reverse_nil,
-        List.nil_append, List.tail_cons]
-    . push_neg at k
-      have htd : (hd :: tail).dropLast = hd :: (tail.dropLast) := by
-        exact List.dropLast_cons_of_ne_nil k
-      rw [htd]
-      have trht : (tail.reverse ++ [hd]).tail = (tail.reverse.tail) ++ [hd] :=
-        List.tail_append_of_ne_nil _ _ (reverseList_nonEmpty k)
-      have : (hd :: tail).reverse.tail = (hd :: tail).dropLast.reverse := by
-        rw [htd]
-        simp only [List.reverse_cons]
-        rw [trht]
-        apply (List.append_left_inj [hd]).2
-        exact List.reverse_eq_iff.1 ih.symm
-      rw [this, List.reverse_reverse, htd]
-
-lemma reverse_tail_reverse_append {L : List S} (hL : L ≠ []) :
-  L.reverse.tail.reverse ++ [L.getLast hL] = L := by
-  rw [← dropLast_eq_reverse_tail_reverse]
-  exact List.dropLast_append_getLast hL
-
 lemma toPalindrome_in_Refl [CoxeterMatrix m] {L:List S} (hL : L ≠ []) : (toPalindrome L:G) ∈ T := by
   apply OrderTwoGen.Refl.simplify.mpr
   use L.reverse.tail.reverse.gprod, (L.getLast hL)
   rw [← gprod_reverse, List.reverse_reverse]
   have : L.reverse.tail.reverse.gprod * (L.getLast hL) = L.gprod := by
     have : L = L.reverse.tail.reverse ++ [L.getLast hL] :=
-      (reverse_tail_reverse_append hL).symm
+      (List.reverse_tail_reverse_append hL).symm
     nth_rw 3 [this]
     exact gprod_append_singleton.symm
   rw [this, toPalindrome, gprod_append]
@@ -485,9 +158,11 @@ lemma toPalindrome_i_in_Refl [CoxeterMatrix m] {L : List S} (i : Fin L.length) :
     exact List.length_eq_zero.mpr tkpos
   exact toPalindrome_in_Refl h
 
-lemma mul_Palindrome_i_cancel_i [CoxeterMatrix m] {L : List S} (i : Fin L.length) : (t(L, i) : G) * L = (L.removeNth i) := by
+lemma mul_Palindrome_i_cancel_i [CoxeterMatrix m] {L : List S} (i : Fin L.length) :
+  (t(L, i) : G) * L = (L.removeNth i) := by
   rw [toPalindrome_i, toPalindrome, List.removeNth_eq_take_drop, List.take_get_lt _ _ i.2]
-  simp only [gprod_append, gprod_singleton, List.reverse_append, List.reverse_singleton, List.singleton_append, List.tail]
+  simp only [gprod_append, gprod_singleton, List.reverse_append, List.reverse_singleton,
+    List.singleton_append, List.tail]
   have : L = (L.take i).gprod * (L.drop i).gprod := by
     nth_rw 1 [← List.take_append_drop i L]
     rw [gprod_append]
@@ -631,14 +306,13 @@ lemma nn_cons (L : List S) (s : S) (t : T) : nn (s :: L) t = (if (s : G) = t the
       · rw [List.length_nil, List.range_zero, List.map_nil, List.map_nil]
       · congr 1
         ext i
-        simp only [Function.comp_apply, toPalindrome_i, toPalindrome, List.take_cons, List.reverse_cons]
+        simp only [hxh, ti1, Function.comp_apply, toPalindrome_i,
+          toPalindrome, List.take_cons, List.reverse_cons]
         rw [List.tail_append_of_ne_nil _ _]
         simp only [gprod_simps]
         repeat rw [← mul_assoc]
-        sorry
-        sorry
-        --rw [mul_assoc _ s.1 s.1, gen_square_eq_one s.1 s.2, one_mul, mul_one]
-        --exact (List.append_singleton_ne_nil (ttail.take i).reverse th)
+        rw [mul_assoc _ s.1 s.1, gen_square_eq_one s.1 s.2, one_mul, mul_one]
+        exact (List.append_singleton_ne_nil (ttail.take i).reverse th)
     _ = _ := by
       congr
       rw [List.count_singleton']
@@ -739,85 +413,7 @@ noncomputable def pi_aux' [CoxeterMatrix m] (s : α) : Equiv.Perm R where
 /-noncomputable def alternating_word (s t : α) (n : ℕ) : List α :=
   (List.range n).map (fun x ↦ if x % 2 = 0 then s else t)-/
 
-def alternating_word (s t : α) (n : ℕ) : List α :=
-  match n with
-  | 0 => []
-  | m + 1 => s :: alternating_word t s m
-
-lemma alternating_word_range (s t : α) (n : ℕ) : alternating_word s t n = (List.range n).map (fun x ↦ if x % 2 = 0 then s else t) := by
-  induction' n with m ih generalizing s t
-  · simp only [Nat.zero_eq, List.range_zero, List.map_nil, alternating_word]
-  · rw [alternating_word, ih t s, List.range_eq_range', List.range_eq_range',
-      ← List.range'_append_1 0 1 m, List.map_append, List.range'_eq_map_range 1 m, List.range_eq_range']
-    simp only [List.range'_one, List.map_cons, Nat.zero_mod, reduceIte, List.map_nil, List.map_map,
-      List.singleton_append, List.cons.injEq, true_and]
-    congr
-    ext x
-    dsimp only [Function.comp_apply]
-    have : (if ¬¬(1 + x) % 2 = 0 then s else t) = if x % 2 = 0 then t else s := by
-      rw [ite_not]
-      congr
-      simp only [Nat.mod_two_ne_zero, eq_iff_iff]
-      rw [add_comm, ← Nat.succ_eq_add_one]
-      exact Nat.succ_mod_two_eq_one_iff
-    rw [← this]
-    congr
-    rw [not_not]
-
-lemma alternating_word_nil (s t : α) : alternating_word s t 0 = [] := by
-  rw [alternating_word]
-
-lemma alternating_word_singleton (s t : α) : alternating_word s t 1 = [s] := by
-  rw [alternating_word, alternating_word_nil]
-
-lemma alternating_word_length (s t : α) (n : ℕ) : (alternating_word s t n).length = n := by
-  induction' n with m ih generalizing s t
-  rw [alternating_word_nil, List.length_nil]
-  rw [alternating_word, List.length_cons, ih t s]
-
-lemma alternating_word_take (s t : α) (n i : ℕ) (h : i ≤ n) :
-    (alternating_word s t n).take i = alternating_word s t i := by
-  rw [alternating_word_range, alternating_word_range, ← List.map_take, List.take_range h]
-
--- DLevel 2
-lemma alternating_word_append_odd (s t : α) (n m : ℕ) (h1 : m ≤ n) (h2 : Odd m) :
-    alternating_word s t n = alternating_word s t m ++ alternating_word t s (n - m) := by
-  nth_rw 1 [← Nat.sub_add_cancel (h1)]
-  set d := n - m
-  rcases h2 with ⟨k, ek⟩
-  rw [ek]
-  clear ek
-  induction k with
-  | zero =>
-    rw [Nat.mul_zero, Nat.zero_add, Nat.add_one, Nat.succ_eq_add_one]
-    rw [alternating_word_singleton, alternating_word, List.singleton_append]
-  | succ y ih =>
-    rw [Nat.add_one, Nat.succ_eq_add_one, Nat.succ_eq_add_one, mul_add]
-    nth_rw 2 [two_mul]
-    nth_rw 3 [two_mul]
-    repeat rw [← add_assoc]
-    rw [alternating_word, alternating_word]
-    rw [add_assoc, ih]
-    rw [alternating_word, alternating_word]
-    repeat rw [← List.cons_append]
-
--- DLevel 2
-lemma alternating_word_append_even (s t : α) (n m : ℕ) (h1 : m ≤ n) (h2 : Even m) :
-    alternating_word s t n = alternating_word s t m ++ alternating_word s t (n - m) := by
-  nth_rw 1 [← Nat.sub_add_cancel (h1)]
-  set d := n - m
-  rcases h2 with ⟨k, ek⟩
-  rw [ek, ← two_mul]
-  clear ek
-  induction k with
-  | zero =>
-    rw [Nat.mul_zero, Nat.add_zero, alternating_word_nil, List.nil_append]
-  | succ y ih =>
-    rw [Nat.succ_eq_add_one, mul_add, two_mul, two_mul, ← add_assoc]
-    repeat rw [alternating_word]
-    rw [← two_mul, ih]
-    repeat rw [← List.cons_append]
-
+open AlternatingWord
 -- DLevel 2
 lemma alternating_word_power (s t : α) (n : ℕ) : (alternating_word s t (2 * n) : List S).gprod
     = (of m s * of m t) ^ n := by
@@ -833,36 +429,6 @@ lemma alternating_word_power (s t : α) (n : ℕ) : (alternating_word s t (2 * n
 
 lemma alternating_word_relation (s t : α) : (alternating_word s t (2 * m s t) : List S).gprod = 1 := by
   rw [alternating_word_power s t (m s t), of_relation]
-
-lemma odd_alternating_word_reverse (s t : α) (i : ℕ) (h : Odd i) :
-  (alternating_word s t i).reverse = alternating_word s t i := by
-  rcases h with ⟨k, ek⟩
-  rw [ek]
-  clear ek
-  induction' k with l ih
-  . simp only [Nat.zero_eq, mul_zero, zero_add]
-    rfl
-  . rw [Nat.succ_eq_add_one, mul_add, mul_one, add_assoc, add_comm 2 1, ← add_assoc]
-    nth_rw 1 [alternating_word_append_odd s t (2 * l + 1 + 2) (2 * l + 1) (by simp) (by simp)]
-    rw [alternating_word_append_even s t (2 * l + 1 + 2) 2 (by simp) (by simp)]
-    simp only [add_tsub_cancel_left, List.reverse_append, add_tsub_cancel_right,
-      ih, List.append_cancel_right_eq]
-    rfl
-
-lemma even_alternating_word_reverse (s t : α) (i : ℕ) (h : Even i) :
-  (alternating_word s t i).reverse = alternating_word t s i := by
-  rcases h with ⟨k, ek⟩
-  rw [← two_mul] at ek
-  rw [ek]
-  clear ek
-  induction' k with l ih
-  . simp only [Nat.zero_eq, mul_zero]
-    rfl
-  . rw [Nat.succ_eq_add_one, mul_add, mul_one,
-      alternating_word_append_even s t (2 * l + 2) 2 (by simp) (by simp),
-      alternating_word_append_even t s (2 * l + 2) (2 * l) (by simp) (by simp),
-      List.reverse_append, add_tsub_cancel_right, add_tsub_cancel_left, ih]
-    rfl
 
 -- DLevel 3
 lemma alternating_word_palindrome (s t : α) (n : ℕ) (i : Fin n) :
@@ -1014,37 +580,25 @@ lemma pi_aux_list_mul (s t : α) : ((pi_aux' s : Equiv.Perm R) * (pi_aux' t : Eq
   . simp only [pow_zero, alternating_word, Nat.zero_eq, mul_zero, List.range_zero, List.map_nil,
       List.prod_nil]
   . rw [Nat.succ_eq_add_one, pow_succ, mul_add, add_comm, mul_one,
-      alternating_word_append_even s t (2 + 2 * k) (2) (by norm_num) (by norm_num)]
-    simp only [add_tsub_cancel_left, List.map_append, List.prod_append, ← ih, mul_left_inj]
+      alternating_word_append_even s t (2 + 2 * k) 2 (by norm_num) (by norm_num)]
+    simp only [add_tsub_cancel_left, List.map_append, List.prod_append, ← ih, mul_left_inj,
+      AlternatingWord.alternating_word]
+    rw [pow_mul_comm']
     rfl
-
-lemma alternating_word_map (s t : α) (f : α → A) (n : ℕ) :
-  (alternating_word s t n).map f = alternating_word (f s) (f t) n := by
-  induction' n with k ih generalizing s t
-  . simp only [Nat.zero_eq]
-    rfl
-  . rw [alternating_word, alternating_word, List.map_cons]
-    simp only [List.cons.injEq, true_and]
-    exact ih t s
 
 -- DLevel 3
 lemma pi_relation (s t : α) : ((pi_aux' s : Equiv.Perm R) * (pi_aux' t : Equiv.Perm R)) ^ m s t = 1 := by
   have (r : R) : (((pi_aux' s : Equiv.Perm R) * (pi_aux' t : Equiv.Perm R)) ^ m s t) r = r := by
     rw [pi_aux_list_mul, pi_aux_list]
-    set s' := toSimpleRefl m s
-    set t' := toSimpleRefl m t
-    have : (alternating_word s t (2 * m s t)).map (toSimpleRefl m)
-      = alternating_word s' t' (2 * m s t) :=
-        alternating_word_map s t (toSimpleRefl m) (2 * m s t)
     ext
     . simp only []
       rw [List.map_reverse, gprod_reverse]
-      repeat rw [this, alternating_word_relation]
+      repeat rw [alternating_word_map, alternating_word_relation]
       simp only [one_mul, inv_one, mul_one]
     . simp only [Submonoid.coe_mul, Subgroup.coe_toSubmonoid,
         SubmonoidClass.coe_pow, Units.val_mul, Units.val_pow_eq_pow_val, Units.val_neg,
         Units.val_one, Int.reduceNeg, ne_eq, Units.ne_zero, not_false_eq_true, mul_eq_left₀]
-      rw [List.map_reverse, this, even_alternating_word_reverse]
+      rw [List.map_reverse, alternating_word_map, even_alternating_word_reverse]
       have : m s t = m t s := by apply symmetric
       rw [this]
       apply Even.neg_one_pow
@@ -1054,58 +608,28 @@ lemma pi_relation (s t : α) : ((pi_aux' s : Equiv.Perm R) * (pi_aux' t : Equiv.
 
 noncomputable def pi : G →* Equiv.Perm R := lift m (fun s ↦ pi_aux' s) (by simp [pi_relation])
 
+lemma map_gprod_eq_map_prod (r : R) (L : List α) :
+  pi (L.map (toSimpleRefl m)).gprod r = (L.map pi_aux').prod r := by
+  induction L with
+  | nil => simp only [List.map_nil, gprod_nil, map_one,
+      Equiv.Perm.coe_one, id_eq, List.prod_nil]
+  | cons hd tail ih =>
+    simp only [List.map_cons, List.prod_cons, Equiv.Perm.coe_mul,
+      Function.comp_apply, gprod_cons, map_mul]
+    congr 1
+
 -- Equation 1.16
 -- Probably needs induction and wrangling with Finset.prod
 -- DLevel 5
-lemma pi_value (g : G) (L : List S) (h : g = L) (r : R) : (pi g) r
-    = (⟨g * r.1 * g⁻¹, by apply Refl.conjugate_closed⟩, r.2 * μ₂.gen ^ nn L.reverse r.1) := by
+lemma pi_value (g : G) (L : List S) (h : g = L) (r : R) :
+  (pi g) r = (⟨g * r.1 * g⁻¹, by apply Refl.conjugate_closed⟩, r.2 * μ₂.gen ^ nn L.reverse r.1)
+  := by
   rw [h]
-  have rw1 : ∃ (K : List α), K.map (toSimpleRefl m) = L := by
-    clear h
-    induction L with
-    | nil => simp only [SimpleRefl, List.map_eq_nil, exists_eq]
-    | cons hd tail ih =>
-      rcases ih with ⟨l, el⟩
-      have : ∃ (y : α), toSimpleRefl m y = hd := by
-        simp only [toSimpleRefl]
-        have : hd = ⟨hd.1, hd.2⟩ := by rfl
-        rw [this]
-        simp only [Subtype.mk.injEq]
-        exact Set.mem_range.mp (Subtype.mem hd)
-      rcases this with ⟨y, ey⟩
-      use y :: l
-      rw [List.map_cons]
-      congr
-  rcases rw1 with ⟨K, ek⟩
-  rw [← ek]
-  have : pi (K.map (toSimpleRefl m)).gprod r = (K.map pi_aux').prod r := by
-    clear ek
-    induction K with
-    | nil => simp only [List.map_nil, gprod_nil, map_one,
-      Equiv.Perm.coe_one, id_eq, List.prod_nil]
-    | cons hd tail ih =>
-      simp only [List.map_cons, List.prod_cons, Equiv.Perm.coe_mul,
-        Function.comp_apply, gprod_cons, map_mul]
-      congr 1
-  rw [this, pi_aux_list]
+  rcases (toSimpleRefl_surj_list m L) with ⟨K, ek⟩
+  rw [← ek, map_gprod_eq_map_prod, pi_aux_list]
   congr
   · rw [← List.reverse_map, gprod_reverse, inv_inj]
   · rw [← List.reverse_map]
-
-lemma reverse_head (L : List α) (h : L ≠ []) :
-  L.reverse = (L.getLast h) :: (L.dropLast).reverse := by
-  induction L with
-  | nil => contradiction
-  | cons hd tail ih =>
-    by_cases k : tail = []
-    . simp_rw [k]
-      simp only [ne_eq, not_true_eq_false, List.reverse_nil, List.dropLast_nil,
-        IsEmpty.forall_iff, List.reverse_cons, List.nil_append, List.getLast_singleton',
-        List.dropLast_single]
-    . push_neg at k
-      rw [List.reverse_cons, List.getLast_cons k, List.dropLast, List.reverse_cons, ih k]
-      . rfl
-      . exact k
 
 -- DLevel 3
 -- (maybe some list wrangling)
@@ -1118,14 +642,14 @@ lemma pi_inj : Function.Injective (pi : G → Equiv.Perm R) := by
   have L_notempty: L ≠ [] := by
     contrapose! wne1
     rw [hw, wne1, gprod_nil]
-  have L_rev_notempty : L.reverse ≠ [] := reverseList_nonEmpty L_notempty
+  have L_rev_notempty : L.reverse ≠ [] := List.reverseList_nonEmpty L_notempty
   have L_rev_ge1 : L.reverse.length > 0 := List.length_pos.mpr L_rev_notempty
   have : pi w ≠ 1 := by
     let s := L.getLast L_notempty
-    let t : T := ⟨s, SimpleRefl_subset_Refl (Subtype.mem s)⟩
+    let t : T := ⟨s, SimpleRefl_is_Refl (Subtype.mem s)⟩
     have : nn L.reverse t = 1 := by
       have zero_works : (toPalindrome_i L.reverse 0).gprod = [s] := by
-        rw [toPalindrome_i, reverse_head L L_notempty]
+        rw [toPalindrome_i, List.reverse_head L L_notempty]
         simp only [SimpleRefl, toPalindrome, zero_add, List.take_cons_succ, List.take_zero,
           List.reverse_cons, List.reverse_nil, List.nil_append, List.tail_cons,
           List.singleton_append]
@@ -1189,7 +713,8 @@ lemma eta_lift_eta_aux' {s : S} {t : T} : eta_aux' s t = eta s t := by
   · rw [if_pos h, if_pos h.symm, pow_one]
   · rw [if_neg h, if_neg (Ne.symm h), pow_zero]-/
 
-lemma pi_eval (g : G) (t : T) (ε : μ₂): ReflRepn.pi g (t, ε) = (⟨(g : G) * t * (g : G)⁻¹, OrderTwoGen.Refl.conjugate_closed⟩, ε * eta g⁻¹ t) := by
+lemma pi_eval (g : G) (t : T) (ε : μ₂): ReflRepn.pi g (t, ε)
+  = (⟨(g : G) * t * (g : G)⁻¹, OrderTwoGen.Refl.conjugate_closed⟩, ε * eta g⁻¹ t) := by
   rcases toGroup_expression m g with ⟨L, eL⟩
   rw [ReflRepn.pi_value g L eL]
   ext
@@ -1204,37 +729,25 @@ lemma eta_equiv_nn {g : G} {t : T} : ∀ {L : List S}, g = L → eta g t = μ₂
   have := (geqL.symm.subst (motive := fun x ↦ x⁻¹ = _) (gprod_reverse L).symm)
   rw [eta, ReflRepn.pi_value g⁻¹ L.reverse this (t, 1), List.reverse_reverse, one_mul]
 
-#print Finset.prod_hom_rel
-  -- probably some group hom stuff gotta check
-  -- Finset.prod_hom_rel
-
 lemma eta_equiv_nn' {L : List S} {t : T} : eta L t = μ₂.gen ^ nn L t := eta_equiv_nn rfl
 
-lemma eta_aux'_reflection (L : List S) (s : S) (t : T) (i : Fin L.length) (h : (t : G) = (L : G) * s * L.reverse) :
-    eta_aux' (L.get i) ⟨((L ++ [s] ++ L.reverse).take i).reverse * t * (L ++ [s] ++ L.reverse).take i, by apply Refl_palindrome_in_Refl⟩
-    = eta_aux' (L.get i) ⟨((L ++ [s] ++ L.reverse).take (2 * L.length - i)).reverse * t * (L ++ [s] ++ L.reverse).take (2 * L.length - i), by apply Refl_palindrome_in_Refl⟩
+lemma eta_aux'_reflection (L : List S) (s : S) (t : T) (i : Fin L.length)
+  (h : (t : G) = (L : G) * s * L.reverse) :
+    eta_aux' (L.get i) ⟨((L ++ [s] ++ L.reverse).take i).reverse * t *
+      (L ++ [s] ++ L.reverse).take i, by apply Refl_palindrome_in_Refl⟩
+    = eta_aux' (L.get i) ⟨((L ++ [s] ++ L.reverse).take (2 * L.length - i)).reverse
+      * t * (L ++ [s] ++ L.reverse).take (2 * L.length - i), by apply Refl_palindrome_in_Refl⟩
     := by
-  have takex : (L ++ [s] ++ L.reverse).take i.1 = L.take i.1 := by
-    sorry
-  have take2lmx : (L ++ [s] ++ L.reverse).take (2 * L.length - i.1) = L ++ [s] ++ L.reverse.take (L.length - 1 - i.1) := by
-    sorry
-  have Ldrop : (L.reverse.take (List.length L - 1 - i.1)) = (L.drop (1 + i.1)).reverse := by
-    rw [Nat.sub_sub, List.reverse_take _
-      (Nat.sub_le (List.length L) (1 + i.1))]
-    congr
-    have : 1 + i.1 ≤ L.length := by
-      rw [add_comm]
-      exact i.2
-    rw [Nat.sub_sub_self this]
-  simp only [h, takex, take2lmx, List.reverse_append, gprod_append, gprod_singleton,
-    List.reverse_singleton, Ldrop]
+  simp only [h, List.takeFront, List.takeBehind, List.reverse_append, gprod_append,
+    gprod_singleton, List.reverse_singleton, List.reverse_take_eq_drop_reverse]
   have drop_prod : (L.drop (1 + i.1) : G) = (L.get i : G) * (L.take i.1).reverse * L := by
     apply (List.take_drop_get L i.1 i.2).symm.subst
-      (motive := fun (x : List S) ↦ ((L.drop (1 + i.1) : G) = (L.get i : G) * (L.take i.1).reverse * x))
+      (motive := fun (x : List S) ↦
+      ((L.drop (1 + i.1) : G) = (L.get i : G) * (L.take i.1).reverse * x))
     simp only [gprod_simps]
     rw [← mul_assoc, @gen_square_eq_one' G _ S _ (L.get i), one_mul, add_comm]
-  simp only [gprod_reverse, drop_prod]
-  simp only [← mul_assoc, inv_mul_cancel_right, mul_inv_cancel_right, inv_inv, mul_inv_rev]
+  simp only [gprod_reverse, drop_prod, ← mul_assoc, inv_mul_cancel_right, mul_inv_cancel_right,
+    inv_inv, mul_inv_rev]
   simp_rw [mul_assoc _ (s : G) (s : G), @gen_square_eq_one' G _ S _ s,
     mul_one, mul_assoc (L.get i : G) _ _, eta_aux']
   congr 1
@@ -1255,7 +768,8 @@ lemma eta_t (t : T) : eta (t : G) t = μ₂.gen := by
     rw [List.length_append, List.length_append, List.length_reverse, List.length_singleton]
     ring
   let f : Fin (L ++ [s] ++ L.reverse).length → μ₂ := fun i ↦ eta_aux' ((L ++ [s] ++ L.reverse).get i)
-    ⟨((L ++ [s] ++ L.reverse).take i).reverse * t * (L ++ [s] ++ L.reverse).take i, by apply Refl_palindrome_in_Refl⟩
+    ⟨((L ++ [s] ++ L.reverse).take i).reverse * t * (L ++ [s] ++ L.reverse).take i,
+    by apply Refl_palindrome_in_Refl⟩
   let fnat : ℕ → μ₂ := fun i ↦ if h : i < (L ++ [s] ++ L.reverse).length then f ⟨i, h⟩ else 1
   calc
     _ = ∏ i : Fin (L ++ [s] ++ L.reverse).length, fnat i := by
@@ -1350,6 +864,10 @@ lemma eta_t (t : T) : eta (t : G) t = μ₂.gen := by
 
 end ReflRepresentation
 
+
+
+
+
 lemma lt_iff_eta_eq_gen (g : G) (t : T) : ℓ(t * g) < ℓ(g) ↔ eta g t = μ₂.gen := by
   have mpr (g : G) (t : T) : eta g t = μ₂.gen → ℓ(t * g) < ℓ(g) := by
     intro h
@@ -1401,8 +919,8 @@ lemma lt_iff_eta_eq_gen (g : G) (t : T) : ℓ(t * g) < ℓ(g) ↔ eta g t = μ�
   exact Iff.intro (mp g t) (mpr g t)
 
 -- DLevel 2
-lemma lt_iff_eta_eq_gen' (g : G) (t : T) : ℓ(t * g) ≤ ℓ(g) ↔ eta g t = μ₂.gen := by
-  sorry
+-- lemma lt_iff_eta_eq_gen' (g : G) (t : T) : ℓ(t * g) ≤ ℓ(g) ↔ eta g t = μ₂.gen := by
+--   sorry
 
 lemma strong_exchange : ∀ (L : List S) (t : T), ℓ((t:G) * L) < ℓ(L) →
   ∃ (i : Fin L.length), (t : G) * L = (L.removeNth i) := by
@@ -1415,16 +933,16 @@ lemma strong_exchange : ∀ (L : List S) (t : T), ℓ((t:G) * L) < ℓ(L) →
   obtain ⟨i, hi⟩ := this; use i; rw [← hi]
   exact removeNth_of_palindrome_prod L i
 
-lemma exchange: OrderTwoGen.ExchangeProp S := by
+lemma exchange : OrderTwoGen.ExchangeProp S := by
   intro L t _ h2
-  obtain ⟨i, hi⟩ := strong_exchange L ⟨t.val, (OrderTwoGen.SimpleRefl_subset_Refl t.prop)⟩ (length_smul_lt_of_le h2)
+  obtain ⟨i, hi⟩ := strong_exchange L ⟨t.val, (OrderTwoGen.SimpleRefl_is_Refl t.prop)⟩ (length_smul_lt_of_le h2)
   exact ⟨i, hi⟩
 
 -- DLevel 3
-instance ReflSet.fintype : Fintype (ReflSet S g) := sorry
+-- instance ReflSet.fintype : Fintype (ReflSet S g) := sorry
 
 -- DLevel 3
-lemma length_eq_card_reflset [OrderTwoGen S] : ℓ(g) = Fintype.card (ReflSet S g) := by sorry
+--lemma length_eq_card_reflset [OrderTwoGen S] : ℓ(g) = Fintype.card (ReflSet S g) := by sorry
 
 end CoxeterMatrix
 

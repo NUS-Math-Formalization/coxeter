@@ -44,9 +44,33 @@ lemma length_append_singleton (L : List α) (a : α)
 lemma take_le_length (L : List α) (h : n ≤ L.length)
 : (L.take n).length = n := by move=>//
 
-/-- `map` and `removeNth` commute with each other-/
-lemma map_removeNth_comm
-{α : Type*} {β : Type*} {f : α → β } (L : List α) (i : ℕ)
+lemma takeFront {α : Type _} (s : α) (L : List α) (i : Fin L.length) :
+  (L ++ [s] ++ L.reverse).take i.1 = L.take i.1 := by
+  rw [List.append_assoc, List.take_append_of_le_length]
+  exact Nat.le_of_lt i.2
+
+lemma takeBehind {α : Type _} (s : α) (L : List α) (i : Fin L.length) :
+  (L ++ [s] ++ L.reverse).take (2 * L.length - i.1) = L ++ [s] ++ L.reverse.take (L.length - 1 - i.1) := by
+  rw [two_mul, Nat.add_sub_assoc (by exact le_of_lt i.2)]
+  rw [List.append_assoc]
+  rw [List.take_append]
+  have : List.length L - i = 1 + List.length L - 1 - i := by
+    rw [Nat.add_comm, Nat.add_one_sub_one]
+  rw [this]
+  nth_rw 1 [←List.length_singleton s]
+  rw [Nat.add_sub_assoc (by exact Nat.one_le_of_lt (i.2)), Nat.add_sub_assoc (by exact Nat.le_sub_one_of_lt i.2)]
+  rw [List.take_append, List.append_assoc]
+
+lemma reverse_take_eq_drop_reverse {α : Type _} (L : List α) (i : Fin L.length)
+  : (L.reverse.take (List.length L - 1 - i.1)) = (L.drop (1 + i.1)).reverse := by
+  rw [Nat.sub_sub, List.reverse_take _ (Nat.sub_le (List.length L) (1 + i.1))]
+  congr
+  have : 1 + i.1 ≤ L.length := by rw [add_comm]; exact i.2
+  rw [Nat.sub_sub_self this]
+
+
+/-map and removeNth are commute with each other-/
+lemma map_removeNth_comm {α : Type*} {β : Type*} {f : α → β } (L : List α) (i : ℕ)
 : (L.removeNth i).map f = (L.map f).removeNth i := by
   move: i
   elim: L => //
@@ -198,9 +222,68 @@ lemma reverse_cons'' (L : List α) (a : α)
 : (L ++ [a]).reverse = a :: L.reverse := by
   rw [List.reverse_append, List.reverse_singleton]; simp;
 
+lemma reverseList_nonEmpty {L : List S} (hL : L ≠ []) : L.reverse ≠ [] := by
+  apply List.length_pos.1
+  rw [List.length_reverse]
+  exact List.length_pos.2 hL
+
 /-- Two lists are equal iff their reversals are equal. -/
 lemma eq_iff_reverse_eq (L1 L2 : List α)
-: L1.reverse = L2.reverse ↔ L1 = L2 := by move => //
+: L1.reverse = L2.reverse ↔ L1 = L2 := by move=>//
+
+lemma reverse_head (L : List α) (h : L ≠ []) :
+  L.reverse = (L.getLast h) :: (L.dropLast).reverse := by
+  induction L with
+  | nil => contradiction
+  | cons hd tail ih =>
+    by_cases k : tail = []
+    . simp_rw [k]
+      simp only [ne_eq, not_true_eq_false, List.reverse_nil, List.dropLast_nil,
+        IsEmpty.forall_iff, List.reverse_cons, List.nil_append, List.getLast_singleton',
+        List.dropLast_single]
+    . push_neg at k
+      rw [List.reverse_cons, List.getLast_cons k, List.dropLast, List.reverse_cons, ih k]
+      . rfl
+      . exact k
+
+lemma dropLast_eq_reverse_tail_reverse {L : List S} : L.dropLast = L.reverse.tail.reverse := by
+  induction L with
+  | nil => simp only [List.dropLast_nil, List.reverse_nil, List.tail_nil]
+  | cons hd tail ih =>
+    by_cases k : tail = []
+    . rw [k]
+      simp only [List.dropLast_single, List.reverse_cons, List.reverse_nil,
+        List.nil_append, List.tail_cons]
+    . push_neg at k
+      have htd : (hd :: tail).dropLast = hd :: (tail.dropLast) := by
+        exact List.dropLast_cons_of_ne_nil k
+      rw [htd]
+      have trht : (tail.reverse ++ [hd]).tail = (tail.reverse.tail) ++ [hd] :=
+        List.tail_append_of_ne_nil _ _ (reverseList_nonEmpty k)
+      have : (hd :: tail).reverse.tail = (hd :: tail).dropLast.reverse := by
+        rw [htd]
+        simp only [List.reverse_cons]
+        rw [trht]
+        apply (List.append_left_inj [hd]).2
+        exact List.reverse_eq_iff.1 ih.symm
+      rw [this, List.reverse_reverse, htd]
+
+lemma reverse_tail_reverse_append {L : List S} (hL : L ≠ []) :
+  L.reverse.tail.reverse ++ [L.getLast hL] = L := by
+  rw [← dropLast_eq_reverse_tail_reverse]
+  exact List.dropLast_append_getLast hL
+
+--#check reverse_append
+
+--#check dropLast_concat
+
+/-
+lemma removeNth_length_sub_one (L:List α) : removeNth L (L.length - 1) = dropLast L :=by sorry
+
+lemma removeNth_concat {a:α} (L:List α) : removeNth (concat L a) L.length = L:=by sorry
+-/
+
+--#print List.get?_eq_get
 
 /-- If g(i) = f(i + 1) then mapping f to [0,...,n] is the same as f(0)
 prepended to mapping g on [0,...,n-1]. -/
@@ -254,64 +337,30 @@ open BigOperators
 
 section BigOperators
 
-lemma prod_insert_zero_fin {M : Type u} [CommMonoid M] {n : Nat} {f : Fin (n + 1) → M} {g : Fin n → M} (h : ∀(i : Fin n), g i = f ⟨i.val + 1, add_lt_add_right i.prop 1⟩) :
+lemma prod_insert_zero_fin {M : Type u} [CommMonoid M] {n : Nat} {f : Fin (n + 1) → M} {g : Fin n → M} (h : ∀(i : Fin n), g i = f i.succ) :
     ∏ i : Fin (n + 1), f i = f 0 * ∏ i : Fin n, g i := by
-  let not0 : Set (Fin (n + 1)) := Set.univ \ {0}
-  have no0 : 0 ∉ not0 := Set.not_mem_diff_of_mem rfl
-  let plus1 : (Fin n) → (Fin (n + 1)) := fun x ↦ ⟨x.val + 1, (by linarith [x.prop])⟩
+  set s: Finset (Fin (n + 1)) := Finset.univ \ {0}
+  have hs : 0 ∉ s := by simp [s]
+  have unions : insert 0 s = Finset.univ := by
+    simp [s, Finset.insert_eq]
   calc
-    _ = ∏ᶠ (i : Fin (n + 1)) (_ : i ∈ Set.univ), f i := by
-      rw [finprod_eq_prod_of_fintype]
-      congr
-      ext x
-      simp only [Set.mem_univ x, finprod_true]
-    _ = f 0 * ∏ᶠ (i : Fin (n + 1)) (_ : i ∈ not0), f i := by
-      have prod_insert := finprod_mem_insert (fun i : Fin (n + 1) ↦ f i) no0 (Set.toFinite not0)
-      have insert0 : insert 0 not0 = Set.univ := by
-        ext x
+    _ = f 0 * ∏ i in s, f i := by
+      rw [← unions, Finset.prod_insert hs]
+    _ = _ := by
+      congr 1
+      apply Eq.symm
+      apply Finset.prod_nbij Fin.succ
+      . intro a _; simp_rw [s]
+        rw [Finset.mem_sdiff, Finset.mem_singleton]
         constructor
-        · exact fun _ ↦ Set.mem_univ x
-        · exact fun _ ↦
-            if h : x = 0 then Set.mem_insert_iff.mpr (Or.inl h)
-            else Set.mem_insert_of_mem 0 ⟨Set.mem_univ x, h⟩
-      rw [insert0] at prod_insert
-      rw [prod_insert]
-    _ = f 0 * ∏ᶠ (i : Fin (n + 1)) (_ : i ∈ plus1 '' Set.univ), f i := by
-      have : not0 = plus1 '' Set.univ := by
-        ext x
-        constructor
-        · rintro ⟨_, hx⟩
-          set! xv := x.val with hxv
-          have : xv ≠ 0 := (Fin.ne_iff_vne x 0).mp hx
-          rcases xv with (_ | x')
-          · exact (this rfl).elim
-          · have : x' < n := by
-              apply Nat.lt_of_succ_lt_succ
-              rw [hxv]
-              exact x.2
-            use ⟨x', this⟩
-            simp only [plus1]
-            exact ⟨Set.mem_univ (⟨x', this⟩ : Fin n), Fin.ext_iff.mpr hxv⟩
-        · rintro ⟨y, ⟨_, gyx⟩⟩
-          have : y.val + 1 = x := Fin.ext_iff.mp gyx
-          rw [← Nat.succ_eq_add_one] at this
-          have : x.val ≠ 0 := by
-            rw [← this]
-            exact Nat.succ_ne_zero y.val
-          exact ⟨Set.mem_univ x, (Fin.ne_iff_vne _ _).mpr this⟩
-      rw [this]
-    _ = f 0 * ∏ᶠ (i : Fin n) (_ : i ∈ Set.univ), f (plus1 i) := by
-      have : Set.InjOn plus1 Set.univ := by
-        intro a _ b _ hab
-        simp only [plus1] at hab
-        exact (@Fin.ext_iff _ a b).mpr (Nat.add_right_cancel (Fin.ext_iff.mp hab))
-      rw [finprod_mem_image this]
-    _ = f 0 * ∏ i : Fin n, g i := by
-      rw [finprod_eq_prod_of_fintype]
-      congr
-      ext x
-      simp only [Set.mem_univ x, finprod_true]
-      exact (h x).symm
+        . simp
+        . push_neg; simp [Fin.succ_ne_zero]
+      . rw [Set.InjOn]; intro _ _ _ _; exact Fin.succ_inj.1
+      . rw [Set.SurjOn]; intro i hi; rw [Set.mem_image]
+        have nezero : i ≠ 0 := by intro hhi; rw [hhi] at hi; exact hs hi
+        obtain ⟨j, hj⟩ := Fin.eq_succ_of_ne_zero nezero
+        use j; simp [hj]
+      . exact fun i _ ↦ h i
 
 lemma prod_insert_zero {M : Type u} [CommMonoid M] {n : Nat} {f g : Nat → M} (h : ∀(i : Fin n), g i = f (i.val + 1)) :
     ∏ i : Fin (n + 1), f i = f 0 * ∏ i : Fin n, g i := by
@@ -319,47 +368,30 @@ lemma prod_insert_zero {M : Type u} [CommMonoid M] {n : Nat} {f g : Nat → M} (
 
 lemma prod_insert_last {M : Type u} [CommMonoid M] (n : Nat) (f : Nat → M) :
     ∏ i : Fin (n + 1), f i = f n * ∏ i : Fin n, f i := by
-  repeat rw [← finprod_eq_prod_of_fintype]
-  let n_fin : Fin (n + 1) := ⟨n, Nat.le.refl⟩
-  let not_n : Set (Fin (n + 1)) := Set.univ \ {n_fin}
-  have no_n : n_fin ∉ not_n := Set.not_mem_diff_of_mem rfl
-  have prod_insert := finprod_mem_insert (fun i : Fin (n + 1) ↦ f i) no_n (Set.toFinite not_n)
-  have insert_n : insert n_fin not_n = Set.univ := by
-    ext x
-    constructor
-    · exact fun _ ↦ Set.mem_univ x
-    · exact fun _ ↦
-        if h : x = n_fin then Set.mem_insert_iff.mpr (Or.inl h)
-        else Set.mem_insert_of_mem n_fin ⟨Set.mem_univ x, h⟩
-  rw [insert_n] at prod_insert
-  simp only [Set.mem_univ, finprod_true] at prod_insert
-  rw [prod_insert]
-  congr 1
-  let fmap : Fin n → Fin (n + 1) :=
-    fun x ↦ ⟨x.1, (by linarith [x.2])⟩
-  have : Set.InjOn fmap Set.univ := by
-    intro a _ b _ hab
-    simp only [fmap] at hab
-    exact (@Fin.ext_iff _ a b).mpr ((@Fin.ext_iff (n + 1) _ _).mp hab)
-  have := @finprod_mem_image _ _ M _ (fun x ↦ f x.1) Set.univ fmap this
-  simp only [Set.mem_univ, finprod_true] at this
-  rw [← this]
-  congr
-  ext x
-  have : not_n = fmap '' Set.univ := by
-    ext x
-    constructor
-    · rintro ⟨_, hx⟩
-      have : x.1 < n := Fin.val_lt_last hx
-      use ⟨x.1, this⟩
-      simp only [fmap]
-      exact And.intro (Set.mem_univ _) True.intro
-    · rintro ⟨y, ⟨_, gyx⟩⟩
-      have : x.val ≠ n := by
-        rw [← Fin.ext_iff.mp gyx]
-        exact Nat.ne_of_lt y.2
-      exact ⟨Set.mem_univ x, (Fin.ne_iff_vne _ _).mpr this⟩
-  rw [← this]
+  let n_fin : Fin (n + 1) := Fin.last n
+  set s: Finset (Fin (n + 1)) := Finset.univ \ {n_fin}
+  have hs : n_fin ∉ s := by simp [s]
+  have unions : insert n_fin s = Finset.univ := by
+    simp [s, Finset.insert_eq]
+  calc
+    _ = f n_fin * ∏ i in s, f i := by
+      rw [← unions, Finset.prod_insert hs]
+    _ = _ := by
+      congr 1
+      apply Eq.symm
+      apply Finset.prod_nbij Fin.castSucc
+      . intro a _; simp_rw [s]
+        rw [Finset.mem_sdiff, Finset.mem_singleton]
+        constructor
+        . simp
+        . simp only [n_fin]; exact ne_of_lt (Fin.castSucc_lt_last a)
+      . rw [Set.InjOn]; intro _ _ _ _; exact Fin.castSucc_inj.1
+      . rw [Set.SurjOn]; intro i hi; rw [Set.mem_image]
+        have : i ≠ n_fin := by
+          contrapose! hs; rw [hs] at hi; exact hi
+        use Fin.castPred i this
+        simp
+      . exact fun _ _ ↦ rfl
 
 lemma prod_insert_last_fin {M : Type u} [CommMonoid M] (n : Nat) (f : Fin (n + 1) → M) :
     ∏ i : Fin (n + 1), f i = f n * ∏ i : Fin n, f i := by
@@ -407,8 +439,9 @@ lemma halve_odd_prod {M : Type u} [CommMonoid M] {n : ℕ} (f : ℕ → M) :
         ext i
         congr 2
         simp only [Nat.succ_sub_succ_eq_sub,f']
-        ring_nf; congr
-        exact (Nat.add_sub_assoc (by linarith [i.2]) 1).symm
+        congr
+        rw [Nat.sub_add_comm];
+        exact le_trans (Nat.le_of_lt i.2) (@Nat.le_mul_of_pos_left 2 m (by linarith))
       _ = f' m * (g 0 * ∏ i : Fin m, g (i + 1)) := by
         rw [← mul_assoc (f' m), mul_comm (f' m) (g 0), mul_assoc (g 0)]
       _ = f' m * ∏ i : Fin (m + 1), g i := by
@@ -549,7 +582,7 @@ lemma mem_monoid_closure_iff_prod {M : Type*} [Monoid M] (T : Set M) (z : M) :
   z ∈ closure T ↔ (∃ L : List T, z = (L : List M).prod) := by
     constructor
     . intro hz ; induction' hz using closure_induction' with s hs x _ y _ hx hy x _ hx
-      . use [⟨s,hs⟩]; simp [List.prod_singleton,pure,List.ret]
+      . use [⟨s,hs⟩]; simp [List.prod_singleton,pure,List.pure]
       . use []; simp [List.prod_nil]
       . obtain ⟨Lx,hLx⟩ := hx
         obtain ⟨Ly,hLy⟩ := hy

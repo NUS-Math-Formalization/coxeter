@@ -1,5 +1,5 @@
 import Coxeter.Basic
-import Coxeter.CoxeterMatrix
+import Coxeter.CoxeterMatrix.CoxeterMatrix
 
 import Mathlib.Data.Real.Basic
 import Mathlib.Data.Complex.Exponential
