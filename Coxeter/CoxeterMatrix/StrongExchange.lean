@@ -764,9 +764,6 @@ lemma eta_t (t : T) : eta (t : G) t = μ₂.gen := by
     exact ht
   rw [@eta_equiv_nn α m hm t' ⟨t', ⟨g, s, ht⟩⟩ (L ++ [s] ++ L.reverse) tLgL,
     nn_prod_eta_aux]
-  have len : (L ++ [s] ++ L.reverse).length = 2 * L.length + 1 := by
-    rw [List.length_append, List.length_append, List.length_reverse, List.length_singleton]
-    ring
   let f : Fin (L ++ [s] ++ L.reverse).length → μ₂ := fun i ↦ eta_aux' ((L ++ [s] ++ L.reverse).get i)
     ⟨((L ++ [s] ++ L.reverse).take i).reverse * t * (L ++ [s] ++ L.reverse).take i,
     by apply Refl_palindrome_in_Refl⟩
@@ -780,7 +777,7 @@ lemma eta_t (t : T) : eta (t : G) t = μ₂.gen := by
       rw [h]
     _ = ∏ i : Fin (2 * L.length + 1), fnat i := by
       congr 1
-      repeat rw [len]
+      repeat rw [List.append_singleton_reverse_length]
     _ = fnat L.length * ∏ i : Fin L.length, (fnat i * fnat (2 * L.length - i)) :=
       @halve_odd_prod μ₂ _ L.length fnat
     _ = μ₂.gen * ∏ i : Fin L.length, (fnat i * fnat (2 * L.length - i)) := by
@@ -788,10 +785,8 @@ lemma eta_t (t : T) : eta (t : G) t = μ₂.gen := by
       simp_rw [fnat, f, List.append_assoc, List.singleton_append, List.length_append,
         List.length_cons, List.length_reverse, Set.mem_setOf_eq, gprod_reverse,
         lt_add_iff_pos_right, Nat.zero_lt_succ, reduceDite, List.take_left, eta_aux']
-      have : L.length < (L ++ [s]).length := by
-        rw [List.length_append, List.length_singleton]
-        exact Nat.le.refl
-      rw [List.get_append_left _ _ this, @List.get_append_right _ _ _ _ (lt_irrefl L.length) _
+      rw [List.get_append_left _ _ (List.lt_append s L),
+        @List.get_append_right _ _ _ _ (lt_irrefl L.length) _
         (by simp only [List.length_singleton, Nat.sub_self, zero_lt_one])]
       simp only [List.length_singleton, le_refl, Nat.sub_self,
         Fin.zero_eta, List.get_cons_zero, eta_aux']
@@ -803,57 +798,14 @@ lemma eta_t (t : T) : eta (t : G) t = μ₂.gen := by
     _ = μ₂.gen * ∏ __ : Fin L.length, (1 : μ₂) := by
       congr
       ext x
-      simp only [fnat]
-      have xub : x.1 < (L ++ [s] ++ L.reverse).length := by
-        rw [List.length_append, List.length_append]
-        linarith [x.2]
-      simp only [xub, reduceDite]
-      have yub : 2 * L.length - x.1 < (L ++ [s] ++ L.reverse).length := by
-        rw [List.length_append, List.length_append, List.length_singleton,
-          List.length_reverse, two_mul, Nat.add_sub_assoc (by linarith [x.2]), add_assoc]
-        refine Nat.add_lt_add_left ?_ L.length
-        rw [add_comm]
-        exact Nat.lt_succ.mpr (Nat.sub_le L.length x)
-      simp only [yub, reduceDite, f]
-      have ylb : ¬2 * L.length - x.1 < (L ++ [s]).length := by
-        push_neg
-        rw [two_mul, List.length_append, List.length_singleton,
-          Nat.add_sub_assoc (by linarith [x.2])]
-        refine Nat.add_le_add_left (Nat.le_sub_of_add_le ?_) L.length
-        rw [add_comm]
-        exact x.2
-      have garyub : 2 * L.length - x.1 - (L ++ [s]).length < L.reverse.length := by
-        rw [List.length_append] at yub
-        exact Nat.sub_lt_left_of_lt_add (Nat.le_of_not_lt ylb) yub
-      have xub2 : x.1 < (L ++ [s]).length := by
-        rw [List.length_append, List.length_singleton]
-        exact Fin.val_lt_of_le x (Nat.le.step Nat.le.refl)
-      rw [@List.get_append_right _ _ _ _ ylb _ garyub,
-        List.get_append_left _ _ xub2, List.get_append_left _ _ x.2]
-      have gry : L.reverse.length - 1 - (2 * L.length - x.1 - (L ++ [s]).length) < L.reverse.reverse.length := by
-        repeat rw [List.length_reverse]
-        refine lt_of_le_of_lt (Nat.sub_le _ _) ?_
-        exact Nat.sub_lt_of_pos_le (by norm_num) (by linarith [x.2])
-      rw [← List.get_reverse L.reverse _ gry garyub]
-      have : L.reverse.reverse.get ⟨L.reverse.length - 1 - (2 * L.length - x.1 - (L ++ [s]).length), gry⟩ = L.get x := by
-        simp only [List.length_reverse, List.length_append, List.length_singleton,
-          two_mul, Nat.sub_sub, Nat.add_comm x (L.length + 1), List.reverse_reverse]
-        have : L.length - (1 + (L.length + L.length - (L.length + 1 + x.1))) = x := by
-          nth_rw 2 [← Nat.sub_sub]
-          nth_rw 2 [← Nat.sub_sub]
-          rw [Nat.add_sub_cancel, Nat.sub_sub, ← Nat.add_sub_assoc (by linarith [x.2]),
-            add_comm 1 L.length, ← Nat.sub_sub, Nat.add_sub_cancel]
-          exact Nat.sub_sub_self (by linarith [x.2])
-        simp only [this]
-        have : x.1 < L.reverse.reverse.length := by
-          rw [List.reverse_reverse]
-          exact x.2
-        congr 1
-        · exact List.reverse_reverse L
-        · exact (Fin.heq_ext_iff (by rw [List.reverse_reverse L])).mpr rfl
+      simp only [fnat, List.lt_append_singleton_reverse, reduceDite,
+        List.lt_append_singleton_reverse', reduceDite, f]
+      rw [@List.get_append_right _ _ _ _ (List.not_lt_append_singleton s L x) _ (List.lt_append_singleton' s L x),
+        List.get_append_left _ _ (List.lt_append' s L x), List.get_append_left _ _ x.2,
+        ← List.get_reverse L.reverse _ (List.lt_reverse_reverse s L x) (List.lt_append_singleton' s L x)]
       have htLgL : (t : G) = (L : G) * s * L.reverse := by
         rw [h, gprod_reverse, ← hgL, ← ht]
-      rw [this, eta_aux'_reflection L s t x htLgL]
+      rw [(List.reverse_reverse_get s L x), eta_aux'_reflection L s t x htLgL]
       congr
       have (u2 : μ₂) : u2 * u2 = (1 : μ₂) :=
         if h : u2 = μ₂.gen then (by rw [h]; exact rfl)
