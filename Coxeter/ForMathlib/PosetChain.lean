@@ -552,12 +552,20 @@ lemma maximal_chain_iff_cover {P : Type*} [PartialOrder P] [BoundedOrder P]  [Fi
       have : maximal_chain L := maximal_chain_of_cover_chain ⟨h₃, h₁, h₂⟩
       apply this.2 L' chain_l' sublst
 
-
 /-
 Lemma: Let L : x_0 < x_1 < ⋯ < x_n be a maximal chain of P. Then (x_i, x_{i+1}) is an (cover) edge of P.
 -/
 lemma max_chain_mem_edge {P : Type*} [PartialOrder P] {L: List P} {e: P × P} :
-  maximal_chain L →  e ∈ L.adjPairs → e ∈ edges P:= sorry
+  maximal_chain L →  e ∈ L.adjPairs → e ∈ edges P:= by
+    intro maxc eadj
+    have := maximal_chain_cover maxc
+    simp [edges]
+    rw [mem_adjPairs_iff] at eadj
+    rcases eadj with ⟨l₁, l₂, h⟩
+    subst h
+    simp at this
+    exact this.2.1
+
 
 
 /-
