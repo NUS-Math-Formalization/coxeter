@@ -16,6 +16,7 @@ local notation : max "q" => @LaurentPolynomial.T ℤ _ 1
 local notation : max "q⁻¹" => @LaurentPolynomial.T ℤ _ (-1)
 #check SimpleRefl_is_Refl
 
+
 -- trans to ...
 lemma length_induction_aux {p : G → Prop} (h1 : p 1) (hws :∀w, ∀ s:hG.S, s.1 ∈ rightDescent w → p (w*s) → p w) :
   ∀ l, ∀ u:G, l = ℓ(u) → p u := by
@@ -40,6 +41,7 @@ lemma length_induction {p : G → Prop} (h1 : p 1) (hws :∀w, ∀ s:hG.S, s.1 �
     intro u
     exact length_induction_aux h1 hws ℓ(u) u rfl
 
+lemma mul_SimpleRefl_ne_self {w:G} {s: hG.S} : w*s ≠ w := sorry
 -- trans to CoxeterSystem
 lemma mul_SimpleRefl_twice (w:G) (s: hG.S) : w = w*s*s := by
   rw [mul_assoc,gen_square_eq_one' s,mul_one]
@@ -84,27 +86,39 @@ lemma Hecke_apply_eq_total_apply {h : Hecke G} {w : G} : h w = (Finsupp.total G 
 lemma muls_apply_antidiagonal_of_memrD_aux {x w : G} {s : hG.S} (h1 : ℓ(w*s) < ℓ(w)) :
   (TT x * TT s.1) w ≠ 0 ↔ x = w ∨ x = w*s := sorry
 
-#check Finset.sum_eq_add_of_mem
-#check Finsupp.sum_of_support_subset
+lemma smul_apply {h: Hecke G} {r: LaurentPolynomial ℤ} (w:G) : (r • h) w = r * h w := by
+  rw [Finsupp.smul_apply]
+  rfl
 
-lemma muls_apply_antidiagonal_of_memrD (h : Hecke G) (s : hG.S) (w : G) (h1 : ℓ(w*s) < ℓ(w))
-  (hm1 : w ∈ h.support) (hm2 : w*s ∈ h.support) : (h * TT s.1) w = (q-1) * h w + h (w*s) := by
+lemma sub_apply (h1 h2: Hecke G) (w:G) : (h1 - h2) w = h1 w - h2 w :=by
+  rw [←Finsupp.sub_apply h1 h2 w]
+  sorry
+
+lemma muls_apply_antidiagonal_of_memrD (h : Hecke G) (s : hG.S) (w : G) (h1 : ℓ(w*s) < ℓ(w)) : (h * TT s.1) w = (q-1) * h w + h (w*s) := by
     nth_rw 1 [repr_respect_TT h,Finsupp.sum_mul,Finsupp.sum_apply]
     rw [Finsupp.sum_of_support_subset h (s:=h.support) (by simp) ]
     have : ∀ c ∈ h.support, c ≠ w ∧ c ≠ w * ↑s → (h c • TT c * TT s.1) w = 0 := by
-      intro c hc hcc
+      intro c _ hcc
       rw [smul_mul_assoc,Finsupp.smul_apply]
       have : (TT c * TT s.1) w = 0 := by
         have hcc' : ¬(c = w ∨ c = w * ↑s) := by push_neg;assumption
         have := Function.mt (muls_apply_antidiagonal_of_memrD_aux (x:=c) h1).1 hcc'
         simp at this
         assumption
-    rw [Finset.sum_eq_add_of_mem w (w*s) hm1 hm2 (sorry) this]
-    sorry
-    sorry
+      rw [this,smul_zero]
+    have h1' :ℓ(w*s) < ℓ(w*s*s) := by nth_rw 2 [mul_SimpleRefl_twice w s] at h1;assumption
+    rw [Finset.sum_eq_add w (w*s) (ne_comm.1 mul_SimpleRefl_ne_self) this]
+    simp
+    rw [mul_lt' s h1,mul_gt' s h1',smul_apply,Finsupp.add_apply,mul_add,smul_apply,TT_apply_self,smul_apply,TT_apply_ne_self]
+    simp_rw [←mul_SimpleRefl_twice,smul_apply,TT_apply_self]
+    ring
+    exact mul_SimpleRefl_ne_self
+    · intro hw; rw [Finsupp.not_mem_support_iff] at hw; rw [hw]; simp; exact Finsupp.zero_apply
+    · intro hw; rw [Finsupp.not_mem_support_iff] at hw; rw [hw]; simp; exact Finsupp.zero_apply
+    intro i
+    simp
 
-lemma muls_apply_antidiagonal_of_not_memrD (h : Hecke G) (s : hG.S) (w : G) (h1 : ℓ(w) < ℓ(w*s)) :
-    (h * TT s.1) w = q * h (w*s) := sorry
+lemma muls_apply_antidiagonal_of_not_memrD (h : Hecke G) (s : hG.S) (w : G) (h1 : ℓ(w) < ℓ(w*s)) :  (h * TT s.1) w = q * h (w*s) := sorry
 
 @[simp] lemma TTInv_one : TTInv (1:G) = 1 := by
   have h2: TT (1:G) * TT 1 = 1 := by rw [←one_eq,one_mul]
@@ -135,10 +149,11 @@ noncomputable def R (G : Type _) [CoxeterGroup G]: G → G → LaurentPolynomial
 lemma Rpoly_aux {u v :G} {s:hG.S} (h1:s.1 ∈ rightDescent v) (h2:s.1 ∈ rightDescent u):
     (TTInv v⁻¹) u * q = (TTInv (v * s)⁻¹) (u * s) := by
       have hl : ℓ((v * s)⁻¹) < ℓ(s * (v * s)⁻¹) := sorry
-      nth_rw 1 [mul_SimpleRefl_twice u s ,mul_SimpleRefl_twice v s]
+      nth_rw 1 [mul_SimpleRefl_twice v s]
       rw [mul_inv_rev,←inv_eq_self' s,TTInv_muls_of_length_gt' s hl]
-      rw [TTInv_s_eq]
-      --rw [mul_sub (TTInv (v*s.1)⁻¹) (q⁻¹ • TT s.1) ((1 - q⁻¹) • 1)]
+      rw [TTInv_s_eq,mul_sub,sub_apply,mul_smul_comm,smul_apply,muls_apply_antidiagonal_of_memrD]
+
+      sorry
       sorry
 
 lemma Rpoly_eq' : ∀ l, ∀ w : G, l = ℓ(w) → TTInv w⁻¹ w = q⁻¹^(ℓ(w)) := by
@@ -214,8 +229,8 @@ lemma Rpoly_not_mem_rD : ∀(u v:G) (s:hG.S),s.1 ∈ rightDescent v → s.1 ∉ 
       rw [mul_inv_rev,←inv_eq_self' s,TTInv_muls_of_length_gt' s hl,TTInv_s_eq]
       calc
         _ = (TTInv (v * s)⁻¹ * (q⁻¹ • TT s.1) - TTInv (v * s)⁻¹ * (1 - q⁻¹) • 1) u *
-        (-1) ^(ℓ(v * s * s) + ℓ(u)) * q ^ ℓ(v * s * s) := by sorry--rw [mul_sub]
-        _ = _ := sorry
+        (-1) ^(ℓ(v * s * s) + ℓ(u)) * q ^ ℓ(v * s * s) := by rw [mul_sub,←vss]
+        _ = _ := by sorry
     · have : Nonempty (rightDescent v) := Nonempty.intro ⟨s,hsv⟩
       contradiction
 
