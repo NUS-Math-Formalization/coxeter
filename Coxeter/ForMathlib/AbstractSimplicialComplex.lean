@@ -122,10 +122,7 @@ lemma sSup_eq_unionSubset {s : Set <| AbstractSimplicialComplex V} (hs : s.Nonem
   apply le_antisymm
   · apply sSup_le
     intro b bs
-    rw [le_def]
-    refine Set.subset_iUnion_of_subset b ?_
-    refine Set.subset_iUnion_of_subset bs ?_
-    rfl
+    refine Set.subset_iUnion_of_subset b (Set.subset_iUnion_of_subset bs (by rfl))
   · rw [le_sSup_iff]
     intro b hb
     rw [le_def]
@@ -140,7 +137,6 @@ lemma bot_eq_ofEmpty : (⊥ : AbstractSimplicialComplex V) = OfEmpty := by
   symm
   rw [eq_bot_iff, le_def, show OfEmpty.faces = {∅} by rfl, Set.singleton_subset_iff]
   apply (⊥ : AbstractSimplicialComplex V).empty_mem
-
 
 theorem bot_faces_eq_empty : (⊥ : AbstractSimplicialComplex V).faces = {∅} := by
   rw [bot_eq_ofEmpty]; rfl
