@@ -402,6 +402,7 @@ lemma subalg_commute_subalg' (f:subalg G) (g:subalg' G): f.1 ∘ₗ g.1 = g.1 �
 noncomputable instance alg_hom_aux.IsLinearMap : IsLinearMap (LaurentPolynomial ℤ) (alg_hom_aux: subalg G → Hecke G) where
   map_add:=by intro x y; simp
   map_smul := by intro c x; simp
+
   noncomputable instance alg_hom_aux'.IsLinearMap : IsLinearMap (LaurentPolynomial ℤ) (alg_hom_aux': subalg' G → Hecke G) where
     map_add:=by
       intro x y; simp
@@ -587,7 +588,7 @@ lemma Hecke.right_distrib : ∀ (a b c : Hecke G),  HeckeMul (a + b)  c =  Hecke
   rw [LinearEquiv.map_add]
 
 noncomputable instance Hecke.Semiring : Semiring (Hecke G) where
-  mul:=HeckeMul
+  mul:= HeckeMul
   mul_zero:= Hecke.mul_zero
   zero_mul:= Hecke.zero_mul
   left_distrib:= Hecke.left_distrib
@@ -597,11 +598,6 @@ noncomputable instance Hecke.Semiring : Semiring (Hecke G) where
   one_mul:=Hecke.one_mul
   mul_one:=Hecke.mul_one
 
-noncomputable instance : NonUnitalSemiring (Hecke G) := Semiring.toNonUnitalSemiring (α := Hecke G)
-
-noncomputable instance : NonUnitalNonAssocSemiring (Hecke G) := NonUnitalSemiring.toNonUnitalNonAssocSemiring (α := Hecke G)
-
-noncomputable instance : NonUnitalNonAssocRing (Hecke G) := Finsupp.instNonUnitalNonAssocRingFinsuppToZeroToMulZeroClassToNonUnitalNonAssocSemiring
 
 lemma Hecke.smul_assoc : ∀ (r : LaurentPolynomial ℤ) (x y : Hecke G), HeckeMul (r • x) y = r • (HeckeMul x y):=by
   intro r x y
@@ -616,13 +612,25 @@ lemma Hecke.smul_comm : ∀ (r : LaurentPolynomial ℤ) (x y : Hecke G), HeckeMu
 noncomputable instance Hecke.algebra : Algebra (LaurentPolynomial ℤ) (Hecke G):=
 Algebra.ofModule (Hecke.smul_assoc) (Hecke.smul_comm)
 
+noncomputable instance : Ring (Hecke G) := Algebra.semiringToRing  (LaurentPolynomial ℤ)
+#check mul_sub (α:= Hecke G)
+
+#check Ring.toSub (R := (Hecke G)).sub
 --how to simp * to def?
-lemma mul_gt : ℓ(w) < ℓ(s*w) → TT s.1 * TT w = TT (s.1*w) := by
+@[simp]
+lemma mul_gt : ℓ(w) < ℓ(s*w) → TT s.1 * TT w = TT (s*w) := by
   intro hl
   --unfold Hecke.Mul
   sorry
 
+@[simp]
 lemma mul_lt : ℓ(s*w) < ℓ(w) → TT s.1 * TT w = (q-1) • (TT w) + q • (TT (s*w)) := sorry
+
+@[simp]
+lemma mul_gt' : ℓ(w) < ℓ(w*s) → TT w * TT s.1 = TT (w*s) := by sorry
+
+@[simp]
+lemma mul_lt' : ℓ(w*s) < ℓ(w) → TT w * TT s.1 = (q-1) • (TT w) + q • (TT (w*s)) := by sorry
 
 @[simp]
 lemma Ts_square : TT s.1 * TT s.1 = (q - 1) • TT s.1 + q • 1 := sorry
