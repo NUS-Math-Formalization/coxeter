@@ -3,17 +3,14 @@ import Coxeter.CoxeterMatrix.CoxeterMatrix
 import Coxeter.WellFounded
 --import Coxeter.Morphism
 
-import Mathlib.Data.Polynomial.Degree.Definitions
-import Mathlib.Data.Polynomial.Reverse
-import Mathlib.Data.Polynomial.Basic
 import Mathlib.LinearAlgebra.FreeModule.Basic
-import Mathlib.Data.Polynomial.Laurent
 import Mathlib.Algebra.DirectSum.Basic
 import Mathlib.Algebra.Ring.Defs
 import Mathlib.Algebra.Algebra.Hom
 import Mathlib.Algebra.Algebra.Equiv
 import Mathlib.Init.Data.List.Instances
 import Mathlib.Data.Finsupp.Pointwise
+import Mathlib.Algebra.Polynomial.Laurent
 
 open Classical List CoxeterSystem OrderTwoGen CoxeterGroup HOrderTwoGenGroup CoxeterMatrix
 
@@ -552,22 +549,22 @@ lemma mul_zero : ∀ (a : Hecke G), HeckeMul a 0 = 0 := by
     _ = 0 := by simp_rw [map_zero]
 
 
-lemma Hecke.zero_mul : ∀ (a : Hecke G),  HeckeMul 0 a = 0 := by
+lemma zero_mul : ∀ (a : Hecke G),  HeckeMul 0 a = 0 := by
   intro a
   simp
 
 --f (f⁻¹( f (f⁻¹(a)*f⁻¹(b)) ) * f⁻¹(c)) = f (f⁻¹ (a) * f⁻¹  (f (f⁻¹(b)*f⁻¹(c)) ))
-lemma Hecke.mul_assoc :∀ (a b c : Hecke G), HeckeMul (HeckeMul a b) c = HeckeMul a (HeckeMul b c):=by
+lemma mul_assoc :∀ (a b c : Hecke G), HeckeMul (HeckeMul a b) c = HeckeMul a (HeckeMul b c):=by
   intro a b c
   simp only [HeckeMul]
   rw [LinearEquiv.symm_apply_apply (alg_hom G),_root_.mul_assoc,LinearEquiv.symm_apply_apply]
 
-lemma Hecke.one_mul : ∀ (a : Hecke G), HeckeMul (TT 1) a = a := by
+lemma one_mul : ∀ (a : Hecke G), HeckeMul (TT 1) a = a := by
   intro a
   rw [HeckeMul, subalg.id_eq]
   simp
 
-lemma Hecke.mul_one : ∀ (a : Hecke G), HeckeMul a (TT 1) = a := by
+lemma mul_one : ∀ (a : Hecke G), HeckeMul a (TT 1) = a := by
   intro a
   rw [HeckeMul,subalg.id_eq]
   simp
@@ -576,41 +573,41 @@ noncomputable instance : MulOneClass (Hecke G) where
   one_mul := Hecke.one_mul
   mul_one := Hecke.mul_one
 
-lemma Hecke.left_distrib : ∀ (a b c : Hecke G), HeckeMul a (b + c) = HeckeMul a b + HeckeMul a c := by
+lemma left_distrib : ∀ (a b c : Hecke G), HeckeMul a (b + c) = HeckeMul a b + HeckeMul a c := by
   intro a b c
   simp only[HeckeMul]
   rw [LinearEquiv.map_add,mul_add,LinearEquiv.map_add]
 
-lemma Hecke.right_distrib : ∀ (a b c : Hecke G),  HeckeMul (a + b)  c =  HeckeMul a c + HeckeMul b c :=by
+lemma right_distrib : ∀ (a b c : Hecke G),  HeckeMul (a + b)  c =  HeckeMul a c + HeckeMul b c :=by
   intro a b c
   simp only[HeckeMul]
   nth_rw 1 [LinearEquiv.map_add,add_mul]
   rw [LinearEquiv.map_add]
 
-noncomputable instance Hecke.Semiring : Semiring (Hecke G) where
+noncomputable instance Semiring : Semiring (Hecke G) where
   mul:= HeckeMul
-  mul_zero:= Hecke.mul_zero
-  zero_mul:= Hecke.zero_mul
-  left_distrib:= Hecke.left_distrib
-  right_distrib:= Hecke.right_distrib
-  mul_assoc:=Hecke.mul_assoc
+  mul_zero:= mul_zero
+  zero_mul:= zero_mul
+  left_distrib:= left_distrib
+  right_distrib:= right_distrib
+  mul_assoc:=mul_assoc
   one:=TT 1
-  one_mul:=Hecke.one_mul
-  mul_one:=Hecke.mul_one
+  one_mul:=one_mul
+  mul_one:=mul_one
 
 
-lemma Hecke.smul_assoc : ∀ (r : LaurentPolynomial ℤ) (x y : Hecke G), HeckeMul (r • x) y = r • (HeckeMul x y):=by
+lemma smul_assoc : ∀ (r : LaurentPolynomial ℤ) (x y : Hecke G), HeckeMul (r • x) y = r • (HeckeMul x y):=by
   intro r x y
   simp_rw [HeckeMul]
   rw [LinearEquiv.map_smul,smul_mul_assoc,LinearEquiv.map_smul]
 
-lemma Hecke.smul_comm : ∀ (r : LaurentPolynomial ℤ) (x y : Hecke G), HeckeMul x (r • y) = r • (HeckeMul x y):=by
+lemma smul_comm : ∀ (r : LaurentPolynomial ℤ) (x y : Hecke G), HeckeMul x (r • y) = r • (HeckeMul x y):=by
   intro r x y
   simp only [HeckeMul]
   rw [LinearEquiv.map_smul,mul_smul_comm,LinearEquiv.map_smul]
 
-noncomputable instance Hecke.algebra : Algebra (LaurentPolynomial ℤ) (Hecke G):=
-Algebra.ofModule (Hecke.smul_assoc) (Hecke.smul_comm)
+noncomputable instance algebra : Algebra (LaurentPolynomial ℤ) (Hecke G):=
+Algebra.ofModule (smul_assoc) (smul_comm)
 
 noncomputable instance : Ring (Hecke G) := Algebra.semiringToRing  (LaurentPolynomial ℤ)
 #check mul_sub (α:= Hecke G)
@@ -683,10 +680,10 @@ theorem is_inv_aux (red : reduced_word L) : listToHecke (G := G) L * (listToHeck
     rw [←listToHecke,←listToHeckeInv,listToHecke_cons]
     have : TT s.1 * listToHecke L * (listToHeckeInv L *  prod (map TT_inv_s [s])) =
     TT s.1 * (listToHecke L * listToHeckeInv L) * prod (map TT_inv_s [s]) := by
-      simp_rw [mul_assoc]
+      simp_rw [_root_.mul_assoc]
     rw [this,hL (reduced_imp_tail_reduced red)]
     dsimp
-    simp only [mul_one,TT_inv_mul,prod_singleton]
+    simp only [_root_.mul_one,TT_inv_mul,prod_singleton]
 
 theorem is_inv_aux' (red : reduced_word L) :  (listToHeckeInv L) * listToHecke (G:=G) L = 1 := by sorry
 
@@ -711,8 +708,8 @@ lemma TTInv_mul {w : G} : TTInv w * TT w = 1 := by
 lemma TTInv_unique : TT w * h = 1 → h = TTInv w := by
   have := mul_TTInv (w:=w)
   intro h1
-  have h2 : TTInv w * TT w * h = TTInv w := by rw [mul_assoc,h1];simp
-  rw [TTInv_mul,one_mul] at h2
+  have h2 : TTInv w * TT w * h = TTInv w := by rw [_root_.mul_assoc,h1];simp
+  rw [TTInv_mul,_root_.one_mul] at h2
   assumption
 
 #check mul_eq_mul_left_iff
