@@ -10,7 +10,7 @@ import Coxeter.ForMathlib.AdjacentPair
 
 
 namespace PartialOrder
-/- Let P be a finite poet. -/
+/- Let P be a finite poset. -/
 variable {P : Type*} [PartialOrder P]
 
 open List
@@ -449,9 +449,41 @@ lemma maximal_chain_of_cover_chain {P :Type*} [PartialOrder P] [BoundedOrder P] 
 /-
 Lemma: Let P be a bounded finite poset. Then a maximal chain exsits.
 -/
-lemma exist_maximal_chain {P : Type*} [PartialOrder P] [BoundedOrder P] [Fintype P] :
-  ∃ L : List P, maximal_chain L := by sorry
 
+#check List.toFinset_card_of_nodup
+
+lemma exist_maximal_chain {P : Type*} [PartialOrder P] [BoundedOrder P] [Fintype P] :
+  ∃ L : List P, maximal_chain L := by
+  let n := Fintype.card P
+  by_contra h
+  simp only [maximal_chain] at h
+  push_neg at h
+  have (m : ℕ) : ∃L : List P, chain L ∧ m ≤ L.length := by
+    induction m with
+    | zero =>
+      use []
+      simp
+    | succ m' hm =>
+      obtain ⟨L, ⟨hc, hlen⟩⟩ := hm
+      obtain ⟨L', ⟨hc', hsub, hneq⟩⟩ := h L hc
+      use L'
+      refine And.intro hc' ?_
+      have lell := List.length_le_of_sublist hsub
+      have neqll := fun x ↦ hneq (List.Sublist.eq_of_length hsub x)
+      have := lt_of_le_of_ne lell neqll
+      linarith
+  obtain ⟨L, hc, hlen⟩ := this (n + 1)
+  have : DecidableEq P := Classical.typeDecidableEq P
+  have : L.toFinset ⊆ Finset.univ :=
+    fun x _ ↦ Finset.mem_univ x
+  have := Finset.card_le_card this
+  have g : List.Nodup L := chain_nodup hc
+  have g₁ : L.toFinset.card = L.length := List.toFinset_card_of_nodup g
+  rw [g₁] at this
+  have g₂ : (@Finset.univ P).card = n := by
+    simp only [n]
+    exact rfl
+  linarith
 
 /-
 (Programming) Note that the assumption that P is a BoundedOrder implies that P is nonempty, and so a maximal chain is nonempty.
