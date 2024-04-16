@@ -306,14 +306,12 @@ lemma nn_cons (L : List S) (s : S) (t : T) : nn (s :: L) t = (if (s : G) = t the
       · rw [List.length_nil, List.range_zero, List.map_nil, List.map_nil]
       · congr 1
         ext i
-        simp only [Function.comp_apply, toPalindrome_i, toPalindrome, List.take_cons, List.reverse_cons]
+        simp only [hxh, ti1, Function.comp_apply, toPalindrome_i,
+          toPalindrome, List.take_cons, List.reverse_cons]
+        rw [List.tail_append_of_ne_nil _ _]
         simp only [gprod_simps]
         repeat rw [← mul_assoc]
-        simp [hxh, ti1, toPalindrome_i]
-        rw [List.append_cons]
-        rw [List.tail_append_of_ne_nil _ _]
-        repeat simp only [gprod_simps]
-        rw [←mul_assoc, gen_square_eq_one s.1 s.2, one_mul, mul_one]
+        rw [mul_assoc _ s.1 s.1, gen_square_eq_one s.1 s.2, one_mul, mul_one]
         exact (List.append_singleton_ne_nil (ttail.take i).reverse th)
     _ = _ := by
       congr
@@ -582,7 +580,7 @@ lemma pi_aux_list_mul (s t : α) : ((pi_aux' s : Equiv.Perm R) * (pi_aux' t : Eq
   . simp only [pow_zero, alternating_word, Nat.zero_eq, mul_zero, List.range_zero, List.map_nil,
       List.prod_nil]
   . rw [Nat.succ_eq_add_one, pow_succ, mul_add, add_comm, mul_one,
-      alternating_word_append_even s t (2 + 2 * k) (2) (by norm_num) (by norm_num)]
+      alternating_word_append_even s t (2 + 2 * k) 2 (by norm_num) (by norm_num)]
     simp only [add_tsub_cancel_left, List.map_append, List.prod_append, ← ih, mul_left_inj,
       AlternatingWord.alternating_word]
     rw [pow_mul_comm']
@@ -730,10 +728,6 @@ lemma eta_equiv_nn {g : G} {t : T} : ∀ {L : List S}, g = L → eta g t = μ₂
   intro L geqL
   have := (geqL.symm.subst (motive := fun x ↦ x⁻¹ = _) (gprod_reverse L).symm)
   rw [eta, ReflRepn.pi_value g⁻¹ L.reverse this (t, 1), List.reverse_reverse, one_mul]
-
-#print Finset.prod_hom_rel
-  -- probably some group hom stuff gotta check
-  -- Finset.prod_hom_rel
 
 lemma eta_equiv_nn' {L : List S} {t : T} : eta L t = μ₂.gen ^ nn L t := eta_equiv_nn rfl
 
