@@ -201,8 +201,44 @@ lemma maximal_chain_of_cover_chain {P :Type*} [PartialOrder P] [BoundedOrder P] 
 /-
 Lemma: Let P be a bounded finite poset. Then a maximal chain exsits.
 -/
+
+#check List.toFinset_card_of_nodup
+
+lemma nodup_of_chain {P : Type*} [PartialOrder P] (L : List P) (h : chain L) : L.Nodup := by
+  sorry
+
 lemma exist_maximal_chain {P : Type*} [PartialOrder P] [BoundedOrder P] [Fintype P] :
-  ∃ L : List P, maximal_chain L := by sorry
+  ∃ L : List P, maximal_chain L := by
+  let n := Fintype.card P
+  by_contra h
+  simp only [maximal_chain] at h
+  push_neg at h
+  have (m : ℕ) : ∃L : List P, chain L ∧ m ≤ L.length := by
+    induction m with
+    | zero =>
+      use []
+      simp
+    | succ m' hm =>
+      obtain ⟨L, ⟨hc, hlen⟩⟩ := hm
+      obtain ⟨L', ⟨hc', hsub, hneq⟩⟩ := h L hc
+      use L'
+      refine And.intro hc' ?_
+      -- List.length_le_of_sublist
+      -- List.Sublist.eq_of_length
+  obtain ⟨L, hc, hlen⟩ := this (n + 1)
+  have : DecidableEq P := Classical.typeDecidableEq P
+  have : L.toFinset ⊆ Finset.univ :=
+    fun x _ ↦ Finset.mem_univ x
+  have := Finset.card_le_card this
+
+
+  sorry
+
+
+
+
+
+
 
 
 /-
