@@ -187,7 +187,78 @@ lemma maximal_chain'_tail {a : P} {tail : List P} : maximal_chain' (a :: tail) �
     have : a :: tail = L'' := MAX L'' chainL'' ⟨htL''1, htL''2⟩ sublistL''
     exact (List.cons_eq_cons.1 this).2
 
-lemma maximal_chain'_cons {a b : P} {L : List P} : maximal_chain' (b :: L) → a ⋖ b → maximal_chain' (a :: b :: L) := by sorry
+/-
+Lemma: If a chain L : x₀ < x₁ < ⋯ < x_n is maximal', then we have x_0 ⋖ x_1 ⋖ x_2 ⋯ ⋖ x_n.
+-/
+lemma cover_chain_of_maximal_chain' {P : Type*} [PartialOrder P] {L: List P} :
+  maximal_chain' L → List.Chain' (· ⋖ ·) L := by
+  intro h
+  induction' L with a t ih
+  . simp
+  . match t with
+    | [] => simp
+    | b :: t' =>
+      apply List.chain'_cons.2
+      exact ⟨maximal_chain'_head h, ih (maximal_chain'_tail h)⟩
+
+lemma maximal_chain'_cons {a b : P} {L : List P} : maximal_chain' (b :: L) → a ⋖ b → maximal_chain' (a :: b :: L) := by
+  intro maxcbL aledb
+  simp [maximal_chain', aledb.1, maxcbL.1]
+  intro L' chain_l' lha leq sublst
+  match L' with
+  | [] => simp at *
+  | c :: L'' =>
+      simp at lha
+      subst lha
+      cases sublst with
+      | cons  _ h =>
+          have ain : a ∈ L'' := by
+            have : [a].Sublist (a :: b :: L) := by simp
+            have : [a].Sublist L'' := by apply List.Sublist.trans this h
+            simp at this
+            assumption
+          exfalso
+          apply chain_nodup at chain_l'
+          apply List.nodup_cons.mp at chain_l'
+          exact chain_l'.1 ain
+      | cons₂ _ h =>
+          congr
+          dsimp [maximal_chain'] at maxcbL
+          by_cases h' : List.head? L'' = some b
+          · rw [show L'' = List.tail (a :: L'') by simp]
+            apply maxcbL.2 (L' := L'') (List.Chain'.tail chain_l')
+            constructor
+            · apply h'.symm
+            · match L'' with
+              | [] => simp at h
+              | _ :: _ =>
+                  simp at leq
+                  assumption
+            apply h
+          · exfalso
+            dsimp [CovBy] at aledb
+            match L'' with
+            | [] => simp at h
+            | c :: tail =>
+                simp at h'
+                have bin : b ∈ tail := by
+                  have : b ∈ c :: tail := by
+                    have : [b].Sublist (b :: L) := by simp
+                    have : [b].Sublist (c :: tail) := by apply List.Sublist.trans this h
+                    simp at this ⊢
+                    exact this
+                  simp at this
+                  rcases this with e | hi
+                  · exfalso; exact h' e.symm
+                  · exact hi
+                have cltb : c < b := by
+                  simp only [List.chain'_cons] at chain_l'
+                  apply List.Chain.rel (l := tail) chain_l'.2 bin
+                have altc : a < c := (List.chain'_cons.mp chain_l').1
+                exact aledb.2 altc cltb
+
+
+
 
 /-
 Lemma: A pair of element is a maximal chain if and only if the pair is a cover relation.
@@ -213,19 +284,7 @@ lemma maximal_chain'₂_iff_ledot {a b : P} : maximal_chain' [a,b] ↔ (a ⋖ b)
     apply maximal_chain'_cons maximal_chain'_singleton h
 
 
-/-
-Lemma: If a chain L : x₀ < x₁ < ⋯ < x_n is maximal', then we have x_0 ⋖ x_1 ⋖ x_2 ⋯ ⋖ x_n.
--/
-lemma cover_chain_of_maximal_chain' {P : Type*} [PartialOrder P] {L: List P} :
-  maximal_chain' L → List.Chain' (· ⋖ ·) L := by
-  intro h
-  induction' L with a t ih
-  . simp
-  . match t with
-    | [] => simp
-    | b :: t' =>
-      apply List.chain'_cons.2
-      exact ⟨maximal_chain'_head h, ih (maximal_chain'_tail h)⟩
+
 
 /-
 Lemma: If a chain L : x₀ < x₁ < ⋯ < x_n is maximal, then we have x_0 ⋖ x_1 ⋖ x_2 ⋯ ⋖ x_n.
