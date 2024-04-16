@@ -195,6 +195,8 @@ lemma maximal_chain'_tail {a : P} {tail : List P} : maximal_chain' (a :: tail) �
     have : a :: tail = L'' := MAX L'' chainL'' ⟨htL''1, htL''2⟩ sublistL''
     exact (List.cons_eq_cons.1 this).2
 
+lemma in_of_in_sublist {a : P} {L L' : List P} (g : List.Sublist L L') (h : a ∈ L) : a ∈ L' := sorry
+
 /-
 Lemma: If a chain L : x₀ < x₁ < ⋯ < x_n is maximal', then we have x_0 ⋖ x_1 ⋖ x_2 ⋯ ⋖ x_n.
 -/
@@ -319,14 +321,73 @@ Then L is a maximal chain.
 lemma maximal_chain_of_cover_chain {P :Type*} [PartialOrder P] [BoundedOrder P] {L: List P} :
   List.Chain' (· ⋖ · ) L ∧ L.head? = some ⊥ ∧ L.getLast? = some ⊤ → maximal_chain L := by
   rintro ⟨h₁, h₂, h₃⟩
-  by_contra h₄
-  rw [maximal_chain] at h₄
-  push_neg at h₄
-  have g₁ : List.Chain' (· < ·) L := by sorry
-  have g₂ : chain L := by exact g₁
-  rcases h₄ g₂ with ⟨L', g₄, g₅, g₆⟩
-  sorry
-
+  have g₁ : List.Chain' (· < ·) L := by
+    apply List.Chain'.imp (R := (· ⋖ · )) (S := (· < ·))
+    intro a b aleb
+    exact CovBy.lt aleb
+    exact h₁
+  have g₂ : maximal_chain' L := by
+    apply maximal_chain'_of_cover_chain h₁
+  rw [maximal_chain]
+  constructor
+  · exact g₁
+  · intro L' g₃ g₄
+    apply g₂.2
+    · apply g₃
+    · rw [h₂]
+      rw [h₃]
+      have g₅ : ⊥ ∈ L' := by
+        apply in_of_in_sublist _ _
+        · exact L
+        · exact g₄
+        · exact List.mem_of_mem_head? h₂
+      have g₆ : ⊤ ∈ L' := by
+        apply in_of_in_sublist _ _
+        · exact L
+        · exact g₄
+        · exact List.mem_of_mem_getLast? h₃
+      have g₇ : List.Chain' (fun x x_1 => x < x_1) L' := by
+        exact g₃
+      constructor
+      · match L' with
+        | [] =>
+          have : L = [] := by exact List.sublist_nil.mp g₄
+          simp [this] at h₂
+        | head :: tail =>
+          by_contra h₄
+          push_neg at h₄
+          have h₅ : ⊥ ∈ tail := by
+            have : ⊥ ≠ head := by exact fun a => h₄ (congrArg some a)
+            simp at g₅
+            simp [this] at g₅
+            exact g₅
+          have : head < ⊥ := by
+            apply List.Chain.rel g₃ h₅
+          have h₆ : ¬ head < ⊥ := by exact not_lt_bot
+          exact h₆ this
+      · match L' with
+        | [] =>
+          have : L = [] := by exact List.sublist_nil.mp g₄
+          simp [this] at h₃
+        | head :: tail =>
+          by_contra h₄
+          have h₅ : chain (head :: tail ++ [⊤]) := by
+            apply List.Chain'.append
+            apply g₇
+            exact chain_singleton
+            intro x hx y hy
+            simp at hy
+            rw [hy.symm]
+            unfold List.getLast? at h₄
+            simp at h₄
+            unfold List.getLast? at hx
+            simp at hx
+            rw [hx.symm]
+            exact Ne.lt_top' h₄
+          apply chain_nodup at h₅
+          apply List.disjoint_of_nodup_append at h₅
+          simp [g₆] at h₅
+    · apply g₄
 
 
 /- Definition: We say a poset P is bounded, if it has a unique minimal and a unique maximal element. -/
