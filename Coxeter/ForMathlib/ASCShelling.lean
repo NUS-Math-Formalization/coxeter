@@ -27,7 +27,7 @@ def shelling' [DecidableEq V] {F :  AbstractSimplicialComplex V} [hpure:Pure F] 
   F.rank > 0 ∧
   ∀ k i : Fin m, i < k → ∃ j : Fin m, j < k ∧
     ((l i).val ∩ (l k).val ⊆ (l j).val ∩ (l k).val) ∧
-    ((l i).val ∩ (l k).val).card + 1 = F.rank
+    ((l j).val ∩ (l k).val).card + 1 = F.rank
 
 
 /- Lemma: The two definitions of shellings are equivalent.
