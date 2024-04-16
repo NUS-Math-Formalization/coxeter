@@ -12,42 +12,37 @@ import Mathlib.Data.List.Palindrome
 import Mathlib.Algebra.BigOperators.Finprod
 import Mathlib.Logic.Equiv.Fin
 
-
 import Coxeter.AttrRegister
 
-#check List.eraseDups
-#check List.eraseReps
-#check List.groupBy
+import Ssreflect.Lang
 
-namespace  List
+namespace List
 variable {α : Type _} [BEq α] [Inhabited α]
 
-lemma append_singleton_ne_nil (L : List α) (a : α) : L ++ [a] ≠ [] := by {
-  induction L with
-  | nil => {simp}
-  | cons hd tail _ => {simp}
-}
+/-- Appending an element on a list makes it nonempty. -/
+lemma append_singleton_ne_nil (L : List α) (a : α) : L ++ [a] ≠ [] := by
+  elim: L => //
 
-lemma length_hd_tail_eq_succ_length (L : List α) (a : α) : (a :: L).length = L.length + 1 := by simp
+/-- The length of a list prepended with an element is one more than that of
+the original list. -/
+lemma length_hd_tail_eq_succ_length (L : List α) (a : α)
+: (a :: L).length = L.length + 1 := by move=>//
 
+/-- Removing the last element of a list appended with an element undoes the
+append. -/
+lemma append_remove_cancel_of_eq_last_index {a : α} {n : ℕ} (h : n = L.length)
+: (L ++ [a]).removeNth n = L := by
+  elim: L n => //
 
-lemma append_remove_cancel_of_eq_last_index {a : α} {n : ℕ} (h : n = L.length) :
-  (L ++ [a]).removeNth n = L := by
-  induction L generalizing n with
-  | nil => rw [h]; simp
-  | cons hd tail ih => rw [h]; simp [ih]
+/-- The length of a list appended with an element is one more than that of
+the original list. -/
+lemma length_append_singleton (L : List α) (a : α)
+: (L ++ [a]).length = L.length + 1 := by
+  elim: L => //
 
-
-lemma length_append_singleton (L : List α) (a : α) : (L ++ [a]).length = L.length + 1 := by
-  induction L with
-  | nil => simp
-  | cons _ tail _ => simp
-
-#check length_removeNth
-
-
-lemma take_le_length (L : List α) (h : n ≤ L.length)  : (L.take n).length = n := by
-  simp only [length_take,ge_iff_le, h, min_eq_left]
+/-- The length of `L.take n` is exactly n if `L` has at least n elements. -/
+lemma take_le_length (L : List α) (h : n ≤ L.length)
+: (L.take n).length = n := by move=>//
 
 lemma takeFront {α : Type _} (s : α) (L : List α) (i : Fin L.length) :
   (L ++ [s] ++ L.reverse).take i.1 = L.take i.1 := by
@@ -77,73 +72,57 @@ lemma reverse_take_eq_drop_reverse {α : Type _} (L : List α) (i : Fin L.length
 /-map and removeNth are commute with each other-/
 lemma map_removeNth_comm {α : Type*} {β : Type*} {f : α → β } (L : List α) (i : ℕ)
 : (L.removeNth i).map f = (L.map f).removeNth i := by
-  induction' L with x xa h generalizing i
-  . simp only [removeNth, map_nil]
-  . induction' i with n _
-    . simp only [removeNth]
-    . simp_rw [removeNth,map_cons, h n]
+  move: i
+  elim: L => //
+  move=> h t ih
+  elim=> //
 
-lemma removeNth_eq_take_drop {α : Type _} (L: List α) (n : ℕ) : L.removeNth n = L.take n ++ L.drop (n+1) := by
+/-- Removing the n'th element of a list is the same as taking the first n
+elements and all the elements after the n'th. -/
+lemma removeNth_eq_take_drop {α : Type _} (L: List α) (n : ℕ)
+: L.removeNth n = L.take n ++ L.drop (n+1) := by
   revert n
-  induction L with
-  | nil => {intro n; simp only [removeNth, take_nil, drop, append_nil]}
-  | cons hd tail ih =>
-      intro n
-      match n with
-      | 0 => {simp only [removeNth, take, drop, nil_append]}
-      | k+1 =>
-        simp only [removeNth, Nat.add_eq, add_zero, take, drop, cons_append, cons.injEq, true_and]
-        exact ih k
+  elim: L => //
+  move=> hd tl ih n
+  elim: n => //
 
+/-- Removing the n'th element of a list is the same as taking the first n
+elements and all the elements after the n'th. -/
 @[deprecated removeNth_eq_take_drop]
-lemma remove_nth_eq_take_drop {α : Type _} (L: List α) (n : ℕ) : L.removeNth n = L.take n ++ L.drop (n+1) := by
-  revert n
-  induction L with
-  | nil => {intro n; simp only [removeNth, take_nil, drop, append_nil]}
-  | cons hd tail ih =>
-      intro n
-      match n with
-      | 0 => {simp only [removeNth, take, drop, nil_append]}
-      | k+1 =>
-        simp only [removeNth, Nat.add_eq, add_zero, take, drop, cons_append, cons.injEq, true_and]
-        exact ih k
+lemma remove_nth_eq_take_drop {α : Type _} (L: List α) (n : ℕ)
+: L.removeNth n = L.take n ++ L.drop (n+1) := by
+  exact removeNth_eq_take_drop L n
 
-lemma removeNth_length {α : Type _} (L: List α) (n : Fin L.length) : (L.removeNth n).length + 1 = L.length := by
-  revert n
-  induction L with
-  | nil =>
-    intro n
-    rw [length] at n
-    rcases n with ⟨v, h⟩
-    by_contra
-    exact (not_le.mpr h) (Nat.zero_le v)
-  | cons hd tail ih =>
-    intro n
-    match n.val, n.prop with
-    | 0, _ => rw [removeNth, length]
-    | m + 1, nprop =>
-      rw [length] at nprop
-      rw [removeNth, length, length]
-      rw [ih ⟨m, (add_lt_add_iff_right 1).mp nprop⟩]
+/-- If `n < L.length` then the length of `L.removeNth n` is one less than the
+original list. -/
+lemma removeNth_length {α : Type _} (L: List α) (n : Fin L.length)
+: (L.removeNth n).length + 1 = L.length := by
+  elim: L => //==
+  move => h t hi n
+  match n.val, n.prop with
+  | 0, _ => move=>//
+  | m + 1, nprop =>
+    rw [removeNth, length]; exact hi ⟨m, (add_lt_add_iff_right 1).mp nprop⟩
 
-lemma reverse_drop {α : Type _} (L : List α) (n : ℕ) : (L.drop n).reverse = L.reverse.take (L.length - n) := by
-  induction L generalizing n with
-  | nil => simp only [drop_nil, reverse_nil, take_nil]
-  | cons hd tail ih =>
-    induction n with
-    | zero =>
-      simp only [Nat.zero_eq, drop_zero, reverse_cons, tsub_zero]
-      rw [← length_reverse, reverse_cons, take_length]
-    | succ n =>
-      simp only [drop_succ_cons, length_cons, Nat.succ_sub_succ_eq_sub, reverse_cons]
-      rw [ih n, take_append_of_le_length]
-      rw [length_reverse]
-      exact Nat.sub_le (length tail) n
+/-- Reversing `L.drop n` is equal to taking the first `L.length - n` elements
+of the reverseal of the original list. -/
+lemma reverse_drop {α : Type _} (L : List α) (n : ℕ)
+: (L.drop n).reverse = L.reverse.take (L.length - n) := by
+  move: n
+  elim: L => //
+  move => h t ih
+  elim=> //
+  simp only [Nat.zero_eq, drop_zero, reverse_cons, tsub_zero]
+  rw [← length_reverse, reverse_cons, take_length]
+  move=> n _
+  simp only [drop_succ_cons, length_cons, Nat.succ_sub_succ_eq_sub,
+    reverse_cons]
+  rw [ih, take_append_of_le_length]
+  rw [length_reverse]
+  simp
 
-lemma sub_one_lt_self (n: ℕ) (_ : 0 < n) : n - 1 < n := match n with
-| 0 => by {contradiction}
-| n+1 => by {simp}
-
+/-- For any nonzero natural n, `n - 1 < n.` -/
+lemma sub_one_lt_self (n: ℕ) (_ : 0 < n) : n - 1 < n := by elim: n=>//
 
 lemma take_drop_get {α : Type _} (L: List α) (n : ℕ) (h : n < L.length):
   L = L.take n ++ [L.get ⟨n,h⟩] ++ L.drop (n+1) := by
@@ -152,98 +131,79 @@ lemma take_drop_get {α : Type _} (L: List α) (n : ℕ) (h : n < L.length):
   rw [Hd] at Hn
   simp only [append_assoc, singleton_append, Hn]
 
+/-- Dropping n elements after taking n elements yields an empty list. -/
 @[simp]
-lemma drop_take_nil {α : Type _} {L : List α} {n : ℕ} : (L.take n).drop n = [] := by
-  have h := drop_take n n L
-  simp at h
-  exact h
+lemma drop_take_nil {α : Type _} {L : List α} {n : ℕ}
+: (L.take n).drop n = [] := by
+  exact drop_length_le (length_take_le n L)
 
-
--- DLevel 2
-lemma take_get_lt {α : Type _} (L: List α) (n : ℕ) (h : n < L.length) :
-  L.take (n+1) = L.take n ++ [L.get ⟨n, h⟩] := by
-  have h1 : L = L.take n ++ [L.get ⟨n, h⟩] ++ L.drop (n+1) := take_drop_get L n h
-  have h2 : L = L.take (n+1) ++ L.drop (n+1) := symm (take_append_drop (n+1) L)
+/-- For a list with more than n elements, taking the first n+1 elements is
+the same as taking the first n elements and appending the n+1'th element. -/
+lemma take_get_lt {α : Type _} (L: List α) (n : ℕ) (h : n < L.length)
+: L.take (n+1) = L.take n ++ [L.get ⟨n, h⟩] := by
+  have h1 : L = L.take n ++ [L.get ⟨n, h⟩] ++ L.drop (n+1) :=
+    take_drop_get L n h
+  have h2 : L = L.take (n+1) ++ L.drop (n+1) :=
+    symm (take_append_drop (n+1) L)
   nth_rw 1 [h2] at h1
   exact (append_left_inj (drop (n+1) L)).mp h1
 
-
+/-- Assuming n < L.length, the output of L.get and L.nthLe is equal. -/
 lemma get_eq_nthLe {α : Type _} {L: List α} {n : ℕ} {h : n < L.length} :
   L.get ⟨n, h⟩ = L.nthLe n h := by rfl
 
-
-/-
-
-lemma take_drop_nth_le {α : Type _} (L: List α) (n : ℕ) (h : n < L.length): L = L.take n ++ [L.nthLe n h] ++ L.drop (n+1) := by {
-  have := take_drop_get L n h
-  rw [List.nthLe_eq]
-  exact this
-}
--/
+/-- if n < L1.length then removing the n'th element from L1++L2 is the same as
+appending L2 to L1 with the n'th element removed. -/
 @[simp]
-lemma removeNth_append_lt {α : Type _} (L1 L2: List α) (n : ℕ) (h : n < L1.length) :
-  (L1 ++ L2).removeNth n = L1.removeNth n ++ L2 := by
+lemma removeNth_append_lt
+{α : Type _} (L1 L2: List α) (n : ℕ) (h : n < L1.length)
+: (L1 ++ L2).removeNth n = L1.removeNth n ++ L2 := by
   rw [removeNth_eq_take_drop, removeNth_eq_take_drop]
   rw [List.take_append_of_le_length (le_of_lt h)]
   have : (L1 ++ L2).drop (n + 1) = L1.drop (n + 1) ++ L2 :=
     drop_append_of_le_length (by linarith)
   rw [this, append_assoc]
 
--- lemma removeNth_append_ge {α : Type _} (L1 L2: List α) (n : ℕ) (h : n ≥ L1.length) :
---   (L1 ++ L2).removeNth n = L1 ++ L2.removeNth (n - L1.length) := by
---   rw [removeNth_eq_take_drop, removeNth_eq_take_drop]
---   rw [List.take_append_of_le_length (le_of_ge h)]
-
+/-- removeNth does nothing if the index is larger than the length of the list.
+-/
 lemma remove_after_L_length (L : List α) {i : ℕ} (h : L.length ≤ i)
   : L.removeNth i = L := by
-  have remove_after_L_length': L.removeNth ((i - L.length) + L.length) = L := by
-    set j := i - L.length
-    induction' j with k ih
-    . simp only [Nat.zero_eq, zero_add]
-      induction L with
-      | nil => simp only [removeNth]
-      | cons hd tail ih =>
-        simp only [removeNth, Nat.add_eq, add_zero, cons.injEq, true_and]
-        apply ih
-        exact Nat.lt_succ.1 (Nat.le.step h)
-    . induction L with
-      | nil => simp only [removeNth]
-      | cons hd tail ih' =>
-        set L := hd :: tail
-        simp only [removeNth, Nat.add_eq, add_zero, cons.injEq, true_and,L]
-        apply ih'
-        exact Nat.lt_succ.1 (Nat.le.step h)
-        simp only [removeNth, Nat.add_eq, add_zero, cons.injEq, true_and,L] at ih
-        apply ih
-  nth_rw 2 [← remove_after_L_length']
-  rw [Nat.sub_add_cancel h]
+  revert i
+  elim: L => //=
+  move=> h t ih jh
+  unfold removeNth
+  split
+  move=> j //
+  specialize ih (by linarith)
+  rename_i s
+  rw [head_eq_of_cons_eq s]; rw [tail_eq_of_cons_eq s] at *; rw [ih]
 
--- DLevel 2
+/-- Taking the first i elements after removing the j'th element for j > i is
+the same as taking the first i elements. -/
 lemma take_of_removeNth (L : List α) {i j : ℕ} (h : i ≤ j) :
     (L.removeNth j).take i = L.take i := by
-  by_cases h' : j ≥ L.length
-  . have : L.removeNth j = L := remove_after_L_length L h'
-    rw [this]
-  . rw [removeNth_eq_take_drop]
-    push_neg at h'
-    have h'' : j ≤ L.length := by linarith
-    have : (L.take j).length = j := take_le_length L h''
-    have i_le_j' : i ≤ (L.take j).length := by linarith
-    have : L.take i = (L.take j).take i := by
-      nth_rw 1 [← min_eq_left h]
-      apply Eq.symm
-      apply List.take_take i j L
-    rw [this]
-    exact take_append_of_le_length i_le_j'
+  scase: [j < L.length] => //==
+  move=> d
+  rw [remove_after_L_length L d]
+  rw [removeNth_eq_take_drop]
+  have : (L.take j).length = j := take_le_length L (by linarith)
+  have i_le_j' : i ≤ (L.take j).length := by linarith
+  have : L.take i = (L.take j).take i := by
+    srw -[1] (min_eq_left h) => /[tac apply Eq.symm] /[tac apply take_take]
+  rw [this]
+  exact take_append_of_le_length i_le_j'
 
-
+/-- Removing the n'th element after reversing the list is the same as reversing
+the list after removing the `L.length - n - 1`θ element for n not out of
+bounds. -/
 lemma removeNth_reverse (L : List α) (n : ℕ) (h : n < L.length) :
   (L.reverse).removeNth n = (L.removeNth (L.length - n - 1)).reverse := by
   rw [removeNth_eq_take_drop, removeNth_eq_take_drop]
   rw [List.reverse_append, List.reverse_take n (Nat.le_of_lt h), Nat.sub_sub]
   nth_rw 6 [←List.reverse_reverse L]; nth_rw 7 [←List.reverse_reverse L]
   rw [List.length_reverse L.reverse]
-  rw [List.reverse_take (length (reverse L) - (n + 1)) (Nat.sub_le L.reverse.length (n+1)),
+  rw [List.reverse_take (length (reverse L) - (n + 1))
+    (Nat.sub_le L.reverse.length (n+1)),
     List.reverse_reverse, List.length_reverse]
   rw [←Nat.sub_sub L.length n 1, Nat.sub_add_cancel (by
     apply Nat.le_of_add_le_add_right; swap; exact n;
@@ -257,7 +217,9 @@ lemma removeNth_reverse (L : List α) (n : ℕ) (h : n < L.length) :
     exact Nat.sub_le L.length (n+1);
   rw [this];
 
-lemma reverse_cons'' (L : List α) (a : α) : (L ++ [a]).reverse = a :: L.reverse := by
+/-- Reversing L++[a] is the same as prepending a to the reverse of L. -/
+lemma reverse_cons'' (L : List α) (a : α)
+: (L ++ [a]).reverse = a :: L.reverse := by
   rw [List.reverse_append, List.reverse_singleton]; simp;
 
 lemma reverseList_nonEmpty {L : List S} (hL : L ≠ []) : L.reverse ≠ [] := by
@@ -265,10 +227,9 @@ lemma reverseList_nonEmpty {L : List S} (hL : L ≠ []) : L.reverse ≠ [] := by
   rw [List.length_reverse]
   exact List.length_pos.2 hL
 
-lemma eq_iff_reverse_eq (L1 L2 : List α) : L1.reverse = L2.reverse ↔ L1 = L2 := by
-  constructor
-  . intro h; rw [←List.reverse_reverse L1, ←List.reverse_reverse L2, h, List.reverse_reverse]
-  . intro h; rw [h]
+/-- Two lists are equal iff their reversals are equal. -/
+lemma eq_iff_reverse_eq (L1 L2 : List α)
+: L1.reverse = L2.reverse ↔ L1 = L2 := by move=>//
 
 lemma reverse_head (L : List α) (h : L ≠ []) :
   L.reverse = (L.getLast h) :: (L.dropLast).reverse := by
@@ -324,43 +285,42 @@ lemma removeNth_concat {a:α} (L:List α) : removeNth (concat L a) L.length = L:
 
 --#print List.get?_eq_get
 
+/-- If g(i) = f(i + 1) then mapping f to [0,...,n] is the same as f(0)
+prepended to mapping g on [0,...,n-1]. -/
 lemma range_map_insert_zero {α : Type u} {n : ℕ} {f : ℕ → α} {g : ℕ → α}
-    (h : ∀(i : Fin n), g i = f (i + 1)) :
-    (range (n + 1)).map f = (f 0) :: (range n).map g := by
+(h : ∀(i : Fin n), g i = f (i + 1))
+: (range (n + 1)).map f = (f 0) :: (range n).map g := by
   rw [range_eq_range', ← range'_append 0 1 n 1]
-  simp only [range'_one, mul_one, zero_add, singleton_append, map_cons, cons.injEq, true_and]
+  simp only [range'_one, mul_one, zero_add, singleton_append, map_cons,
+    cons.injEq, true_and]
   rw [range'_eq_map_range, ← List.comp_map]
   ext a b
-  simp only [get?_map, Option.mem_def, Option.map_eq_some', Function.comp_apply]
-  by_cases ha : a < (range n).length
-  · rw [get?_eq_get ha]
+  simp only [get?_map, Option.mem_def, Option.map_eq_some',
+    Function.comp_apply]
+  scase: [a ≥ (range n).length]
+  move=> ha
+  . push_neg at ha
+    rw [get?_eq_get (by linarith)]
     simp only [get_range, Option.some.injEq, exists_eq_left']
     rw [length_range n] at ha
     rw [h ⟨a, ha⟩]
     simp only [add_comm]
-  · push_neg at ha
-    simp only [get?_eq_none.mpr ha, false_and, exists_const]
+  · simp only [get?_eq_none.mpr ha, false_and, exists_const]
 
-lemma take_range {n i : ℕ} (h : i ≤ n) : (List.range n).take i = List.range i := by
+/-- The first i elements of a `range n` is a `range i`.-/
+lemma take_range {n i : ℕ} (h : i ≤ n)
+: (List.range n).take i = List.range i := by
   refine (ext_get ?hl ?h).symm
   rw [length_range, length_take, length_range]
   exact eq_min Nat.le.refl h fun {_} a _ => a
-  intro m h1 h2
-  rw [get_range, ← get_take, get_range]
-  rw [length_range] at h1 ⊢
-  exact Nat.lt_of_lt_of_le h1 h
-  rw [length_range] at h1
-  exact h1
+  srw [1] (get_range) (get_take') //==
 
 end List
 
 
 namespace Nat
 
-lemma pos_of_lt {i n: Nat} (h : i < n) : 0 < n := by
-  calc
-  0 ≤ i := zero_le _
-  _ < _ := h
+lemma pos_of_lt {i n: Nat} (h : i < n) : 0 < n := by elim: n => //
 
 lemma sub_one_sub_lt_self {i n: Nat} (h : 0 < n) : n - 1 - i < n := by
   calc
@@ -497,11 +457,7 @@ section CoeM
 universe u
 variable {α β : Type u} [(a : α) -> CoeT α a β]
 
-@[simp]
 lemma coeM_nil_eq_nil : (([] : List α) : List β) = ([] : List β) := by rfl
-
-@[simp]
-lemma coeM_singleton {x : α}: (([x] : List α) : List β) = ([(x : β)] : List β) := by rfl
 
 @[simp]
 lemma coeM_cons {hd : α} {tail : List α} :
