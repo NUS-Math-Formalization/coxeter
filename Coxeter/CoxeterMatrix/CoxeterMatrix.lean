@@ -74,8 +74,9 @@ For any s of type α × α, we define a relation in the free group F by $(s_1 s_
 -/
 @[simp] def toRelation' (s : α × α) : F := toRelation s.1 s.2 (m s.1 s.2)
 
-/- We define a set of relations in F by R = {(s_as_b)^{m_{a,b}} | a b ∈ α}.
--/
+/--
+We define a set of relations in F by R = {(s_as_b)^{m_{a,b}} | a b ∈ α}.
+--/
 def toRelationSet : (Set F) := Set.range <| toRelation' m
 
 /-
