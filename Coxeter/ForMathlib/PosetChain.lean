@@ -121,7 +121,7 @@ lemma maximal_chain'_tail {a : P} {tail : List P} : maximal_chain' (a :: tail) �
   constructor
   . exact List.Chain'.tail C
   . intros L' hL' h1 h2
-    let tail := b ::t
+    let tail := b :: t
     let L'' := a :: L'
     have chainL'' : chain L'' := by
       apply List.chain'_cons'.2
@@ -132,11 +132,18 @@ lemma maximal_chain'_tail {a : P} {tail : List P} : maximal_chain' (a :: tail) �
         rw [<-this]
         exact (List.chain'_cons.1 C).1
       . exact hL'
-    have htL''1 : (a :: tail).head? = L''.head?  := by sorry
+    have htL''1 : (a :: tail).head? = L''.head?  := by
+      exact rfl
     have htL''2 : (a :: tail).getLast? = L''.getLast? := by
       cases L' with
       | nil => simp at h2
-      | cons c d => sorry
+      | cons c d =>
+        calc
+          List.getLast? (a :: tail) = List.getLast? (a :: b :: t) := by exact rfl
+          _ = List.getLast? (b :: t) := by simp [List.getLast?_cons_cons]
+          _ = List.getLast? (c :: d) := by simp [h1.2]
+          _ = List.getLast? (a :: c :: d) := by simp [List.getLast?_cons_cons]
+          _ = List.getLast? L'' := by exact rfl
         -- simp only [List.getLast?_cons_cons, h1.2]
     have sublistL'' : List.Sublist (a :: tail) L'' := by
       apply List.cons_sublist_cons.2
@@ -167,6 +174,7 @@ lemma cover_chain_of_maximal_chain' {P : Type*} [PartialOrder P] {L: List P} :
 
 
 
+
 /-
 Lemma: If a chain L : x₀ < x₁ < ⋯ < x_n is maximal, then we have x_0 ⋖ x_1 ⋖ x_2 ⋯ ⋖ x_n.
 -/
@@ -190,11 +198,15 @@ Then L is a maximal chain.
 -/
 lemma maximal_chain_of_cover_chain {P :Type*} [PartialOrder P] [BoundedOrder P] {L: List P} :
   List.Chain' (· ⋖ · ) L ∧ L.head? = some ⊥ ∧ L.getLast? = some ⊤ → maximal_chain L := by
-  rintro ⟨h1, h2, h3⟩
-  by_contra h4
-  rw [maximal_chain] at h4
-  push_neg at h4
+  rintro ⟨h₁, h₂, h₃⟩
+  by_contra h₄
+  rw [maximal_chain] at h₄
+  push_neg at h₄
+  have g₁ : List.Chain' (· < ·) L := by sorry
+  have g₂ : chain L := by exact g₁
+  rcases h₄ g₂ with ⟨L', g₄, g₅, g₆⟩
   sorry
+
 
 
 /- Definition: We say a poset P is bounded, if it has a unique minimal and a unique maximal element. -/
