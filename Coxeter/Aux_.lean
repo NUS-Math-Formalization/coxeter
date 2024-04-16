@@ -49,6 +49,31 @@ lemma length_append_singleton (L : List α) (a : α) : (L ++ [a]).length = L.len
 lemma take_le_length (L : List α) (h : n ≤ L.length)  : (L.take n).length = n := by
   simp only [length_take,ge_iff_le, h, min_eq_left]
 
+lemma takeFront {α : Type _} (s : α) (L : List α) (i : Fin L.length) :
+  (L ++ [s] ++ L.reverse).take i.1 = L.take i.1 := by
+  rw [List.append_assoc, List.take_append_of_le_length]
+  exact Nat.le_of_lt i.2
+
+lemma takeBehind {α : Type _} (s : α) (L : List α) (i : Fin L.length) :
+  (L ++ [s] ++ L.reverse).take (2 * L.length - i.1) = L ++ [s] ++ L.reverse.take (L.length - 1 - i.1) := by
+  rw [two_mul, Nat.add_sub_assoc (by exact le_of_lt i.2)]
+  rw [List.append_assoc]
+  rw [List.take_append]
+  have : List.length L - i = 1 + List.length L - 1 - i := by
+    rw [Nat.add_comm, Nat.add_one_sub_one]
+  rw [this]
+  nth_rw 1 [←List.length_singleton s]
+  rw [Nat.add_sub_assoc (by exact Nat.one_le_of_lt (i.2)), Nat.add_sub_assoc (by exact Nat.le_sub_one_of_lt i.2)]
+  rw [List.take_append, List.append_assoc]
+
+lemma reverse_take_eq_drop_reverse {α : Type _} (L : List α) (i : Fin L.length)
+  : (L.reverse.take (List.length L - 1 - i.1)) = (L.drop (1 + i.1)).reverse := by
+  rw [Nat.sub_sub, List.reverse_take _ (Nat.sub_le (List.length L) (1 + i.1))]
+  congr
+  have : 1 + i.1 ≤ L.length := by rw [add_comm]; exact i.2
+  rw [Nat.sub_sub_self this]
+
+
 /-map and removeNth are commute with each other-/
 lemma map_removeNth_comm {α : Type*} {β : Type*} {f : α → β } (L : List α) (i : ℕ)
 : (L.removeNth i).map f = (L.map f).removeNth i := by
@@ -129,8 +154,8 @@ lemma take_drop_get {α : Type _} (L: List α) (n : ℕ) (h : n < L.length):
 
 @[simp]
 lemma drop_take_nil {α : Type _} {L : List α} {n : ℕ} : (L.take n).drop n = [] := by
-  have h := drop_take n 0 L
-  simp only [add_zero, take] at h
+  have h := drop_take n n L
+  simp at h
   exact h
 
 
@@ -235,10 +260,57 @@ lemma removeNth_reverse (L : List α) (n : ℕ) (h : n < L.length) :
 lemma reverse_cons'' (L : List α) (a : α) : (L ++ [a]).reverse = a :: L.reverse := by
   rw [List.reverse_append, List.reverse_singleton]; simp;
 
+lemma reverseList_nonEmpty {L : List S} (hL : L ≠ []) : L.reverse ≠ [] := by
+  apply List.length_pos.1
+  rw [List.length_reverse]
+  exact List.length_pos.2 hL
+
 lemma eq_iff_reverse_eq (L1 L2 : List α) : L1.reverse = L2.reverse ↔ L1 = L2 := by
   constructor
   . intro h; rw [←List.reverse_reverse L1, ←List.reverse_reverse L2, h, List.reverse_reverse]
   . intro h; rw [h]
+
+lemma reverse_head (L : List α) (h : L ≠ []) :
+  L.reverse = (L.getLast h) :: (L.dropLast).reverse := by
+  induction L with
+  | nil => contradiction
+  | cons hd tail ih =>
+    by_cases k : tail = []
+    . simp_rw [k]
+      simp only [ne_eq, not_true_eq_false, List.reverse_nil, List.dropLast_nil,
+        IsEmpty.forall_iff, List.reverse_cons, List.nil_append, List.getLast_singleton',
+        List.dropLast_single]
+    . push_neg at k
+      rw [List.reverse_cons, List.getLast_cons k, List.dropLast, List.reverse_cons, ih k]
+      . rfl
+      . exact k
+
+lemma dropLast_eq_reverse_tail_reverse {L : List S} : L.dropLast = L.reverse.tail.reverse := by
+  induction L with
+  | nil => simp only [List.dropLast_nil, List.reverse_nil, List.tail_nil]
+  | cons hd tail ih =>
+    by_cases k : tail = []
+    . rw [k]
+      simp only [List.dropLast_single, List.reverse_cons, List.reverse_nil,
+        List.nil_append, List.tail_cons]
+    . push_neg at k
+      have htd : (hd :: tail).dropLast = hd :: (tail.dropLast) := by
+        exact List.dropLast_cons_of_ne_nil k
+      rw [htd]
+      have trht : (tail.reverse ++ [hd]).tail = (tail.reverse.tail) ++ [hd] :=
+        List.tail_append_of_ne_nil _ _ (reverseList_nonEmpty k)
+      have : (hd :: tail).reverse.tail = (hd :: tail).dropLast.reverse := by
+        rw [htd]
+        simp only [List.reverse_cons]
+        rw [trht]
+        apply (List.append_left_inj [hd]).2
+        exact List.reverse_eq_iff.1 ih.symm
+      rw [this, List.reverse_reverse, htd]
+
+lemma reverse_tail_reverse_append {L : List S} (hL : L ≠ []) :
+  L.reverse.tail.reverse ++ [L.getLast hL] = L := by
+  rw [← dropLast_eq_reverse_tail_reverse]
+  exact List.dropLast_append_getLast hL
 
 --#check reverse_append
 
@@ -457,8 +529,9 @@ lemma halve_odd_prod {M : Type u} [CommMonoid M] {n : ℕ} (f : ℕ → M) :
         ext i
         congr 2
         simp only [Nat.succ_sub_succ_eq_sub,f']
-        ring_nf; congr
-        exact (Nat.add_sub_assoc (by linarith [i.2]) 1).symm
+        congr
+        rw [Nat.sub_add_comm];
+        exact le_trans (Nat.le_of_lt i.2) (@Nat.le_mul_of_pos_left 2 m (by linarith))
       _ = f' m * (g 0 * ∏ i : Fin m, g (i + 1)) := by
         rw [← mul_assoc (f' m), mul_comm (f' m) (g 0), mul_assoc (g 0)]
       _ = f' m * ∏ i : Fin (m + 1), g i := by
@@ -474,7 +547,11 @@ section CoeM
 universe u
 variable {α β : Type u} [(a : α) -> CoeT α a β]
 
+@[simp]
 lemma coeM_nil_eq_nil : (([] : List α) : List β) = ([] : List β) := by rfl
+
+@[simp]
+lemma coeM_singleton {x : α}: (([x] : List α) : List β) = ([(x : β)] : List β) := by rfl
 
 @[simp]
 lemma coeM_cons {hd : α} {tail : List α} :
@@ -586,6 +663,38 @@ lemma inv_reverse_prod_prod_eq_one {L: List S} : inv_reverse L * (L : G) = 1 :=
   by rw [inv_reverse, ← gprod_inv_eq_inv_reverse, mul_left_inv]
 
 attribute [gprod_simps] mul_assoc mul_one one_mul mul_inv_rev mul_left_inv mul_right_inv inv_inv inv_one mul_inv_cancel_left inv_mul_cancel_left
+
+namespace Submonoid
+variable {M : Type*} {M : Type*} [Monoid M] (T : Set M)
+
+
+/-
+An element is in the submonoid closure of T ⊂ M if and only if it can be
+written as a product of elements in T
+-/
+lemma mem_monoid_closure_iff_prod {M : Type*} [Monoid M] (T : Set M) (z : M) :
+  z ∈ closure T ↔ (∃ L : List T, z = (L : List M).prod) := by
+    constructor
+    . intro hz ; induction' hz using closure_induction' with s hs x _ y _ hx hy x _ hx
+      . use [⟨s,hs⟩]; simp [List.prod_singleton,pure,List.pure]
+      . use []; simp [List.prod_nil]
+      . obtain ⟨Lx,hLx⟩ := hx
+        obtain ⟨Ly,hLy⟩ := hy
+        use Lx++Ly
+        rw [hLx,hLy,<-List.prod_append]
+        congr;simp only [List.bind_eq_bind, List.append_bind]
+    . rintro ⟨L,hL⟩
+      induction' L with x L' ih generalizing z
+      . have : z= 1 := by simp only [hL, List.bind_eq_bind, List.nil_bind, List.prod_nil]
+        simp only [this, Submonoid.one_mem]
+      . have : z = x * (L' : List M).prod := by
+          rw [hL,<-List.prod_cons]; congr
+        rw [this]
+        apply mul_mem
+        . exact Set.mem_of_mem_of_subset x.prop Submonoid.subset_closure
+        . exact ih (L' : List M).prod rfl
+
+end Submonoid
 
 namespace Subgroup
 

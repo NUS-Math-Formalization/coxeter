@@ -1,0 +1,2037 @@
+
+
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Dependency graph</title>
+  <meta name="generator" content="plasTeX" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="styles/theme-white.css" />
+  <link rel="stylesheet" href="styles/dep_graph.css" />
+  
+  <script type="text/x-mathjax-config">
+  
+    MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}});
+  
+  </script>
+
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js">  </script>
+
+
+<link rel="stylesheet" href="styles/style.css" />
+
+</head>
+
+<body>
+<header>
+  <a class="toc" href="index.html">Home</a>
+  <h1 id="doc_title">Dependencies</h1>
+</header>
+<div class="wrapper">
+<div class="content">
+  <div id="Legend">
+    <span id="legend_title" class="title">Legend
+    <div class="btn">
+       <div class="bar"></div>
+       <div class="bar"></div>
+       <div class="bar"></div>
+    </div></span> 
+    <dl class="legend">
+      <dt>Boxes</dt><dd>definitions</dd>
+      <dt>Ellipses</dt><dd>theorems and lemmas</dd>
+      <dt>Blue border</dt><dd>the <em>statement</em> of this result is ready to be formalized; all prerequisites are done</dd>
+      <dt>Blue background</dt><dd>the <em>proof</em> of this result is ready to be formalized; all prerequisites are done</dd>
+      <dt>Green border</dt><dd>the <em>statement</em> of this result is formalized</dd>
+      <dt>Green background</dt><dd>the <em>proof</em> of this result is formalized</dd>
+    </dl>
+  </div>
+    <div id="graph"></div>
+<div id="statements">
+
+    
+    <div class="dep-modal-container" id="alternating_word_palindrome_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="alternating_word_palindrome" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">3.65</span></div>
+    <div class="thm_thmcontent"><p>   See Lean statement. </p>
+</div>
+
+    <a class="latex_link" href="sect0003.html#alternating_word_palindrome">LaTeX</a>
+  <a class="lean_link lean_decl" href="https://leanprover-community.github.io/mathlib4_docs/find/#doc/alternating_word_palindrome">Lean</a></div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="alternating_word_palindrome_periodic_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="alternating_word_palindrome_periodic" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">3.66</span></div>
+    <div class="thm_thmcontent"><p>   See Lean statement. </p>
+</div>
+
+    <a class="latex_link" href="sect0003.html#alternating_word_palindrome_periodic">LaTeX</a>
+  <a class="lean_link lean_decl" href="https://leanprover-community.github.io/mathlib4_docs/find/#doc/alternating_word_palindrome_periodic">Lean</a></div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="alternating_word_power_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="alternating_word_power" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">3.63</span></div>
+    <div class="thm_thmcontent"><p>   See Lean statement. </p>
+</div>
+
+    <a class="latex_link" href="sect0003.html#alternating_word_power">LaTeX</a>
+  <a class="lean_link lean_decl" href="https://leanprover-community.github.io/mathlib4_docs/find/#doc/alternating_word_power">Lean</a></div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="alternating_word_relation_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="alternating_word_relation" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">3.64</span></div>
+    <div class="thm_thmcontent"><p>   See Lean statement. </p>
+</div>
+
+    <a class="latex_link" href="sect0003.html#alternating_word_relation">LaTeX</a>
+  <a class="lean_link lean_decl" href="https://leanprover-community.github.io/mathlib4_docs/find/#doc/alternating_word_relation">Lean</a></div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="diagonal_one_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="diagonal_one" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">3.2</span></div>
+    <div class="thm_thmcontent"><p>  See Lean statement. </p>
+</div>
+
+    <a class="latex_link" href="sect0003.html#diagonal_one">LaTeX</a>
+  <a class="lean_link lean_decl" href="https://leanprover-community.github.io/mathlib4_docs/find/#doc/diagonal_one">Lean</a></div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="distinct_toPalindrome_i_of_reduced_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="distinct_toPalindrome_i_of_reduced" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">3.55</span></div>
+    <div class="thm_thmcontent"><p>   See Lean statement. </p>
+</div>
+
+    <a class="latex_link" href="sect0003.html#distinct_toPalindrome_i_of_reduced">LaTeX</a>
+  <a class="lean_link lean_decl" href="https://leanprover-community.github.io/mathlib4_docs/find/#doc/distinct_toPalindrome_i_of_reduced">Lean</a></div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="epsilon_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="epsilon" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">3.21</span></div>
+    <div class="thm_thmcontent"><p>   See Lean statement. </p>
+</div>
+
+    <a class="latex_link" href="sect0003.html#epsilon">LaTeX</a>
+  <a class="lean_link lean_decl" href="https://leanprover-community.github.io/mathlib4_docs/find/#doc/epsilon">Lean</a></div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="epsilon_length_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="epsilon_length" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">3.44</span></div>
+    <div class="thm_thmcontent"><p>   See Lean statement. </p>
+</div>
+
+    <a class="latex_link" href="sect0003.html#epsilon_length">LaTeX</a>
+  <a class="lean_link lean_decl" href="https://leanprover-community.github.io/mathlib4_docs/find/#doc/epsilon_length">Lean</a></div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="epsilon_list_length_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="epsilon_list_length" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">3.43</span></div>
+    <div class="thm_thmcontent"><p>   See Lean statement. </p>
+</div>
+
+    <a class="latex_link" href="sect0003.html#epsilon_list_length">LaTeX</a>
+  <a class="lean_link lean_decl" href="https://leanprover-community.github.io/mathlib4_docs/find/#doc/epsilon_list_length">Lean</a></div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="epsilon_mul_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="epsilon_mul" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">3.42</span></div>
+    <div class="thm_thmcontent"><p>   See Lean statement. </p>
+</div>
+
+    <a class="latex_link" href="sect0003.html#epsilon_mul">LaTeX</a>
+  <a class="lean_link lean_decl" href="https://leanprover-community.github.io/mathlib4_docs/find/#doc/epsilon_mul">Lean</a></div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="epsilon_of_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="epsilon_of" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">3.22</span></div>
+    <div class="thm_thmcontent"><p>   See Lean statement. </p>
+</div>
+
+    <a class="latex_link" href="sect0003.html#epsilon_of">LaTeX</a>
+  <a class="lean_link lean_decl" href="https://leanprover-community.github.io/mathlib4_docs/find/#doc/epsilon_of">Lean</a></div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="epsilon_S_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="epsilon_S" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">3.23</span></div>
+    <div class="thm_thmcontent"><p>   See Lean statement. </p>
+</div>
+
+    <a class="latex_link" href="sect0003.html#epsilon_S">LaTeX</a>
+  <a class="lean_link lean_decl" href="https://leanprover-community.github.io/mathlib4_docs/find/#doc/epsilon_S">Lean</a></div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="eta_aux'_reflection_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="eta_aux'_reflection" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">3.78</span></div>
+    <div class="thm_thmcontent"><p>  See Lean statement. </p>
+</div>
+
+    <a class="latex_link" href="sect0003.html#eta_aux'_reflection">LaTeX</a>
+  <a class="lean_link lean_decl" href="https://leanprover-community.github.io/mathlib4_docs/find/#doc/eta_aux'_reflection">Lean</a></div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="eta_aux_aux'_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="eta_aux_aux'" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">3.56</span></div>
+    <div class="thm_thmcontent"><p>  See Lean statement. </p>
+</div>
+
+    <a class="latex_link" href="sect0003.html#eta_aux_aux'">LaTeX</a>
+  <a class="lean_link lean_decl" href="https://leanprover-community.github.io/mathlib4_docs/find/#doc/eta_aux_aux'">Lean</a></div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="eta_aux_mul_eta_aux_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="eta_aux_mul_eta_aux" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">3.61</span></div>
+    <div class="thm_thmcontent"><p>   See Lean statement. </p>
+</div>
+
+    <a class="latex_link" href="sect0003.html#eta_aux_mul_eta_aux">LaTeX</a>
+  <a class="lean_link lean_decl" href="https://leanprover-community.github.io/mathlib4_docs/find/#doc/eta_aux_mul_eta_aux">Lean</a></div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="eta_equiv_nn_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="eta_equiv_nn" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">3.76</span></div>
+    <div class="thm_thmcontent"><p>   See Lean statement. </p>
+</div>
+
+    <a class="latex_link" href="sect0003.html#eta_equiv_nn">LaTeX</a>
+  <a class="lean_link lean_decl" href="https://leanprover-community.github.io/mathlib4_docs/find/#doc/eta_equiv_nn">Lean</a></div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="eta_equiv_nn'_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="eta_equiv_nn'" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">3.77</span></div>
+    <div class="thm_thmcontent"><p>   See Lean statement. </p>
+</div>
+
+    <a class="latex_link" href="sect0003.html#eta_equiv_nn'">LaTeX</a>
+  <a class="lean_link lean_decl" href="https://leanprover-community.github.io/mathlib4_docs/find/#doc/eta_equiv_nn'">Lean</a></div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="eta_lift_eta_aux'_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="eta_lift_eta_aux'" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">3.74</span></div>
+    <div class="thm_thmcontent"><p>  See Lean statement. </p>
+</div>
+
+    <a class="latex_link" href="sect0003.html#eta_lift_eta_aux'">LaTeX</a>
+  <a class="lean_link lean_decl" href="https://leanprover-community.github.io/mathlib4_docs/find/#doc/eta_lift_eta_aux'">Lean</a></div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="eta_t_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="eta_t" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">3.79</span></div>
+    <div class="thm_thmcontent"><p>   See Lean statement. </p>
+</div>
+
+    <a class="latex_link" href="sect0003.html#eta_t">LaTeX</a>
+  <a class="lean_link lean_decl" href="https://leanprover-community.github.io/mathlib4_docs/find/#doc/eta_t">Lean</a></div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="exchange_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="exchange" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">3.83</span></div>
+    <div class="thm_thmcontent"><p>   See Lean statement. </p>
+</div>
+
+    <a class="latex_link" href="sect0003.html#exchange">LaTeX</a>
+  <a class="lean_link lean_decl" href="https://leanprover-community.github.io/mathlib4_docs/find/#doc/exchange">Lean</a></div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="exists_of_nn_ne_zero_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="exists_of_nn_ne_zero" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">3.60</span></div>
+    <div class="thm_thmcontent"><p>  See Lean statement. </p>
+</div>
+
+    <a class="latex_link" href="sect0003.html#exists_of_nn_ne_zero">LaTeX</a>
+  <a class="lean_link lean_decl" href="https://leanprover-community.github.io/mathlib4_docs/find/#doc/exists_of_nn_ne_zero">Lean</a></div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="generator_ne_one_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="generator_ne_one" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">3.32</span></div>
+    <div class="thm_thmcontent"><p>   See Lean statement. </p>
+</div>
+
+    <a class="latex_link" href="sect0003.html#generator_ne_one">LaTeX</a>
+  <a class="lean_link lean_decl" href="https://leanprover-community.github.io/mathlib4_docs/find/#doc/generator_ne_one">Lean</a></div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="generator_ne_one'_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="generator_ne_one'" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">3.33</span></div>
+    <div class="thm_thmcontent"><p>   See Lean statement. </p>
+</div>
+
+    <a class="latex_link" href="sect0003.html#generator_ne_one'">LaTeX</a>
+  <a class="lean_link lean_decl" href="https://leanprover-community.github.io/mathlib4_docs/find/#doc/generator_ne_one'">Lean</a></div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="getS_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="getS" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">3.30</span></div>
+    <div class="thm_thmcontent"><p>   See Lean statement. </p>
+</div>
+
+    <a class="latex_link" href="sect0003.html#getS">LaTeX</a>
+  <a class="lean_link lean_decl" href="https://leanprover-community.github.io/mathlib4_docs/find/#doc/getS">Lean</a></div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="inv_refl_eq_self_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="inv_refl_eq_self" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">3.41</span></div>
+    <div class="thm_thmcontent"><p>  See Lean statement. </p>
+</div>
+
+    <a class="latex_link" href="sect0003.html#inv_refl_eq_self">LaTeX</a>
+  <a class="lean_link lean_decl" href="https://leanprover-community.github.io/mathlib4_docs/find/#doc/inv_refl_eq_self">Lean</a></div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="length_diff_one_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="length_diff_one" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">3.47</span></div>
+    <div class="thm_thmcontent"><p>   See Lean statement. </p>
+</div>
+
+    <a class="latex_link" href="sect0003.html#length_diff_one">LaTeX</a>
+  <a class="lean_link lean_decl" href="https://leanprover-community.github.io/mathlib4_docs/find/#doc/length_diff_one">Lean</a></div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="length_eq_card_reflset_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="length_eq_card_reflset" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">3.84</span></div>
+    <div class="thm_thmcontent"><p>  See Lean statement. </p>
+</div>
+
+    <a class="latex_link" href="sect0003.html#length_eq_card_reflset">LaTeX</a>
+  <a class="lean_link lean_decl" href="https://leanprover-community.github.io/mathlib4_docs/find/#doc/length_eq_card_reflset">Lean</a></div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="length_muls_neq_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="length_muls_neq" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">3.46</span></div>
+    <div class="thm_thmcontent"><p>   See Lean statement. </p>
+</div>
+
+    <a class="latex_link" href="sect0003.html#length_muls_neq">LaTeX</a>
+  <a class="lean_link lean_decl" href="https://leanprover-community.github.io/mathlib4_docs/find/#doc/length_muls_neq">Lean</a></div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="length_smul_lt_of_le_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="length_smul_lt_of_le" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">3.48</span></div>
+    <div class="thm_thmcontent"><p>   See Lean statement. </p>
+</div>
+
+    <a class="latex_link" href="sect0003.html#length_smul_lt_of_le">LaTeX</a>
+  <a class="lean_link lean_decl" href="https://leanprover-community.github.io/mathlib4_docs/find/#doc/length_smul_lt_of_le">Lean</a></div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="length_smul_neq_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="length_smul_neq" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">3.45</span></div>
+    <div class="thm_thmcontent"><p>   See Lean statement. </p>
+</div>
+
+    <a class="latex_link" href="sect0003.html#length_smul_neq">LaTeX</a>
+  <a class="lean_link lean_decl" href="https://leanprover-community.github.io/mathlib4_docs/find/#doc/length_smul_neq">Lean</a></div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="lift_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="lift" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">3.9</span></div>
+    <div class="thm_thmcontent"><p>   See Lean statement. </p>
+</div>
+
+    <a class="latex_link" href="sect0003.html#lift">LaTeX</a>
+  <a class="lean_link lean_decl" href="https://leanprover-community.github.io/mathlib4_docs/find/#doc/lift">Lean</a></div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="lift.of_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="lift.of" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">3.10</span></div>
+    <div class="thm_thmcontent"><p>   See Lean statement. </p>
+</div>
+
+    <a class="latex_link" href="sect0003.html#lift.of">LaTeX</a>
+  <a class="lean_link lean_decl" href="https://leanprover-community.github.io/mathlib4_docs/find/#doc/lift.of">Lean</a></div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="liftHom_aux_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="liftHom_aux" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">3.8</span></div>
+    <div class="thm_thmcontent"><p>   See Lean statement. </p>
+</div>
+
+    <a class="latex_link" href="sect0003.html#liftHom_aux">LaTeX</a>
+  <a class="lean_link lean_decl" href="https://leanprover-community.github.io/mathlib4_docs/find/#doc/liftHom_aux">Lean</a></div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="lt_iff_eta_eq_gen_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="lt_iff_eta_eq_gen" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">3.80</span></div>
+    <div class="thm_thmcontent"><p>   See Lean statement. </p>
+</div>
+
+    <a class="latex_link" href="sect0003.html#lt_iff_eta_eq_gen">LaTeX</a>
+  <a class="lean_link lean_decl" href="https://leanprover-community.github.io/mathlib4_docs/find/#doc/lt_iff_eta_eq_gen">Lean</a></div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="lt_iff_eta_eq_gen'_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="lt_iff_eta_eq_gen'" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">3.81</span></div>
+    <div class="thm_thmcontent"><p>  See Lean statement. </p>
+</div>
+
+    <a class="latex_link" href="sect0003.html#lt_iff_eta_eq_gen'">LaTeX</a>
+  <a class="lean_link lean_decl" href="https://leanprover-community.github.io/mathlib4_docs/find/#doc/lt_iff_eta_eq_gen'">Lean</a></div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="mul_Palindrome_i_cancel_i_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="mul_Palindrome_i_cancel_i" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">3.53</span></div>
+    <div class="thm_thmcontent"><p>   See Lean statement. </p>
+</div>
+
+    <a class="latex_link" href="sect0003.html#mul_Palindrome_i_cancel_i">LaTeX</a>
+  <a class="lean_link lean_decl" href="https://leanprover-community.github.io/mathlib4_docs/find/#doc/mul_Palindrome_i_cancel_i">Lean</a></div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="nn_cons_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="nn_cons" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">3.58</span></div>
+    <div class="thm_thmcontent"><p>   See Lean statement. </p>
+</div>
+
+    <a class="latex_link" href="sect0003.html#nn_cons">LaTeX</a>
+  <a class="lean_link lean_decl" href="https://leanprover-community.github.io/mathlib4_docs/find/#doc/nn_cons">Lean</a></div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="nn_prod_eta_aux_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="nn_prod_eta_aux" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">3.59</span></div>
+    <div class="thm_thmcontent"><p>   See Lean statement. </p>
+</div>
+
+    <a class="latex_link" href="sect0003.html#nn_prod_eta_aux">LaTeX</a>
+  <a class="lean_link lean_decl" href="https://leanprover-community.github.io/mathlib4_docs/find/#doc/nn_prod_eta_aux">Lean</a></div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="of_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="of" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">3.6</span></div>
+    <div class="thm_thmcontent"><p>   See Lean statement. </p>
+</div>
+
+    <a class="latex_link" href="sect0003.html#of">LaTeX</a>
+  <a class="lean_link lean_decl" href="https://leanprover-community.github.io/mathlib4_docs/find/#doc/of">Lean</a></div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="of_inv_eq_of_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="of_inv_eq_of" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">3.27</span></div>
+    <div class="thm_thmcontent"><p>   See Lean statement. </p>
+</div>
+
+    <a class="latex_link" href="sect0003.html#of_inv_eq_of">LaTeX</a>
+  <a class="lean_link lean_decl" href="https://leanprover-community.github.io/mathlib4_docs/find/#doc/of_inv_eq_of">Lean</a></div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="of_relation_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="of_relation" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">3.24</span></div>
+    <div class="thm_thmcontent"><p>   See Lean statement. </p>
+</div>
+
+    <a class="latex_link" href="sect0003.html#of_relation">LaTeX</a>
+  <a class="lean_link lean_decl" href="https://leanprover-community.github.io/mathlib4_docs/find/#doc/of_relation">Lean</a></div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="of_square_eq_one_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="of_square_eq_one" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">3.25</span></div>
+    <div class="thm_thmcontent"><p>   See Lean statement. </p>
+</div>
+
+    <a class="latex_link" href="sect0003.html#of_square_eq_one">LaTeX</a>
+  <a class="lean_link lean_decl" href="https://leanprover-community.github.io/mathlib4_docs/find/#doc/of_square_eq_one">Lean</a></div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="of_square_eq_one'_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="of_square_eq_one'" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">3.26</span></div>
+    <div class="thm_thmcontent"><p>   See Lean statement. </p>
+</div>
+
+    <a class="latex_link" href="sect0003.html#of_square_eq_one'">LaTeX</a>
+  <a class="lean_link lean_decl" href="https://leanprover-community.github.io/mathlib4_docs/find/#doc/of_square_eq_one'">Lean</a></div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="off_diagonal_ne_one_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="off_diagonal_ne_one" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">3.3</span></div>
+    <div class="thm_thmcontent"><p>  See Lean statement. </p>
+</div>
+
+    <a class="latex_link" href="sect0003.html#off_diagonal_ne_one">LaTeX</a>
+  <a class="lean_link lean_decl" href="https://leanprover-community.github.io/mathlib4_docs/find/#doc/off_diagonal_ne_one">Lean</a></div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="one_iff_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="one_iff" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">3.1</span></div>
+    <div class="thm_thmcontent"><p>  See Lean statement. </p>
+</div>
+
+    <a class="latex_link" href="sect0003.html#one_iff">LaTeX</a>
+  <a class="lean_link lean_decl" href="https://leanprover-community.github.io/mathlib4_docs/find/#doc/one_iff">Lean</a></div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="order_two_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="order_two" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">3.34</span></div>
+    <div class="thm_thmcontent"><p>   See Lean statement. </p>
+</div>
+
+    <a class="latex_link" href="sect0003.html#order_two">LaTeX</a>
+  <a class="lean_link lean_decl" href="https://leanprover-community.github.io/mathlib4_docs/find/#doc/order_two">Lean</a></div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="pi_aux_list_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="pi_aux_list" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">3.69</span></div>
+    <div class="thm_thmcontent"><p>   See Lean statement. </p>
+</div>
+
+    <a class="latex_link" href="sect0003.html#pi_aux_list">LaTeX</a>
+  <a class="lean_link lean_decl" href="https://leanprover-community.github.io/mathlib4_docs/find/#doc/pi_aux_list">Lean</a></div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="pi_aux_list_in_T_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="pi_aux_list_in_T" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">3.68</span></div>
+    <div class="thm_thmcontent"><p>   See Lean statement. </p>
+</div>
+
+    <a class="latex_link" href="sect0003.html#pi_aux_list_in_T">LaTeX</a>
+  <a class="lean_link lean_decl" href="https://leanprover-community.github.io/mathlib4_docs/find/#doc/pi_aux_list_in_T">Lean</a></div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="pi_aux_list_mul_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="pi_aux_list_mul" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">3.70</span></div>
+    <div class="thm_thmcontent"><p>  See Lean statement. </p>
+</div>
+
+    <a class="latex_link" href="sect0003.html#pi_aux_list_mul">LaTeX</a>
+  <a class="lean_link lean_decl" href="https://leanprover-community.github.io/mathlib4_docs/find/#doc/pi_aux_list_mul">Lean</a></div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="pi_aux_square_identity_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="pi_aux_square_identity" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">3.62</span></div>
+    <div class="thm_thmcontent"><p>   See Lean statement. </p>
+</div>
+
+    <a class="latex_link" href="sect0003.html#pi_aux_square_identity">LaTeX</a>
+  <a class="lean_link lean_decl" href="https://leanprover-community.github.io/mathlib4_docs/find/#doc/pi_aux_square_identity">Lean</a></div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="pi_eval_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="pi_eval" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">3.75</span></div>
+    <div class="thm_thmcontent"><p>   See Lean statement. </p>
+</div>
+
+    <a class="latex_link" href="sect0003.html#pi_eval">LaTeX</a>
+  <a class="lean_link lean_decl" href="https://leanprover-community.github.io/mathlib4_docs/find/#doc/pi_eval">Lean</a></div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="pi_inj_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="pi_inj" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">3.73</span></div>
+    <div class="thm_thmcontent"><p>   See Lean statement. </p>
+</div>
+
+    <a class="latex_link" href="sect0003.html#pi_inj">LaTeX</a>
+  <a class="lean_link lean_decl" href="https://leanprover-community.github.io/mathlib4_docs/find/#doc/pi_inj">Lean</a></div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="pi_relation_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="pi_relation" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">3.71</span></div>
+    <div class="thm_thmcontent"><p>   See Lean statement. </p>
+</div>
+
+    <a class="latex_link" href="sect0003.html#pi_relation">LaTeX</a>
+  <a class="lean_link lean_decl" href="https://leanprover-community.github.io/mathlib4_docs/find/#doc/pi_relation">Lean</a></div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="pi_relation_word_nn_even_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="pi_relation_word_nn_even" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">3.67</span></div>
+    <div class="thm_thmcontent"><p>   See Lean statement. </p>
+</div>
+
+    <a class="latex_link" href="sect0003.html#pi_relation_word_nn_even">LaTeX</a>
+  <a class="lean_link lean_decl" href="https://leanprover-community.github.io/mathlib4_docs/find/#doc/pi_relation_word_nn_even">Lean</a></div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="pi_value_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="pi_value" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">3.72</span></div>
+    <div class="thm_thmcontent"><p>   See Lean statement. </p>
+</div>
+
+    <a class="latex_link" href="sect0003.html#pi_value">LaTeX</a>
+  <a class="lean_link lean_decl" href="https://leanprover-community.github.io/mathlib4_docs/find/#doc/pi_value">Lean</a></div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="Refl.conjugate_closed_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="Refl.conjugate_closed" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">3.37</span></div>
+    <div class="thm_thmcontent"><p>  See Lean statement. </p>
+</div>
+
+    <a class="latex_link" href="sect0003.html#Refl.conjugate_closed">LaTeX</a>
+  <a class="lean_link lean_decl" href="https://leanprover-community.github.io/mathlib4_docs/find/#doc/Refl.conjugate_closed">Lean</a></div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="Refl.conjugate_closed'_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="Refl.conjugate_closed'" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">3.38</span></div>
+    <div class="thm_thmcontent"><p>  See Lean statement. </p>
+</div>
+
+    <a class="latex_link" href="sect0003.html#Refl.conjugate_closed'">LaTeX</a>
+  <a class="lean_link lean_decl" href="https://leanprover-community.github.io/mathlib4_docs/find/#doc/Refl.conjugate_closed'">Lean</a></div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="Refl.conjugate_closed_G_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="Refl.conjugate_closed_G" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">3.39</span></div>
+    <div class="thm_thmcontent"><p>  See Lean statement. </p>
+</div>
+
+    <a class="latex_link" href="sect0003.html#Refl.conjugate_closed_G">LaTeX</a>
+  <a class="lean_link lean_decl" href="https://leanprover-community.github.io/mathlib4_docs/find/#doc/Refl.conjugate_closed_G">Lean</a></div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="Refl.simplify_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="Refl.simplify" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">3.36</span></div>
+    <div class="thm_thmcontent"><p>  See Lean statement. </p>
+</div>
+
+    <a class="latex_link" href="sect0003.html#Refl.simplify">LaTeX</a>
+  <a class="lean_link lean_decl" href="https://leanprover-community.github.io/mathlib4_docs/find/#doc/Refl.simplify">Lean</a></div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="Refl_palindrome_in_Refl_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="Refl_palindrome_in_Refl" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">3.57</span></div>
+    <div class="thm_thmcontent"><p>  See Lean statement. </p>
+</div>
+
+    <a class="latex_link" href="sect0003.html#Refl_palindrome_in_Refl">LaTeX</a>
+  <a class="lean_link lean_decl" href="https://leanprover-community.github.io/mathlib4_docs/find/#doc/Refl_palindrome_in_Refl">Lean</a></div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="removeNth_of_palindrome_prod_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="removeNth_of_palindrome_prod" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">3.54</span></div>
+    <div class="thm_thmcontent"><p>   See Lean statement. </p>
+</div>
+
+    <a class="latex_link" href="sect0003.html#removeNth_of_palindrome_prod">LaTeX</a>
+  <a class="lean_link lean_decl" href="https://leanprover-community.github.io/mathlib4_docs/find/#doc/removeNth_of_palindrome_prod">Lean</a></div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="SimpleRefl_closed_under_inverse_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="SimpleRefl_closed_under_inverse" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">3.28</span></div>
+    <div class="thm_thmcontent"><p>   See Lean statement. </p>
+</div>
+
+    <a class="latex_link" href="sect0003.html#SimpleRefl_closed_under_inverse">LaTeX</a>
+  <a class="lean_link lean_decl" href="https://leanprover-community.github.io/mathlib4_docs/find/#doc/SimpleRefl_closed_under_inverse">Lean</a></div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="SimpleRefl_subset_Refl_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="SimpleRefl_subset_Refl" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">3.35</span></div>
+    <div class="thm_thmcontent"><p>  See Lean statement. </p>
+</div>
+
+    <a class="latex_link" href="sect0003.html#SimpleRefl_subset_Refl">LaTeX</a>
+  <a class="lean_link lean_decl" href="https://leanprover-community.github.io/mathlib4_docs/find/#doc/SimpleRefl_subset_Refl">Lean</a></div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="sq_refl_eq_one_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="sq_refl_eq_one" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">3.40</span></div>
+    <div class="thm_thmcontent"><p>  See Lean statement. </p>
+</div>
+
+    <a class="latex_link" href="sect0003.html#sq_refl_eq_one">LaTeX</a>
+  <a class="lean_link lean_decl" href="https://leanprover-community.github.io/mathlib4_docs/find/#doc/sq_refl_eq_one">Lean</a></div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="strong_exchange_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="strong_exchange" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">3.82</span></div>
+    <div class="thm_thmcontent"><p>   See Lean statement. </p>
+</div>
+
+    <a class="latex_link" href="sect0003.html#strong_exchange">LaTeX</a>
+  <a class="lean_link lean_decl" href="https://leanprover-community.github.io/mathlib4_docs/find/#doc/strong_exchange">Lean</a></div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="toGroup_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="toGroup" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">3.5</span></div>
+    <div class="thm_thmcontent"><p>   See Lean statement. </p>
+</div>
+
+    <a class="latex_link" href="sect0003.html#toGroup">LaTeX</a>
+  <a class="lean_link lean_decl" href="https://leanprover-community.github.io/mathlib4_docs/find/#doc/toGroup">Lean</a></div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="toGroup_expression_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="toGroup_expression" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">3.29</span></div>
+    <div class="thm_thmcontent"><p>   See Lean statement. </p>
+</div>
+
+    <a class="latex_link" href="sect0003.html#toGroup_expression">LaTeX</a>
+  <a class="lean_link lean_decl" href="https://leanprover-community.github.io/mathlib4_docs/find/#doc/toGroup_expression">Lean</a></div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="toGroup_expression'_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="toGroup_expression'" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">3.31</span></div>
+    <div class="thm_thmcontent"><p>   See Lean statement. </p>
+</div>
+
+    <a class="latex_link" href="sect0003.html#toGroup_expression'">LaTeX</a>
+  <a class="lean_link lean_decl" href="https://leanprover-community.github.io/mathlib4_docs/find/#doc/toGroup_expression'">Lean</a></div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="toPalindrome_i_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="toPalindrome_i" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">3.51</span></div>
+    <div class="thm_thmcontent"><p>  See Lean statement. </p>
+</div>
+
+    <a class="latex_link" href="sect0003.html#toPalindrome_i">LaTeX</a>
+  <a class="lean_link lean_decl" href="https://leanprover-community.github.io/mathlib4_docs/find/#doc/toPalindrome_i">Lean</a></div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="toPalindrome_i_in_Refl_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="toPalindrome_i_in_Refl" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">3.52</span></div>
+    <div class="thm_thmcontent"><p>   See Lean statement. </p>
+</div>
+
+    <a class="latex_link" href="sect0003.html#toPalindrome_i_in_Refl">LaTeX</a>
+  <a class="lean_link lean_decl" href="https://leanprover-community.github.io/mathlib4_docs/find/#doc/toPalindrome_i_in_Refl">Lean</a></div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="toPalindrome_in_Refl_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="toPalindrome_in_Refl" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">3.50</span></div>
+    <div class="thm_thmcontent"><p>   See Lean statement. </p>
+</div>
+
+    <a class="latex_link" href="sect0003.html#toPalindrome_in_Refl">LaTeX</a>
+  <a class="lean_link lean_decl" href="https://leanprover-community.github.io/mathlib4_docs/find/#doc/toPalindrome_in_Refl">Lean</a></div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="toPalindrome_length_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="toPalindrome_length" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">3.49</span></div>
+    <div class="thm_thmcontent"><p>   See Lean statement. </p>
+</div>
+
+    <a class="latex_link" href="sect0003.html#toPalindrome_length">LaTeX</a>
+  <a class="lean_link lean_decl" href="https://leanprover-community.github.io/mathlib4_docs/find/#doc/toPalindrome_length">Lean</a></div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="toRelationSet_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="toRelationSet" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">3.4</span></div>
+    <div class="thm_thmcontent"><p>  See Lean statement. </p>
+</div>
+
+    <a class="latex_link" href="sect0003.html#toRelationSet">LaTeX</a>
+  <a class="lean_link lean_decl" href="https://leanprover-community.github.io/mathlib4_docs/find/#doc/toRelationSet">Lean</a></div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="toSimpleRefl_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="toSimpleRefl" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">3.7</span></div>
+    <div class="thm_thmcontent"><p>   See Lean statement. </p>
+</div>
+
+    <a class="latex_link" href="sect0003.html#toSimpleRefl">LaTeX</a>
+  <a class="lean_link lean_decl" href="https://leanprover-community.github.io/mathlib4_docs/find/#doc/toSimpleRefl">Lean</a></div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="μ₂.even_pow_iff_eq_one_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="μ₂.even_pow_iff_eq_one" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">3.19</span></div>
+    <div class="thm_thmcontent"><p>   See Lean statement. </p>
+</div>
+
+    <a class="latex_link" href="sect0003.html#μ₂.even_pow_iff_eq_one">LaTeX</a>
+  <a class="lean_link lean_decl" href="https://leanprover-community.github.io/mathlib4_docs/find/#doc/μ₂.even_pow_iff_eq_one">Lean</a></div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="μ₂.gen_inv_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="μ₂.gen_inv" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">3.17</span></div>
+    <div class="thm_thmcontent"><p>  See Lean statement. </p>
+</div>
+
+    <a class="latex_link" href="sect0003.html#μ₂.gen_inv">LaTeX</a>
+  <a class="lean_link lean_decl" href="https://leanprover-community.github.io/mathlib4_docs/find/#doc/μ₂.gen_inv">Lean</a></div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="μ₂.gen_ne_one_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="μ₂.gen_ne_one" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">3.11</span></div>
+    <div class="thm_thmcontent"><p>  See Lean statement. </p>
+</div>
+
+    <a class="latex_link" href="sect0003.html#μ₂.gen_ne_one">LaTeX</a>
+  <a class="lean_link lean_decl" href="https://leanprover-community.github.io/mathlib4_docs/find/#doc/μ₂.gen_ne_one">Lean</a></div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="μ₂.gen_order_two_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="μ₂.gen_order_two" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">3.18</span></div>
+    <div class="thm_thmcontent"><p>  See Lean statement. </p>
+</div>
+
+    <a class="latex_link" href="sect0003.html#μ₂.gen_order_two">LaTeX</a>
+  <a class="lean_link lean_decl" href="https://leanprover-community.github.io/mathlib4_docs/find/#doc/μ₂.gen_order_two">Lean</a></div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="μ₂.gen_square_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="μ₂.gen_square" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">3.16</span></div>
+    <div class="thm_thmcontent"><p>  See Lean statement. </p>
+</div>
+
+    <a class="latex_link" href="sect0003.html#μ₂.gen_square">LaTeX</a>
+  <a class="lean_link lean_decl" href="https://leanprover-community.github.io/mathlib4_docs/find/#doc/μ₂.gen_square">Lean</a></div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="μ₂.mem_iff_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="μ₂.mem_iff" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">3.12</span></div>
+    <div class="thm_thmcontent"><p>   See Lean statement. </p>
+</div>
+
+    <a class="latex_link" href="sect0003.html#μ₂.mem_iff">LaTeX</a>
+  <a class="lean_link lean_decl" href="https://leanprover-community.github.io/mathlib4_docs/find/#doc/μ₂.mem_iff">Lean</a></div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="μ₂.mem_iff'_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="μ₂.mem_iff'" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">3.13</span></div>
+    <div class="thm_thmcontent"><p>   See Lean statement. </p>
+</div>
+
+    <a class="latex_link" href="sect0003.html#μ₂.mem_iff'">LaTeX</a>
+  <a class="lean_link lean_decl" href="https://leanprover-community.github.io/mathlib4_docs/find/#doc/μ₂.mem_iff'">Lean</a></div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="μ₂.not_iff_not_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="μ₂.not_iff_not" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">3.14</span></div>
+    <div class="thm_thmcontent"><p>   See Lean statement. </p>
+</div>
+
+    <a class="latex_link" href="sect0003.html#μ₂.not_iff_not">LaTeX</a>
+  <a class="lean_link lean_decl" href="https://leanprover-community.github.io/mathlib4_docs/find/#doc/μ₂.not_iff_not">Lean</a></div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="μ₂.not_iff_not'_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="μ₂.not_iff_not'" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">3.15</span></div>
+    <div class="thm_thmcontent"><p>   See Lean statement. </p>
+</div>
+
+    <a class="latex_link" href="sect0003.html#μ₂.not_iff_not'">LaTeX</a>
+  <a class="lean_link lean_decl" href="https://leanprover-community.github.io/mathlib4_docs/find/#doc/μ₂.not_iff_not'">Lean</a></div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="μ₂.odd_pow_iff_eq_gen_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="μ₂.odd_pow_iff_eq_gen" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">3.20</span></div>
+    <div class="thm_thmcontent"><p>   See Lean statement. </p>
+</div>
+
+    <a class="latex_link" href="sect0003.html#μ₂.odd_pow_iff_eq_gen">LaTeX</a>
+  <a class="lean_link lean_decl" href="https://leanprover-community.github.io/mathlib4_docs/find/#doc/μ₂.odd_pow_iff_eq_gen">Lean</a></div>
+    
+      </div>
+    </div>
+</div>
+</div> <!-- content -->
+</div> <!-- wrapper -->
+<script src="js/jquery.min.js" type="text/javascript"></script>
+
+<script src="js/d3.min.js"></script>
+<script src="js/hpcc.min.js"></script>
+<script src="js/d3-graphviz.js"></script>
+
+<script type="text/javascript">
+const graphContainer = d3.select("#graph");
+const width = graphContainer.node().clientWidth;
+const height = graphContainer.node().clientHeight;
+
+
+graphContainer.graphviz({useWorker: true})
+    .width(width)
+    .height(height)
+    .fit(true)
+    .renderDot(`strict digraph "" {	graph [bgcolor=transparent];	node [label="\N",		penwidth=1.8	];	edge [arrowhead=vee];	toSimpleRefl	[color=green,		fillcolor="#b0eca3",		label=toSimpleRefl,		shape=box,		style=filled];	toSimpleRefl -> toSimpleRefl	[style=dashed];	pi_aux_list	[color=green,		fillcolor="#9cec8b",		label=pi_aux_list,		shape=ellipse,		style=filled];	toSimpleRefl -> pi_aux_list	[style=dashed];	alternating_word_palindrome	[color=green,		fillcolor="#9cec8b",		label=alternating_word_palindrome,		shape=ellipse,		style=filled];	toSimpleRefl -> alternating_word_palindrome	[style=dashed];	pi_aux_square_identity	[color=green,		fillcolor="#9cec8b",		label=pi_aux_square_identity,		shape=ellipse,		style=filled];	toSimpleRefl -> pi_aux_square_identity	[style=dashed];	getS	[color=green,		fillcolor="#b0eca3",		label=getS,		shape=box,		style=filled];	toSimpleRefl -> getS	[style=dashed];	alternating_word_power	[color=green,		fillcolor="#9cec8b",		label=alternating_word_power,		shape=ellipse,		style=filled];	toSimpleRefl -> alternating_word_power	[style=dashed];	pi_relation	[color=green,		fillcolor="#9cec8b",		label=pi_relation,		shape=ellipse,		style=filled];	toSimpleRefl -> pi_relation	[style=dashed];	"toGroup_expression'"	[color=green,		fillcolor="#9cec8b",		label="toGroup_expression'",		shape=ellipse,		style=filled];	toSimpleRefl -> "toGroup_expression'"	[style=dashed];	eta_aux_mul_eta_aux	[color=green,		fillcolor="#9cec8b",		label=eta_aux_mul_eta_aux,		shape=ellipse,		style=filled];	toSimpleRefl -> eta_aux_mul_eta_aux	[style=dashed];	pi_value	[color=green,		fillcolor="#9cec8b",		label=pi_value,		shape=ellipse,		style=filled];	toSimpleRefl -> pi_value	[style=dashed];	off_diagonal_ne_one	[color=green,		fillcolor="#9cec8b",		label=off_diagonal_ne_one,		shape=ellipse,		style=filled];	"μ₂.odd_pow_iff_eq_gen"	[color=green,		fillcolor="#9cec8b",		label="μ₂.odd_pow_iff_eq_gen",		shape=ellipse,		style=filled];	strong_exchange	[color=green,		fillcolor="#9cec8b",		label=strong_exchange,		shape=ellipse,		style=filled];	"μ₂.odd_pow_iff_eq_gen" -> strong_exchange	[style=dashed];	lt_iff_eta_eq_gen	[color=green,		fillcolor="#9cec8b",		label=lt_iff_eta_eq_gen,		shape=ellipse,		style=filled];	"μ₂.odd_pow_iff_eq_gen" -> lt_iff_eta_eq_gen	[style=dashed];	pi_aux_list -> pi_relation	[style=dashed];	pi_aux_list -> pi_value	[style=dashed];	epsilon	[color=green,		fillcolor="#b0eca3",		label=epsilon,		shape=box,		style=filled];	length_smul_neq	[color=green,		fillcolor="#9cec8b",		label=length_smul_neq,		shape=ellipse,		style=filled];	epsilon -> length_smul_neq	[style=dashed];	epsilon_mul	[color=green,		fillcolor="#9cec8b",		label=epsilon_mul,		shape=ellipse,		style=filled];	epsilon -> epsilon_mul	[style=dashed];	epsilon_S	[color=green,		fillcolor="#9cec8b",		label=epsilon_S,		shape=ellipse,		style=filled];	epsilon -> epsilon_S	[style=dashed];	generator_ne_one	[color=green,		fillcolor="#9cec8b",		label=generator_ne_one,		shape=ellipse,		style=filled];	epsilon -> generator_ne_one	[style=dashed];	epsilon_list_length	[color=green,		fillcolor="#9cec8b",		label=epsilon_list_length,		shape=ellipse,		style=filled];	epsilon -> epsilon_list_length	[style=dashed];	epsilon_length	[color=green,		fillcolor="#9cec8b",		label=epsilon_length,		shape=ellipse,		style=filled];	epsilon -> epsilon_length	[style=dashed];	length_muls_neq	[color=green,		fillcolor="#9cec8b",		label=length_muls_neq,		shape=ellipse,		style=filled];	epsilon -> length_muls_neq	[style=dashed];	epsilon_of	[color=green,		fillcolor="#9cec8b",		label=epsilon_of,		shape=ellipse,		style=filled];	epsilon -> epsilon_of	[style=dashed];	removeNth_of_palindrome_prod	[color=green,		fillcolor="#9cec8b",		label=removeNth_of_palindrome_prod,		shape=ellipse,		style=filled];	distinct_toPalindrome_i_of_reduced	[color=green,		fillcolor="#9cec8b",		label=distinct_toPalindrome_i_of_reduced,		shape=ellipse,		style=filled];	removeNth_of_palindrome_prod -> distinct_toPalindrome_i_of_reduced	[style=dashed];	removeNth_of_palindrome_prod -> strong_exchange	[style=dashed];	removeNth_of_palindrome_prod -> lt_iff_eta_eq_gen	[style=dashed];	pi_relation_word_nn_even	[color=green,		fillcolor="#9cec8b",		label=pi_relation_word_nn_even,		shape=ellipse,		style=filled];	pi_relation_word_nn_even -> pi_relation	[style=dashed];	of_inv_eq_of	[color=green,		fillcolor="#9cec8b",		label=of_inv_eq_of,		shape=ellipse,		style=filled];	of_inv_eq_of -> pi_aux_list	[style=dashed];	SimpleRefl_closed_under_inverse	[color=green,		fillcolor="#9cec8b",		label=SimpleRefl_closed_under_inverse,		shape=ellipse,		style=filled];	of_inv_eq_of -> SimpleRefl_closed_under_inverse	[style=dashed];	length_eq_card_reflset	[color=green,		label=length_eq_card_reflset,		shape=ellipse];	of_square_eq_one	[color=green,		fillcolor="#9cec8b",		label=of_square_eq_one,		shape=ellipse,		style=filled];	of_square_eq_one -> of_inv_eq_of	[style=dashed];	of_square_eq_one -> pi_aux_square_identity	[style=dashed];	order_two	[color=green,		fillcolor="#9cec8b",		label=order_two,		shape=ellipse,		style=filled];	of_square_eq_one -> order_two	[style=dashed];	"of_square_eq_one'"	[color=green,		fillcolor="#9cec8b",		label="of_square_eq_one'",		shape=ellipse,		style=filled];	of_square_eq_one -> "of_square_eq_one'"	[style=dashed];	of_square_eq_one -> "toGroup_expression'"	[style=dashed];	SimpleRefl_subset_Refl	[color=green,		label=SimpleRefl_subset_Refl,		shape=ellipse];	exchange	[color=green,		label=exchange,		shape=ellipse];	SimpleRefl_subset_Refl -> exchange	[style=dashed];	Refl_palindrome_in_Refl	[color=green,		fillcolor="#9cec8b",		label=Refl_palindrome_in_Refl,		shape=ellipse,		style=filled];	nn_prod_eta_aux	[color=green,		fillcolor="#9cec8b",		label=nn_prod_eta_aux,		shape=ellipse,		style=filled];	Refl_palindrome_in_Refl -> nn_prod_eta_aux	[style=dashed];	eta_t	[color=green,		fillcolor="#9cec8b",		label=eta_t,		shape=ellipse,		style=filled];	Refl_palindrome_in_Refl -> eta_t	[style=dashed];	alternating_word_palindrome -> pi_relation_word_nn_even	[style=dashed];	"generator_ne_one'"	[color=green,		fillcolor="#9cec8b",		label="generator_ne_one'",		shape=ellipse,		style=filled];	"Refl.simplify"	[color=green,		label="Refl.simplify",		shape=ellipse];	toPalindrome_in_Refl	[color=green,		fillcolor="#9cec8b",		label=toPalindrome_in_Refl,		shape=ellipse,		style=filled];	"Refl.simplify" -> toPalindrome_in_Refl	[style=dashed];	exists_of_nn_ne_zero	[color=green,		fillcolor="#9cec8b",		label=exists_of_nn_ne_zero,		shape=ellipse,		style=filled];	exists_of_nn_ne_zero -> strong_exchange	[style=dashed];	exists_of_nn_ne_zero -> lt_iff_eta_eq_gen	[style=dashed];	"eta_lift_eta_aux'"	[color=green,		label="eta_lift_eta_aux'",		shape=ellipse];	length_diff_one	[color=green,		fillcolor="#9cec8b",		label=length_diff_one,		shape=ellipse,		style=filled];	"μ₂.mem_iff'"	[color=green,		fillcolor="#9cec8b",		label="μ₂.mem_iff'",		shape=ellipse,		style=filled];	"μ₂.not_iff_not"	[color=green,		fillcolor="#9cec8b",		label="μ₂.not_iff_not",		shape=ellipse,		style=filled];	"μ₂.mem_iff'" -> "μ₂.not_iff_not"	[style=dashed];	"μ₂.mem_iff'" -> eta_t	[style=dashed];	length_smul_neq -> length_diff_one	[style=dashed];	length_smul_lt_of_le	[color=green,		fillcolor="#9cec8b",		label=length_smul_lt_of_le,		shape=ellipse,		style=filled];	length_smul_neq -> length_smul_lt_of_le	[style=dashed];	one_iff	[color=green,		fillcolor="#9cec8b",		label=one_iff,		shape=ellipse,		style=filled];	of_relation	[color=green,		fillcolor="#9cec8b",		label=of_relation,		shape=ellipse,		style=filled];	one_iff -> of_relation	[style=dashed];	"μ₂.mem_iff"	[color=green,		fillcolor="#9cec8b",		label="μ₂.mem_iff",		shape=ellipse,		style=filled];	one_iff -> "μ₂.mem_iff"	[style=dashed];	"μ₂.gen_order_two"	[color=green,		fillcolor="#9cec8b",		label="μ₂.gen_order_two",		shape=ellipse,		style=filled];	"μ₂.even_pow_iff_eq_one"	[color=green,		fillcolor="#9cec8b",		label="μ₂.even_pow_iff_eq_one",		shape=ellipse,		style=filled];	"μ₂.gen_order_two" -> "μ₂.even_pow_iff_eq_one"	[style=dashed];	"μ₂.not_iff_not'"	[color=green,		fillcolor="#9cec8b",		label="μ₂.not_iff_not'",		shape=ellipse,		style=filled];	"μ₂.not_iff_not'" -> lt_iff_eta_eq_gen	[style=dashed];	pi_aux_square_identity -> pi_aux_square_identity	[style=dashed];	inv_refl_eq_self	[color=green,		label=inv_refl_eq_self,		shape=ellipse];	pi_inj	[color=green,		fillcolor="#9cec8b",		label=pi_inj,		shape=ellipse,		style=filled];	distinct_toPalindrome_i_of_reduced -> pi_inj	[style=dashed];	epsilon_mul -> length_smul_neq	[style=dashed];	epsilon_mul -> epsilon_list_length	[style=dashed];	epsilon_mul -> length_muls_neq	[style=dashed];	getS -> "toGroup_expression'"	[style=dashed];	toPalindrome_i	[color=green,		fillcolor="#b0eca3",		label=toPalindrome_i,		shape=box,		style=filled];	toPalindrome_i -> alternating_word_palindrome	[style=dashed];	toPalindrome_i -> distinct_toPalindrome_i_of_reduced	[style=dashed];	toPalindrome_i_in_Refl	[color=green,		fillcolor="#9cec8b",		label=toPalindrome_i_in_Refl,		shape=ellipse,		style=filled];	toPalindrome_i -> toPalindrome_i_in_Refl	[style=dashed];	toPalindrome_i -> strong_exchange	[style=dashed];	toPalindrome_i -> nn_prod_eta_aux	[style=dashed];	mul_Palindrome_i_cancel_i	[color=green,		fillcolor="#9cec8b",		label=mul_Palindrome_i_cancel_i,		shape=ellipse,		style=filled];	toPalindrome_i -> mul_Palindrome_i_cancel_i	[style=dashed];	toPalindrome_i -> pi_inj	[style=dashed];	toPalindrome_i -> lt_iff_eta_eq_gen	[style=dashed];	nn_cons	[color=green,		label=nn_cons,		shape=ellipse];	toPalindrome_i -> nn_cons	[style=dashed];	diagonal_one	[color=green,		fillcolor="#9cec8b",		label=diagonal_one,		shape=ellipse,		style=filled];	diagonal_one -> of_square_eq_one	[style=dashed];	toGroup_expression	[color=green,		fillcolor="#9cec8b",		label=toGroup_expression,		shape=ellipse,		style=filled];	toGroup_expression -> order_two	[style=dashed];	pi_eval	[color=green,		fillcolor="#9cec8b",		label=pi_eval,		shape=ellipse,		style=filled];	toGroup_expression -> pi_eval	[style=dashed];	"Refl.conjugate_closed_G"	[color=green,		label="Refl.conjugate_closed_G",		shape=ellipse];	SimpleRefl_closed_under_inverse -> toGroup_expression	[style=dashed];	"Refl.conjugate_closed'"	[color=green,		label="Refl.conjugate_closed'",		shape=ellipse];	sq_refl_eq_one	[color=green,		label=sq_refl_eq_one,		shape=ellipse];	toPalindrome_i_in_Refl -> distinct_toPalindrome_i_of_reduced	[style=dashed];	strong_exchange -> exchange	[style=dashed];	nn_prod_eta_aux -> pi_aux_list	[style=dashed];	nn_prod_eta_aux -> eta_t	[style=dashed];	exchange -> exchange	[style=dashed];	exchange -> length_smul_lt_of_le	[style=dashed];	toGroup	[color=green,		fillcolor="#b0eca3",		label=toGroup,		shape=box,		style=filled];	toGroup -> toSimpleRefl	[style=dashed];	toGroup -> toGroup_expression	[style=dashed];	lift	[color=green,		fillcolor="#b0eca3",		label=lift,		shape=box,		style=filled];	toGroup -> lift	[style=dashed];	"lift.of"	[color=green,		fillcolor="#9cec8b",		label="lift.of",		shape=ellipse,		style=filled];	toGroup -> "lift.of"	[style=dashed];	toGroup -> order_two	[style=dashed];	toGroup -> pi_eval	[style=dashed];	mul_Palindrome_i_cancel_i -> removeNth_of_palindrome_prod	[style=dashed];	lift -> epsilon	[style=dashed];	lift -> lift	[style=dashed];	lift -> epsilon_S	[style=dashed];	liftHom_aux	[color=green,		fillcolor="#9cec8b",		label=liftHom_aux,		shape=ellipse,		style=filled];	lift -> liftHom_aux	[style=dashed];	lift -> pi_relation	[style=dashed];	lift -> epsilon_of	[style=dashed];	of_relation -> of_square_eq_one	[style=dashed];	alternating_word_relation	[color=green,		fillcolor="#9cec8b",		label=alternating_word_relation,		shape=ellipse,		style=filled];	of_relation -> alternating_word_relation	[style=dashed];	epsilon_S -> length_smul_neq	[style=dashed];	epsilon_S -> epsilon_list_length	[style=dashed];	epsilon_S -> length_muls_neq	[style=dashed];	lt_iff_eta_eq_gen -> strong_exchange	[style=dashed];	"lift.of" -> epsilon_S	[style=dashed];	"lift.of" -> liftHom_aux	[style=dashed];	"lift.of" -> epsilon_of	[style=dashed];	"μ₂.mem_iff" -> "μ₂.mem_iff'"	[style=dashed];	"μ₂.mem_iff" -> "μ₂.not_iff_not"	[style=dashed];	"μ₂.mem_iff" -> eta_t	[style=dashed];	generator_ne_one -> "generator_ne_one'"	[style=dashed];	generator_ne_one -> order_two	[style=dashed];	alternating_word_relation -> pi_relation	[style=dashed];	alternating_word_palindrome_periodic	[color=green,		fillcolor="#9cec8b",		label=alternating_word_palindrome_periodic,		shape=ellipse,		style=filled];	alternating_word_relation -> alternating_word_palindrome_periodic	[style=dashed];	"lt_iff_eta_eq_gen'"	[color=green,		label="lt_iff_eta_eq_gen'",		shape=ellipse];	"μ₂.not_iff_not" -> "μ₂.not_iff_not'"	[style=dashed];	"μ₂.not_iff_not" -> lt_iff_eta_eq_gen	[style=dashed];	liftHom_aux -> lift	[style=dashed];	"Refl.conjugate_closed"	[color=green,		label="Refl.conjugate_closed",		shape=ellipse];	"Refl.conjugate_closed" -> pi_aux_list	[style=dashed];	"Refl.conjugate_closed" -> lt_iff_eta_eq_gen	[style=dashed];	pi_aux_list_in_T	[color=green,		fillcolor="#9cec8b",		label=pi_aux_list_in_T,		shape=ellipse,		style=filled];	"Refl.conjugate_closed" -> pi_aux_list_in_T	[style=dashed];	toRelationSet	[color=green,		fillcolor="#b0eca3",		label=toRelationSet,		shape=box,		style=filled];	toRelationSet -> toGroup	[style=dashed];	toRelationSet -> of_relation	[style=dashed];	"μ₂.gen_ne_one"	[color=green,		fillcolor="#9cec8b",		label="μ₂.gen_ne_one",		shape=ellipse,		style=filled];	"μ₂.gen_ne_one" -> length_smul_neq	[style=dashed];	"μ₂.gen_ne_one" -> pi_inj	[style=dashed];	"μ₂.gen_ne_one" -> generator_ne_one	[style=dashed];	"μ₂.gen_ne_one" -> length_muls_neq	[style=dashed];	epsilon_list_length -> epsilon_length	[style=dashed];	"eta_aux'_reflection"	[color=green,		label="eta_aux'_reflection",		shape=ellipse];	"eta_aux'_reflection" -> eta_t	[style=dashed];	eta_t -> lt_iff_eta_eq_gen	[style=dashed];	order_two -> order_two	[style=dashed];	order_two -> "μ₂.even_pow_iff_eq_one"	[style=dashed];	alternating_word_power -> alternating_word_relation	[style=dashed];	eta_equiv_nn	[color=green,		fillcolor="#9cec8b",		label=eta_equiv_nn,		shape=ellipse,		style=filled];	eta_equiv_nn -> strong_exchange	[style=dashed];	eta_equiv_nn -> lt_iff_eta_eq_gen	[style=dashed];	eta_equiv_nn -> eta_t	[style=dashed];	"eta_equiv_nn'"	[color=green,		fillcolor="#9cec8b",		label="eta_equiv_nn'",		shape=ellipse,		style=filled];	eta_equiv_nn -> "eta_equiv_nn'"	[style=dashed];	pi_relation -> pi_relation	[style=dashed];	"eta_aux_aux'"	[color=green,		fillcolor="#9cec8b",		label="eta_aux_aux'",		shape=ellipse,		style=filled];	"eta_aux_aux'" -> pi_aux_list	[style=dashed];	"eta_aux_aux'" -> pi_aux_square_identity	[style=dashed];	alternating_word_palindrome_periodic -> pi_relation_word_nn_even	[style=dashed];	pi_aux_list_mul	[color=green,		fillcolor="#9cec8b",		label=pi_aux_list_mul,		shape=ellipse,		style=filled];	pi_aux_list_mul -> pi_relation	[style=dashed];	"μ₂.gen_inv"	[color=green,		fillcolor="#9cec8b",		label="μ₂.gen_inv",		shape=ellipse,		style=filled];	"eta_equiv_nn'" -> strong_exchange	[style=dashed];	"eta_equiv_nn'" -> lt_iff_eta_eq_gen	[style=dashed];	"μ₂.even_pow_iff_eq_one" -> "μ₂.odd_pow_iff_eq_gen"	[style=dashed];	epsilon_length -> length_smul_neq	[style=dashed];	epsilon_length -> length_muls_neq	[style=dashed];	length_smul_lt_of_le -> exchange	[style=dashed];	eta_aux_mul_eta_aux -> pi_aux_square_identity	[style=dashed];	nn_cons -> nn_prod_eta_aux	[style=dashed];	"μ₂.gen_square"	[color=green,		fillcolor="#9cec8b",		label="μ₂.gen_square",		shape=ellipse,		style=filled];	"μ₂.gen_square" -> lt_iff_eta_eq_gen	[style=dashed];	"μ₂.gen_square" -> eta_aux_mul_eta_aux	[style=dashed];	epsilon_of -> generator_ne_one	[style=dashed];	toPalindrome_in_Refl -> toPalindrome_i_in_Refl	[style=dashed];	pi_eval -> lt_iff_eta_eq_gen	[style=dashed];	of	[color=green,		fillcolor="#b0eca3",		label=of,		shape=box,		style=filled];	of -> toSimpleRefl	[style=dashed];	of -> pi_aux_list	[style=dashed];	of -> of_inv_eq_of	[style=dashed];	of -> of_square_eq_one	[style=dashed];	of -> length_diff_one	[style=dashed];	of -> pi_aux_square_identity	[style=dashed];	of -> distinct_toPalindrome_i_of_reduced	[style=dashed];	of -> toGroup_expression	[style=dashed];	of -> SimpleRefl_closed_under_inverse	[style=dashed];	of -> strong_exchange	[style=dashed];	of -> exchange	[style=dashed];	of -> of_relation	[style=dashed];	of -> pi_inj	[style=dashed];	of -> epsilon_S	[style=dashed];	of -> lt_iff_eta_eq_gen	[style=dashed];	of -> "lift.of"	[style=dashed];	of -> generator_ne_one	[style=dashed];	of -> alternating_word_relation	[style=dashed];	of -> liftHom_aux	[style=dashed];	of -> eta_t	[style=dashed];	of -> order_two	[style=dashed];	of -> "of_square_eq_one'"	[style=dashed];	of -> "toGroup_expression'"	[style=dashed];	of -> length_smul_lt_of_le	[style=dashed];	of -> eta_aux_mul_eta_aux	[style=dashed];	of -> nn_cons	[style=dashed];	of -> epsilon_of	[style=dashed];	of -> of	[style=dashed];	toPalindrome_length	[color=green,		fillcolor="#9cec8b",		label=toPalindrome_length,		shape=ellipse,		style=filled];	of -> toPalindrome_length	[style=dashed];	pi_value -> pi_inj	[style=dashed];	pi_value -> eta_equiv_nn	[style=dashed];	pi_value -> pi_eval	[style=dashed];}`)
+    .on("end", interactive);
+
+clickNode = function() {
+  $("#statements div").hide()
+  var node_id = $('text', this).text();
+    console.log(node_id);
+  console.log('#'+node_id.replace(':', '\\:'));
+  $('.thm').hide();
+  $('#'+node_id.replace(':', '\\:')).show().children().show();
+}
+function interactive() {
+    $("span#legend_title").on("click", function () {
+           $(this).siblings('dl').toggle();
+        })
+
+    d3.selectAll('.node')
+        .attr('pointer-events', 'fill')
+        .on('click', function () {
+           var title = d3.select(this).selectAll('title').text().trim();
+           $('#statements > div').hide()
+           $('.thm').hide();
+           $('#'+title.replace(':', '\\:')+'_modal').show().children().show().children().show();
+           $('#statements').show()
+        });
+
+    d3.selectAll('.dep-closebtn').on('click', function() {
+        var modal =
+            d3.select(this).node().parentNode.parentNode.parentNode ;
+        d3.select(modal).style('display', 'none');
+    });
+}
+
+</script>
+
+</body>
+</html>
