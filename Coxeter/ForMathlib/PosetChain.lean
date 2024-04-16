@@ -13,6 +13,7 @@ namespace PartialOrder
 /- Let P be a finite poet. -/
 variable {P : Type*} [PartialOrder P]
 
+open List
 --test
 
 /- Recall that : We say a is covered by b if x < y and there is no element z such that x < z < y. -/
@@ -122,7 +123,17 @@ lemma chain_singleton_of_head_eq_tail  {L : List P} (a : P) (chain_l : chain L)
 
 
 lemma maximal_chain'_singleton {a : P}: maximal_chain' [a] := by
-  sorry
+  constructor
+  · exact chain_singleton
+  · intro L' hL' h hsub
+    simp at h
+    have := chain_singleton_of_head_eq_tail a hL' (eq_comm.1 h.1) (eq_comm.2 h.2)
+    rw [List.length_eq_one] at this
+    rcases this with ⟨a',ha'⟩
+    rw [ha'] at hsub
+    have := (List.sublist_singleton (l:= [a])).1  hsub
+    simp at this
+    rw [ha',this]
 
 
 lemma maximal_chain'_nil : maximal_chain' ([] : List P) := by
@@ -310,8 +321,38 @@ Lemma: Assume P is a bounded poset. Let L : x₀ < x₁ < ⋯ < x_n  be a chain 
 such that the adjacent relations are cover relations; x_0 is the minimal element and x_n is the maximal element.
 Then L is a maximal chain.
 -/
+
+-- lemma ne_sublist_subset {α: Type*} {l l' : List α} (hne: l ≠ l') (hsub: l <+ l') : ∃ a : α, a ∈ l' ∧ a ∉ l := sorry
+
+-- lemma ne_nil_of_ne_sublist {α: Type*} {l l' : List α} (hne: l ≠ l') (hsub: l <+ l') : l' ≠ [] := sorry
+
+-- --lemma ne_nil_of_ne_sublist' {α: Type*} {l l' : List α} (hne: l ≠ l') (hsub: l <+ l') (heq : head? L = head? L')
+-- --  def List.interval :
+
 lemma maximal_chain'_of_cover_chain {P :Type*} [PartialOrder P]  {L: List P} :
-  List.Chain' (· ⋖ ·) L → maximal_chain' L := by sorry
+  List.Chain' (· ⋖ ·) L → maximal_chain' L := by
+    have aux: ∀ n (L1:List P), L1.length = n → List.Chain' (· ⋖ ·) L1 → maximal_chain' L1 := by
+      intro n
+      induction' n with m hn
+      · intro L1 heq _
+        have hnil : L1 = [] := length_eq_zero.mp heq
+        rw [hnil]
+        exact maximal_chain'_nil
+      · intro L1 heq hc
+        have hl: L1.tail.length = m := by
+          rw [length_tail,heq]
+          rfl
+        have := hn L1.tail hl (List.Chain'.tail hc)
+        cases L1 with
+        | nil => exact maximal_chain'_nil
+        | cons a tail =>
+          cases tail with
+          | nil => exact maximal_chain'_singleton
+          | cons b tail' =>
+            simp only [tail] at *
+            have acovb: a ⋖ b := List.Chain'.rel_head hc
+            exact maximal_chain'_cons this acovb
+    exact aux L.length L rfl
 
 /-
 Lemma: Assume P is a bounded poset. Let L : x₀ < x₁ < ⋯ < x_n  be a chain of P
