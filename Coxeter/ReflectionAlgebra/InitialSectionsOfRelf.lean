@@ -10,13 +10,53 @@ open OrderTwoGen CoxeterMatrix CoxeterGroup PartialOrder
 
 open Bruhat
 
-variable (G : Type*) [cox: CoxeterGroup G]
-
-def InitialSectionReflOrder : Set (Set (Refl cox.S)) :=
-  {A : Set (Refl cox.S) | ∃ RO : ReflectionOrder G, @IsLowerSet (Refl cox.S) (RO.toLE) A }
+noncomputable
+section
 
 
 
+def InitialSectionReflOrder (G : Type*) [cox: CoxeterGroup G] : Set (Set (Refl cox.S)) :=
+  {A : Set (Refl cox.S) | ∃ R : ReflectionOrder G, @IsLowerSet (Refl cox.S) (R.toLE) A }
+
+
+-- theorem mul_mem_initialSectionReflOrder {G : Type*} [cox: CoxeterGroup G] (y : G) (A : InitialSectionReflOrder G) : y • (A : Set (Refl cox.S)) ∈  (InitialSectionReflOrder G) := sorry
+
+local notation "ℛ" => LaurentPolynomial ℤ
+local notation "q½" => (LaurentPolynomial.T 1 : ℛ) -- √q
+local notation "q-½" => (LaurentPolynomial.T (-1) : ℛ)
+
+def ReflAlgebra (G : Type*) [cox: CoxeterGroup G] : Submodule ℛ (G → InitialSectionReflOrder G → ℛ) where
+  carrier := {f | Finite ({g : G | ∃ A : InitialSectionReflOrder G, f g A ≠ 0} : Set G) }
+  add_mem' := sorry
+  zero_mem' := sorry
+  smul_mem' := sorry
+
+namespace ReflAlgebra
+
+variable {G : Type*} [cox: CoxeterGroup G]
+
+protected def mul (f g : ReflAlgebra G) : ReflAlgebra G := sorry
+
+protected def one : ReflAlgebra G := sorry
+
+instance : Ring (ReflAlgebra G) where
+  mul := ReflAlgebra.mul
+  left_distrib := sorry
+  right_distrib := sorry
+  zero_mul := sorry
+  mul_zero := sorry
+  mul_assoc := sorry
+  one := ReflAlgebra.one
+  one_mul := sorry
+  mul_one := sorry
+  sub_eq_add_neg := sorry
+  zsmul := zsmulRec
+  add_left_neg := sorry
+
+instance : Algebra ℛ (ReflAlgebra G) := sorry
+
+
+end ReflAlgebra
 
 
 

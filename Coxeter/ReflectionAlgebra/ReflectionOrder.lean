@@ -11,6 +11,8 @@ open OrderTwoGen CoxeterMatrix CoxeterGroup PartialOrder AlternatingWord
 
 open Bruhat
 
+open Classical
+
 variable {G} [cox : CoxeterGroup G]
 
 namespace ReflectionOrder
@@ -18,17 +20,26 @@ namespace ReflectionOrder
 
 theorem mem_refl_of_alternating_word (s t : Refl cox.S) (i : ℕ): (alternating_word s t (2*i+1)).gprod ∈ Refl (cox.S) := sorry --please use `refl_induction`
 
-def reflSymmProd (s t : Refl cox.S) (i : ℕ) : Refl cox.S := ⟨(alternating_word s t (2*i+1)).gprod, mem_refl_of_alternating_word s t i⟩
+def reflPalindromeProd (s t : Refl cox.S) (i : ℕ) : Refl cox.S := ⟨(alternating_word s t (2*i+1)).gprod, mem_refl_of_alternating_word s t i⟩
+
+def IsReflOrder (R : PartialOrder (Refl cox.S)) := ∀ (s t : Refl cox.S),
+    (∀ w : Subgroup.closure {s.1, t.1}, ℓ((s:G)) ≤ ℓ((w : G)) ∧ ℓ((t : G)) ≤ ℓ((w : G))) →
+    if orderOf ((s:G)*t) = 0 then
+      ∀ (i j : ℕ), i < j → R.lt (reflPalindromeProd s t i) (reflPalindromeProd s t j) ∨ ∀ (i j : ℕ), i < j → R.lt (reflPalindromeProd t s i) (reflPalindromeProd t s j)
+      else
+      ∀ (i j : ℕ), i < j → j < orderOf ((s:G)*t) → R.lt (reflPalindromeProd s t i) (reflPalindromeProd s t j)
+      ∨ ∀(i j : ℕ), i < j → j < orderOf ((s:G)*t) → R.lt (reflPalindromeProd t s i) (reflPalindromeProd t s j)
 
 structure _root_.ReflectionOrder (G : Type*) [cox : CoxeterGroup G] extends LinearOrder (Refl cox.S) where
-  is_refl_order : ∀ (s t : Refl cox.S) (w : Subgroup.closure {s.1, t.1})
-   (i j : ℕ) (hi : i < j) (hj : j < orderOf ((s:G)*t)),
-    (ℓ((s:G)) ≤ ℓ((w : G)) ∧  ℓ((t : G)) ≤ ℓ((w : G))) → i < j → j < orderOf ((s:G)*t) → le (reflSymmProd s t i) (reflSymmProd s t j)
+  is_refl_order : IsReflOrder toPartialOrder
 
+theorem le_total_of_isReflOrder (R : PartialOrder (Refl cox.S)) (h : IsReflOrder R): ∀ (a b : (Refl cox.S)), R.le a b ∨ R.le b a := sorry --very hard, a paper
 
-def ReflectionOrder.mk' {G : Type*} [cox : CoxeterGroup G] (R : PartialOrder (Refl cox.S)) (h : ∀ (s t : Refl cox.S) (w : Subgroup.closure {s.1, t.1}),
-    letI := R;
-    ℓ( (s:G) ) ≤ ℓ( (w : G) ) ∧  ℓ( (t : G) ) ≤ ℓ( (w : G) )) : ReflectionOrder G := sorry
+noncomputable def ReflectionOrder.mk' {G : Type*} [cox : CoxeterGroup G] (R : PartialOrder (Refl cox.S)) (h : IsReflOrder R) : ReflectionOrder G where
+  toPartialOrder := R
+  le_total := le_total_of_isReflOrder R h
+  decidableLE := by infer_instance
+  is_refl_order := h
 
 def Lexico (lino: LinearOrder cox.S) : ReflectionOrder G := by sorry -- not so important
 
