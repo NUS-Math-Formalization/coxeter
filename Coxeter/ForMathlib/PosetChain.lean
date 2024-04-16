@@ -346,6 +346,8 @@ lemma maximal_chain_of_cover_chain {P :Type*} [PartialOrder P] [BoundedOrder P] 
         · exact L
         · exact g₄
         · exact List.mem_of_mem_getLast? h₃
+      have g₇ : List.Chain' (fun x x_1 => x < x_1) L' := by
+        exact g₃
       constructor
       · match L' with
         | [] =>
@@ -369,20 +371,23 @@ lemma maximal_chain_of_cover_chain {P :Type*} [PartialOrder P] [BoundedOrder P] 
           simp [this] at h₃
         | head :: tail =>
           by_contra h₄
-          push_neg at h₄
-          sorry
+          have h₅ : chain (head :: tail ++ [⊤]) := by
+            apply List.Chain'.append
+            apply g₇
+            exact chain_singleton
+            intro x hx y hy
+            simp at hy
+            rw [hy.symm]
+            unfold List.getLast? at h₄
+            simp at h₄
+            unfold List.getLast? at hx
+            simp at hx
+            rw [hx.symm]
+            exact Ne.lt_top' h₄
+          apply chain_nodup at h₅
+          apply List.disjoint_of_nodup_append at h₅
+          simp [g₆] at h₅
     · apply g₄
-    -- match L' with
-    -- | [] => exact List.sublist_nil.mp g₄
-    -- | head :: tail =>
-    --   have g₅ : ⊥ ∈ L := by exact List.mem_of_mem_head? h₂
-    --   have g₆ : ⊥ ∈ L' := by sorry
-    --   have g₇ : ⊥ ≤ head := by exact OrderBot.bot_le head
-    --   have g₈ : ⊥ = head := by sorry
-    --   have g₉ : ⊤ = L'.getLast? := by sorry
-
-
-
 
 
 /- Definition: We say a poset P is bounded, if it has a unique minimal and a unique maximal element. -/
