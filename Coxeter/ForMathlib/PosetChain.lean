@@ -102,8 +102,8 @@ lemma chain_nodup {L : List P} (h : chain L) : L.Nodup := by
       exact hl' this
 
 -- May not be needed, use chain_nodup
-lemma chain_singleton_of_head_eq_tail  {L : List P} (a : P) : chain L → L.head? = some a → L.getLast? = some a → L.length = 1  := by
-  rintro chain_l lha lta
+lemma chain_singleton_of_head_eq_tail  {L : List P} (a : P) (chain_l : chain L)
+ (lha : L.head? = some a) (lta :  L.getLast? = some a) : L.length = 1  := by
   match L with
   | [] => simp at lha
   | [_] => simp at *
@@ -227,8 +227,6 @@ lemma cover_chain_of_maximal_chain' {P : Type*} [PartialOrder P] {L: List P} :
       apply List.chain'_cons.2
       exact ⟨maximal_chain'_head h, ih (maximal_chain'_tail h)⟩
 
-
-
 /-
 Lemma: If a chain L : x₀ < x₁ < ⋯ < x_n is maximal, then we have x_0 ⋖ x_1 ⋖ x_2 ⋯ ⋖ x_n.
 -/
@@ -294,7 +292,6 @@ Then L is a maximal chain if and only if  x_0 is the minimal element, x_n is the
 -/
 lemma maximal_chain_iff_cover {P : Type*} [PartialOrder P] [BoundedOrder P]  [Fintype P] (L: List P) :
   maximal_chain L ↔ ((L.head? = (⊥ : P)) ∧ (L.getLast? = (⊤ : P)) ∧ (List.Chain' (· ⋖ · ) L)) := by
-  simp [maximal_chain]
   constructor
   · intro maxchain
     constructor
@@ -310,14 +307,8 @@ lemma maximal_chain_iff_cover {P : Type*} [PartialOrder P] [BoundedOrder P]  [Fi
             apply List.Chain'.cons (lt_of_le_of_ne bot_le this.symm) maxchain.1
       have h₂: L.Sublist (⊥ :: L) := by simp
       have : L = (⊥ :: L) := by apply maxchain.2 _ h₁ h₂
-      match L with
-      | [] => simp at this
-      | a :: L' =>
-          simp at this
-          absurd this.1
-          intro e
-          rw [e] at h
-          simp at h
+      have : List.length L = List.length (⊥ :: L) := by congr
+      simp [(Nat.succ_ne_self (List.length L)).symm] at this
     · constructor
       · by_contra h
         have h₁ : chain (L ++ [⊤]) := by
