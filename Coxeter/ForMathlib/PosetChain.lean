@@ -206,7 +206,21 @@ lemma maximal_chain'_tail {a : P} {tail : List P} : maximal_chain' (a :: tail) �
     have : a :: tail = L'' := MAX L'' chainL'' ⟨htL''1, htL''2⟩ sublistL''
     exact (List.cons_eq_cons.1 this).2
 
-lemma in_of_in_sublist {a : P} {L L' : List P} (g : List.Sublist L L') (h : a ∈ L) : a ∈ L' := sorry
+lemma in_of_in_sublist {a : P} {L L' : List P} (g : List.Sublist L L') (h : a ∈ L) : a ∈ L' := by
+  induction g with
+  | slnil => exact h
+  | cons hd hsl htrans =>
+    exact List.mem_cons_of_mem hd (htrans h)
+  | cons₂ hd hsl htrans =>
+    rename_i L₁ L₂
+    by_cases ha : a = hd
+    · rw [ha]
+      exact List.mem_cons_self hd _
+    · have : a ∈ L₁ := by exact List.mem_of_ne_of_mem ha h
+      exact List.mem_cons_of_mem hd (htrans this)
+
+
+
 
 /-
 Lemma: If a chain L : x₀ < x₁ < ⋯ < x_n is maximal', then we have x_0 ⋖ x_1 ⋖ x_2 ⋯ ⋖ x_n.
