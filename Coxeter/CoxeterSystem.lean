@@ -1,5 +1,6 @@
 import Coxeter.OrderTwoGen
 import Coxeter.Aux_
+import Mathlib.Data.Matrix.Basic
 
 namespace OrderTwoGen
 variable {G : Type*} [Group G] (S : Set G) [OrderTwoGen S]
@@ -244,6 +245,10 @@ class CoxeterGroup (G:Type*) extends HOrderTwoGenGroup G where
   exchange : OrderTwoGen.ExchangeProp S
   exchange': OrderTwoGen.ExchangeProp' S := (OrderTwoGen.exchange_iff_exchange' S).1 exchange
   deletion: OrderTwoGen.DeletionProp S := OrderTwoGen.exchange_imp_deletion S exchange
+  matrix : Matrix S S ℕ
+  symmetric : ∀ (a b : S), matrix a b = matrix b a
+  oneIff : ∀ (a b : S), matrix a b = 1 ↔ a = b
+
 
 namespace CoxeterGroup
 open HOrderTwoGenGroup
