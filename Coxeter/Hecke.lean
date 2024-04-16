@@ -621,9 +621,8 @@ noncomputable instance : Ring (Hecke G) := Algebra.semiringToRing  (LaurentPolyn
 #check mul_sub (α:= Hecke G)
 
 #check Ring.toSub (R := (Hecke G)).sub
+
 --how to simp * to def?
-@[simp]
-lemma mul_gt : ℓ(w) < ℓ(s*w) → TT s.1 * TT w = TT (s*w) := by
 @[simp]
 lemma mul_gt : ℓ(w) < ℓ(s*w) → TT s.1 * TT w = TT (s*w) := by
   intro hl
@@ -638,14 +637,7 @@ lemma mul_gt' : ℓ(w) < ℓ(w*s) → TT w * TT s.1 = TT (w*s) := by sorry
 
 @[simp]
 lemma mul_lt' : ℓ(w*s) < ℓ(w) → TT w * TT s.1 = (q-1) • (TT w) + q • (TT (w*s)) := by sorry
-@[simp]
-lemma mul_lt : ℓ(s*w) < ℓ(w) → TT s.1 * TT w = (q-1) • (TT w) + q • (TT (s*w)) := sorry
 
-@[simp]
-lemma mul_gt' : ℓ(w) < ℓ(w*s) → TT w * TT s.1 = TT (w*s) := by sorry
-
-@[simp]
-lemma mul_lt' : ℓ(w*s) < ℓ(w) → TT w * TT s.1 = (q-1) • (TT w) + q • (TT (w*s)) := by sorry
 
 @[simp]
 lemma Ts_square : TT s.1 * TT s.1 = (q - 1) • TT s.1 + q • 1 := sorry
@@ -658,7 +650,6 @@ noncomputable def TT' : G → Hecke G := fun g => listToHecke (@choose_reduced_w
 
 @[simp]
 lemma listToHecke_cons : listToHecke (s :: L) = TT s.1 * listToHecke L :=by
-  simp [listToHecke]
   simp [listToHecke]
 
 @[simp]
