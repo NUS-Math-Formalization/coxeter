@@ -10,7 +10,7 @@ import Coxeter.ForMathlib.AdjacentPair
 
 
 namespace PartialOrder
-/- Let P be a finite poet. -/
+/- Let P be a finite poset. -/
 variable {P : Type*} [PartialOrder P]
 
 open List
