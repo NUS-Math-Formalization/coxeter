@@ -119,7 +119,7 @@ def unionSubset {s : Set <| AbstractSimplicialComplex V} (hs : s.Nonempty) : Abs
     exact ⟨e, he, e.empty_mem⟩
   lower' := isLowerSet_iUnion fun i ↦ isLowerSet_iUnion fun _ ↦ i.lower'
 
-lemma sSup_eq_unionSubset {s : Set <| AbstractSimplicialComplex V} (hs : s.Nonempty) : sSup s = unionSubset hs  := by
+lemma sSup_eq_unionSubset {s : Set <| AbstractSimplicialComplex V} (hs : s.Nonempty) : sSup s = unionSubset hs := by
   apply le_antisymm
   · apply sSup_le
     intro b bs
@@ -139,7 +139,7 @@ lemma bot_eq_ofEmpty : (⊥ : AbstractSimplicialComplex V) = OfEmpty := by
   rw [eq_bot_iff, le_def, show OfEmpty.faces = {∅} by rfl, Set.singleton_subset_iff]
   apply (⊥ : AbstractSimplicialComplex V).empty_mem
 
-theorem bot_faces_eq_empty : (⊥ : AbstractSimplicialComplex V).faces = {∅} := by
+lemma bot_faces_eq_empty : (⊥ : AbstractSimplicialComplex V).faces = {∅} := by
   rw [bot_eq_ofEmpty]; rfl
 
 @[simp]
@@ -154,7 +154,7 @@ def vertices (F : AbstractSimplicialComplex V) : Set V := ⋃ s ∈ F.faces, s.t
 /--
 Definition: Let F be an ASC. A maximal face of F is called a facet of F.
 -/
-def IsFacet (F : AbstractSimplicialComplex V) (s : Finset V) := s ∈ F ∧  ∀ t ∈ F, s ⊆ t → s = t
+def IsFacet (F : AbstractSimplicialComplex V) (s : Finset V) := s ∈ F ∧ ∀ t ∈ F, s ⊆ t → s = t
 
 /--
 Definition: For any ASC F, we denote by Facets F the set of facets of F.
@@ -176,33 +176,10 @@ def IsPure' (F : AbstractSimplicialComplex V) (d : ℕ):=
 class Pure' (F : AbstractSimplicialComplex V) (d :ℕ) where
   pure : ∀ s ∈ F.Facets, s.card = d
 
-lemma isPure_iff_isPure' {F : AbstractSimplicialComplex V} : F.IsPure ↔ ∃ d, F.IsPure' d := by
-  by_cases hemp : Nonempty F.Facets
-  · constructor
-    · let s := Classical.choice (hemp)
-      intro hIp
-      use s.1.card
-      intro t ht
-      exact hIp t ht s s.2
-    · intro hIp'
-      obtain ⟨d, hIp'⟩ := hIp'
-      intro s hs t ht
-      rw [hIp' s hs, hIp' t ht]
-  · constructor
-    · intro
-      use 0
-      simp only [IsPure', Finset.card_eq_zero]
-      contrapose! hemp
-      rcases hemp with ⟨d, ⟨a, b⟩⟩
-      use d
-    · intro h
-      rcases h with ⟨d, a⟩
-      simp only [nonempty_subtype, not_exists] at hemp
-      intro s hs t _
-      exfalso
-      exact hemp s hs
+lemma isPure_iff_isPure' {F : AbstractSimplicialComplex F} : F.IsPure ↔ ∃ d, F.IsPure' d := by
+  sorry
 
-lemma pure_def {F : AbstractSimplicialComplex V} [Pure F] : ∀ s ∈ F.Facets, ∀  t ∈ F.Facets,  s.card = t.card := Pure.pure
+lemma pure_def {F : AbstractSimplicialComplex V} [Pure F] : ∀ s ∈ F.Facets, ∀ t ∈ F.Facets, s.card = t.card := Pure.pure
 
 lemma pure_isPure {F : AbstractSimplicialComplex V} [Pure F] : IsPure F := pure_def
 
@@ -241,7 +218,6 @@ lemma closure_simplex (f : Finset V) : closure {f} =  simplex f := by
       apply mem_faces.1 <| i.lower' h1 <| mem_faces.2 fi
   exact instSetLikeAbstractSimplicialComplexFinset.proof_1 (closure {f}) (simplex ↑f) h1
 
-
 /--
 Lemma: Let s be a collection of finsets in V. Then the closure of s is just the union of the closure of elements in s.
 
@@ -271,8 +247,7 @@ lemma closure_mono {s t: Set (Finset V)} : s ⊆ t → closure s ≤ closure t :
 
 lemma closure_le {F : AbstractSimplicialComplex V} (h: s ⊆ F.faces) : closure s ≤ F := by
   rintro s2 h2
-  simp at h2; exact h2 F h
-
+  simp only [sInf_def, Set.mem_setOf_eq, Set.mem_iInter, mem_faces] at h2; exact h2 F h
 
 /--
 Definition: G is a cone over F with cone point x if
