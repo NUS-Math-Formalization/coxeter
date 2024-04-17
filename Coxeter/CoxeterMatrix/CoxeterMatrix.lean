@@ -9,7 +9,7 @@ variable {α : Type*} [DecidableEq α]
 variable (m : Matrix α α ℕ)
 /--
 Definition of Coxeter matrices:
-A square matrix $m$ with non-negative integer entries is a Coxeter matrix if it is symmetric, that is, $m_{a,b} = m_{b,a}$ for any (a,b);
+A square matrix `m` with non-negative integer entries is a Coxeter matrix if it is symmetric, that is, $m_{a,b} = m_{b,a}$ for any (a,b);
 the entry $m_{a,b}$ is $1$ if and only if $a=b$.
 --/
 class CoxeterMatrix : Prop where
@@ -18,7 +18,6 @@ class CoxeterMatrix : Prop where
 end
 
 open Classical
-
 
 /-
 Content of this subsection:
@@ -37,7 +36,7 @@ For the rest of this section, we fix a Coxeter matrix m index by type α with en
 
 /--
 This part introduce three lemmas rewriting the definitions.
---/
+-/
 lemma one_iff : ∀ (a b : α), m a b = 1 ↔ a = b := hm.oneIff
 
 lemma diagonal_one {s : α} : m s s = 1 := by rw [hm.oneIff]
@@ -48,13 +47,13 @@ lemma off_diagonal_ne_one {s : α} : s ≠ t → m s t ≠ 1 := by simp [hm.oneI
 local notation "F" => FreeGroup α
 
 /--
-For any s and t of type α, and a natural number n, we define a element (st)^n
-(relation) in the free group F
+For any `s` and `t` of type `α`, and a natural number `n`, we define a element `(s t) ^ n`
+(relation) in the free group `F`.
 -/
 @[simp] def toRelation (s t : α) (n : ℕ) : F := (FreeGroup.of s * FreeGroup.of t) ^ n
 
 /--
-For any s of type α × α, we define a relation in the free group F by $(s_1 s_2)^(m_{s_1, s_2})$
+For any `s` of type `α × α`, we define a relation in the free group `F` by $(s_1 s_2)^(m_{s_1, s_2})$
 -/
 @[simp] def toRelation' (s : α × α) : F := toRelation s.1 s.2 (m s.1 s.2)
 
@@ -63,16 +62,16 @@ We define a set of relations in F by R = {(s_as_b)^{m_{a,b}} | a b ∈ α}.
 --/
 def toRelationSet : (Set F) := Set.range <| toRelation' m
 
-/-
-We define a group G by the presentation ⟨α | R⟩
+/--
+We define a group `G` by the presentation `⟨α | R⟩`
 -/
 def toGroup := PresentedGroup <| toRelationSet m
 
 local notation "N" => Subgroup.normalClosure (toRelationSet m)
 local notation "G" => toGroup m
 
-/-
-The group G we just defined is indeed a group.
+/--
+The group `G` we just defined is indeed a group.
 -/
 instance : Group <| toGroup m := QuotientGroup.Quotient.group _
 
@@ -83,11 +82,6 @@ def of (x : α) : G := QuotientGroup.mk' N (FreeGroup.of x)
 abbrev SimpleRefl := Set.range (of m)
 
 local notation "S" => (SimpleRefl m)
-
---@[simp]
---abbrev Refl : Set G := Set.range <| fun ((g, s) : G × S) => g * s * g⁻¹
-
---local notation "T" => (Refl m)
 
 @[simp]
 def toSimpleRefl (a : α) : SimpleRefl m := ⟨of m a, by simp⟩
@@ -127,10 +121,11 @@ def lift {A : Type _} [Group A] (f : α → A) (h : ∀ (s t : α), (f s * f t) 
 lemma lift.of {A : Type _} [Group A] (f : α → A) (h : ∀ (s t : α), (f s * f t) ^ (m s t) = 1) (s : α) : lift m f h (of m s) = f s := by
   apply PresentedGroup.toGroup.of
 
-/- We define (and prove) a group homomorphism from G to μ₂
-by mapping each simple reflection to the generator of μ₂.
--/
 open TestGroup
+
+/-- We define (and prove) a group homomorphism from `G` to `μ₂`
+by mapping each simple reflection to the generator of `μ₂`.
+-/
 @[simp]
 def epsilon : G →* μ₂ := lift m (fun _=> μ₂.gen) (by intro s t; ext; simp)
 
@@ -140,9 +135,6 @@ lemma epsilon_of (s : α) : epsilon m (of m s) = μ₂.gen := by
 lemma epsilon_S {a : S} : epsilon m a = μ₂.gen := by
   simp only [epsilon, lift.of m]
   aesop
-
---@[simp] lemma of_mul (x y: α) : (of m x) * (of m y) =
---QuotientGroup.mk' _ (FreeGroup.mk [(x,tt), (y,tt)]):= by rw [of];
 
 @[simp]
 lemma of_relation (s t: α) : ((of m s) * (of m t))^(m s t) = 1 := by
@@ -158,7 +150,6 @@ lemma of_relation (s t: α) : ((of m s) * (of m t))^(m s t) = 1 := by
   apply (QuotientGroup.eq_one_iff k).2
   exact kN
 
--- @[simp] "simp can prove this"
 lemma of_square_eq_one {s : α} : (of m s) * (of m s) = 1 := by
   have : m s s = 1 := diagonal_one m
   rw [← pow_one ((of m s) * (of m s)), ←this]
@@ -249,8 +240,8 @@ lemma toGroup_expression' : ∀ (x : G), ∃ L : List S, x = L.gprod := by
         rfl
   apply this
 
-/-
-Lemma: Let s ∈  S be a generator of G, then s is non-trivial.
+/--
+Lemma: Let `s ∈ S` be a generator of `G`, then `s` is non-trivial.
 -/
 lemma generator_ne_one (s : α) : of m s ≠ 1 := by
   intro h
@@ -258,24 +249,24 @@ lemma generator_ne_one (s : α) : of m s ≠ 1 := by
   have h2 : epsilon m (of m s) = μ₂.gen := by rw [epsilon_of]
   rw [h2] at h1; exact μ₂.gen_ne_one h1
 
-/-
-Lemma: Let s ∈  S be a generator of G, then s is non-trivial.
+/--
+Lemma: Let `s ∈ S` be a generator of `G`, then `s` is non-trivial.
 -/
 lemma generator_ne_one' {x : G} : x ∈ S → x ≠ 1 := by
   rintro ⟨s, hs⟩
   rw [← hs]
   exact generator_ne_one m s
 
-/-
-Lemma: Let s ∈  S be a generator of G, then s^2 =1 and s ≠ 1.
+/--
+Lemma: Let `s ∈ S` be a generator of `G`, then `s^2 = 1` and `s ≠ 1`.
 -/
 lemma order_two : ∀ (x : G), x ∈ S → x * x = (1 : G) ∧ x ≠ 1 := by
   rintro x ⟨s, hs⟩
   rw [← hs]
   exact ⟨of_square_eq_one m, generator_ne_one m s⟩
 
-/-
-Instance: The group G with the generating set S is a group generators by order 2 elements.
+/--
+Instance: The group `G` with the generating set `S` is a group generators by order 2 elements.
 -/
 instance ofOrderTwoGen : OrderTwoGen (SimpleRefl m) where
   order_two := order_two m
