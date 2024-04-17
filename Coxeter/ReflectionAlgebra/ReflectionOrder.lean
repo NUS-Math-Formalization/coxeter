@@ -7,7 +7,7 @@ import Coxeter.ForMathlib.ELlabeling
 
 import Mathlib.Data.Set.Card
 
-open OrderTwoGen CoxeterMatrix CoxeterGroup PartialOrder AlternatingWord
+open HOrderTwoGenGroup CoxeterMatrix CoxeterGroup PartialOrder AlternatingWord
 
 open Bruhat
 
@@ -18,30 +18,34 @@ variable {G} [cox : CoxeterGroup G]
 namespace ReflectionOrder
 #check LinearOrder
 
-theorem mem_refl_of_alternating_word (s t : Refl cox.S) (i : ℕ): (alternating_word s t (2*i+1)).gprod ∈ Refl (cox.S) := sorry --please use `refl_induction`
+theorem mem_refl_of_alternating_word (s t : Refl G) (i : ℕ): (alternating_word s t (2*i+1)).gprod ∈ Refl G := sorry --please use `refl_induction`
 
-def reflPalindromeProd (s t : Refl cox.S) (i : ℕ) : Refl cox.S := ⟨(alternating_word s t (2*i+1)).gprod, mem_refl_of_alternating_word s t i⟩
+def reflPalindromeProd (s t : Refl G) (i : ℕ) : Refl G := ⟨(alternating_word s t (2*i+1)).gprod, mem_refl_of_alternating_word s t i⟩
 
-def IsReflOrder (R : PartialOrder (Refl cox.S)) := ∀ (s t : Refl cox.S),
+def IsReflOrder (R : PartialOrder (Refl G)) := ∀ (s t : Refl G),
     (∀ w : Subgroup.closure {s.1, t.1}, ℓ((s:G)) ≤ ℓ((w : G)) ∧ ℓ((t : G)) ≤ ℓ((w : G))) →
     if orderOf ((s:G)*t) = 0 then
-      ∀ (i j : ℕ), i < j → R.lt (reflPalindromeProd s t i) (reflPalindromeProd s t j) ∨ ∀ (i j : ℕ), i < j → R.lt (reflPalindromeProd t s i) (reflPalindromeProd t s j)
+      ∀ (i j : ℕ), i < j → R.lt (reflPalindromeProd s t i) (reflPalindromeProd s t j) ∨
+      ∀ (i j : ℕ), i < j → R.lt (reflPalindromeProd t s i) (reflPalindromeProd t s j)
       else
-      ∀ (i j : ℕ), i < j → j < orderOf ((s:G)*t) → R.lt (reflPalindromeProd s t i) (reflPalindromeProd s t j)
-      ∨ ∀(i j : ℕ), i < j → j < orderOf ((s:G)*t) → R.lt (reflPalindromeProd t s i) (reflPalindromeProd t s j)
+      ∀ (i j : ℕ), i < j → j < orderOf ((s:G)*t) → R.lt (reflPalindromeProd s t i) (reflPalindromeProd s t j) ∨
+      ∀ (i j : ℕ), i < j → j < orderOf ((s:G)*t) → R.lt (reflPalindromeProd t s i) (reflPalindromeProd t s j)
 
-structure _root_.ReflectionOrder (G : Type*) [cox : CoxeterGroup G] extends LinearOrder (Refl cox.S) where
-  is_refl_order : IsReflOrder toPartialOrder
+end ReflectionOrder
+structure ReflectionOrder (G : Type*) [cox : CoxeterGroup G] extends LinearOrder (Refl G) where
+  is_refl_order : ReflectionOrder.IsReflOrder toPartialOrder
 
-theorem le_total_of_isReflOrder (R : PartialOrder (Refl cox.S)) (h : IsReflOrder R): ∀ (a b : (Refl cox.S)), R.le a b ∨ R.le b a := sorry --very hard, a paper
+namespace ReflectionOrder
 
-noncomputable def ReflectionOrder.mk' {G : Type*} [cox : CoxeterGroup G] (R : PartialOrder (Refl cox.S)) (h : IsReflOrder R) : ReflectionOrder G where
+theorem le_total_of_isReflOrder (R : PartialOrder (Refl G)) (h : IsReflOrder R): ∀ (a b : (Refl G)), R.le a b ∨ R.le b a := sorry --very hard, a paper
+
+noncomputable def ReflectionOrder.mk' {G : Type*} [cox : CoxeterGroup G] (R : PartialOrder (Refl G)) (h : IsReflOrder R) : ReflectionOrder G where
   toPartialOrder := R
   le_total := le_total_of_isReflOrder R h
   decidableLE := by infer_instance
   is_refl_order := h
 
-def Lexico (lino: LinearOrder cox.S) : ReflectionOrder G := by sorry -- not so important
+def Lexico (lino: LinearOrder G) : ReflectionOrder G := by sorry -- not so important
 
 -- instance : Inhabited (ReflectionOrder G) := sorry
 
@@ -56,7 +60,7 @@ namespace CoxeterGroup
 namespace Bruhat
 
 /-- the EL-labeling on a Bruhat interval defined by sending every adjacent pair (a, b) of elements to a * b⁻¹. -/
-def ELlabeling (v w : G) : edgeLabeling (Interval v w) (Refl cox.S) := fun
+def ELlabeling (v w : G) : edgeLabeling (Interval v w) (Refl G) := fun
   | .mk ⟨a, b⟩  property => ⟨a * (b⁻¹ : G), sorry⟩
 
 /-

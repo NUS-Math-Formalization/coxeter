@@ -7,6 +7,7 @@ import Mathlib.Data.List.Chain
 import Mathlib.Order.Cover
 import Mathlib.Tactic.Linarith.Frontend
 import Coxeter.ForMathlib.AdjacentPair
+import Mathlib.SetTheory.Cardinal.Basic
 
 
 namespace PartialOrder
@@ -262,8 +263,8 @@ def edgePairs {P : Type*} [PartialOrder P] (L : maximalChains P) : List (edges P
 
   Note that if the length is unbounded,then rank = 0.
  -/
-noncomputable def rank (P : Type*) [PartialOrder P] : ℕ :=
-⨆ L ∈ maximalChains P, L.length
+noncomputable def rank (P : Type*) [PartialOrder P] : Cardinal :=
+⨆ L ∈ maximalChains P, (L.length : Cardinal)
 
 
 end maximal_chain

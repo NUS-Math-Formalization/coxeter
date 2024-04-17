@@ -1,4 +1,5 @@
 import Coxeter.CoxeterMatrix.CoxeterMatrix
+import Coxeter.CoxeterSystem
 
 open OrderTwoGen
 

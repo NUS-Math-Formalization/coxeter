@@ -1,12 +1,12 @@
 import Coxeter.ForMathlib.ELlabeling
 import Coxeter.BruhatOrder
 import Coxeter.Rpoly
-import Coxeter.ReflectionOrder
+import Coxeter.ReflectionAlgebra.ReflectionOrder
 
 open Classical
 
 
-open OrderTwoGen CoxeterMatrix CoxeterGroup PartialOrder
+open HOrderTwoGenGroup CoxeterMatrix CoxeterGroup PartialOrder
 
 open Bruhat
 
@@ -15,11 +15,11 @@ section
 
 
 
-def InitialSectionReflOrder (G : Type*) [cox: CoxeterGroup G] : Set (Set (Refl cox.S)) :=
-  {A : Set (Refl cox.S) | ∃ R : ReflectionOrder G, @IsLowerSet (Refl cox.S) (R.toLE) A }
+def InitialSectionReflOrder (G : Type*) [ CoxeterGroup G] : Set (Set (Refl G)) :=
+  {A : Set (Refl G) | ∃ R : ReflectionOrder G, @IsLowerSet (Refl G) (R.toLE) A }
 
 
--- theorem mul_mem_initialSectionReflOrder {G : Type*} [cox: CoxeterGroup G] (y : G) (A : InitialSectionReflOrder G) : y • (A : Set (Refl cox.S)) ∈  (InitialSectionReflOrder G) := sorry
+-- theorem mul_mem_initialSectionReflOrder {G : Type*} [cox: CoxeterGroup G] (y : G) (A : InitialSectionReflOrder G) : y • (A : Set (Refl G)) ∈  (InitialSectionReflOrder G) := sorry
 
 local notation "ℛ" => LaurentPolynomial ℤ
 local notation "q½" => (LaurentPolynomial.T 1 : ℛ) -- √q
@@ -34,6 +34,10 @@ def ReflAlgebra (G : Type*) [cox: CoxeterGroup G] : Submodule ℛ (G → Initial
 namespace ReflAlgebra
 
 variable {G : Type*} [cox: CoxeterGroup G]
+
+def dotAction (g : G) (A : InitialSectionReflOrder G) : InitialSectionReflOrder G where
+  val := sorry
+  property := sorry
 
 protected def mul (f g : ReflAlgebra G) : ReflAlgebra G := sorry
 
