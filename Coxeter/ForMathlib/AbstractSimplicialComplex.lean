@@ -7,6 +7,7 @@ An abstract simplicial complex is a pair (V,F) where V is a set and F is a set o
   (1) ∅ ∈ F,
   (2) if s ∈ F and t ⊆ s, then t ∈ F.
 -/
+@[ext]
 structure AbstractSimplicialComplex (V : Type*)  where
   faces : Set (Finset V) -- the set of faces
   empty_mem : ∅ ∈ faces
@@ -122,10 +123,7 @@ lemma sSup_eq_unionSubset {s : Set <| AbstractSimplicialComplex V} (hs : s.Nonem
   apply le_antisymm
   · apply sSup_le
     intro b bs
-    rw [le_def]
-    refine Set.subset_iUnion_of_subset b ?_
-    refine Set.subset_iUnion_of_subset bs ?_
-    rfl
+    refine Set.subset_iUnion_of_subset b (Set.subset_iUnion_of_subset bs (by rfl))
   · rw [le_sSup_iff]
     intro b hb
     rw [le_def]
@@ -140,7 +138,6 @@ lemma bot_eq_ofEmpty : (⊥ : AbstractSimplicialComplex V) = OfEmpty := by
   symm
   rw [eq_bot_iff, le_def, show OfEmpty.faces = {∅} by rfl, Set.singleton_subset_iff]
   apply (⊥ : AbstractSimplicialComplex V).empty_mem
-
 
 theorem bot_faces_eq_empty : (⊥ : AbstractSimplicialComplex V).faces = {∅} := by
   rw [bot_eq_ofEmpty]; rfl
@@ -293,7 +290,22 @@ abbrev closure (s : Set (Finset V))
 /--
 Lemma: For a finset f, the closure of {f} is the simplex of f.
 -/
-lemma closure_simplex (f : Finset V) : closure {f} =  simplex f := by sorry
+lemma closure_simplex (f : Finset V) : closure {f} =  simplex f := by
+  have h1 : (closure {f}).faces = (simplex f).faces:= by
+    apply Set.Subset.antisymm
+    · rw [sInf_def]
+      rintro s h1
+      simp only [Set.singleton_subset_iff, mem_faces, Set.mem_setOf_eq, Set.mem_iInter] at h1
+      exact h1 (simplex ↑f) fun ⦃a⦄ a => a
+    · rw [sInf_def]
+      rintro s h1
+      apply simplex_face.1 at h1
+      simp only [Finset.coe_subset] at h1
+      simp only [Set.singleton_subset_iff, mem_faces, Set.mem_setOf_eq, Set.mem_iInter]
+      intro i fi
+      apply mem_faces.1 <| i.lower' h1 <| mem_faces.2 fi
+  exact instSetLikeAbstractSimplicialComplexFinset.proof_1 (closure {f}) (simplex ↑f) h1
+
 
 /--
 Lemma: Let s be a collection of finsets in V. Then the closure of s is just the union of the closure of elements in s.
@@ -306,19 +318,28 @@ lemma closure_eq_iSup (s : Set (Finset V)) : closure s =  ⨆ f ∈ s,  closure 
 Lemma: Let F be an ASC. Then the closure of the set of faces is just F.
 -/
 lemma closure_self {F : AbstractSimplicialComplex V} : closure (F.faces) = F := by
-  sorry
+  have h1 : (closure (F.faces)).faces = F.faces:= by
+    apply Set.Subset.antisymm
+    · rw [sInf_def]
+      rintro s h1; simp only [Set.mem_setOf_eq, Set.mem_iInter, mem_faces] at h1
+      exact h1 F fun ⦃_⦄ a => a
+    · rw [sInf_def]
+      rintro s h1; simp only [Set.mem_setOf_eq, Set.mem_iInter, mem_faces]
+      exact fun _ i => i h1
+  exact instSetLikeAbstractSimplicialComplexFinset.proof_1 (closure F.faces) F h1
 
 
 lemma closure_mono {s t: Set (Finset V)} : s ⊆ t → closure s ≤ closure t := by
-  intro hst; repeat rw [closure]
+  intro hst
   apply sInf_le_sInf
   rw [Set.setOf_subset_setOf]
   intro _ h; exact Set.Subset.trans hst h
 
 
 
-lemma closure_le {F : AbstractSimplicialComplex V} (h: s ⊆ F.faces) : closure s ≤ F := by sorry
-
+lemma closure_le {F : AbstractSimplicialComplex V} (h: s ⊆ F.faces) : closure s ≤ F := by
+  rintro s2 h2
+  simp at h2; exact h2 F h
 
 /--
 Definition: G is a cone over F with cone point x if
@@ -332,8 +353,8 @@ def Cone (F G: AbstractSimplicialComplex V) (x : V) :=
 
 def isCone (G: AbstractSimplicialComplex V) := ∃ F x, Cone F G x
 
-instance cons_pure {h : Cone F G x} : Pure G := by sorry
+-- instance cons_pure {h : Cone F G x} : Pure G := by sorry
 
-instance cons_pure' {h : isCone G} : Pure G := by sorry
+-- instance cons_pure' {h : isCone G} : Pure G := by sorry
 
 end AbstractSimplicialComplex
