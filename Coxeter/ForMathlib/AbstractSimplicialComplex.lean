@@ -161,58 +161,6 @@ Definition: For any ASC F, we denote by Facets F the set of facets of F.
 -/
 def Facets (F : AbstractSimplicialComplex V) : Set (Finset V) := { s | F.IsFacet s}
 
-/-
-theorem Facets_nonempty {F : AbstractSimplicialComplex V} : Nonempty F.Facets := by
-  by_cases h : F.faces = {∅}
-  · have : ∀ s ∈ F, ∅ = s := by
-      intro s hs
-      rw [←mem_faces,h] at hs
-      rw [eq_comm]; exact Set.eq_of_mem_singleton hs
-    have hemp: IsFacet F ∅ := by
-      simp [IsFacet]
-      exact ⟨F.empty_mem,this⟩
-    have empsub : ∅ ∈ F.Facets := by
-     simp [Facets]
-     assumption
-    exact Nonempty.intro ⟨∅,empsub⟩
-    --确实有一个极大元s存在的证明
-  · have aux : ∃ s, s ∈ F ∧  ∀ t ∈ F, s ⊆ t → s = t := by sorry
-    --感觉是不太对 根据structure定义 faces : Set (Finset V) -- the set of faces
-    --如果吃无限个Finset V，那face就变成了infinite set，怎么取到这个maximal element
-
-    /-V : Type u_1
-      F : AbstractSimplicialComplex V
-      h : ¬F.faces = {∅}
-      --这个其实看着比较奇怪，理论上这句话后应该有两种情况，
-         F.faces这个集族真的是空集，貌似根据structure的定义可以排除
-         F.faces是含有∅及其他元素的集族
-      aux : ∃ s ∈ F, ∀ t ∈ F, s ⊆ t → s = t
-⊢ Nonempty ↑(Facets F)-/
-
-    rcases aux with ⟨s, hs, h⟩
-    have h1: IsFacet F s := ⟨hs,h⟩
-    exact Nonempty.intro ⟨s,h1⟩
-
-    /- 比较弱智的证明，在这里无脑simp之后的根据等式操作只有在lean中才能出现，
-       自然语言中显然不会有人想到这么细节的数理结构
-    simp[IsFacet] at h1
-    simp[Facets,IsFacet]
-    exact⟨ s, h1⟩
-    --尖括号是一个structure，可以看到
-
-    s : Finset V
-    hs : s ∈ F
-    h : ∀ t ∈ F, s ⊆ t → s = t
-    h1 : s ∈ F ∧ ∀ t ∈ F, s ⊆ t → s = t
-    ⊢ ∃ s ∈ F, ∀ t ∈ F, s ⊆ t → s = t
-
-    对于⟨ s, h1⟩相当于直接带入
-         [s : Finset V ]  为goal中的 [∃ s ∈ F] ,
-         [h1 : s ∈ F ∧ ∀ t ∈ F, s ⊆ t → s = t中的and符右边部分] 为goal中的  [∀ t ∈ F, s ⊆ t → s = t]
-    因而证明完成
-       -/
-
--/
 /-- Definition: A pure abstract simplicial complex is an abstract simplicial complex
     where all facets have the same cardinality. -/
 def IsPure (F : AbstractSimplicialComplex V) :=
@@ -223,8 +171,6 @@ class Pure (F : AbstractSimplicialComplex V) where
 
 /--Definition: We will call an ASC pure of rank `d` if all its facets has `d` elements-/
 def IsPure' (F : AbstractSimplicialComplex V) (d : ℕ):=
-  --∀ s ∈ F.faces, s.card = d
-  --这个我真心感觉错了，怎么可能Pure‘里面是Facets这里IsPure'变成了faces
   ∀ s ∈ F.Facets, s.card = d
 
 class Pure' (F : AbstractSimplicialComplex V) (d :ℕ) where
@@ -240,7 +186,6 @@ lemma isPure_iff_isPure' {F : AbstractSimplicialComplex V} : F.IsPure ↔ ∃ d,
       exact hIp t ht s s.2
     · intro hIp'
       obtain ⟨d, hIp'⟩ := hIp'
-      -- rcases hIp' with ⟨d, hIp'⟩ 在这里用rcases和obtain效果是完全一样的
       intro s hs t ht
       rw [hIp' s hs, hIp' t ht]
   · constructor
@@ -256,16 +201,6 @@ lemma isPure_iff_isPure' {F : AbstractSimplicialComplex V} : F.IsPure ↔ ∃ d,
       intro s hs t _
       exfalso
       exact hemp s hs
-
-
-
-
-
-
-
-
-
-
 
 lemma pure_def {F : AbstractSimplicialComplex V} [Pure F] : ∀ s ∈ F.Facets, ∀  t ∈ F.Facets,  s.card = t.card := Pure.pure
 
@@ -328,14 +263,11 @@ lemma closure_self {F : AbstractSimplicialComplex V} : closure (F.faces) = F := 
       exact fun _ i => i h1
   exact instSetLikeAbstractSimplicialComplexFinset.proof_1 (closure F.faces) F h1
 
-
 lemma closure_mono {s t: Set (Finset V)} : s ⊆ t → closure s ≤ closure t := by
   intro hst
   apply sInf_le_sInf
   rw [Set.setOf_subset_setOf]
   intro _ h; exact Set.Subset.trans hst h
-
-
 
 lemma closure_le {F : AbstractSimplicialComplex V} (h: s ⊆ F.faces) : closure s ≤ F := by
   rintro s2 h2
