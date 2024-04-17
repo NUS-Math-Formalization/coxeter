@@ -1,4 +1,5 @@
 import Coxeter.CoxeterMatrix.CoxeterMatrix
+import Coxeter.CoxeterSystem
 
 open OrderTwoGen
 
@@ -189,11 +190,12 @@ theorem _root_.CoxeterSystem.strong_exchange : ∀ (L : List S) (t : Refl S), �
   have hl1 : ℓ'(t'.val * L') = ℓ(t.val * L) := by sorry
   have hl2 : ℓ'(L') = ℓ(L) := by sorry
   have hl' : ℓ'(t'.val * L') < ℓ'(L') := by sorry
-  obtain ⟨i, hi⟩:= CoxeterMatrix.strong_exchange L' t' hl'
-  let i' : Fin L.length := ⟨i.val, by simp_rw [<-hl0,i.prop]⟩
-  use i'
-  apply (MulEquiv.apply_eq_iff_eq <| @equiv _ _ _ hS).1
-  simp only [map_mul,gprod_eq,<-equiv.Refl.def,hi,List.map_removeNth_comm]
+  -- obtain ⟨i, hi⟩:= CoxeterMatrix.strong_exchange L' t' hl'
+  -- let i' : Fin L.length := ⟨i.val, by simp_rw [<-hl0,i.prop]⟩
+  -- use i'
+  -- apply (MulEquiv.apply_eq_iff_eq <| @equiv _ _ _ hS).1
+  -- simp only [map_mul,gprod_eq,<-equiv.Refl.def,hi,List.map_removeNth_comm]
+  sorry
 
 end Presentation
 
