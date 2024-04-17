@@ -450,8 +450,6 @@ lemma maximal_chain_of_cover_chain {P :Type*} [PartialOrder P] [BoundedOrder P] 
 Lemma: Let P be a bounded finite poset. Then a maximal chain exsits.
 -/
 
-#check List.toFinset_card_of_nodup
-
 lemma exist_maximal_chain {P : Type*} [PartialOrder P] [BoundedOrder P] [Fintype P] :
   ∃ L : List P, maximal_chain L := by
   let n := Fintype.card P
