@@ -161,7 +161,7 @@ def Facets (F : AbstractSimplicialComplex V) : Set (Finset V) := { s | F.IsFacet
 
 /-- Definition: A pure abstract simplicial complex is an abstract simplicial complex where all facets have the same cardinality. -/
 def IsPure (F : AbstractSimplicialComplex F) :=
-  ∀ s∈ Facets F, ∀ t ∈ Facets F, s.card = t.card
+  ∀ s ∈ Facets F, ∀ t ∈ Facets F, s.card = t.card
 
 class Pure (F : AbstractSimplicialComplex F) where
   pure : ∀ s ∈ F.Facets, ∀ t ∈  F.Facets, s.card = t.card
@@ -201,17 +201,18 @@ Lemma: For a finset f, the closure of {f} is the simplex of f.
 -/
 lemma closure_simplex (f : Finset V) : closure {f} =  simplex f := by
   have h1 : (closure {f}).faces = (simplex f).faces:= by
-      apply Set.Subset.antisymm
-      · unfold closure; rw [sInf_def]
-        rintro s h1; simp at h1
-        exact h1 (simplex ↑f) fun ⦃a⦄ a => a
-      · unfold closure; rw [sInf_def]
-        rintro s h1
-        apply simplex_face.1 at h1
-        simp at h1; simp
-        intro i fi
-        apply mem_faces.1; apply mem_faces.2 at fi
-        apply i.lower' h1 fi
+    apply Set.Subset.antisymm
+    · rw [sInf_def]
+      rintro s h1
+      simp only [Set.singleton_subset_iff, mem_faces, Set.mem_setOf_eq, Set.mem_iInter] at h1
+      exact h1 (simplex ↑f) fun ⦃a⦄ a => a
+    · rw [sInf_def]
+      rintro s h1
+      apply simplex_face.1 at h1
+      simp only [Finset.coe_subset] at h1
+      simp only [Set.singleton_subset_iff, mem_faces, Set.mem_setOf_eq, Set.mem_iInter]
+      intro i fi
+      apply mem_faces.1 <| i.lower' h1 <| mem_faces.2 fi
   exact instSetLikeAbstractSimplicialComplexFinset.proof_1 (closure {f}) (simplex ↑f) h1
 
 
@@ -228,17 +229,17 @@ Lemma: Let F be an ASC. Then the closure of the set of faces is just F.
 lemma closure_self {F : AbstractSimplicialComplex V} : closure (F.faces) = F := by
   have h1 : (closure (F.faces)).faces = F.faces:= by
     apply Set.Subset.antisymm
-    · unfold closure; rw [sInf_def]
-      rintro s h1; simp at h1
-      exact h1 F fun ⦃a⦄ a => a
-    · unfold closure; rw [sInf_def]
-      rintro s h1; simp
-      exact fun i i => i h1
+    · rw [sInf_def]
+      rintro s h1; simp only [Set.mem_setOf_eq, Set.mem_iInter, mem_faces] at h1
+      exact h1 F fun ⦃_⦄ a => a
+    · rw [sInf_def]
+      rintro s h1; simp only [Set.mem_setOf_eq, Set.mem_iInter, mem_faces]
+      exact fun _ i => i h1
   exact instSetLikeAbstractSimplicialComplexFinset.proof_1 (closure F.faces) F h1
 
 
 lemma closure_mono {s t: Set (Finset V)} : s ⊆ t → closure s ≤ closure t := by
-  intro hst; repeat rw [closure]
+  intro hst
   apply sInf_le_sInf
   rw [Set.setOf_subset_setOf]
   intro _ h; exact Set.Subset.trans hst h
@@ -246,10 +247,8 @@ lemma closure_mono {s t: Set (Finset V)} : s ⊆ t → closure s ≤ closure t :
 
 
 lemma closure_le {F : AbstractSimplicialComplex V} (h: s ⊆ F.faces) : closure s ≤ F := by
-  have h1: (closure s).faces ⊆ F.faces := by
-    rintro s2 h2; unfold closure at h2;
-    simp at h2; exact h2 F h
-  exact h1
+  rintro s2 h2
+  simp at h2; exact h2 F h
 
 /--
 Definition: G is a cone over F with cone point x if
