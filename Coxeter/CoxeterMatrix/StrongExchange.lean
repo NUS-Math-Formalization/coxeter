@@ -3,14 +3,13 @@ import Coxeter.CoxeterMatrix.Palindrome
 import Coxeter.CoxeterMatrix.AlternatingWord
 import Coxeter.CoxeterSystem
 import Mathlib.GroupTheory.Perm.Support
+
 open Classical
 open BigOperators
-
-namespace CoxeterMatrix
 open OrderTwoGen
 open TestGroup
 
-
+namespace CoxeterMatrix
 
 variable {α} {m : Matrix α α ℕ} [hm : CoxeterMatrix m]
 
@@ -723,12 +722,6 @@ lemma eta_t (t : T) : eta (t : G) t = μ₂.gen := by
     _ = _ := by
       rw [Finset.prod_const_one, mul_one]
 
-end ReflRepresentation
-
-
-
-
-
 lemma lt_iff_eta_eq_gen (g : G) (t : T) : ℓ(t * g) < ℓ(g) ↔ eta g t = μ₂.gen := by
   have mpr (g : G) (t : T) : eta g t = μ₂.gen → ℓ(t * g) < ℓ(g) := by
     intro h
@@ -779,9 +772,7 @@ lemma lt_iff_eta_eq_gen (g : G) (t : T) : ℓ(t * g) < ℓ(g) ↔ eta g t = μ�
     exact le_of_lt hh
   exact Iff.intro (mp g t) (mpr g t)
 
--- DLevel 2
--- lemma lt_iff_eta_eq_gen' (g : G) (t : T) : ℓ(t * g) ≤ ℓ(g) ↔ eta g t = μ₂.gen := by
---   sorry
+end ReflRepresentation
 
 lemma strong_exchange : ∀ (L : List S) (t : T), ℓ((t:G) * L) < ℓ(L) →
   ∃ (i : Fin L.length), (t : G) * L = (L.removeNth i) := by
@@ -799,12 +790,6 @@ lemma exchange : OrderTwoGen.ExchangeProp S := by
   obtain ⟨i, hi⟩ := strong_exchange L ⟨t.val, (OrderTwoGen.SimpleRefl_is_Refl t.prop)⟩ (length_smul_lt_of_le h2)
   exact ⟨i, hi⟩
 
--- DLevel 3
--- instance ReflSet.fintype : Fintype (ReflSet S g) := sorry
-
--- DLevel 3
---lemma length_eq_card_reflset [OrderTwoGen S] : ℓ(g) = Fintype.card (ReflSet S g) := by sorry
-
 end CoxeterMatrix
 
 namespace CoxeterMatrix
@@ -812,13 +797,10 @@ open OrderTwoGen
 
 variable {α : Type*} [DecidableEq α] {m : Matrix α α ℕ} [CoxeterMatrix m]
 
--- We will covert the lean3 proof to lean4
-
 instance ofCoxeterSystem : CoxeterSystem (SimpleRefl m) where
   order_two := order_two m
   expression := toGroup_expression m
   exchange := exchange
-
 
 instance ofCoxeterGroup : CoxeterGroup (toGroup m) where
   S := SimpleRefl m
