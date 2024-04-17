@@ -27,9 +27,7 @@ lemma append_singleton_ne_nil (L : List α) (a : α) : L ++ [a] ≠ [] := by {
   | nil => {simp}
   | cons hd tail _ => {simp}
 }
-
 lemma length_hd_tail_eq_succ_length (L : List α) (a : α) : (a :: L).length = L.length + 1 := by simp
-
 
 lemma append_remove_cancel_of_eq_last_index {a : α} {n : ℕ} (h : n = L.length) :
   (L ++ [a]).removeNth n = L := by
@@ -37,14 +35,10 @@ lemma append_remove_cancel_of_eq_last_index {a : α} {n : ℕ} (h : n = L.length
   | nil => rw [h]; simp
   | cons hd tail ih => rw [h]; simp [ih]
 
-
 lemma length_append_singleton (L : List α) (a : α) : (L ++ [a]).length = L.length + 1 := by
   induction L with
   | nil => simp
   | cons _ tail _ => simp
-
-#check length_removeNth
-
 
 lemma take_le_length (L : List α) (h : n ≤ L.length)  : (L.take n).length = n := by
   simp only [length_take,ge_iff_le, h, min_eq_left]
