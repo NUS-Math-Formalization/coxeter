@@ -1,6 +1,7 @@
 import Coxeter.CoxeterSystem
 import Coxeter.CoxeterMatrix.CoxeterMatrix
 import Coxeter.StrongExchange
+import Coxeter.CoxeterMatrix.Palindrome
 
 import Mathlib.Data.Set.Card
 
@@ -222,17 +223,18 @@ lemma fin_list_complement_complement {n : ℕ} (L : List (Fin n)) (Lincr : L.Pai
 lemma exists_intermediate_reduced_subword {L L' : List S} (hne: (L : G) ≠ L') (hred: reduced_word L) (hred': reduced_word L')
     (hsub: List.Sublist L' L) : ∃ (L'' : List S), reduced_word L'' ∧ (L' : G) < L'' ∧ ℓ((L'' : G)) = ℓ((L' : G)) + 1
     ∧ List.Sublist L'' L := by
-  let ⟨L_ind_in, ⟨h_eq, Lincr⟩⟩ := List.sublist_eq_map_get hsub
-  let L_ind_rm := fin_list_complement Lincr
-  have h_L_ind_rm_nonempty : L_ind_rm ≠ [] := by
-    sorry
-  let t := toPalindrome_i L (L_ind_rm.getLast h_L_ind_rm_nonempty)
-  let L'' := L ++ t
-  have h0 : reduced_word L'' := by sorry
-  have h1 : (L' : G) < L'' := by sorry
-  have h2 : ℓ((L'':G)) = ℓ((L':G)) + 1 := by sorry
-  have h3 : List.Sublist L'' L := by sorry
-  use L''
+  -- let ⟨L_ind_in, ⟨h_eq, Lincr⟩⟩ := List.sublist_eq_map_get hsub
+  -- let L_ind_rm := fin_list_complement Lincr
+  -- have h_L_ind_rm_nonempty : L_ind_rm ≠ [] := by
+  --   sorry
+  -- let t := Palindrome.toPalindrome_i L (L_ind_rm.getLast h_L_ind_rm_nonempty)
+  -- let L'' := L ++ t
+  -- have h0 : reduced_word L'' := by sorry
+  -- have h1 : (L' : G) < L'' := by sorry
+  -- have h2 : ℓ((L'':G)) = ℓ((L':G)) + 1 := by sorry
+  -- have h3 : List.Sublist L'' L := by sorry
+  -- use L''
+  sorry
 
 lemma le_aux (u w : G) (h : u <= w) :
   ∃ (T : List (Refl G)) (X : List G) (hn : X ≠ []), X.length = T.length + 1 ∧
