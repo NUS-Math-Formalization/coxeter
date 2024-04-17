@@ -13,6 +13,8 @@ structure AbstractSimplicialComplex (V : Type*)  where
   empty_mem : ∅ ∈ faces
   lower' : IsLowerSet faces -- The set of faces is a lower set under the inclusion relation.
 
+theorem AbstractSimplicialComplex.nonempty {V : Type*} {F : AbstractSimplicialComplex V} : F.faces.Nonempty := Set.nonempty_of_mem F.empty_mem
+
 theorem isLowerSet_singleton_empty (α : Type*):
 IsLowerSet {(∅ : Set α)} := by
   intro _ _ blea ain
@@ -159,24 +161,48 @@ Definition: For any ASC F, we denote by Facets F the set of facets of F.
 -/
 def Facets (F : AbstractSimplicialComplex V) : Set (Finset V) := { s | F.IsFacet s}
 
-/-- Definition: A pure abstract simplicial complex is an abstract simplicial complex where all facets have the same cardinality. -/
-def IsPure (F : AbstractSimplicialComplex F) :=
-  ∀ s ∈ Facets F, ∀ t ∈ Facets F, s.card = t.card
+/-- Definition: A pure abstract simplicial complex is an abstract simplicial complex
+    where all facets have the same cardinality. -/
+def IsPure (F : AbstractSimplicialComplex V) :=
+  ∀ s∈ Facets F, ∀ t ∈ Facets F, s.card = t.card
 
-class Pure (F : AbstractSimplicialComplex F) where
+class Pure (F : AbstractSimplicialComplex V) where
   pure : ∀ s ∈ F.Facets, ∀ t ∈  F.Facets, s.card = t.card
 
 /--Definition: We will call an ASC pure of rank `d` if all its facets has `d` elements-/
-def IsPure' (F : AbstractSimplicialComplex F) (d : ℕ):=
-  ∀ s ∈ F.faces, s.card = d
+def IsPure' (F : AbstractSimplicialComplex V) (d : ℕ):=
+  ∀ s ∈ F.Facets, s.card = d
 
-class Pure' (F : AbstractSimplicialComplex F) (d :ℕ) where
+class Pure' (F : AbstractSimplicialComplex V) (d :ℕ) where
   pure : ∀ s ∈ F.Facets, s.card = d
 
-lemma isPure_iff_isPure' {F : AbstractSimplicialComplex F} : F.IsPure ↔ ∃ d, F.IsPure' d := by
-  sorry
+lemma isPure_iff_isPure' {F : AbstractSimplicialComplex V} : F.IsPure ↔ ∃ d, F.IsPure' d := by
+  by_cases hemp : Nonempty F.Facets
+  · constructor
+    · let s := Classical.choice (hemp)
+      intro hIp
+      use s.1.card
+      intro t ht
+      exact hIp t ht s s.2
+    · intro hIp'
+      obtain ⟨d, hIp'⟩ := hIp'
+      intro s hs t ht
+      rw [hIp' s hs, hIp' t ht]
+  · constructor
+    · intro
+      use 0
+      simp only [IsPure', Finset.card_eq_zero]
+      contrapose! hemp
+      rcases hemp with ⟨d, ⟨a, b⟩⟩
+      use d
+    · intro h
+      rcases h with ⟨d, a⟩
+      simp only [nonempty_subtype, not_exists] at hemp
+      intro s hs t _
+      exfalso
+      exact hemp s hs
 
-lemma pure_def {F : AbstractSimplicialComplex V} [Pure F] : ∀ s ∈ F.Facets, ∀ t ∈ F.Facets, s.card = t.card := Pure.pure
+lemma pure_def {F : AbstractSimplicialComplex V} [Pure F] : ∀ s ∈ F.Facets, ∀  t ∈ F.Facets,  s.card = t.card := Pure.pure
 
 lemma pure_isPure {F : AbstractSimplicialComplex V} [Pure F] : IsPure F := pure_def
 
@@ -185,6 +211,7 @@ If the size of simplices in F is unbounded, it has rank 0 by definition.
 
 Remark: We should general be careful with the unbounded case.
 -/
+
 noncomputable def rank (F : AbstractSimplicialComplex V) : ℕ := iSup fun s : F.faces => s.1.card
 
 /-- Definition: For a collection s of subsets of V, we denote by closure s the smallest ASC over V containing all elements in s
@@ -250,6 +277,7 @@ Definition: G is a cone over F with cone point x if
 x ∈ G.vertices - F.vertices
 s ∈ F ⇔ s ∪ {x} ∈ G.
 -/
+
 def Cone (F G: AbstractSimplicialComplex V) (x : V) :=
   x ∈ G.vertices \ F.vertices ∧
   ∀ s, s ∈ F.faces ↔ s ∪ {x} ∈ G.faces
