@@ -1,9 +1,7 @@
-import Coxeter.CoxeterMatrix.CoxeterMatrix
-import Coxeter.CoxeterSystem
+import Coxeter.CoxeterMatrix.Basic
 
 open OrderTwoGen
-
-variable {G : Type*} [Group G] {S : Set G} [hS: CoxeterSystem S]
+variable {G : Type*} [Group G] {S : Set G} [hS: CoxeterSystem G S]
 --variable {G' : Type*} [Group G'] {S' : Set G'} [hS: CoxeterSystem S']
 
 
@@ -84,9 +82,9 @@ end monoidLift
 open CoxeterMatrix
 
 @[simp]
-abbrev toMatrix (S : Set G) [CoxeterSystem S] : Matrix S S ℕ := fun s t => orderOf (s.1*t.1)
+abbrev toMatrix (S : Set G) [CoxeterSystem G S] : Matrix S S ℕ := fun s t => orderOf (s.1*t.1)
 
-instance CoxeterMatrix {S:Set G} [CoxeterSystem S]: CoxeterMatrix (toMatrix S) where
+instance CoxeterMatrix {S:Set G} [CoxeterSystem G S]: CoxeterMatrix (toMatrix S) where
   symmetric := by sorry
   oneIff := by sorry
 
@@ -94,15 +92,15 @@ instance CoxeterMatrix {S:Set G} [CoxeterSystem S]: CoxeterMatrix (toMatrix S) w
 namespace Presentation
 
 
-def map_aux (S:Set G) [CoxeterSystem S]: ∀ (s t : S), ((fun s => (s:G) ) s * (fun s => (s:G)) t) ^ toMatrix S s t = 1 := by  intro s t; rw [toMatrix,pow_orderOf_eq_one]
+def map_aux (S:Set G) [CoxeterSystem G S]: ∀ (s t : S), ((fun s => (s:G) ) s * (fun s => (s:G)) t) ^ toMatrix S s t = 1 := by  intro s t; rw [toMatrix,pow_orderOf_eq_one]
 
 @[simp]
-def map (S:Set G) [CoxeterSystem S] : CoxeterMatrix.toGroup (toMatrix S) →* G := CoxeterMatrix.lift (toMatrix S) (fun s => s.1)
+def map (S:Set G) [CoxeterSystem G S] : CoxeterMatrix.toGroup (toMatrix S) →* G := CoxeterMatrix.lift (toMatrix S) (fun s => s.1)
   (map_aux S)
 
 #check PresentedGroup.toGroup.of
 
-lemma map.of_eq {S:Set G} [CoxeterSystem S] (s:S) : map S s = s := by
+lemma map.of_eq {S:Set G} [CoxeterSystem G S] (s:S) : map S s = s := by
   simp_rw [map,CoxeterMatrix.lift,CoxeterMatrix.of_eq]
   have h : ∀ r ∈ toRelationSet (toMatrix S), (FreeGroup.lift fun (s:S) => (s:G) ) r = 1 := CoxeterMatrix.liftHom_aux (toMatrix S) (fun s => (s:G)) (map_aux S)
   calc
@@ -114,9 +112,9 @@ local notation "G'" => CoxeterMatrix.toGroup (toMatrix S)
 local notation "S'" => CoxeterMatrix.SimpleRefl (toMatrix S)
 --local notation "N" => Subgroup.normalClosure (toRelationSet m)
 
-def invmap (S:Set G) [CoxeterSystem S] : G →* CoxeterMatrix.toGroup (toMatrix S) := monoidLift.mapLift (CoxeterMatrix.of_relation (toMatrix S))
+def invmap (S:Set G) [CoxeterSystem G S] : G →* CoxeterMatrix.toGroup (toMatrix S) := monoidLift.mapLift (CoxeterMatrix.of_relation (toMatrix S))
 
-lemma invmap.of_eq {S:Set G} [CoxeterSystem S] {s :S} : invmap S s = s := by
+lemma invmap.of_eq {S:Set G} [CoxeterSystem G S] {s :S} : invmap S s = s := by
   sorry
 
 def invmap_map_eq_id : MonoidHom.comp (invmap S)  (map S) = MonoidHom.id G':= by

@@ -1,4 +1,4 @@
-import Coxeter.CoxeterSystem
+import Coxeter.CoxeterMatrix.Basic
 
 open HOrderTwoGenGroup CoxeterGroup
 variable {G: Type _} [Group G] [hG :CoxeterGroup G]
