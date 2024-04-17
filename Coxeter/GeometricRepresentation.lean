@@ -1,5 +1,6 @@
-import Coxeter.CoxeterMatrix.CoxeterMatrix
-
+import Coxeter.CoxeterMatrix.Basic
+import Mathlib.Data.Complex.Exponential
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.Basic
 
 variable {α : Type*} [DecidableEq α]
 
