@@ -22,9 +22,9 @@ abbrev ExchangeProp' := ∀ {L : List S} {s : S}, reduced_word L →
   ℓ(L * s) ≤ ℓ(L) → ∃ (i: Fin L.length), (L : G) * s = L.removeNth i
 
 @[simp]
-abbrev DeletionProp := ∀ (L:List S),
+abbrev DeletionProp := ∀ (L : List S),
   ℓ( L ) < L.length →
-  ∃ (j: Fin L.length), ∃ (i : Fin j), (L : G) = (L.removeNth j).removeNth i
+  ∃ (j : Fin L.length), ∃ (i : Fin j), (L : G) = (L.removeNth j).removeNth i
 
 
 lemma exchange_iff_exchange' : ExchangeProp S ↔ ExchangeProp' S:= by

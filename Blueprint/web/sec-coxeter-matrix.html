@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>
+  MathJax = { 
+    tex: {
+		    inlineMath: [['$','$'], ['\\(','\\)']]
+	} }
+</script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js">
+</script>
+<meta name="generator" content="plasTeX" />
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Coxeter Group and Bruhat Order: Coxeter Matrix</title>
+<link rel="prev" href="index.html" title="Coxeter Group and Bruhat Order" />
+<link rel="up" href="index.html" title="Coxeter Group and Bruhat Order" />
+<link rel="stylesheet" href="styles/theme-white.css" />
+<link rel="stylesheet" href="styles/amsthm.css" />
+<link rel="stylesheet" href="styles/style.css" />
+</head>
+
+<body>
+<header>
+<svg  id="toc-toggle" class="icon icon-list-numbered "><use xlink:href="symbol-defs.svg#icon-list-numbered"></use></svg>
+<h1 id="doc_title"><a href="index.html">Coxeter Group and Bruhat Order</a></h1>
+</header>
+
+<div class="wrapper">
+<nav class="toc">
+<ul class="sub-toc-0">
+<li class=" active current">
+  <a href="sec-coxeter-matrix.html"><span class="toc_ref">1</span> <span class="toc_entry">Coxeter Matrix</span></a>
+ </li>
+<li ><a href="dep_graph_document.html">Dependency graph</a></li>
+</ul>
+</nav>
+
+<div class="content">
+<div class="content-wrapper">
+
+
+<div class="main-text">
+<h1 id="sec:coxeter-matrix">1 Coxeter Matrix</h1>
+
+<div class="definition_thmwrapper" id="def:coxeter-matrix">
+  <div class="definition_thmheading">
+    <span class="definition_thmcaption">
+    Definition
+    </span>
+    <span class="definition_thmlabel">1.1</span>
+    ✓
+    <div class="thm_icons">
+    <a class="icon proof" href="sec-coxeter-matrix.html#def:coxeter-matrix">#</a>
+    <button class="modal lean">L∃∀N</button>
+    <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+                <ul class="uses">
+          <li><a href="http://13.210.23.89:8080/find/#doc/CoxeterMatrix" class="lean_decl">CoxeterMatrix</a></li>
+        </ul>
+
+      </div>
+    </div>
+
+  </div>
+  </div>
+  <div class="definition_thmcontent">
+  <p>  A square matrix \(m : \alpha \times \alpha \to \mathbb {N}\) with non-negative integer entries is a Coxeter matrix if it is symmetric, that is, \(m_{a,b} = m_{b,a}\) for any \((a,b)\); the entry \(m_{a,b}\) is \(1\) if and only if \(a=b\). </p>
+
+  </div>
+</div>
+<div class="definition_thmwrapper" id="def:to-group">
+  <div class="definition_thmheading">
+    <span class="definition_thmcaption">
+    Definition
+    </span>
+    <span class="definition_thmlabel">1.2</span>
+    ✓
+    <div class="thm_icons">
+    <a class="icon proof" href="sec-coxeter-matrix.html#def:to-group">#</a>
+    <button class="modal lean">L∃∀N</button>
+    <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+                <ul class="uses">
+          <li><a href="http://13.210.23.89:8080/find/#doc/CoxeterMatrix.ToGroup" class="lean_decl">CoxeterMatrix.ToGroup</a></li>
+        </ul>
+
+      </div>
+    </div>
+
+  </div>
+  </div>
+  <div class="definition_thmcontent">
+  <p>  Given a Coxeter matrix \(m\), we can construct a group \(G\) with generators \(s_i\) and relations \(s_i^2 = 1\) and \((s_i s_j)^{m_{i,j}} = 1\). </p>
+
+  </div>
+</div>
+<div class="definition_thmwrapper" id="def:simple-reflection">
+  <div class="definition_thmheading">
+    <span class="definition_thmcaption">
+    Definition
+    </span>
+    <span class="definition_thmlabel">1.3</span>
+    ✓
+    <div class="thm_icons">
+    <a class="icon proof" href="sec-coxeter-matrix.html#def:simple-reflection">#</a>
+    <button class="modal lean">L∃∀N</button>
+    <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+                <ul class="uses">
+          <li><a href="http://13.210.23.89:8080/find/#doc/CoxeterMatrix.SimpleRefl" class="lean_decl">CoxeterMatrix.SimpleRefl</a></li>
+        </ul>
+
+      </div>
+    </div>
+
+  </div>
+  </div>
+  <div class="definition_thmcontent">
+  <p>  A set of simple reflections is a subset \(S \subseteq G\) such that every element is obtained by the domain of matrix index set \(\alpha \). </p>
+
+  </div>
+</div>
+<div class="lemma_thmwrapper" id="lem:to-group-expression">
+  <div class="lemma_thmheading">
+    <span class="lemma_thmcaption">
+    Lemma
+    </span>
+    <span class="lemma_thmlabel">1.4</span>
+    ✓
+    <div class="thm_icons">
+    <a class="icon proof" href="sec-coxeter-matrix.html#lem:to-group-expression">#</a>
+    <a class="icon proof" href="sec-coxeter-matrix.html#a0000000002"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+    <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+                <ul class="uses">
+          <li><a href="sec-coxeter-matrix.html#def:to-group">Definition 1.2</a></li>
+          <li><a href="sec-coxeter-matrix.html#def:simple-reflection">Definition 1.3</a></li>
+        </ul>
+
+      </div>
+    </div>
+    <button class="modal lean">L∃∀N</button>
+    <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+                <ul class="uses">
+          <li><a href="http://13.210.23.89:8080/find/#doc/CoxeterMatrix.toGroup_expression" class="lean_decl">CoxeterMatrix.toGroup_expression</a></li>
+        </ul>
+
+      </div>
+    </div>
+
+  </div>
+  </div>
+  <div class="lemma_thmcontent">
+  <p>   Given a Coxeter matrix \(m\), the group \(G\) can be expressed as the group generated by the simple reflections \(s_i \in S\). </p>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000002">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▼</span>
+  </div>
+  <div class="proof_content">
+  <p> is a direct consequence of the definition of the group \(G\) and the simple reflections \(S\). </p>
+
+  </div>
+</div>
+<div class="lemma_thmwrapper" id="lem:order-2-generated">
+  <div class="lemma_thmheading">
+    <span class="lemma_thmcaption">
+    Lemma
+    </span>
+    <span class="lemma_thmlabel">1.5</span>
+    ✓
+    <div class="thm_icons">
+    <a class="icon proof" href="sec-coxeter-matrix.html#lem:order-2-generated">#</a>
+    <a class="icon proof" href="sec-coxeter-matrix.html#a0000000003"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    <button class="modal lean">L∃∀N</button>
+    <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+                <ul class="uses">
+          <li><a href="http://13.210.23.89:8080/find/#doc/CoxeterMatrix.ofOrderTwoGen" class="lean_decl">CoxeterMatrix.ofOrderTwoGen</a></li>
+        </ul>
+
+      </div>
+    </div>
+
+  </div>
+  </div>
+  <div class="lemma_thmcontent">
+  <p>  The group \(G\) with the simple reflection set \(S\) is an Order-2-generated group. </p>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000003">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▼</span>
+  </div>
+  <div class="proof_content">
+  <p>See . </p>
+
+  </div>
+</div>
+
+</div> <!--main-text -->
+</div> <!-- content-wrapper -->
+</div> <!-- content -->
+</div> <!-- wrapper -->
+
+<nav class="prev_up_next">
+  <a href="index.html" title="Coxeter Group and Bruhat Order"><svg  class="icon icon-arrow-left "><use xlink:href="symbol-defs.svg#icon-arrow-left"></use></svg>
+</a>
+  <a href="index.html" title="Coxeter Group and Bruhat Order"><svg  class="icon icon-arrow-up "><use xlink:href="symbol-defs.svg#icon-arrow-up"></use></svg>
+</a>
+</nav>
+
+<script type="text/javascript" src="js/jquery.min.js"></script>
+<script type="text/javascript" src="js/plastex.js"></script>
+<script type="text/javascript" src="js/svgxuse.js"></script>
+</body>
+</html>

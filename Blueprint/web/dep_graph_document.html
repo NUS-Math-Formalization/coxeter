@@ -1,0 +1,220 @@
+
+
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Dependency graph</title>
+  <meta name="generator" content="plasTeX" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="styles/theme-white.css" />
+  <link rel="stylesheet" href="styles/dep_graph.css" />
+  
+  <script type="text/x-mathjax-config">
+  
+    MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}});
+  
+  </script>
+
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js">  </script>
+
+
+<link rel="stylesheet" href="styles/style.css" />
+
+</head>
+
+<body>
+<header>
+  <a class="toc" href="index.html">Home</a>
+  <h1 id="doc_title">Dependencies</h1>
+</header>
+<div class="wrapper">
+<div class="content">
+  <div id="Legend">
+    <span id="legend_title" class="title">Legend
+    <div class="btn">
+       <div class="bar"></div>
+       <div class="bar"></div>
+       <div class="bar"></div>
+    </div></span> 
+    <dl class="legend">
+      <dt>Boxes</dt><dd>definitions</dd>
+      <dt>Ellipses</dt><dd>theorems and lemmas</dd>
+      <dt>Blue border</dt><dd>the <em>statement</em> of this result is ready to be formalized; all prerequisites are done</dd>
+      <dt>Blue background</dt><dd>the <em>proof</em> of this result is ready to be formalized; all prerequisites are done</dd>
+      <dt>Green border</dt><dd>the <em>statement</em> of this result is formalized</dd>
+      <dt>Green background</dt><dd>the <em>proof</em> of this result is formalized</dd>
+    </dl>
+  </div>
+    <div id="graph"></div>
+<div id="statements">
+
+    
+    <div class="dep-modal-container" id="def:coxeter-matrix_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:coxeter-matrix" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">1.1</span></div>
+    <div class="thm_thmcontent"><p>  A square matrix \(m : \alpha \times \alpha \to \mathbb {N}\) with non-negative integer entries is a Coxeter matrix if it is symmetric, that is, \(m_{a,b} = m_{b,a}\) for any \((a,b)\); the entry \(m_{a,b}\) is \(1\) if and only if \(a=b\). </p>
+</div>
+
+    <a class="latex_link" href="sec-coxeter-matrix.html#def:coxeter-matrix">LaTeX</a>
+  <a class="lean_link lean_decl" href="http://13.210.23.89:8080/find/#doc/CoxeterMatrix">Lean</a></div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:simple-reflection_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:simple-reflection" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">1.3</span></div>
+    <div class="thm_thmcontent"><p>  A set of simple reflections is a subset \(S \subseteq G\) such that every element is obtained by the domain of matrix index set \(\alpha \). </p>
+</div>
+
+    <a class="latex_link" href="sec-coxeter-matrix.html#def:simple-reflection">LaTeX</a>
+  <a class="lean_link lean_decl" href="http://13.210.23.89:8080/find/#doc/CoxeterMatrix.SimpleRefl">Lean</a></div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:to-group_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:to-group" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">1.2</span></div>
+    <div class="thm_thmcontent"><p>  Given a Coxeter matrix \(m\), we can construct a group \(G\) with generators \(s_i\) and relations \(s_i^2 = 1\) and \((s_i s_j)^{m_{i,j}} = 1\). </p>
+</div>
+
+    <a class="latex_link" href="sec-coxeter-matrix.html#def:to-group">LaTeX</a>
+  <a class="lean_link lean_decl" href="http://13.210.23.89:8080/find/#doc/CoxeterMatrix.ToGroup">Lean</a></div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="lem:order-2-generated_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="lem:order-2-generated" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">1.5</span></div>
+    <div class="thm_thmcontent"><p>  The group \(G\) with the simple reflection set \(S\) is an Order-2-generated group. </p>
+</div>
+
+    <a class="latex_link" href="sec-coxeter-matrix.html#lem:order-2-generated">LaTeX</a>
+  <a class="lean_link lean_decl" href="http://13.210.23.89:8080/find/#doc/CoxeterMatrix.ofOrderTwoGen">Lean</a></div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="lem:to-group-expression_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="lem:to-group-expression" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">1.4</span></div>
+    <div class="thm_thmcontent"><p>   Given a Coxeter matrix \(m\), the group \(G\) can be expressed as the group generated by the simple reflections \(s_i \in S\). </p>
+</div>
+
+    <a class="latex_link" href="sec-coxeter-matrix.html#lem:to-group-expression">LaTeX</a>
+  <a class="lean_link lean_decl" href="http://13.210.23.89:8080/find/#doc/CoxeterMatrix.toGroup_expression">Lean</a></div>
+    
+      </div>
+    </div>
+</div>
+</div> <!-- content -->
+</div> <!-- wrapper -->
+<script src="js/jquery.min.js" type="text/javascript"></script>
+
+<script src="js/d3.min.js"></script>
+<script src="js/hpcc.min.js"></script>
+<script src="js/d3-graphviz.js"></script>
+
+<script type="text/javascript">
+const graphContainer = d3.select("#graph");
+const width = graphContainer.node().clientWidth;
+const height = graphContainer.node().clientHeight;
+
+
+graphContainer.graphviz({useWorker: true})
+    .width(width)
+    .height(height)
+    .fit(true)
+    .renderDot(`strict digraph "" {	graph [bgcolor=transparent];	node [label="\N",		penwidth=1.8	];	edge [arrowhead=vee];	"def:coxeter-matrix"	[color=green,		fillcolor="#b0eca3",		label="coxeter-matrix",		shape=box,		style=filled];	"lem:to-group-expression"	[color=green,		fillcolor="#9cec8b",		label="to-group-expression",		shape=ellipse,		style=filled];	"lem:order-2-generated"	[color=green,		fillcolor="#9cec8b",		label="order-2-generated",		shape=ellipse,		style=filled];	"def:to-group"	[color=green,		fillcolor="#b0eca3",		label="to-group",		shape=box,		style=filled];	"def:to-group" -> "lem:to-group-expression"	[style=dashed];	"def:simple-reflection"	[color=green,		fillcolor="#b0eca3",		label="simple-reflection",		shape=box,		style=filled];	"def:simple-reflection" -> "lem:to-group-expression"	[style=dashed];}`)
+    .on("end", interactive);
+
+clickNode = function() {
+  $("#statements div").hide()
+  var node_id = $('text', this).text();
+    console.log(node_id);
+  console.log('#'+node_id.replace(':', '\\:'));
+  $('.thm').hide();
+  $('#'+node_id.replace(':', '\\:')).show().children().show();
+}
+function interactive() {
+    $("span#legend_title").on("click", function () {
+           $(this).siblings('dl').toggle();
+        })
+
+    d3.selectAll('.node')
+        .attr('pointer-events', 'fill')
+        .on('click', function () {
+           var title = d3.select(this).selectAll('title').text().trim();
+           $('#statements > div').hide()
+           $('.thm').hide();
+           $('#'+title.replace(':', '\\:')+'_modal').show().children().show().children().show();
+           $('#statements').show()
+        });
+
+    d3.selectAll('.dep-closebtn').on('click', function() {
+        var modal =
+            d3.select(this).node().parentNode.parentNode.parentNode ;
+        d3.select(modal).style('display', 'none');
+    });
+}
+
+</script>
+
+</body>
+</html>
