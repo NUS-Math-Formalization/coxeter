@@ -6,7 +6,7 @@ import Coxeter.Aux_
 /-!
 # Alternating Word
 
-## Definition
+## Main Definition
 This file defines the alternating word of two elements `s` and `t` as a list of length `n`.
 
 ## Example
