@@ -3,6 +3,7 @@ import Mathlib.Data.Int.Order.Units
 
 /-!
 # Test Group
+
 This file contains the definition of the group of `ℤ/2ℤ` with some lemmas about it. This gives a ground
 for permutation representation for Coxeter groups.
 -/

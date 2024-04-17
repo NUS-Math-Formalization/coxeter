@@ -3,6 +3,7 @@ import Coxeter.Aux_
 
 /-!
 # A Characterization
+
 In this file we define the `ExchangeProp` and `DeletionProp` for an `OrderTwoGen` group `G`.
 We then prove that they are equivalent.
 -/
