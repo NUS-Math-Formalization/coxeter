@@ -333,6 +333,12 @@ lemma length_zero_iff_one {w : G} : ℓ(w) = 0 ↔ w = 1 := by
     have h3 : ℓ(([] : List S)) ≤ 0 := length_le_list_length
     apply Nat.le_zero.1 h3
 
+lemma take_drop_get' (L: List S) (n : ℕ) (h : n < L.length):
+  L = (L.take n).gprod * [L.get ⟨n, h⟩] * L.drop (n+1) := by
+  rw [←gprod_append, ←gprod_append]
+  apply congr_arg
+  exact List.take_drop_get L n h
+
 -- DLevel 2
 lemma reduced_take_of_reduced {S : Set G} [OrderTwoGen S] {L : List S} (h : reduced_word L) (n : ℕ) :
     reduced_word (L.take n) := by
@@ -378,7 +384,7 @@ noncomputable def metric {G : Type*} [Group G] (S : Set G) [@OrderTwoGen G _ S] 
     simp only [Nat.cast_eq_zero, length_zero_iff_one] at h
     rw [← one_mul y, ← h, mul_assoc, mul_left_inv, mul_one]
   edist_dist := fun x y ↦ by
-    simp only [Nonneg.mk_nat_cast, ENNReal.ofReal_coe_nat]
+    simp only [Nonneg.mk_nat_cast, ENNReal.ofReal_natCast]
     exact rfl
 
 
@@ -525,14 +531,14 @@ lemma Refl.mul_SimpleRefl_in_Refl (s : S) (t : T) : (s : G) * t * (s : G) ∈ T 
 /-- If `p : T → Prop` holds for all elements in S and it is preserved under
 multiplication on both sides by elements in s, then it holds for all elements
 of `T`. -/
-theorem Refl.induction' {p : T → Prop} (t : T) (Hs : ∀ s : S, p ⟨s.val, SimpleRefl_subset_Refl (Subtype.mem s)⟩)
+theorem Refl.induction' {p : T → Prop} (t : T) (Hs : ∀ s : S, p ⟨s.val, SimpleRefl_is_Refl (Subtype.mem s)⟩)
     (Hmul : ∀ (t : T) (s : S), p t → p ⟨(s : G) * t * s, Refl.mul_SimpleRefl_in_Refl s t⟩) : p t := by
   rcases Subtype.mem t with ⟨g, s, tgsg⟩
   have : t = ⟨t.1, ⟨g, s, tgsg⟩⟩ := rfl
   rw [this]
   simp only [tgsg]
   have gsgT (g : G) (s : S) : g * s * g⁻¹ ∈ T :=
-    @Refl.conjugate_closed _ _ _ _ g ⟨s.val, SimpleRefl_subset_Refl (Subtype.mem s)⟩
+    @Refl.conjugate_closed _ _ _ _ g ⟨s.val, SimpleRefl_is_Refl (Subtype.mem s)⟩
   refine @gen_induction_left G _ S _ (fun g ↦ p ⟨g * s * g⁻¹, gsgT g s⟩) g ?h1 ?hmul
   · group; exact Hs s
   · intro s' g' hp
@@ -630,3 +636,37 @@ theorem refl_induction' {p : T → Prop} (t : T) (Hs : ∀ s : S, p ⟨s,SimpleR
   assumption
 
 end OrderTwoGen
+
+class HOrderTwoGenGroup (G: Type*) extends Group G where
+  S: Set G
+  order_two :  ∀ (x:G) , x ∈ S →  x * x = (1 :G) ∧  x ≠ (1 :G)
+  expression : ∀ (x:G) , ∃ (L : List S),  x = L.gprod
+
+namespace HOrderTwoGenGroup
+variable (G :Type*) [hG: HOrderTwoGenGroup G]
+variable {H :Type*} [hH: HOrderTwoGenGroup H]
+
+@[simp]
+abbrev SimpleRefl := hG.S
+@[simp,deprecated SimpleRefl]
+abbrev SimpleRefls := hG.S
+
+abbrev Refl (G:Type*) [HOrderTwoGenGroup G]: Set G:= {x:G| ∃ (w:G)(s : SimpleRefl G) , x = w*s*w⁻¹}
+
+@[deprecated Refl]
+abbrev Refls (G:Type*) [HOrderTwoGenGroup G]: Set G:= {x:G| ∃ (w:G)(s : SimpleRefl G) , x = w*s*w⁻¹}
+
+instance SimpleRefls.toOrderTwoGen  : @OrderTwoGen H _ (SimpleRefl H) where
+  order_two := hH.order_two
+  expression := hH.expression
+
+
+instance SimpleRefls.toOrderTwoGen'  : @OrderTwoGen H _ (hH.S) where
+  order_two := hH.order_two
+  expression := hH.expression
+
+noncomputable def length  (g :H) := OrderTwoGen.length (hH.S) g
+
+notation:65 "ℓ(" g:66 ")" => (length g)
+variable (s w :G)
+end HOrderTwoGenGroup
