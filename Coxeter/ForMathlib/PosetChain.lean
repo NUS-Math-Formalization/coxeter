@@ -1,4 +1,5 @@
 import Mathlib.Data.Fintype.Basic
+import Mathlib.Data.Fintype.List
 import Mathlib.Data.Nat.Lattice
 import Mathlib.Data.List.Lex
 import Mathlib.Data.Set.Intervals.Basic
@@ -8,12 +9,12 @@ import Mathlib.Order.Cover
 import Mathlib.Tactic.Linarith.Frontend
 import Coxeter.ForMathlib.AdjacentPair
 
-
+noncomputable section
 namespace PartialOrder
 /- Let P be a finite poset. -/
-variable {P : Type*} [PartialOrder P]
+variable {P : Type*} [PartialOrder P] [Fintype P]
 
-open List
+open List Classical
 --test
 
 /- Recall that : We say a is covered by b if x < y and there is no element z such that x < z < y. -/
@@ -565,25 +566,34 @@ lemma max_chain_mem_edge {P : Type*} [PartialOrder P] {L: List P} {e: P × P} :
     exact this.2.1
 
 
-
 /-
 We define the set of all maximal chains of P.
 -/
-abbrev maximalChains (P : Type*) [PartialOrder P] : Set (List P) := { L | maximal_chain L }
+abbrev maximalChains_aux (P : Type*) [PartialOrder P] : Set (List P) := { L | maximal_chain L }
+abbrev nodupList (P : Type*) [PartialOrder P] [Fintype P] : Set (List P) := {L | L.Nodup }
+
+instance : Fintype (Set.Elem (nodupList P)) := inferInstanceAs (Fintype {L : List P // L.Nodup})
+
+abbrev nodupList' (P : Type*) [PartialOrder P] [Fintype P] : Finset (List P) := Set.toFinset (nodupList P)
+
+def auxinj : maximalChains_aux P → nodupList' P := fun l ↦ ⟨l.val, by simp; apply chain_nodup l.prop.1⟩
+
+instance : Fintype (maximalChains_aux P) := Fintype.ofInjective auxinj (by simp [Function.Injective, auxinj])
+
+abbrev maximalChains (P : Type*) [PartialOrder P] [Fintype P] : Finset (List P) := Set.toFinset (maximalChains_aux  P)
 
 /-
 (Programming)
 -/
-
-def edgePairs {P : Type*} [PartialOrder P] (L : maximalChains P) : List (edges P) :=
-  List.map (fun e => ⟨e.val, max_chain_mem_edge L.prop  e.prop⟩) <| L.val.adjEPairs
+def edgePairs {P : Type*} [PartialOrder P] [Fintype P] (L : maximalChains P) : List (edges P) :=
+  List.map (fun e => ⟨e.val, max_chain_mem_edge  (Set.mem_setOf_eq.mp (Set.mem_toFinset.mp L.prop))  e.prop⟩) <| L.val.adjEPairs
 
 /- Definition: Define rank to be the Sup of the lenghts of all maximal chains.
 
   Note that if the length is unbounded,then rank = 0.
  -/
-noncomputable def rank (P : Type*) [PartialOrder P] : ℕ :=
-⨆ L ∈ maximalChains P, L.length
+def rank (P : Type*) [PartialOrder P] [Fintype P] : ℕ :=
+Finset.sup (maximalChains P) List.length
 
 
 end maximal_chain
