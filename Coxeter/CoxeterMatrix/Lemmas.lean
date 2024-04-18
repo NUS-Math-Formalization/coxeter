@@ -111,10 +111,10 @@ lemma smul_eq_muls_of_length_eq_pre (s t : hG.S) (w : G) :
     have lt_len : ℓ(s * w * t) < ℓ(s * w) := by rw [h₁]; exact h₃
     have exch_prop: ∃ (i: Fin (s :: L).length), (s :: L : G) * t = (s :: L).removeNth i := by
       have : reduced_word (s :: L) := by
-        apply OrderTwoGen.length_eq_iff.2
+        apply length_eq_iff.2
         have : ℓ(s * w) = ℓ(w) + 1 := length_smul_of_length_gt h₃
         rw [hL, HOrderTwoGenGroup.length, HOrderTwoGenGroup.length,
-            ← OrderTwoGen.length_eq_iff.1, ← gprod_cons] at this
+            ← length_eq_iff.1, ← gprod_cons] at this
         apply this.symm
         apply hr
       rw [hL, HOrderTwoGenGroup.length, HOrderTwoGenGroup.length, ← gprod_cons] at lt_len
@@ -137,7 +137,7 @@ lemma smul_eq_muls_of_length_eq_pre (s t : hG.S) (w : G) :
       have : ℓ((L : G) * t) < ℓ((L : G)) := by
         rw [this]
         nth_rw 2 [HOrderTwoGenGroup.length]
-        rw [← OrderTwoGen.length_eq_iff.1 (by exact hr)]
+        rw [← length_eq_iff.1 (by exact hr)]
         have : (L.removeNth (i.1 - 1)).length = L.length - 1 := by
           rw [← add_left_inj 1, Nat.sub_add_cancel]
           apply List.removeNth_length L (⟨i.1 - 1, by exact Fin.subNat.proof_1 1 i i_pos⟩)
