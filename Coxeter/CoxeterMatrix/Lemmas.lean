@@ -160,8 +160,8 @@ lemma smul_eq_muls_of_length_eq (s t:hG.S) (w:G) :ℓ(s*w*t) = ℓ(w) ∧ ℓ(s*
     constructor
     . exact h₁
     . constructor
-      exact h₂
-      exact k
+      . exact h₂
+      . exact k
   . push_neg at k
     have : ℓ(s * w) ≠ ℓ(w) := length_smul_neq s w
     have : ℓ(s * w) < ℓ(w) := by exact Nat.lt_of_le_of_ne k this
@@ -171,11 +171,11 @@ lemma smul_eq_muls_of_length_eq (s t:hG.S) (w:G) :ℓ(s*w*t) = ℓ(w) ∧ ℓ(s*
       apply smul_eq_muls_of_length_eq_pre s t (s * w)
       constructor
       . rw [← mul_assoc, gen_square_eq_one', one_mul]
-        apply h₂.symm
+        exact h₂.symm
       . constructor
         rw [← mul_assoc, gen_square_eq_one', one_mul]
-        apply h₁.symm
-        exact this
+        . exact h₁.symm
+        . exact this
     rw [mul_assoc, mul_right_inj] at this
     exact this
 
