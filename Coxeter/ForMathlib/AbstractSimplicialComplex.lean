@@ -100,7 +100,7 @@ lemma sInf_isGLB (s : Set (AbstractSimplicialComplex V)) : IsGLB s (sInf s) := b
 
 /-- instance: The set of all ASCs on V is a complete lattice with intersections and unions of the set of faces.
 -/
-instance complete_lattice : CompleteLattice (AbstractSimplicialComplex V)
+instance completeLattice : CompleteLattice (AbstractSimplicialComplex V)
 where
   inf := fun F G => ⟨F.faces ∩ G.faces, Set.mem_inter F.empty_mem G.empty_mem, IsLowerSet.inter F.lower' G.lower'⟩
   le_inf := fun _ _ _ hab hac _ ha =>
@@ -129,12 +129,15 @@ lemma sSup_eq_unionSubset {s : Set <| AbstractSimplicialComplex V} (hs : s.Nonem
     exact fun _ hb ↦ Set.iUnion_subset fun i ↦ hb i.2
 
 def ofEmpty : AbstractSimplicialComplex V where
+def ofEmpty : AbstractSimplicialComplex V where
   faces := {∅}
   empty_mem := rfl
   lower' := Finset.isLowerSet_singleton_empty V
 
 lemma bot_eq_ofEmpty : (⊥ : AbstractSimplicialComplex V) = ofEmpty := by
+lemma bot_eq_ofEmpty : (⊥ : AbstractSimplicialComplex V) = ofEmpty := by
   symm
+  rw [eq_bot_iff, le_def, show ofEmpty.faces = {∅} by rfl, Set.singleton_subset_iff]
   rw [eq_bot_iff, le_def, show ofEmpty.faces = {∅} by rfl, Set.singleton_subset_iff]
   apply (⊥ : AbstractSimplicialComplex V).empty_mem
 
@@ -153,29 +156,29 @@ def vertices (F : AbstractSimplicialComplex V) : Set V := ⋃ s : F.faces, s.1.t
 /--
 Definition: Let F be an ASC. A maximal face of F is called a facet of F.
 -/
-def IsFacet (F : AbstractSimplicialComplex V) (s : Finset V) := s ∈ F ∧ ∀ t ∈ F, s ⊆ t → s = t
+def isFacet (F : AbstractSimplicialComplex V) (s : Finset V) := s ∈ F ∧ ∀ t ∈ F, s ⊆ t → s = t
 
 /--
 Definition: For any ASC F, we denote by Facets F the set of facets of F.
 -/
-def Facets (F : AbstractSimplicialComplex V) : Set (Finset V) := {s | F.IsFacet s}
+def Facets (F : AbstractSimplicialComplex V) : Set (Finset V) := { s | F.isFacet s}
 
 /-- Definition: A pure abstract simplicial complex is an abstract simplicial complex
     where all facets have the same cardinality. -/
-def IsPure (F : AbstractSimplicialComplex V) :=
+def isPure (F : AbstractSimplicialComplex V) :=
   ∀ s ∈ Facets F, ∀ t ∈ Facets F, s.card = t.card
 
 class Pure (F : AbstractSimplicialComplex V) : Prop where
   pure : ∀ s ∈ F.Facets, ∀ t ∈ F.Facets, s.card = t.card
 
 /--Definition: We will call an ASC pure of rank `d` if all its facets has `d` elements-/
-def IsPure' (F : AbstractSimplicialComplex V) (d : ℕ) :=
+def isPure' (F : AbstractSimplicialComplex V) (d : ℕ) :=
   ∀ s ∈ F.Facets, s.card = d
 
 class Pure' (F : AbstractSimplicialComplex V) (d : ℕ) : Prop where
   pure : ∀ s ∈ F.Facets, s.card = d
 
-lemma isPure_iff_isPure' {F : AbstractSimplicialComplex V} : F.IsPure ↔ ∃ d, F.IsPure' d := by
+lemma isPure_iff_isPure' {F : AbstractSimplicialComplex V} : F.isPure ↔ ∃ d, F.isPure' d := by
   by_cases hemp : Nonempty F.Facets
   · constructor
     · let s := Classical.choice (hemp)
@@ -184,7 +187,7 @@ lemma isPure_iff_isPure' {F : AbstractSimplicialComplex V} : F.IsPure ↔ ∃ d,
       rw [hIp' s hs, hIp' t ht]
   · constructor
     · intro; use 0
-      simp only [IsPure', Finset.card_eq_zero]
+      simp only [isPure', Finset.card_eq_zero]
       contrapose! hemp
       rcases hemp with ⟨d, ⟨_, _⟩⟩
       use d
@@ -196,7 +199,7 @@ lemma isPure_iff_isPure' {F : AbstractSimplicialComplex V} : F.IsPure ↔ ∃ d,
 
 lemma pure_def {F : AbstractSimplicialComplex V} [Pure F] : ∀ s ∈ F.Facets, ∀ t ∈ F.Facets, s.card = t.card := Pure.pure
 
-lemma pure_isPure {F : AbstractSimplicialComplex V} [Pure F] : IsPure F := pure_def
+lemma pure_isPure {F : AbstractSimplicialComplex V} [Pure F] : isPure F := pure_def
 
 /--
 If the size of simplices in F is unbounded, it has rank 0 by definition.
@@ -243,6 +246,7 @@ lemma closure_simplex (f : Finset V) : closure {f} =  simplex f := by
   exact instSetLikeAbstractSimplicialComplexFinset.proof_1 (closure {f}) (simplex ↑f) h1
 
 def closureSingleton (f : Finset V) : AbstractSimplicialComplex V where
+def closureSingleton (f : Finset V) : AbstractSimplicialComplex V where
   faces :=
     if Nonempty f then
       {t | t.toSet ⊆ f}
@@ -255,8 +259,7 @@ def closureSingleton (f : Finset V) : AbstractSimplicialComplex V where
     · exact antitone_le
     · exact Finset.isLowerSet_singleton_empty V
 
-/-- Explicit construction of `closure s` for `s : Set (Finset V)`-/
-def closurePower (s : Set (Finset V)) : AbstractSimplicialComplex V where
+def closurePower (s: Set (Finset V)) : AbstractSimplicialComplex V where
   faces :=
     if Nonempty s then
       ⨆ f : s, {t | t.toSet ⊆ f}
@@ -274,8 +277,11 @@ def closurePower (s : Set (Finset V)) : AbstractSimplicialComplex V where
       congr
     · exact Finset.isLowerSet_singleton_empty V
 
-theorem closure_union_eq_iSup_closure {ι : Type*} (p : ι → Set (Finset V)) :
-  closure (⋃ i : ι, p i) = ⨆ i : ι, closure (p i) := by
+theorem Closure_eq_closurePower (s: Set (Finset V)) : closure s = closurePower s := by
+  sorry
+
+-- #check Set.mem_iUnion
+lemma face_closure_eq_iSup (s : Set (Finset V)) : (closure s).faces = ⨆ f ∈ s, (closure {f}).faces := by
   apply le_antisymm
   · apply sInf_le
     simp only [Set.iUnion_subset_iff, Set.mem_setOf_eq]
