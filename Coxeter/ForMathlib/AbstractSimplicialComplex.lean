@@ -223,7 +223,57 @@ Lemma: Let s be a collection of finsets in V. Then the closure of s is just the 
 
 Remark: So taking closure commuts with taking union.
 -/
-lemma closure_eq_iSup (s : Set (Finset V)) : closure s =  ⨆ f ∈ s,  closure {f} := by sorry
+-- #check Set.mem_iUnion
+lemma face_closure_eq_iSup (s : Set (Finset V)) : (closure s).faces = ⨆ f ∈ s, (closure {f}).faces := by
+  apply le_antisymm
+  · rw [le_iSup_iff]
+    intro X hX
+    sorry
+
+  · intro X hX
+    have : ∀ (K: AbstractSimplicialComplex V), ∀ (f: Finset V), (f ∈ s) ∧ (s ⊆ K.faces) → {f} ⊆ K.faces := by
+      intro K f hs
+      simp only [Set.singleton_subset_iff]
+      obtain ⟨hs1, hs2⟩ := hs
+      exact hs2 hs1
+    have : ∀ (f: Finset V), (f ∈ s) → (closure {f}).faces ⊆ (closure s).faces := by
+      intro f fs
+      rw [← le_def, le_sInf_iff]
+      intro K Ks
+      apply sInf_le
+      · apply this
+        · rw [Set.iSup_eq_iUnion] at hX
+          simp only [Set.mem_iUnion] at hX
+          exact ⟨fs, Ks⟩
+    rw [Set.iSup_eq_iUnion] at hX
+    simp only [Set.mem_iUnion] at hX
+    rcases hX with ⟨f, hf⟩
+    rw [Set.iSup_eq_iUnion] at hf
+    simp only [Set.mem_iUnion] at hf
+    rcases hf with ⟨f, Xf⟩
+    exact Set.mem_of_subset_of_mem this f Xf
+
+lemma iSup_of_faces_eq_faces_of_iSup  (s : Set (Finset V)) : (⨆ f ∈ s, closure {f}).faces = ⨆ f ∈ s, (closure {f}).faces := by
+
+  sorry
+
+
+lemma closure_eq_iSup (s : Set (Finset V)) : closure s = ⨆ f ∈ s,  closure {f} := by
+  ext X
+  constructor
+  · intro hX
+    sorry
+
+  · intro hX
+    have : ∀ (K: AbstractSimplicialComplex V), ∀ (f: Finset V), (f ∈ s) ∧ (s ⊆ K.faces) → {f} ⊆ K.faces := by
+      intro K f hs
+      simp only [Set.singleton_subset_iff, mem_faces]
+      -- simp only [Set.singleton_subset_iff, mem_faces]
+      sorry
+    sorry
+
+
+
 
 /--
 Lemma: Let F be an ASC. Then the closure of the set of faces is just F.
