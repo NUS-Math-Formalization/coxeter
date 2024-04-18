@@ -282,6 +282,14 @@ lemma remove_after_L_length (L : List α) {i : ℕ} (h : L.length ≤ i)
   nth_rw 2 [← remove_after_L_length']
   rw [Nat.sub_add_cancel h]
 
+lemma removeNth_cons (s : α) (L : List α) {i : ℕ} (h : i > 0) :
+  (s :: L).removeNth i = s :: L.removeNth (i - 1) := by
+  have : i = i - 1 + 1 := by exact (Nat.sub_eq_iff_eq_add h).mp rfl
+  nth_rw 1 [this]
+  induction' (i - 1) with k _
+  . simp only [removeNth, Nat.zero_eq]
+  . simp only [removeNth]
+
 -- DLevel 2
 lemma take_of_removeNth (L : List α) {i j : ℕ} (h : i ≤ j) :
     (L.removeNth j).take i = L.take i := by

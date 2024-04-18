@@ -314,6 +314,12 @@ lemma length_bound {w1 w2 : G} : ℓ(w1) - ℓ(w2) ≤ ℓ(w1 * w2⁻¹) := by
   simp only [inv_mul_cancel_right] at this
   simp only [tsub_le_iff_right, ge_iff_le, this]
 
+lemma length_of_one : ℓ((1 : G)) = 0 := by
+  rw [length]
+  simp only [Nat.find_eq_zero]
+  use []
+  simp only [List.length_nil, gprod_nil, and_self]
+
 -- Dlevel 1
 lemma length_zero_iff_one {w : G} : ℓ(w) = 0 ↔ w = 1 := by
   constructor
