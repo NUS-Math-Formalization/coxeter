@@ -99,29 +99,86 @@ lemma smul_eq_muls_of_length_eq_pre (s t : hG.S) (w : G) :
   ℓ(s * w * t) = ℓ(w) ∧ ℓ(s * w) = ℓ(w * t) ∧ ℓ(s * w) > ℓ(w) → s * w = w * t := by
   obtain ⟨L, hr, hL⟩ := @exists_reduced_word G _ hG.S _ w
   intro h; rcases h with ⟨h₁, h₂, h₃⟩
-  have lt_len : ℓ(s * w * t) < ℓ(s * w) := by rw [h₁]; exact h₃
-  have exch_prop: ∃ (i: Fin (s :: L).length), (s :: L : G) * t = (s :: L).removeNth i := by
-    have : reduced_word (s :: L) := by
-      apply OrderTwoGen.length_eq_iff.2
-      have : ℓ(s * w) = ℓ(w) + 1 := length_smul_of_length_gt h₃
-      rw [hL, HOrderTwoGenGroup.length, HOrderTwoGenGroup.length,
-          ← OrderTwoGen.length_eq_iff.1, ← gprod_cons] at this
-      apply this.symm
-      apply hr
-    rw [hL, HOrderTwoGenGroup.length, HOrderTwoGenGroup.length, ← gprod_cons] at lt_len
-    rcases hG.exchange' this (Nat.le_of_lt lt_len) with ⟨i, j⟩
-    use i
-  rcases exch_prop with ⟨i, j⟩
-  have : (L : G) = (s :: L).removeNth i := by
-    sorry
+  by_cases y : L = []
+  . rw [y, gprod_nil] at hL
+    rw [hL] at *
+    simp only [reduced_word, mul_one, one_mul, gt_iff_lt] at *
+    rw [HOrderTwoGenGroup.length, HOrderTwoGenGroup.length, length_of_one,
+      length_zero_iff_one] at h₁
+    rw [← mul_left_inj (t : G), gen_square_eq_one']
+    exact h₁
+  . push_neg at y
+    have lt_len : ℓ(s * w * t) < ℓ(s * w) := by rw [h₁]; exact h₃
+    have exch_prop: ∃ (i: Fin (s :: L).length), (s :: L : G) * t = (s :: L).removeNth i := by
+      have : reduced_word (s :: L) := by
+        apply OrderTwoGen.length_eq_iff.2
+        have : ℓ(s * w) = ℓ(w) + 1 := length_smul_of_length_gt h₃
+        rw [hL, HOrderTwoGenGroup.length, HOrderTwoGenGroup.length,
+            ← OrderTwoGen.length_eq_iff.1, ← gprod_cons] at this
+        apply this.symm
+        apply hr
+      rw [hL, HOrderTwoGenGroup.length, HOrderTwoGenGroup.length, ← gprod_cons] at lt_len
+      rcases hG.exchange' this (Nat.le_of_lt lt_len) with ⟨i, j⟩
+      use i
+    rcases exch_prop with ⟨i, j⟩
+    have exch_prop' : (s :: L : G) = ((s :: L).removeNth i) * t := by
+      rw [← mul_left_inj (t : G), mul_assoc, gen_square_eq_one', mul_one]
+      exact j
+    have : i.1 = 0 := by
+      by_contra x
+      push_neg at x
+      have i_pos : i.1 > 0 := Nat.pos_of_ne_zero x
+      have : (L : G) * t = L.removeNth (i.1 - 1) := by
+        rw [← one_mul (L : G), ← gen_square_eq_one' s, mul_assoc, mul_assoc]
+        nth_rw 2 [← mul_assoc]
+        rw [← gprod_cons, exch_prop', mul_assoc, gen_square_eq_one', mul_one, ← gprod_cons,
+          List.removeNth_cons, gprod_cons, gprod_cons, ← mul_assoc, gen_square_eq_one', one_mul]
+        exact i_pos
+      have : ℓ((L : G) * t) < ℓ((L : G)) := by
+        rw [this]
+        nth_rw 2 [HOrderTwoGenGroup.length]
+        rw [← OrderTwoGen.length_eq_iff.1 (by exact hr)]
+        have : (L.removeNth (i.1 - 1)).length = L.length - 1 := by
+          rw [← add_left_inj 1, Nat.sub_add_cancel]
+          apply List.removeNth_length L (⟨i.1 - 1, by exact Fin.subNat.proof_1 1 i i_pos⟩)
+          apply List.length_pos.2 y
+        have : ℓ((L.removeNth (i.1 - 1) : G)) ≤ L.length - 1 := by
+          rw [← this]; apply length_le_list_length
+        apply lt_of_le_of_lt this
+        rw [← Nat.pred_eq_sub_one]
+        apply Nat.pred_lt (ne_of_gt (List.length_pos.2 y))
+      rw [hL] at *
+      rw [← h₂] at this
+      linarith
+    rw [this, List.removeNth, gprod_cons, ← hL] at exch_prop'
+    exact exch_prop'
 
 lemma smul_eq_muls_of_length_eq (s t:hG.S) (w:G) :ℓ(s*w*t) = ℓ(w) ∧ ℓ(s*w)=ℓ(w*t) → s*w=w*t := by
-  obtain ⟨L, hr, hL⟩ := @exists_reduced_word G _ hG.S _ w
+  obtain ⟨L, _, _⟩ := @exists_reduced_word G _ hG.S _ w
   intro h; rcases h with ⟨h₁, h₂⟩
   by_cases k : ℓ(s * w) > ℓ(w)
-  . have : ℓ(s * w * t) < ℓ(s * w) := by rw [h₁]; exact k
-    sorry
-  . sorry
+  . apply smul_eq_muls_of_length_eq_pre
+    constructor
+    . exact h₁
+    . constructor
+      exact h₂
+      exact k
+  . push_neg at k
+    have : ℓ(s * w) ≠ ℓ(w) := length_smul_neq s w
+    have : ℓ(s * w) < ℓ(w) := by exact Nat.lt_of_le_of_ne k this
+    nth_rw 2 [← one_mul w] at this
+    rw [← gen_square_eq_one' s, mul_assoc] at this
+    have : s * (s * w) = s * w * t := by
+      apply smul_eq_muls_of_length_eq_pre s t (s * w)
+      constructor
+      . rw [← mul_assoc, gen_square_eq_one', one_mul]
+        apply h₂.symm
+      . constructor
+        rw [← mul_assoc, gen_square_eq_one', one_mul]
+        apply h₁.symm
+        exact this
+    rw [mul_assoc, mul_right_inj] at this
+    exact this
 
 lemma length_smul_eq_length_muls_of_length_neq (s t :hG.S) (w:G): ℓ(s*w*t) ≠ ℓ(w) → ℓ(s*w)=ℓ(w*t):= sorry
 
