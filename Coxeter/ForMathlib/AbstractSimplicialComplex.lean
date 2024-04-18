@@ -60,8 +60,7 @@ instance partialOrder : PartialOrder (AbstractSimplicialComplex V) where
   le_antisymm := fun G F => by
     simp only [le]
     intro h1 h2
-    have h3 : G.faces = F.faces := Set.Subset.antisymm h1 h2
-    exact SetLike.ext' h3
+    exact SetLike.ext' <| Set.Subset.antisymm h1 h2
 
 @[simp]
 lemma le_def {G F : AbstractSimplicialComplex V} : G ≤ F ↔ G.faces ⊆ F.faces := by rfl
@@ -127,9 +126,7 @@ lemma sSup_eq_unionSubset {s : Set <| AbstractSimplicialComplex V} (hs : s.Nonem
     apply Set.subset_iUnion_of_subset ⟨b, bs⟩
     simp only [subset_of_eq]
   · rw [le_sSup_iff]
-    intro b hb
-    rw [le_def]
-    exact Set.iUnion_subset fun i ↦ hb i.2
+    exact fun _ hb ↦ Set.iUnion_subset fun i ↦ hb i.2
 
 def OfEmpty : AbstractSimplicialComplex V where
   faces := {∅}
@@ -161,7 +158,7 @@ def IsFacet (F : AbstractSimplicialComplex V) (s : Finset V) := s ∈ F ∧ ∀ 
 /--
 Definition: For any ASC F, we denote by Facets F the set of facets of F.
 -/
-def Facets (F : AbstractSimplicialComplex V) : Set (Finset V) := { s | F.IsFacet s}
+def Facets (F : AbstractSimplicialComplex V) : Set (Finset V) := {s | F.IsFacet s}
 
 /-- Definition: A pure abstract simplicial complex is an abstract simplicial complex
     where all facets have the same cardinality. -/
@@ -189,7 +186,7 @@ lemma isPure_iff_isPure' {F : AbstractSimplicialComplex V} : F.IsPure ↔ ∃ d,
     · intro; use 0
       simp only [IsPure', Finset.card_eq_zero]
       contrapose! hemp
-      rcases hemp with ⟨d, ⟨a, _⟩⟩
+      rcases hemp with ⟨d, ⟨_, _⟩⟩
       use d
     · intro
       simp only [nonempty_subtype, not_exists] at hemp
@@ -221,6 +218,8 @@ lemma closure_mono {s t: Set (Finset V)} : s ⊆ t → closure s ≤ closure t :
   apply sInf_le_sInf
   rw [Set.setOf_subset_setOf]
   intro _ h; exact Set.Subset.trans hst h
+
+theorem closure_union_eq_iSup_closure {ι : Type*} (p : ι → Set (Finset V)) : closure (⋃ i : ι, p i) = ⨆ i : ι, closure (p i) := sorry
 
 /--
 Lemma: For a finset f, the closure of {f} is the simplex of f.
@@ -274,7 +273,7 @@ def ClosurePower (s: Set (Finset V)) : AbstractSimplicialComplex V where
       congr
     · exact Finset.isLowerSet_singleton_empty V
 
-theorem Closure_eq_ClosurePower (s: Set (Finset V)) : closure s = ClosurePower s := by
+theorem closure_eq_closurePower (s: Set (Finset V)) : closure s = ClosurePower s := by
   sorry
 
 -- #check Set.mem_iUnion
@@ -319,8 +318,10 @@ lemma closure_eq_iSup (s : Set (Finset V)) : closure s = ⨆ f : s,  closure {f.
   apply le_antisymm
   · rw [le_iSup_iff]
     intro x hx
-    rw [le_def, closure, sInf_def, ← Set.iInf_eq_iInter, ← Set.le_iff_subset, iInf_le_iff]
-    intro t ht
+    rw [le_def, closure_eq_closurePower]
+
+    -- rw [closure, sInf_def, ← Set.iInf_eq_iInter, ← Set.le_iff_subset, iInf_le_iff]
+    -- intro t ht
     sorry
   · apply iSup_le
     intro i
