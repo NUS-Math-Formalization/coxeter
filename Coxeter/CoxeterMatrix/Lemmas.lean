@@ -154,7 +154,6 @@ lemma smul_eq_muls_of_length_eq_pre (s t : hG.S) (w : G) :
     exact exch_prop'
 
 lemma smul_eq_muls_of_length_eq (s t:hG.S) (w:G) :ℓ(s*w*t) = ℓ(w) ∧ ℓ(s*w)=ℓ(w*t) → s*w=w*t := by
-  obtain ⟨L, _, _⟩ := @exists_reduced_word G _ hG.S _ w
   intro h; rcases h with ⟨h₁, h₂⟩
   by_cases k : ℓ(s * w) > ℓ(w)
   . apply smul_eq_muls_of_length_eq_pre
