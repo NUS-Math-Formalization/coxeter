@@ -1,9 +1,16 @@
 import Mathlib.RingTheory.RootsOfUnity.Basic
 import Mathlib.Data.Int.Order.Units
 
+/-!
+# Test Group
+
+This file contains the definition of the group of `ℤ/2ℤ` with some lemmas about it. This gives a ground
+for permutation representation for Coxeter groups.
+-/
+
 namespace TestGroup
 
-/- Let μ₂ be the group of ℤ/2ℤ. (μ₂ is usually for the algebra group. Maybe we change to ℤ/2ℤ.)
+/-- Let μ₂ be the group of ℤ/2ℤ. (μ₂ is usually for the algebra group. Maybe we change to ℤ/2ℤ.)
 -/
 abbrev μ₂ := rootsOfUnity 2 ℤ
 @[simp]

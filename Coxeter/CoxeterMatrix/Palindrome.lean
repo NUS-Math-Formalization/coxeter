@@ -4,6 +4,7 @@ import Mathlib.Tactic.Ring
 
 import Coxeter.CoxeterMatrix.CoxeterMatrix
 import Coxeter.OrderTwoGen
+
 namespace Palindrome
 variable {β : Type*}
 -- For a list L := [b₀, b₁, b₂, ..., bₙ], we define the Palindrome of L as [b₀, b₁, b₂, ..., bₙ, bₙ₋₁, ..., b₁, b₀]
@@ -13,10 +14,11 @@ variable {α} {m : Matrix α α ℕ} [hm : CoxeterMatrix m]
 local notation "G" => toGroup m
 local notation "S" => SimpleRefl m
 local notation "T" => OrderTwoGen.Refl (SimpleRefl m)
+
 @[simp]
 abbrev toPalindrome (L : List β) : List β := L ++ L.reverse.tail
 
--- Note that 0-1 = 0
+/-- Note that 0-1 = 0 -/
 lemma toPalindrome_length {L : List β} : (toPalindrome L).length = 2 * L.length - 1 := by
   simp only [toPalindrome, List.length_append, List.length_reverse, List.length_tail]
   by_cases h : L.length = 0
@@ -25,7 +27,7 @@ lemma toPalindrome_length {L : List β} : (toPalindrome L).length = 2 * L.length
     zify; ring_nf
     apply Nat.pos_of_ne_zero h
 
--- Our index starts from 0
+/-- Our index starts from 0 -/
 def toPalindrome_i (L : List S) (i : ℕ) := toPalindrome (L.take (i+1))
 notation:210 "t(" L:211 "," i:212 ")" => toPalindrome_i L i
 
@@ -39,8 +41,6 @@ lemma toPalindrome_in_Refl [CoxeterMatrix m] {L:List S} (hL : L ≠ []) : (toPal
     nth_rw 3 [this]
     exact gprod_append_singleton.symm
   rw [this, toPalindrome, gprod_append]
-
-
 
 lemma toPalindrome_i_in_Refl [CoxeterMatrix m] {L : List S} (i : Fin L.length) :
     (toPalindrome_i L i : G) ∈ T := by

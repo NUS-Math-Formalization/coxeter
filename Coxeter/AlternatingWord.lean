@@ -1,8 +1,17 @@
 import Mathlib.Data.List.Basic
 import Mathlib.Data.List.Range
 import Mathlib.Data.Nat.Parity
-
 import Coxeter.Aux_
+
+/-!
+# Alternating Word
+
+## Main Definition
+This file defines the alternating word of two elements `s` and `t` as a list of length `n`.
+
+## Example
+The alternating word of `a` and `b` of length `5` is `[a, b, a, b, a]`.
+-/
 
 namespace AlternatingWord
 
