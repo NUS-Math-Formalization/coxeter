@@ -260,6 +260,7 @@ instance Interval.fintype {x y : G} : Fintype (Interval x y) where
     --subword_property
     sorry
 
+noncomputable instance : LocallyFiniteOrder G := LocallyFiniteOrder.ofFiniteIcc (fun _ _ => Finite.of_fintype _)
 
 lemma BruhatOrder.adj {G} [cox : CoxeterGroup G] (u w : G) (h: u ⋖ w) : u * w⁻¹ ∈ Refl cox.S := sorry
 
