@@ -243,6 +243,40 @@ lemma closure_simplex (f : Finset V) : closure {f} =  simplex f := by
       -- apply mem_faces.1 <| i.lower' h1 <| mem_faces.2 fi
   exact instSetLikeAbstractSimplicialComplexFinset.proof_1 (closure {f}) (simplex ↑f) h1
 
+def ClosureSingleton (f : Finset V) : AbstractSimplicialComplex V where
+  faces :=
+    if Nonempty f then
+      {t | t.toSet ⊆ f}
+    else
+      {∅}
+  empty_mem := by
+    by_cases h : Nonempty f <;> simp [h]
+  lower' := by
+    by_cases h : Nonempty f <;> simp [h]
+    · exact antitone_le
+    · exact Finset.isLowerSet_singleton_empty V
+
+def ClosurePower (s: Set (Finset V)) : AbstractSimplicialComplex V where
+  faces :=
+    if Nonempty s then
+      ⨆ f : s, {t | t.toSet ⊆ f}
+    else
+      {∅}
+  empty_mem := by
+    by_cases h : Nonempty s <;> simp [h]
+    exact nonempty_subtype.mp h
+  lower' := by
+    by_cases h : Nonempty s <;> simp [h]
+    · refine isLowerSet_iUnion₂ ?_
+      intro t _
+      intro a b h1 h2
+      refine' Set.Subset.trans ?_ h2
+      congr
+    · exact Finset.isLowerSet_singleton_empty V
+
+theorem Closure_eq_ClosurePower (s: Set (Finset V)) : closure s = ClosurePower s := by
+  sorry
+
 -- #check Set.mem_iUnion
 lemma face_closure_eq_iSup (s : Set (Finset V)) : (closure s).faces = ⨆ f ∈ s, (closure {f}).faces := by
   apply le_antisymm
