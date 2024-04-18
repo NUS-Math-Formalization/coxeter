@@ -151,7 +151,7 @@ lemma sSup_faces_of_nonempty {s : Set (AbstractSimplicialComplex V)} (h : s.None
 /--
 Definition: For any ASC F, we denote by vertices F the set of vertices of F.
 -/
-def vertices (F : AbstractSimplicialComplex V) : Set V := ⋃ s ∈ F.faces, s.toSet
+def vertices (F : AbstractSimplicialComplex V) : Set V := ⋃ s : F.faces, s.1.toSet
 
 /--
 Definition: Let F be an ASC. A maximal face of F is called a facet of F.
@@ -172,7 +172,7 @@ class Pure (F : AbstractSimplicialComplex V) where
   pure : ∀ s ∈ F.Facets, ∀ t ∈ F.Facets, s.card = t.card
 
 /--Definition: We will call an ASC pure of rank `d` if all its facets has `d` elements-/
-def IsPure' (F : AbstractSimplicialComplex V) (d : ℕ):=
+def IsPure' (F : AbstractSimplicialComplex V) (d : ℕ) :=
   ∀ s ∈ F.Facets, s.card = d
 
 class Pure' (F : AbstractSimplicialComplex V) (d :ℕ) where
@@ -206,7 +206,6 @@ If the size of simplices in F is unbounded, it has rank 0 by definition.
 
 Remark: We should general be careful with the unbounded case.
 -/
-
 noncomputable def rank (F : AbstractSimplicialComplex V) : ℕ := iSup fun s : F.faces => s.1.card
 
 /-- Definition: For a collection s of subsets of V, we denote by closure s the smallest ASC over V containing all elements in s
@@ -216,6 +215,12 @@ Remark: Here we secretly consider the ambient space as the simplex with vertex s
 -/
 abbrev closure (s : Set (Finset V))
   : AbstractSimplicialComplex V := sInf { K | s ⊆  K.faces}
+
+lemma closure_mono {s t: Set (Finset V)} : s ⊆ t → closure s ≤ closure t := by
+  intro hst
+  apply sInf_le_sInf
+  rw [Set.setOf_subset_setOf]
+  intro _ h; exact Set.Subset.trans hst h
 
 /--
 Lemma: For a finset f, the closure of {f} is the simplex of f.
@@ -238,11 +243,6 @@ lemma closure_simplex (f : Finset V) : closure {f} =  simplex f := by
       -- apply mem_faces.1 <| i.lower' h1 <| mem_faces.2 fi
   exact instSetLikeAbstractSimplicialComplexFinset.proof_1 (closure {f}) (simplex ↑f) h1
 
-/--
-Lemma: Let s be a collection of finsets in V. Then the closure of s is just the union of the closure of elements in s.
-
-Remark: So taking closure commuts with taking union.
--/
 -- #check Set.mem_iUnion
 lemma face_closure_eq_iSup (s : Set (Finset V)) : (closure s).faces = ⨆ f ∈ s, (closure {f}).faces := by
   apply le_antisymm
@@ -274,25 +274,23 @@ lemma face_closure_eq_iSup (s : Set (Finset V)) : (closure s).faces = ⨆ f ∈ 
     exact Set.mem_of_subset_of_mem this f Xf
 
 lemma iSup_of_faces_eq_faces_of_iSup  (s : Set (Finset V)) : (⨆ f ∈ s, closure {f}).faces = ⨆ f : s, (closure {f.1}).faces := by
-
   sorry
 
+/--
+Lemma: Let s be a collection of finsets in V. Then the closure of s is just the union of the closure of elements in s.
 
+Remark: So taking closure commuts with taking union.
+-/
 lemma closure_eq_iSup (s : Set (Finset V)) : closure s = ⨆ f : s,  closure {f.1} := by
-  ext X
-  constructor
-  · intro hX
+  apply le_antisymm
+  · rw [le_iSup_iff]
+    intro x hx
+    rw [le_def, closure, sInf_def, ← Set.iInf_eq_iInter, ← Set.le_iff_subset, iInf_le_iff]
+    intro t ht
     sorry
-
-  · intro hX
-    have : ∀ (K: AbstractSimplicialComplex V), ∀ (f: Finset V), (f ∈ s) ∧ (s ⊆ K.faces) → {f} ⊆ K.faces := by
-      intro K f hs
-      simp only [Set.singleton_subset_iff, mem_faces]
-      -- simp only [Set.singleton_subset_iff, mem_faces]
-      sorry
-    sorry
-
-
+  · apply iSup_le
+    intro i
+    apply closure_mono <| Set.singleton_subset_iff.mpr i.2
 
 
 /--
@@ -310,12 +308,6 @@ lemma closure_self {F : AbstractSimplicialComplex V} : closure (F.faces) = F := 
       sorry
       -- exact fun _ i => i h1
   exact instSetLikeAbstractSimplicialComplexFinset.proof_1 (closure F.faces) F h1
-
-lemma closure_mono {s t: Set (Finset V)} : s ⊆ t → closure s ≤ closure t := by
-  intro hst
-  apply sInf_le_sInf
-  rw [Set.setOf_subset_setOf]
-  intro _ h; exact Set.Subset.trans hst h
 
 lemma closure_le {F : AbstractSimplicialComplex V} (h: s ⊆ F.faces) : closure s ≤ F := by
   rintro s2 h2
