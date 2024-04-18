@@ -145,8 +145,8 @@ lemma bot_faces_eq_empty : (⊥ : AbstractSimplicialComplex V).faces = {∅} := 
   rw [bot_eq_ofEmpty]; rfl
 
 @[simp]
-lemma sSup_faces_of_nonempty {s : Set (AbstractSimplicialComplex V)} (h : s.Nonempty) : (sSup s).faces = ⋃ F ∈ s, F.faces := by
-  rw [sSup_eq_unionSubset h]
+lemma sSup_faces_of_nonempty {s : Set (AbstractSimplicialComplex V)} (h : s.Nonempty) : (sSup s).faces = ⋃ F : s, F.1.faces := by
+  rw [sSup_eq_unionSubset h]; rfl
 
 /--
 Definition: For any ASC F, we denote by vertices F the set of vertices of F.
@@ -186,8 +186,7 @@ lemma isPure_iff_isPure' {F : AbstractSimplicialComplex V} : F.IsPure ↔ ∃ d,
     · rintro ⟨d, hIp'⟩ s hs t ht
       rw [hIp' s hs, hIp' t ht]
   · constructor
-    · intro
-      use 0
+    · intro; use 0
       simp only [IsPure', Finset.card_eq_zero]
       contrapose! hemp
       rcases hemp with ⟨d, ⟨a, _⟩⟩
