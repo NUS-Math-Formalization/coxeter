@@ -13,6 +13,8 @@ open Bruhat
 noncomputable
 section
 
+namespace ReflAlgebra
+
 def IsInitialSectionOf {G : Type*} [CoxeterGroup G] (A : Set (Refl G)) (R  : ReflectionOrder G) : Prop := @IsLowerSet (Refl G) (R.toLE) A
 
 def InitialSectionReflOrder (G : Type*) [CoxeterGroup G] : Set (Set (Refl G)) :=
@@ -20,14 +22,18 @@ def InitialSectionReflOrder (G : Type*) [CoxeterGroup G] : Set (Set (Refl G)) :=
 
 -- theorem mul_mem_initialSectionReflOrder {G : Type*} [cox: CoxeterGroup G] (y : G) (A : InitialSectionReflOrder G) : y • (A : Set (Refl G)) ∈  (InitialSectionReflOrder G) := sorry
 
+def support_G {G : Type*} [cox: CoxeterGroup G] (f: G → InitialSectionReflOrder G → LaurentPolynomial ℤ) : Set (G) :=
+  {w | ∃ A : InitialSectionReflOrder G,  f w (A : InitialSectionReflOrder G) ≠ (0 : LaurentPolynomial ℤ)}
+
+end ReflAlgebra
+
 local notation "ℛ" => LaurentPolynomial ℤ
 local notation "q½" => (LaurentPolynomial.T 1 : ℛ) -- √q
 local notation "q-½" => (LaurentPolynomial.T (-1) : ℛ)
 
-def support_G {G : Type*} [cox: CoxeterGroup G] (f: G → InitialSectionReflOrder G → ℛ) : Set (G) :=
-  {w | ∃ A : InitialSectionReflOrder G,  f w (A : InitialSectionReflOrder G) ≠ (0 : ℛ)}
+open ReflAlgebra
 
-def ReflAlgebra (G : Type*) [cox: CoxeterGroup G] : Submodule ℛ (G → InitialSectionReflOrder G → ℛ) where
+def ReflAlgebra (G : Type*) [cox: CoxeterGroup G] : Submodule ℛ (G → ReflAlgebra.InitialSectionReflOrder G → ℛ) where
   carrier := {f | Finite (support_G f) }
   add_mem' := sorry
   zero_mem' := sorry
@@ -161,6 +167,7 @@ theorem Hecke'.toHeckeHom.Injective : Function.Injective (Hecke'.toHeckeHom (G :
 theorem Hecke'.toHeckeHom.Surjective : Function.Surjective (Hecke'.toHeckeHom (G := G)) := sorry
 
 def Hecke'.toHeckeIso: (Hecke' G) ≃ₐ[ℛ] (Hecke G) := AlgEquiv.ofBijective (Hecke'.toHeckeHom (G := G)) ⟨Hecke'.toHeckeHom.Injective, Hecke'.toHeckeHom.Surjective⟩
+
 
 def R' (x w : G) : Hecke' G := sorry
 

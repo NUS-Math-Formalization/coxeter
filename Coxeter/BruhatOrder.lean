@@ -262,6 +262,10 @@ instance Interval.fintype {x y : G} : Fintype (Interval x y) where
 
 noncomputable instance : LocallyFiniteOrder G := LocallyFiniteOrder.ofFiniteIcc (fun _ _ => Finite.of_fintype _)
 
+instance : OrderBot G where
+  bot := 1
+  bot_le a := sorry
+
 lemma BruhatOrder.adj {G} [cox : CoxeterGroup G] (u w : G) (h: u ⋖ w) : u * w⁻¹ ∈ Refl cox.S := sorry
 
 end Bruhat
