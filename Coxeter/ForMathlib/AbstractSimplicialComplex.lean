@@ -230,17 +230,15 @@ lemma closure_simplex (f : Finset V) : closure {f} =  simplex f := by
     apply Set.Subset.antisymm
     · rw [sInf_def]
       rintro s h1
-      simp only [Set.singleton_subset_iff, mem_faces, Set.mem_setOf_eq, Set.mem_iInter] at h1
-      sorry
-      -- exact h1 (simplex ↑f) fun ⦃a⦄ a => a
+      simp only [Set.singleton_subset_iff, mem_faces, Set.mem_setOf_eq, Set.mem_iInter, Set.coe_setOf, Subtype.forall] at h1
+      exact h1 (simplex ↑f) fun ⦃a⦄ a => a
     · rw [sInf_def]
       rintro s h1
       apply simplex_face.1 at h1
       simp only [Finset.coe_subset] at h1
-      simp only [Set.singleton_subset_iff, mem_faces, Set.mem_setOf_eq, Set.mem_iInter]
-      intro i
-      sorry
-      -- apply mem_faces.1 <| i.lower' h1 <| mem_faces.2 fi
+      simp only [Set.singleton_subset_iff, mem_faces, Set.mem_setOf_eq, Set.mem_iInter, Set.coe_setOf, Subtype.forall]
+      intro i fi
+      apply mem_faces.1 <| i.lower' h1 <| mem_faces.2 fi
   exact instSetLikeAbstractSimplicialComplexFinset.proof_1 (closure {f}) (simplex ↑f) h1
 
 def ClosureSingleton (f : Finset V) : AbstractSimplicialComplex V where
@@ -334,21 +332,17 @@ lemma closure_self {F : AbstractSimplicialComplex V} : closure (F.faces) = F := 
   have h1 : (closure (F.faces)).faces = F.faces:= by
     apply Set.Subset.antisymm
     · rw [sInf_def]
-      rintro s h1; simp only [Set.mem_setOf_eq, Set.mem_iInter, mem_faces] at h1
-      sorry
-      -- exact h1 F fun ⦃_⦄ a => a
+      rintro s h1; simp only [Set.mem_setOf_eq, Set.mem_iInter, mem_faces, Set.coe_setOf, Subtype.forall] at h1
+      exact h1 F fun ⦃_⦄ a => a
     · rw [sInf_def]
-      rintro s h1; simp only [Set.mem_setOf_eq, Set.mem_iInter, mem_faces]
-      sorry
-      -- exact fun _ i => i h1
+      rintro s h1; simp only [Set.mem_setOf_eq, Set.mem_iInter, mem_faces, Set.coe_setOf, Subtype.forall]
+      exact fun _ i => i h1
   exact instSetLikeAbstractSimplicialComplexFinset.proof_1 (closure F.faces) F h1
 
 lemma closure_le {F : AbstractSimplicialComplex V} (h: s ⊆ F.faces) : closure s ≤ F := by
   rintro s2 h2
-  simp only [sInf_def, Set.mem_setOf_eq, Set.mem_iInter, mem_faces] at h2
-  sorry
-  -- exact h2 F h
-
+  simp only [sInf_def, Set.mem_setOf_eq, Set.mem_iInter, mem_faces, Set.coe_setOf, Subtype.forall] at h2
+  exact h2 F h
 
 /--
 Definition: G is a cone over F with cone point x if
