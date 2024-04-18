@@ -3,7 +3,7 @@ import Mathlib.Data.List.Basic
 import Mathlib.Data.List.MinMax
 import Mathlib.Data.MLList.DepthFirst
 
-import Coxeter.CoxeterMatrix.CoxeterMatrix
+import Coxeter.CoxeterMatrix.Basic
 import Coxeter.GraphSearchAux
 import Coxeter.Aux_
 
@@ -13,26 +13,7 @@ abbrev N := 3
 abbrev S := Fin N
 
 
-/- Proof that Given matrix is a Coxeter Matrix (Should be simpler) -/
--- instance : CoxeterMatrix m where
---   symmetric := by
---     intro i j; fin_cases i;
---     fin_cases j; simp[m]; simp[m]; simp[m]
---     fin_cases j; simp[m]; simp[m]; simp[m]
---     fin_cases j; simp[m]; simp[m]; simp[m]
---   oneIff := by
---     intro i j; constructor;
---     . contrapose!; intro h; fin_cases i;
---       fin_cases j; simp [m]; contradiction; simp [m]; simp [m]; simp [m];
---       fin_cases j; simp [m]; contradiction; simp [m]; simp [m];
---       fin_cases j; simp [m]; simp [m]; contradiction;
---     . intro h; fin_cases i;
---       fin_cases j; simp [m]; contradiction; contradiction;
---       fin_cases j; simp [m]; contradiction; simp [m]; contradiction;
---       fin_cases j; simp [m]; contradiction; contradiction; simp [m]
 
--- abbrev G := CoxeterMatrix.toGroup m
--- abbrev S' := CoxeterMatrix.SimpleRefl m
 
 section tits_solution
 /- Define a substution pattern (apply for arbituary presentation group) -/
@@ -216,6 +197,29 @@ end BruhatOrder
 def m := ![![1, 5, 2],
             ![5, 1, 3],
             ![2, 3, 1]]
+
+/- Proof that Given matrix is a Coxeter Matrix (Should be simpler) -/
+instance : CoxeterMatrix m where
+  symmetric := by
+    intro i j; fin_cases i;
+    fin_cases j; simp[m]; simp[m]; simp[m]
+    fin_cases j; simp[m]; simp[m]; simp[m]
+    fin_cases j; simp[m]; simp[m]; simp[m]
+  oneIff := by
+    intro i j; constructor;
+    . contrapose!; intro h; fin_cases i;
+      fin_cases j; simp [m]; contradiction; simp [m]; simp [m]; simp [m];
+      fin_cases j; simp [m]; contradiction; simp [m]; simp [m];
+      fin_cases j; simp [m]; simp [m]; contradiction;
+    . intro h; fin_cases i;
+      fin_cases j; simp [m]; contradiction; contradiction;
+      fin_cases j; simp [m]; contradiction; simp [m]; contradiction;
+      fin_cases j; simp [m]; contradiction; contradiction; simp [m]
+
+abbrev G := CoxeterMatrix.toGroup m
+abbrev S' := CoxeterMatrix.SimpleRefl m
+
+
 def m0 := ![![1, 3, 2, 2, 2],
            ![3, 1, 3, 2, 2],
            ![2, 3, 1, 3, 2],
