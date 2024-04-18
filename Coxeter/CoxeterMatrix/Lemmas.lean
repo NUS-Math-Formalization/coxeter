@@ -88,9 +88,40 @@ lemma length_muls_of_mem_leftDescent (s : leftDescent w) : ℓ(s*w) = ℓ(w) - 1
 
 lemma length_muls_of_mem_rightDescent (s : rightDescent w) : ℓ(w*s) = ℓ(w) - 1 :=sorry
 
-lemma muls_twice (w:G) (s:hG.S) : w*s*s = w := sorry
+lemma muls_twice (w:G) (s:hG.S) : w*s*s = w := by
+  rw [mul_assoc]
+  by_cases h : s = (1 : G)
+  . rw [h]; simp only [mul_one]
+  . push_neg at h
+    simp only [gen_square_eq_one', mul_one]
 
-lemma smul_eq_muls_of_length_eq (s t:hG.S) (w:G) :ℓ(s*w*t) = ℓ(w) ∧ ℓ(s*w)=ℓ(w*t) → s*w=w*t:= sorry
+lemma smul_eq_muls_of_length_eq_pre (s t : hG.S) (w : G) :
+  ℓ(s * w * t) = ℓ(w) ∧ ℓ(s * w) = ℓ(w * t) ∧ ℓ(s * w) > ℓ(w) → s * w = w * t := by
+  obtain ⟨L, hr, hL⟩ := @exists_reduced_word G _ hG.S _ w
+  intro h; rcases h with ⟨h₁, h₂, h₃⟩
+  have lt_len : ℓ(s * w * t) < ℓ(s * w) := by rw [h₁]; exact h₃
+  have exch_prop: ∃ (i: Fin (s :: L).length), (s :: L : G) * t = (s :: L).removeNth i := by
+    have : reduced_word (s :: L) := by
+      apply OrderTwoGen.length_eq_iff.2
+      have : ℓ(s * w) = ℓ(w) + 1 := length_smul_of_length_gt h₃
+      rw [hL, HOrderTwoGenGroup.length, HOrderTwoGenGroup.length,
+          ← OrderTwoGen.length_eq_iff.1, ← gprod_cons] at this
+      apply this.symm
+      apply hr
+    rw [hL, HOrderTwoGenGroup.length, HOrderTwoGenGroup.length, ← gprod_cons] at lt_len
+    rcases hG.exchange' this (Nat.le_of_lt lt_len) with ⟨i, j⟩
+    use i
+  rcases exch_prop with ⟨i, j⟩
+  have : (L : G) = (s :: L).removeNth i := by
+    sorry
+
+lemma smul_eq_muls_of_length_eq (s t:hG.S) (w:G) :ℓ(s*w*t) = ℓ(w) ∧ ℓ(s*w)=ℓ(w*t) → s*w=w*t := by
+  obtain ⟨L, hr, hL⟩ := @exists_reduced_word G _ hG.S _ w
+  intro h; rcases h with ⟨h₁, h₂⟩
+  by_cases k : ℓ(s * w) > ℓ(w)
+  . have : ℓ(s * w * t) < ℓ(s * w) := by rw [h₁]; exact k
+    sorry
+  . sorry
 
 lemma length_smul_eq_length_muls_of_length_neq (s t :hG.S) (w:G): ℓ(s*w*t) ≠ ℓ(w) → ℓ(s*w)=ℓ(w*t):= sorry
 
