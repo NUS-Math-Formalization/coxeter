@@ -16,6 +16,12 @@ variable {G : Type*} {w : G} [hG:CoxeterGroup G]
 -- some lemmas are symmetric, such as muls_twice : w*s*s = w, the symm version is s*s*w = w.
 -- this section only contain lemmas that needed in Hecke.lean, you can also formulate the symms if u want.
 
+lemma ne_one_of_length_smul_lt {s : hG.S} {w:G} (lt: ℓ(s*w) < ℓ(w)) : w ≠ 1 := by
+  have : 0 < HOrderTwoGenGroup.length w := lt_of_le_of_lt (Nat.zero_le _) lt
+  contrapose! this
+  rw [HOrderTwoGenGroup.length]
+  apply (length_zero_iff_one (S := hG.S)).mpr at this
+  rw [this]
 
 lemma leftDescent_NE_of_ne_one (h : w ≠ 1) : Nonempty $ leftDescent w := by
   revert h
@@ -33,17 +39,21 @@ lemma leftDescent_NE_of_ne_one (h : w ≠ 1) : Nonempty $ leftDescent w := by
   rw [← length_eq_iff.mp this, ← length_eq_iff.mp hr]
   simp
 
+lemma ne_one_of_leftDescent_NE (h: Nonempty $ leftDescent w) : w ≠ 1 := by
+  let s:= Classical.choice h
+  have : ℓ(s*w) < ℓ(w) := (Set.mem_setOf.1 (Set.mem_of_mem_inter_left s.2)).2
+  exact ne_one_of_length_smul_lt (s:= ⟨s.1, Set.mem_of_mem_inter_right s.2⟩) this
+
 lemma rightDescent_NE_of_ne_one (h : w ≠ 1) : Nonempty $ rightDescent w := by
   rw [← inv_inv w, rightDescent_inv_eq_leftDescent]
   have : w⁻¹ ≠ 1 := by contrapose! h; exact inv_eq_one.mp h
   exact leftDescent_NE_of_ne_one this
 
-lemma ne_one_of_length_smul_lt {s : hG.S} {w:G} (lt: ℓ(s*w) < ℓ(w)) : w ≠ 1 := by
-  have : 0 < HOrderTwoGenGroup.length w := lt_of_le_of_lt (Nat.zero_le _) lt
+lemma ne_one_of_rightDescent_ne_one (h: Nonempty $ rightDescent w) : w ≠ 1 := by
+  rw [← inv_inv w, rightDescent_inv_eq_leftDescent] at h
+  have := ne_one_of_leftDescent_NE h
   contrapose! this
-  rw [HOrderTwoGenGroup.length]
-  apply (length_zero_iff_one (S := hG.S)).mpr at this
-  rw [this]
+  exact inv_eq_one.mpr this
 
 lemma length_smul_neq (s:hG.S) (w:G) : ℓ(s*w) ≠ ℓ(w) := by
   obtain ⟨L, hr, hL⟩ := @exists_reduced_word G _ hG.S _ w
