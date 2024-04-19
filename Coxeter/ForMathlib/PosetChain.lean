@@ -28,7 +28,7 @@ Definition: A chain in the poset P is a finite sequence x₀ < x₁ < ⋯ < x_n.
 -/
 abbrev chain (L : List P) : Prop := List.Chain' (· < ·) L
 
-abbrev Chains (P : Type*) [PartialOrder P] : Set (List P) := { L | chain L}
+abbrev Chains (P : Type*) [PartialOrder P] : Set (List P) := { L | chain L }
 
 section chain
 
@@ -564,20 +564,26 @@ lemma max_chain_mem_edge {P : Type*} [PartialOrder P] {L: List P} {e: P × P} :
     subst h
     simp at this
     exact this.2.1
+  maximal_chain L →  e ∈ L.adjPairs → e ∈ edges P:= by
+    intro maxc eadj
+    have := maximal_chain_cover maxc
+    simp [edges]
+    rw [mem_adjPairs_iff] at eadj
+    rcases eadj with ⟨l₁, l₂, h⟩
+    subst h
+    simp at this
+    exact this.2.1
 
 
 /-
 We define the set of all maximal chains of P.
 -/
 
-instance : Fintype (Set.Elem {L : List P | L.Nodup}) :=
-  inferInstanceAs (Fintype {L : List P // L.Nodup})
+instance : Fintype (Set.Elem { L : List P | L.Nodup }) :=
+  inferInstanceAs (Fintype { L : List P // L.Nodup })
 
-def auxinj : { L : List P | maximal_chain L } → Set.toFinset {L : List P | L.Nodup} :=
-  fun l ↦ ⟨l.val, by simp; apply chain_nodup l.prop.1⟩
-
-instance : Fintype { L : List P| maximal_chain L } :=
-  Fintype.ofInjective auxinj (by simp [Function.Injective, auxinj])
+instance : Fintype { L : List P | maximal_chain L } :=
+  Set.fintypeSubset { L : List P | L.Nodup} fun _ h ↦ Set.mem_setOf_eq.mpr (chain_nodup (Set.mem_setOf_eq.mp h).1)
 
 abbrev maximalChains (P : Type*) [PartialOrder P] [Fintype P] : Finset (List P) :=
   Set.toFinset { L | maximal_chain L }
