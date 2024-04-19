@@ -657,10 +657,9 @@ noncomputable def TT_inv_s (s:hG.S) := q⁻¹ • (TT s.val) - (1-q⁻¹) • 1
 lemma TT_inv_mul {s:hG.S}:  TT s.1 * (TT_inv_s s) = 1 := by
   dsimp [TT_inv_s]
   set qinv := @LaurentPolynomial.T ℤ _ (-1)
-  simp_rw [mul_sub (TT s.1),mul_smul_comm,Ts_square,smul_add,smul_smul,mul_sub,mul_one]
+  simp_rw [mul_sub (TT s.1),mul_smul_comm,Ts_square,smul_add,smul_smul,mul_sub, _root_.mul_one]
   rw [q_inv_mul,add_sub_right_comm,sub_self]
   simp
-  rw [smul_smul,q_inv_mul,one_smul]
 
 noncomputable def listToHeckeInv : List hG.S → Hecke G := fun L => (List.map TT_inv_s L.reverse).prod
 
