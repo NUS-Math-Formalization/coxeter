@@ -110,6 +110,9 @@ where
   inf_le_left := fun _ _ _ ha => ha.1
   __ := completeLatticeOfInf (AbstractSimplicialComplex V) sInf_isGLB
 
+@[simp]
+lemma inf_def (F G : AbstractSimplicialComplex V) : (F ⊓ G).faces = F.faces ∩ G.faces := rfl
+
 def unionSubset {s : Set <| AbstractSimplicialComplex V} (hs : s.Nonempty) : AbstractSimplicialComplex V where
   faces := ⋃ F : s, F.1.faces
   empty_mem := by
@@ -151,7 +154,7 @@ Definition: For any ASC F, we denote by vertices F the set of vertices of F.
 def vertices (F : AbstractSimplicialComplex V) : Set V := ⋃ s : F.faces, s.1.toSet
 
 /--
-Definition: Let F be an ASC. A maximal face of F is called a facet of F.
+Definition: Let `F` be an ASC. A maximal face of F is called a facet of F.
 -/
 def IsFacet (F : AbstractSimplicialComplex V) (s : Finset V) := s ∈ F ∧ ∀ t ∈ F, s ⊆ t → s = t
 
@@ -204,7 +207,6 @@ If the size of simplices in F is unbounded, it has rank `0` by definition.
 
 Remark: We should general be careful with the unbounded case.
 -/
-
 noncomputable def rank (F : AbstractSimplicialComplex V) : ℕ := iSup fun s : F.faces => s.1.card
 
 /-- Definition: For a collection s of subsets of V, we denote by closure s the smallest ASC over V containing all elements in s
@@ -218,6 +220,9 @@ abbrev closure (s : Set (Finset V))
 lemma subset_closure_faces (s : Set (Finset V)) : s ⊆ (closure s).faces := by
   simp only [sInf_def, Set.coe_setOf, Set.mem_setOf_eq, Set.subset_iInter_iff, Subtype.forall,
     imp_self, forall_const]
+
+lemma closure_faces_eq_self (F : AbstractSimplicialComplex V) : closure F.faces = F := by
+  sorry
 
 lemma closure_mono {s t: Set (Finset V)} : s ⊆ t → closure s ≤ closure t := by
   intro hst
@@ -289,20 +294,22 @@ theorem closure_iUnion_eq_iSup_closure {ι : Type*} (p : ι → Set (Finset V)) 
     intro i
     apply closure_mono <| Set.subset_iUnion p i
 
-lemma closure_union_eq_sup_closure {f g : Set (Finset V)} :
-  closure (f ∪ g) = closure f ⊔ closure g := by
-  sorry
-
-theorem closure_iInter_eq_iInf_closure {ι : Type*} (p : ι → Set (Finset V)) :
-  closure (⋂ i : ι, p i) = ⨅ i : ι, closure (p i) := by
-  sorry
-
 lemma closure_inter_eq_inf_closure {f g : Set (Finset V)} :
-  closure (f ∩ g) = closure f ⊔ closure g := by
-  sorry
+  closure (f ∩ g) = closure f ⊓ closure g := by
+  apply le_antisymm
+  · apply sInf_le
+    simp [inf_def]
+    constructor <;> exact fun a ha ↦ subset_trans (by simp) ha
+  · simp; intro x hx
+    -- rw [Set.inter_iInter, Set.iInter_inter]
+    -- simp; intro C hC x hx
+    -- obtain ⟨xf, xg⟩ := (Set.mem_inter_iff _ _ _).mp hx
+
+    sorry
+
 
 /--
-Lemma: Let s be a collection of finsets in V. Then the closure of s is just the union of the closure of elements in s.
+Lemma: Let `s` be a collection of finsets in `V`. Then the closure of `s` is just the union of the closure of elements in `s`.
 
 Remark: So taking closure commuts with taking union.
 -/

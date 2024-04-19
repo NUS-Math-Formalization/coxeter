@@ -11,7 +11,7 @@ A shelling of `F` is an linear ordering `l₁`, ⋯ , `lₘ` of all (maximal) fa
  `lᵢ ⊓ (⨆ {j < i}, lⱼ)`  is an abstract simplicial complex pure of rank `d`.
 -/
 def Shelling {F : AbstractSimplicialComplex V} [hpure : Pure F] {m : ℕ} (l : Fin m ≃ Facets F) := F.rank > 0 ∧
-  ∀ i : Fin m, 1 < i.val → IsPure' ((⨆ j : {j // j < i}, closure {(l j).val}) ⊓ (closure {(l i).val})) (F.rank - 1)
+  ∀ i : Fin m, 0 < i.val → IsPure' ((⨆ j : {j // j < i}, closure {(l j).val}) ⊓ (closure {(l i).val})) (F.rank - 1)
 
 /--
 Definition': Let `F` be a pure abstract simplicial complex of rank `d + 1`.
@@ -26,14 +26,15 @@ def Shelling' [DecidableEq V] {F :  AbstractSimplicialComplex V} [hpure : Pure F
 
 /-- Lemma: The two definitions of shellings are equivalent.
 -/
-lemma shelling_iff_shelling' [DecidableEq V] {F : AbstractSimplicialComplex V}  [hpure: Pure F]    {m : ℕ} (l : Fin m ≃ Facets F) :
+lemma shelling_iff_shelling' [DecidableEq V] {F : AbstractSimplicialComplex V}  [hpure: Pure F] {m : ℕ} (l : Fin m ≃ Facets F) :
     Shelling l ↔ Shelling' l := by
     constructor
     · refine fun a ↦ ⟨a.1, ?_⟩
       intro k i ilek
       unfold Shelling at a
-      have kge1 : 1 < k.1 := by
-
+      have : k.val > 0 := by sorry
+      let b := a.2 k this
+      unfold IsPure' at b
 
       sorry
     · refine fun a ↦ ⟨a.1, ?_⟩
