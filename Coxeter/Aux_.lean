@@ -27,9 +27,7 @@ lemma append_singleton_ne_nil (L : List α) (a : α) : L ++ [a] ≠ [] := by {
   | nil => {simp}
   | cons hd tail _ => {simp}
 }
-
 lemma length_hd_tail_eq_succ_length (L : List α) (a : α) : (a :: L).length = L.length + 1 := by simp
-
 
 lemma append_remove_cancel_of_eq_last_index {a : α} {n : ℕ} (h : n = L.length) :
   (L ++ [a]).removeNth n = L := by
@@ -37,14 +35,10 @@ lemma append_remove_cancel_of_eq_last_index {a : α} {n : ℕ} (h : n = L.length
   | nil => rw [h]; simp
   | cons hd tail ih => rw [h]; simp [ih]
 
-
 lemma length_append_singleton (L : List α) (a : α) : (L ++ [a]).length = L.length + 1 := by
   induction L with
   | nil => simp
   | cons _ tail _ => simp
-
-#check length_removeNth
-
 
 lemma take_le_length (L : List α) (h : n ≤ L.length)  : (L.take n).length = n := by
   simp only [length_take,ge_iff_le, h, min_eq_left]
@@ -287,6 +281,14 @@ lemma remove_after_L_length (L : List α) {i : ℕ} (h : L.length ≤ i)
         apply ih
   nth_rw 2 [← remove_after_L_length']
   rw [Nat.sub_add_cancel h]
+
+lemma removeNth_cons (s : α) (L : List α) {i : ℕ} (h : i > 0) :
+  (s :: L).removeNth i = s :: L.removeNth (i - 1) := by
+  have : i = i - 1 + 1 := by exact (Nat.sub_eq_iff_eq_add h).mp rfl
+  nth_rw 1 [this]
+  induction' (i - 1) with k _
+  . simp only [removeNth, Nat.zero_eq]
+  . simp only [removeNth]
 
 -- DLevel 2
 lemma take_of_removeNth (L : List α) {i j : ℕ} (h : i ≤ j) :

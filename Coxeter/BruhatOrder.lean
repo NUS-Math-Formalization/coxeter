@@ -1,5 +1,4 @@
-import Coxeter.CoxeterSystem
-import Coxeter.CoxeterMatrix.CoxeterMatrix
+import Coxeter.CoxeterMatrix.Basic
 import Coxeter.StrongExchange
 import Coxeter.CoxeterMatrix.Palindrome
 
@@ -223,11 +222,11 @@ lemma fin_list_complement_complement {n : ℕ} (L : List (Fin n)) (Lincr : L.Pai
 lemma exists_intermediate_reduced_subword {L L' : List S} (hne: (L : G) ≠ L') (hred: reduced_word L) (hred': reduced_word L')
     (hsub: List.Sublist L' L) : ∃ (L'' : List S), reduced_word L'' ∧ (L' : G) < L'' ∧ ℓ((L'' : G)) = ℓ((L' : G)) + 1
     ∧ List.Sublist L'' L := by
-  let ⟨L_ind_in, ⟨h_eq, Lincr⟩⟩ := List.sublist_eq_map_get hsub
-  let L_ind_rm := fin_list_complement Lincr
-  have h_L_ind_rm_nonempty : L_ind_rm ≠ [] := by
-    sorry
-  -- let t := toPalindrome_i L (L_ind_rm.getLast h_L_ind_rm_nonempty)
+  -- let ⟨L_ind_in, ⟨h_eq, Lincr⟩⟩ := List.sublist_eq_map_get hsub
+  -- let L_ind_rm := fin_list_complement Lincr
+  -- have h_L_ind_rm_nonempty : L_ind_rm ≠ [] := by
+  --   sorry
+  -- let t := Palindrome.toPalindrome_i L (L_ind_rm.getLast h_L_ind_rm_nonempty)
   -- let L'' := L ++ t
   -- have h0 : reduced_word L'' := by sorry
   -- have h1 : (L' : G) < L'' := by sorry

@@ -2,13 +2,20 @@ import Coxeter.OrderTwoGen
 import Coxeter.Aux_
 import Mathlib.Data.Matrix.Basic
 
+/-!
+# A Characterization
+
+In this file we define the `ExchangeProp` and `DeletionProp` for an `OrderTwoGen` group `G`.
+We then prove that they are equivalent.
+-/
+
 namespace OrderTwoGen
 variable {G : Type*} [Group G] (S : Set G) [OrderTwoGen S]
 
 local notation : max "ℓ(" g ")" => (length S g)
 
 @[simp]
-abbrev ExchangeProp  := ∀ {L : List S} {s : S}, reduced_word L →
+abbrev ExchangeProp := ∀ {L : List S} {s : S}, reduced_word L →
   ℓ(s * L) ≤ ℓ(L) → ∃ (i: Fin L.length), (s : G) * L = L.removeNth i
 
 @[simp]
@@ -75,14 +82,6 @@ lemma exchange_iff_exchange' : ExchangeProp S ↔ ExchangeProp' S:= by
 /-
 We now prove that ExchangeProp and DeletionProperty are equivalent
 -/
-lemma take_drop_get' (L: List S) (n : ℕ) (h : n < L.length):
-  L = (L.take n).gprod * [L.get ⟨n, h⟩] * L.drop (n+1) := by
-  rw [←gprod_append, ←gprod_append]
-  apply congr_arg
-  exact List.take_drop_get L n h
-
-
-
 lemma exchange_imp_deletion : ExchangeProp S →  DeletionProp S:= by
   rw [exchange_iff_exchange']
   rw [ExchangeProp', DeletionProp]
@@ -108,9 +107,6 @@ lemma exchange_imp_deletion : ExchangeProp S →  DeletionProp S:= by
     exact i.2
   rw [h_L_decomp, ←Hp, ←gprod_singleton]
   apply take_drop_get'
-
-
-
 
 lemma deletion_imp_exchange : @DeletionProp G _ S _ → @ExchangeProp G _ S _ := by
   rw [exchange_iff_exchange']
@@ -188,187 +184,4 @@ lemma deletion_imp_exchange : @DeletionProp G _ S _ → @ExchangeProp G _ S _ :=
       rw [h_s_eq_i'] at h_i_lt_k
       exact lt_irrefl _ h_i_lt_k
 
-
-
 end OrderTwoGen
-
-open OrderTwoGen
-
-class CoxeterSystem {G : Type*} [Group G] (S : Set G) extends OrderTwoGen S where
-  exchange : ExchangeProp S
-  exchange' : ExchangeProp' S := (exchange_iff_exchange' S).1 exchange
-  deletion : DeletionProp S := exchange_imp_deletion S exchange
-
-
-section
-class HOrderTwoGenGroup (G: Type*) extends Group G where
-  S: Set G
-  order_two :  ∀ (x:G) , x ∈ S →  x * x = (1 :G) ∧  x ≠ (1 :G)
-  expression : ∀ (x:G) , ∃ (L : List S),  x = L.gprod
-
-namespace HOrderTwoGenGroup
-variable (G :Type*) [hG: HOrderTwoGenGroup G]
-variable {H :Type*} [hH: HOrderTwoGenGroup H]
-
-@[simp]
-abbrev SimpleRefl := hG.S
-@[simp,deprecated SimpleRefl]
-abbrev SimpleRefls := hG.S
-
-
-
-abbrev Refl (G:Type*) [HOrderTwoGenGroup G]: Set G:= {x:G| ∃ (w:G)(s : SimpleRefl G) , x = w*s*w⁻¹}
-
-@[deprecated Refl]
-abbrev Refls (G:Type*) [HOrderTwoGenGroup G]: Set G:= {x:G| ∃ (w:G)(s : SimpleRefl G) , x = w*s*w⁻¹}
-
-instance SimpleRefls.toOrderTwoGen  : @OrderTwoGen H _ (SimpleRefl H) where
-  order_two := hH.order_two
-  expression := hH.expression
-
-
-instance SimpleRefls.toOrderTwoGen'  : @OrderTwoGen H _ (hH.S) where
-  order_two := hH.order_two
-  expression := hH.expression
-
-noncomputable def length  (g :H) := OrderTwoGen.length (hH.S) g
-
-notation:65 "ℓ(" g:66 ")" => (length g)
-variable (s w :G)
-#check ℓ(s*w)
-#check ℓ((s*w))
-#check ℓ(s) - 1
-#check w^(ℓ(w))
-end HOrderTwoGenGroup
-
-class CoxeterGroup (G:Type*) extends HOrderTwoGenGroup G where
-  exchange : OrderTwoGen.ExchangeProp S
-  exchange': OrderTwoGen.ExchangeProp' S := (OrderTwoGen.exchange_iff_exchange' S).1 exchange
-  deletion: OrderTwoGen.DeletionProp S := OrderTwoGen.exchange_imp_deletion S exchange
-  matrix : Matrix S S ℕ
-  symmetric : ∀ (a b : S), matrix a b = matrix b a
-  oneIff : ∀ (a b : S), matrix a b = 1 ↔ a = b
-
-
-namespace CoxeterGroup
-open HOrderTwoGenGroup
-
-instance SimpleRefl_isCoxeterSystem  {G:Type*} [hG:CoxeterGroup G]: CoxeterSystem (SimpleRefl G) where
-  exchange := hG.exchange
-  exchange' := hG.exchange'
-  deletion := hG.deletion
-
-instance SimpleRefl_isCoxeterSystem'  {G:Type*} [hG:CoxeterGroup G]: CoxeterSystem (hG.S) where
-  exchange := hG.exchange
-  exchange' := hG.exchange'
-  deletion := hG.deletion
-
-instance {G:Type*} [hG:CoxeterGroup G]: HMul hG.S G G where
-  hMul := fun s g => s.1 * g
-
-instance {G:Type*} [hG:CoxeterGroup G]: HMul G hG.S G where
-  hMul := fun g s => g * s.1
-
-instance {G:Type*} [hG:CoxeterGroup G]: CoeOut hG.S G where
-  coe := fun s => s.1
-
-
--- The length function defines a metric on the Coxeter group
-noncomputable instance metric [CoxeterGroup G]: MetricSpace G := OrderTwoGen.metric <| SimpleRefl G
-
-def leftAssocRefls (w : G) [CoxeterGroup G] := {t : G | t ∈ Refl G ∧ ℓ(((t:G)*w)) < ℓ(w)}
-
-def rightAssocRefls (w : G) [CoxeterGroup G] := {t : G | t ∈ Refl G ∧ ℓ((w*(t:G))) < ℓ(w)}
-
-def leftDescent (w : G) [hG:CoxeterGroup G] := leftAssocRefls w ∩ hG.S
-
-def rightDescent (w : G) [hG:CoxeterGroup G] := rightAssocRefls w ∩ hG.S
-
-section HeckeAux
-variable {G : Type*} {w : G} [hG:CoxeterGroup G]
-
--- following lemmas assume G is CoxeterGroup, we can also have CoxeterMatrix version.
--- these lemmas are needed in Hecke.lean, because the def of Hecke use [CoxeterGroup G],
--- for convenience, the statements also use [CoxeterGroup G]
--- some lemmas are symmetric, such as muls_twice : w*s*s = w, the symm version is s*s*w = w.
--- this section only contain lemmas that needed in Hecke.lean, you can also formulate the symms if u want.
-lemma leftDescent_NE_of_ne_one  (h : w ≠ 1) : Nonempty $ leftDescent w:= sorry
-
-lemma rightDescent_NE_of_ne_one  (h : w ≠ 1) : Nonempty $ rightDescent w:= sorry
-
-lemma ne_one_of_length_smul_lt {s : hG.S} {w:G} (lt: ℓ(s*w) < ℓ(w)) : w ≠ 1:= sorry
-
-lemma length_smul_neq (s:hG.S) (w:G) : ℓ(s*w) ≠ ℓ(w) := sorry
-
-lemma length_muls_neq (w:G) (t:hG.S) : ℓ(w*t) ≠ ℓ(w) := sorry
-
-lemma length_diff_one {s:hG.S} {g : G} : ℓ(s*g) = ℓ(g) + 1  ∨ ℓ(g) = ℓ(s*g) + 1 :=sorry
-
-lemma length_smul_of_length_lt {s : hG.S} {w:G} (h : w ≠ 1) (lt: ℓ(s*w) < ℓ(w)) : ℓ(s*w) = ℓ(w) - 1 := sorry
-
-lemma length_muls_of_length_lt {s : hG.S} {w:G} (h : w ≠ 1) (lt: ℓ(w*s) < ℓ(w)) : ℓ(w*s) = ℓ(w) - 1 := sorry
-
-lemma length_smul_of_length_gt {s : hG.S} {w:G} (gt: ℓ(w) < ℓ(s*w)) : ℓ(s*w) = ℓ(w) + 1 := sorry
-
-lemma length_muls_of_length_gt {s : hG.S} {w:G} (gt: ℓ(w) < ℓ(w*s)) : ℓ(w*s) = ℓ(w) + 1 := sorry
-
-lemma length_muls_of_mem_leftDescent  (h : w ≠ 1) (s : leftDescent w) : ℓ(s*w) = ℓ(w) - 1 :=sorry
-
-lemma length_muls_of_mem_rightDescent  (h : w ≠ 1) (s : rightDescent w) : ℓ(w*s) = ℓ(w) - 1 :=sorry
-
-lemma muls_twice (w:G) (s:hG.S) : w*s*s = w := sorry
-
-lemma smul_eq_muls_of_length_eq (s t:hG.S) (w:G) :ℓ(s*w*t) = ℓ(w) ∧ ℓ(s*w)=ℓ(w*t) → s*w=w*t:= sorry
-
-lemma length_smul_eq_length_muls_of_length_neq (s t :hG.S) (w:G): ℓ(s*w*t) ≠ ℓ(w) → ℓ(s*w)=ℓ(w*t):= sorry
-
--- ℓ(s*w*t) = ℓ(w) or ℓ(s*w*t) = ℓ(w) + 2 or ℓ(s*w*t) = ℓ(w) - 2
--- ℓ(s*w*t) < ℓ(w) →  ℓ(s*w*t) < ℓ(s*w) <ℓ(w) ∧ ℓ(s*w*t) < ℓ(w*t) <ℓ(w)
-lemma length_lt_of_length_smuls_lt {s t:hG.S} {w:G} (h: ℓ(s*w*t) < ℓ(w)) : ℓ(s*w*t) < ℓ(s*w) := sorry
-
-lemma length_lt_of_length_smuls_lt' {s t:hG.S} {w:G} (h: ℓ(s*w*t) < ℓ(w)) : ℓ(s*w) < ℓ(w) := sorry
-
-lemma length_gt_of_length_smuls_gt {s t:hG.S} {w:G} (h: ℓ(w) < ℓ(s*w*t)) : ℓ(w) < ℓ(s*w) :=sorry
-
-lemma length_gt_of_length_smuls_gt' {s t:hG.S} {w:G} (h: ℓ(w) < ℓ(s*w*t)) : ℓ(s*w) <ℓ(s*w*t) :=sorry
-
-end HeckeAux
-
-
-end CoxeterGroup
-
-end
-
-
-
--- Palindrome words is moved here
--- section Palindrome
--- @[simp]
--- abbrev toPalindrome   (L : List β) : List β := L ++ L.reverse.tail
-
--- -- Note that 0-1 = 0
--- lemma toPalindrome_length {L : List β} : (toPalindrome L).length = 2 * L.length - 1 := by
---   simp only [toPalindrome, List.length_append, List.length_reverse, List.length_tail]
---   by_cases h: L.length=0
---   . simp [h]
---   . rw [<-Nat.add_sub_assoc]
---     zify; ring_nf
---     apply Nat.pos_of_ne_zero h
-
--- variable {G:Type*} [Group G] {S : Set G} [OrderTwoGen S]
-
--- local notation "T" => (OrderTwoGen.Refl S)
--- end Palindrome
-
-
--- namespace CoxeterSystem
-
--- variable {G: Type*} [Group G] (S : Set G) [CoxeterSystem S]
-
--- end CoxeterSystem
-
-
--- structure expression where
--- element:G
--- reduced_expr:List S
--- reduced_property: reduced_word reduced_expr
