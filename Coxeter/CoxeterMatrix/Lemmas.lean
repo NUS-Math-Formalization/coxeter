@@ -49,7 +49,7 @@ lemma rightDescent_NE_of_ne_one (h : w ≠ 1) : Nonempty $ rightDescent w := by
   have : w⁻¹ ≠ 1 := by contrapose! h; exact inv_eq_one.mp h
   exact leftDescent_NE_of_ne_one this
 
-lemma ne_one_of_rightDescent_ne_one (h: Nonempty $ rightDescent w) : w ≠ 1 := by
+lemma ne_one_of_rightDescent_NE(h: Nonempty $ rightDescent w) : w ≠ 1 := by
   rw [← inv_inv w, rightDescent_inv_eq_leftDescent] at h
   have := ne_one_of_leftDescent_NE h
   contrapose! this
@@ -63,7 +63,6 @@ lemma length_smul_neq (s:hG.S) (w:G) : ℓ(s*w) ≠ ℓ(w) := by
   rw [hi, ← length_eq_iff.mp hr] at eq_len
   linarith [List.removeNth_length L i,
     @length_le_list_length G _ hG.S _ (L.removeNth i)]
-
 
 lemma length_muls (w : G) (s : hG.S) : OrderTwoGen.length hG.S (w * s) = OrderTwoGen.length hG.S (s * w⁻¹) := by
   nth_rw 1 [← inv_inv (w * s)]
@@ -113,9 +112,17 @@ lemma length_muls_of_length_gt {s : hG.S} {w:G} (gt: ℓ(w) < ℓ(w * s)) : ℓ(
   repeat rw [← HOrderTwoGenGroup.length] at *
   exact length_smul_of_length_gt gt
 
-lemma length_muls_of_mem_leftDescent (s : leftDescent w) : ℓ(s*w) = ℓ(w) - 1 :=sorry
+lemma length_muls_of_mem_leftDescent (s : leftDescent w) : ℓ(s*w) = ℓ(w) - 1 := by
+  have hNE : Nonempty $ leftDescent w := Nonempty.intro s
+  have := ne_one_of_leftDescent_NE hNE
+  have hlt : ℓ(s*w) < ℓ(w) := Set.mem_setOf.1 (Set.mem_of_mem_inter_left s.2).2
+  exact length_smul_of_length_lt (s := ⟨s.1, Set.mem_of_mem_inter_right s.2⟩) hlt
 
-lemma length_muls_of_mem_rightDescent (s : rightDescent w) : ℓ(w*s) = ℓ(w) - 1 :=sorry
+lemma length_muls_of_mem_rightDescent (s : rightDescent w) : ℓ(w*s) = ℓ(w) - 1 := by
+  have hNE : Nonempty $ rightDescent w := Nonempty.intro s
+  have := ne_one_of_rightDescent_NE hNE
+  have hlt : ℓ(w*s) < ℓ(w) := Set.mem_setOf.1 (Set.mem_of_mem_inter_left s.2).2
+  exact length_muls_of_length_lt (s := ⟨s.1, Set.mem_of_mem_inter_right s.2⟩) hlt
 
 lemma muls_twice (w:G) (s:hG.S) : w*s*s = w := by
   rw [mul_assoc]
