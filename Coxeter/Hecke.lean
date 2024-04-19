@@ -1,5 +1,6 @@
-import Coxeter.CoxeterSystem
-import Coxeter.WellFounded
+import Coxeter.CoxeterMatrix.Basic
+import Coxeter.CoxeterMatrix.Lemmas
+import Coxeter.Wellfounded
 
 import Mathlib.LinearAlgebra.FreeModule.Basic
 import Mathlib.Algebra.DirectSum.Basic
@@ -372,6 +373,8 @@ lemma subalg_commute_subalg' (f:subalg G) (g:subalg' G): f.1 ∘ₗ g.1 = g.1 �
     intro g
     rw [Subalgebra.coe_mul,LinearMap.mul_eq_comp,LinearMap.comp_assoc,h2 g,←LinearMap.comp_assoc,h1 g,LinearMap.comp_assoc]
 
+set_option synthInstance.maxHeartbeats 50000
+
 noncomputable instance alg_hom_aux.IsLinearMap : IsLinearMap (LaurentPolynomial ℤ) (alg_hom_aux: subalg G → Hecke G) where
   map_add:=by intro x y; simp
   map_smul := by intro c x; simp
@@ -578,11 +581,21 @@ noncomputable def preTT : G → subalg G := fun g => sorry
 --how to simp * to def?
 @[simp]
 lemma mul_gt : ℓ(w) < ℓ(s*w) → TT s.1 * TT w = TT (s*w) := by
+@[simp]
+lemma mul_gt : ℓ(w) < ℓ(s*w) → TT s.1 * TT w = TT (s*w) := by
   intro hl
   rw [mul_def]
   simp only [HeckeMul]
   sorry
 
+@[simp]
+lemma mul_lt : ℓ(s*w) < ℓ(w) → TT s.1 * TT w = (q-1) • (TT w) + q • (TT (s*w)) := sorry
+
+@[simp]
+lemma mul_gt' : ℓ(w) < ℓ(w*s) → TT w * TT s.1 = TT (w*s) := by sorry
+
+@[simp]
+lemma mul_lt' : ℓ(w*s) < ℓ(w) → TT w * TT s.1 = (q-1) • (TT w) + q • (TT (w*s)) := by sorry
 @[simp]
 lemma mul_lt : ℓ(s*w) < ℓ(w) → TT s.1 * TT w = (q-1) • (TT w) + q • (TT (s*w)) := sorry
 

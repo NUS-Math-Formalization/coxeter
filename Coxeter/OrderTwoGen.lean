@@ -314,6 +314,12 @@ lemma length_bound {w1 w2 : G} : ℓ(w1) - ℓ(w2) ≤ ℓ(w1 * w2⁻¹) := by
   simp only [inv_mul_cancel_right] at this
   simp only [tsub_le_iff_right, ge_iff_le, this]
 
+lemma length_of_one : ℓ((1 : G)) = 0 := by
+  rw [length]
+  simp only [Nat.find_eq_zero]
+  use []
+  simp only [List.length_nil, gprod_nil, and_self]
+
 -- Dlevel 1
 lemma length_zero_iff_one {w : G} : ℓ(w) = 0 ↔ w = 1 := by
   constructor
@@ -367,6 +373,18 @@ lemma reduced_drop_of_reduced {S : Set G} [OrderTwoGen S] {L : List S} (h : redu
   apply reverse_is_reduced
   rw [List.reverse_drop]
   exact reduced_take_of_reduced h (L.length - n)
+
+/-- If `p : G → Prop` holds for the identity and it is preserved under multiplying on the left
+by a generator to form a reduced word, then it holds for all elements of `G`. -/
+theorem gen_induction_reduced_word_left {p : G → Prop} (g : G) (H1 : p 1)
+    (Hmul : ∀ (s : S) (L : List S), reduced_word (s :: L) → p L.gprod → p (s :: L).gprod) : p g := by
+  obtain ⟨L, hr, hL⟩ := @exists_reduced_word G _ S _ g
+  induction L generalizing g with
+  | nil => rw [hL, gprod_nil]; exact H1
+  | cons hd tail ih =>
+    rw [hL]
+    exact Hmul hd tail hr (ih tail.gprod (reduced_drop_of_reduced hr 1) rfl)
+
 
 -- Cannot define the metric as an instance as there are various choices of S for a fixed G
 -- On the other hand, the metric is well defined for Coxeter Group
