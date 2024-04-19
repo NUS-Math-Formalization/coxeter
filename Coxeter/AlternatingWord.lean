@@ -56,41 +56,35 @@ lemma alternating_word_take (s t : α) (n i : ℕ) (h : i ≤ n) :
   rw [alternating_word_range, alternating_word_range, ← List.map_take, List.take_range h]
 
 -- DLevel 2
-lemma alternating_word_append_odd (s t : α) (n m : ℕ) (h1 : m ≤ n) (h2 : Odd m) :
-    alternating_word s t n = alternating_word s t m ++ alternating_word t s (n - m) := by
-  nth_rw 1 [← Nat.sub_add_cancel (h1)]
-  set d := n - m
-  rcases h2 with ⟨k, ek⟩
+lemma alternating_word_append_odd (s t : α) (m n : ℕ) (h : Odd m) :
+    alternating_word s t (m + n) = alternating_word s t m ++ alternating_word t s n := by
+  rcases h with ⟨k, ek⟩
   rw [ek]
   clear ek
   induction k with
   | zero =>
-    rw [Nat.mul_zero, Nat.zero_add, Nat.add_one, Nat.succ_eq_add_one]
+    rw [Nat.mul_zero, Nat.zero_add, Nat.add_comm, ← Nat.succ_eq_add_one]
     rw [alternating_word_singleton, alternating_word, List.singleton_append]
   | succ y ih =>
-    rw [Nat.add_one, Nat.succ_eq_add_one, Nat.succ_eq_add_one, mul_add]
-    nth_rw 2 [two_mul]
-    nth_rw 3 [two_mul]
-    repeat rw [← add_assoc]
-    rw [alternating_word, alternating_word]
-    rw [add_assoc, ih]
-    rw [alternating_word, alternating_word]
+    simp_rw [Nat.add_one, Nat.succ_eq_add_one, mul_add,
+      add_assoc, add_comm (2 * 1), two_mul, ← add_assoc]
+    repeat rw [alternating_word]
+    rw [← two_mul, ih]
     repeat rw [← List.cons_append]
+    rfl
 
 -- DLevel 2
-lemma alternating_word_append_even (s t : α) (n m : ℕ) (h1 : m ≤ n) (h2 : Even m) :
-    alternating_word s t n = alternating_word s t m ++ alternating_word s t (n - m) := by
-  nth_rw 1 [← Nat.sub_add_cancel (h1)]
-  set d := n - m
-  rcases h2 with ⟨k, ek⟩
+lemma alternating_word_append_even (s t : α) (m n : ℕ) (h : Even m) :
+    alternating_word s t (m + n) = alternating_word s t m ++ alternating_word s t n := by
+  rcases h with ⟨k, ek⟩
   rw [ek, ← two_mul]
   clear ek
   induction k with
   | zero =>
-    rw [Nat.mul_zero, Nat.add_zero, alternating_word_nil, List.nil_append]
+    rw [Nat.mul_zero, Nat.zero_add, alternating_word_nil, List.nil_append]
   | succ y ih =>
-    rw [Nat.succ_eq_add_one, mul_add, two_mul, two_mul, ← add_assoc]
-    repeat rw [alternating_word]
+    rw [Nat.succ_eq_add_one, mul_add, add_assoc, add_comm (2 * 1)]
+    simp_rw [two_mul, ← add_assoc, alternating_word, Nat.add]
     rw [← two_mul, ih]
     repeat rw [← List.cons_append]
 
@@ -103,8 +97,8 @@ lemma odd_alternating_word_reverse (s t : α) (i : ℕ) (h : Odd i) :
   . simp only [Nat.zero_eq, mul_zero, zero_add]
     rfl
   . rw [Nat.succ_eq_add_one, mul_add, mul_one, add_assoc, add_comm 2 1, ← add_assoc]
-    nth_rw 1 [alternating_word_append_odd s t (2 * l + 1 + 2) (2 * l + 1) (by simp) (by simp)]
-    rw [alternating_word_append_even s t (2 * l + 1 + 2) 2 (by simp) (by simp)]
+    nth_rw 1 [alternating_word_append_odd s t (2 * l + 1) 2 (by simp)]
+    rw [add_comm (2 * l + 1), alternating_word_append_even s t 2 (2 * l + 1) (by simp)]
     simp only [add_tsub_cancel_left, List.reverse_append, add_tsub_cancel_right,
       ih, List.append_cancel_right_eq]
     rfl
@@ -119,9 +113,9 @@ lemma even_alternating_word_reverse (s t : α) (i : ℕ) (h : Even i) :
   . simp only [Nat.zero_eq, mul_zero]
     rfl
   . rw [Nat.succ_eq_add_one, mul_add, mul_one,
-      alternating_word_append_even s t (2 * l + 2) 2 (by simp) (by simp),
-      alternating_word_append_even t s (2 * l + 2) (2 * l) (by simp) (by simp),
-      List.reverse_append, add_tsub_cancel_right, add_tsub_cancel_left, ih]
+      Nat.add_comm, alternating_word_append_even s t 2 (2 * l) (by simp),
+      Nat.add_comm, alternating_word_append_even t s (2 * l) 2 (by simp),
+      List.reverse_append, ih]
     rfl
 
 lemma alternating_word_map (s t : α) (f : α → A) (n : ℕ) :

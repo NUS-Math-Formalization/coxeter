@@ -1,4 +1,5 @@
 import Mathlib.Data.Fintype.Basic
+import Mathlib.Data.Fintype.List
 import Mathlib.Data.Nat.Lattice
 import Mathlib.Data.List.Lex
 import Mathlib.Data.Set.Intervals.Basic
@@ -7,12 +8,15 @@ import Mathlib.Data.List.Chain
 import Mathlib.Order.Cover
 import Mathlib.Tactic.Linarith.Frontend
 import Coxeter.ForMathlib.AdjacentPair
+import Mathlib.SetTheory.Cardinal.Basic
 
-
+noncomputable section
 namespace PartialOrder
-/- Let P be a finite poet. -/
-variable {P : Type*} [PartialOrder P]
+/- Let P be a finite poset. -/
+variable {P : Type*} [PartialOrder P] [Fintype P]
 
+open List Classical
+--test
 
 /- Recall that : We say a is covered by b if x < y and there is no element z such that x < z < y. -/
 
@@ -41,11 +45,6 @@ instance poset_chain {P : Type*} [PartialOrder P] : PartialOrder (Chains P) wher
   le_refl := by simp
   le_trans := fun _ _ _ h1 h2 ↦ List.Sublist.trans h1 h2
   le_antisymm := fun _ _ h1 h2 => Subtype.ext <| List.Sublist.antisymm h1 h2
-
-/-
-instance: The set of all chains in P is a lattice.
--/
-instance lattice_chain {P : Type*} [PartialOrder P] : Lattice (Chains P) := sorry
 
 end chain
 
@@ -77,13 +76,66 @@ lemma maximal_chain'_of_maximal_chain {L: List P} : maximal_chain L → maximal_
 /-
 Lemma: A singleton is a chain by definition.
 -/
-lemma chain_singleton {a : P} : chain [a] := by simp
+lemma chain_singleton {a : P} : chain [a] := chain'_singleton _
 
-lemma chain_singleton_of_head_eq_tail  {L : List P} (a : P) : chain L → L.head? = some a → L.getLast? = some a → L.length = 1  := by
-  sorry
+lemma getLast_eq_of_getLast?_eq_coe {L : List P} (h : L ≠ []) (h' : L.getLast? = .some a) : L.getLast h = a := by
+  unfold List.getLast? at *
+  match L with
+  | [] => simp at *
+  | b :: L' =>
+    simp at *
+    assumption
+
+/-Lemma: A chain has no duplicates.-/
+lemma chain_nodup {L : List P} (h : chain L) : L.Nodup := by
+  induction L with
+  | nil => simp
+  | cons a L' hl' =>
+    simp [List.Nodup]
+    constructor
+    · intro ain
+      have : a < a := by
+        apply List.Chain.rel (l :=  L')
+        exact h
+        exact ain
+      simp at this
+    · have : chain L' := by
+        simp [chain] at *
+        rw [show L' = List.tail (a :: L') by rfl]
+        apply List.Chain'.tail h
+      exact hl' this
+
+-- May not be needed, use chain_nodup
+lemma chain_singleton_of_head_eq_tail  {L : List P} (a : P) (chain_l : chain L)
+ (lha : L.head? = some a) (lta :  L.getLast? = some a) : L.length = 1  := by
+  match L with
+  | [] => simp at lha
+  | [_] => simp at *
+  | b :: c :: L'' =>
+      simp at lta
+      apply getLast_eq_of_getLast?_eq_coe at lta <;> simp at *
+      subst lha
+      have : b < b := by
+        nth_rw 2 [← lta]
+        apply List.Chain.rel (l := (c :: L''))
+        simp
+        exact chain_l
+        exact List.getLast_mem _
+      simp at this
+
 
 lemma maximal_chain'_singleton {a : P}: maximal_chain' [a] := by
-  sorry
+  constructor
+  · exact chain_singleton
+  · intro L' hL' h hsub
+    simp at h
+    have := chain_singleton_of_head_eq_tail a hL' (eq_comm.1 h.1) (eq_comm.2 h.2)
+    rw [List.length_eq_one] at this
+    rcases this with ⟨a',ha'⟩
+    rw [ha'] at hsub
+    have := (List.sublist_singleton (l:= [a])).1  hsub
+    simp at this
+    rw [ha',this]
 
 
 lemma maximal_chain'_nil : maximal_chain' ([] : List P) := by
@@ -126,7 +178,7 @@ lemma maximal_chain'_tail {a : P} {tail : List P} : maximal_chain' (a :: tail) �
   constructor
   . exact List.Chain'.tail C
   . intros L' hL' h1 h2
-    let tail := b ::t
+    let tail := b :: t
     let L'' := a :: L'
     have chainL'' : chain L'' := by
       apply List.chain'_cons'.2
@@ -137,24 +189,40 @@ lemma maximal_chain'_tail {a : P} {tail : List P} : maximal_chain' (a :: tail) �
         rw [<-this]
         exact (List.chain'_cons.1 C).1
       . exact hL'
-    have htL''1 : (a :: tail).head? = L''.head?  := by simp
+    have htL''1 : (a :: tail).head? = L''.head?  := by
+      exact rfl
     have htL''2 : (a :: tail).getLast? = L''.getLast? := by
       cases L' with
       | nil => simp at h2
       | cons c d =>
-        simp only [List.getLast?_cons_cons, h1.2]
+        calc
+          List.getLast? (a :: tail) = List.getLast? (a :: b :: t) := by exact rfl
+          _ = List.getLast? (b :: t) := by simp [List.getLast?_cons_cons]
+          _ = List.getLast? (c :: d) := by simp [h1.2]
+          _ = List.getLast? (a :: c :: d) := by simp [List.getLast?_cons_cons]
+          _ = List.getLast? L'' := by exact rfl
+        -- simp only [List.getLast?_cons_cons, h1.2]
     have sublistL'' : List.Sublist (a :: tail) L'' := by
       apply List.cons_sublist_cons.2
       exact h2
     have : a :: tail = L'' := MAX L'' chainL'' ⟨htL''1, htL''2⟩ sublistL''
     exact (List.cons_eq_cons.1 this).2
 
-lemma maximal_chain'_cons {a b : P} {L : List P} : maximal_chain' (b :: L) → a ⋖ b → maximal_chain' (a :: b :: L) := by sorry
+lemma in_of_in_sublist {a : P} {L L' : List P} (g : List.Sublist L L') (h : a ∈ L) : a ∈ L' := by
+  induction g with
+  | slnil => exact h
+  | cons hd _ htrans =>
+    exact List.mem_cons_of_mem hd (htrans h)
+  | cons₂ hd _ htrans =>
+    rename_i L₁ L₂ _
+    by_cases ha : a = hd
+    · rw [ha]
+      exact List.mem_cons_self hd _
+    · have : a ∈ L₁ := by exact List.mem_of_ne_of_mem ha h
+      exact List.mem_cons_of_mem hd (htrans this)
 
-/-
-Lemma: A pair of element is a maximal chain if and only if the pair is a cover relation.
--/
-lemma maximal_chain'₂_iff_ledot {a b : P} : maximal_chain' [a,b] ↔ (a ⋖ b) := by sorry
+
+
 
 /-
 Lemma: If a chain L : x₀ < x₁ < ⋯ < x_n is maximal', then we have x_0 ⋖ x_1 ⋖ x_2 ⋯ ⋖ x_n.
@@ -169,6 +237,90 @@ lemma cover_chain_of_maximal_chain' {P : Type*} [PartialOrder P] {L: List P} :
     | b :: t' =>
       apply List.chain'_cons.2
       exact ⟨maximal_chain'_head h, ih (maximal_chain'_tail h)⟩
+
+lemma maximal_chain'_cons {a b : P} {L : List P} : maximal_chain' (b :: L) → a ⋖ b → maximal_chain' (a :: b :: L) := by
+  intro maxcbL aledb
+  simp [maximal_chain', aledb.1, maxcbL.1]
+  intro L' chain_l' lha leq sublst
+  match L' with
+  | [] => simp at *
+  | c :: L'' =>
+      simp at lha
+      subst lha
+      cases sublst with
+      | cons  _ h =>
+          have ain : a ∈ L'' := by
+            have : [a].Sublist (a :: b :: L) := by simp
+            have : [a].Sublist L'' := by apply List.Sublist.trans this h
+            simp at this
+            assumption
+          exfalso
+          apply chain_nodup at chain_l'
+          apply List.nodup_cons.mp at chain_l'
+          exact chain_l'.1 ain
+      | cons₂ _ h =>
+          congr
+          dsimp [maximal_chain'] at maxcbL
+          by_cases h' : List.head? L'' = some b
+          · rw [show L'' = List.tail (a :: L'') by simp]
+            apply maxcbL.2 (L' := L'') (List.Chain'.tail chain_l')
+            constructor
+            · apply h'.symm
+            · match L'' with
+              | [] => simp at h
+              | _ :: _ =>
+                  simp at leq
+                  assumption
+            apply h
+          · exfalso
+            dsimp [CovBy] at aledb
+            match L'' with
+            | [] => simp at h
+            | c :: tail =>
+                simp at h'
+                have bin : b ∈ tail := by
+                  have : b ∈ c :: tail := by
+                    have : [b].Sublist (b :: L) := by simp
+                    have : [b].Sublist (c :: tail) := by apply List.Sublist.trans this h
+                    simp at this ⊢
+                    exact this
+                  simp at this
+                  rcases this with e | hi
+                  · exfalso; exact h' e.symm
+                  · exact hi
+                have cltb : c < b := by
+                  simp only [List.chain'_cons] at chain_l'
+                  apply List.Chain.rel (l := tail) chain_l'.2 bin
+                have altc : a < c := (List.chain'_cons.mp chain_l').1
+                exact aledb.2 altc cltb
+
+
+
+
+/-
+Lemma: A pair of element is a maximal chain if and only if the pair is a cover relation.
+-/
+lemma maximal_chain'₂_iff_ledot {a b : P} : maximal_chain' [a,b] ↔ (a ⋖ b) := by
+  constructor
+  · simp [maximal_chain']
+    intro aleb maxchain
+    constructor
+    · assumption
+    · intro c altc cltb
+      have : chain [a, c, b] := by
+        rw [chain]
+        simp [altc, cltb]
+      have : [a, b] = [a, c, b] := by
+        apply maxchain [a, c, b] this
+        simp; simp
+        apply List.cons_sublist_cons.mpr
+        rw [show [b] = List.tail [c, b] by simp]
+        apply List.tail_sublist [c, b]
+      simp at this
+  · intro h
+    apply maximal_chain'_cons maximal_chain'_singleton h
+
+
 
 
 
@@ -185,8 +337,38 @@ Lemma: Assume P is a bounded poset. Let L : x₀ < x₁ < ⋯ < x_n  be a chain 
 such that the adjacent relations are cover relations; x_0 is the minimal element and x_n is the maximal element.
 Then L is a maximal chain.
 -/
+
+-- lemma ne_sublist_subset {α: Type*} {l l' : List α} (hne: l ≠ l') (hsub: l <+ l') : ∃ a : α, a ∈ l' ∧ a ∉ l := sorry
+
+-- lemma ne_nil_of_ne_sublist {α: Type*} {l l' : List α} (hne: l ≠ l') (hsub: l <+ l') : l' ≠ [] := sorry
+
+-- --lemma ne_nil_of_ne_sublist' {α: Type*} {l l' : List α} (hne: l ≠ l') (hsub: l <+ l') (heq : head? L = head? L')
+-- --  def List.interval :
+
 lemma maximal_chain'_of_cover_chain {P :Type*} [PartialOrder P]  {L: List P} :
-  List.Chain' (· ⋖ ·) L → maximal_chain' L := by sorry
+  List.Chain' (· ⋖ ·) L → maximal_chain' L := by
+    have aux: ∀ n (L1:List P), L1.length = n → List.Chain' (· ⋖ ·) L1 → maximal_chain' L1 := by
+      intro n
+      induction' n with m hn
+      · intro L1 heq _
+        have hnil : L1 = [] := length_eq_zero.mp heq
+        rw [hnil]
+        exact maximal_chain'_nil
+      · intro L1 heq hc
+        have hl: L1.tail.length = m := by
+          rw [length_tail,heq]
+          rfl
+        have := hn L1.tail hl (List.Chain'.tail hc)
+        cases L1 with
+        | nil => exact maximal_chain'_nil
+        | cons a tail =>
+          cases tail with
+          | nil => exact maximal_chain'_singleton
+          | cons b tail' =>
+            simp only [tail] at *
+            have acovb: a ⋖ b := List.Chain'.rel_head hc
+            exact maximal_chain'_cons this acovb
+    exact aux L.length L rfl
 
 /-
 Lemma: Assume P is a bounded poset. Let L : x₀ < x₁ < ⋯ < x_n  be a chain of P
@@ -195,20 +377,113 @@ Then L is a maximal chain.
 -/
 lemma maximal_chain_of_cover_chain {P :Type*} [PartialOrder P] [BoundedOrder P] {L: List P} :
   List.Chain' (· ⋖ · ) L ∧ L.head? = some ⊥ ∧ L.getLast? = some ⊤ → maximal_chain L := by
-  rintro ⟨h1, h2, h3⟩
-  by_contra h4
-  rw [maximal_chain] at h4
-  push_neg at h4
-  sorry
+  rintro ⟨h₁, h₂, h₃⟩
+  have g₁ : List.Chain' (· < ·) L := by
+    apply List.Chain'.imp (R := (· ⋖ · )) (S := (· < ·))
+    intro a b aleb
+    exact CovBy.lt aleb
+    exact h₁
+  have g₂ : maximal_chain' L := by
+    apply maximal_chain'_of_cover_chain h₁
+  rw [maximal_chain]
+  constructor
+  · exact g₁
+  · intro L' g₃ g₄
+    apply g₂.2
+    · apply g₃
+    · rw [h₂]
+      rw [h₃]
+      have g₅ : ⊥ ∈ L' := by
+        apply in_of_in_sublist _ _
+        · exact L
+        · exact g₄
+        · exact List.mem_of_mem_head? h₂
+      have g₆ : ⊤ ∈ L' := by
+        apply in_of_in_sublist _ _
+        · exact L
+        · exact g₄
+        · exact List.mem_of_mem_getLast? h₃
+      have g₇ : List.Chain' (fun x x_1 => x < x_1) L' := by
+        exact g₃
+      constructor
+      · match L' with
+        | [] =>
+          have : L = [] := by exact List.sublist_nil.mp g₄
+          simp [this] at h₂
+        | head :: tail =>
+          by_contra h₄
+          push_neg at h₄
+          have h₅ : ⊥ ∈ tail := by
+            have : ⊥ ≠ head := by exact fun a => h₄ (congrArg some a)
+            simp at g₅
+            simp [this] at g₅
+            exact g₅
+          have : head < ⊥ := by
+            apply List.Chain.rel g₃ h₅
+          have h₆ : ¬ head < ⊥ := by exact not_lt_bot
+          exact h₆ this
+      · match L' with
+        | [] =>
+          have : L = [] := by exact List.sublist_nil.mp g₄
+          simp [this] at h₃
+        | head :: tail =>
+          by_contra h₄
+          have h₅ : chain (head :: tail ++ [⊤]) := by
+            apply List.Chain'.append
+            apply g₇
+            exact chain_singleton
+            intro x hx y hy
+            simp at hy
+            rw [hy.symm]
+            unfold List.getLast? at h₄
+            simp at h₄
+            unfold List.getLast? at hx
+            simp at hx
+            rw [hx.symm]
+            exact Ne.lt_top' h₄
+          apply chain_nodup at h₅
+          apply List.disjoint_of_nodup_append at h₅
+          simp [g₆] at h₅
+    · apply g₄
 
 
 /- Definition: We say a poset P is bounded, if it has a unique minimal and a unique maximal element. -/
 /-
 Lemma: Let P be a bounded finite poset. Then a maximal chain exsits.
 -/
-lemma exist_maximal_chain {P : Type*} [PartialOrder P] [BoundedOrder P] [Fintype P] :
-  ∃ L : List P, maximal_chain L := by sorry
 
+lemma exist_maximal_chain {P : Type*} [PartialOrder P] [BoundedOrder P] [Fintype P] :
+  ∃ L : List P, maximal_chain L := by
+  let n := Fintype.card P
+  by_contra h
+  simp only [maximal_chain] at h
+  push_neg at h
+  have (m : ℕ) : ∃L : List P, chain L ∧ m ≤ L.length := by
+    induction m with
+    | zero =>
+      use []
+      simp
+    | succ m' hm =>
+      obtain ⟨L, ⟨hc, hlen⟩⟩ := hm
+      obtain ⟨L', ⟨hc', hsub, hneq⟩⟩ := h L hc
+      use L'
+      refine And.intro hc' ?_
+      have lell := List.length_le_of_sublist hsub
+      have neqll := fun x ↦ hneq (List.Sublist.eq_of_length hsub x)
+      have := lt_of_le_of_ne lell neqll
+      linarith
+  obtain ⟨L, hc, hlen⟩ := this (n + 1)
+  have : DecidableEq P := Classical.typeDecidableEq P
+  have : L.toFinset ⊆ Finset.univ :=
+    fun x _ ↦ Finset.mem_univ x
+  have := Finset.card_le_card this
+  have g : List.Nodup L := chain_nodup hc
+  have g₁ : L.toFinset.card = L.length := List.toFinset_card_of_nodup g
+  rw [g₁] at this
+  have g₂ : (@Finset.univ P).card = n := by
+    simp only [n]
+    exact rfl
+  linarith
 
 /-
 (Programming) Note that the assumption that P is a BoundedOrder implies that P is nonempty, and so a maximal chain is nonempty.
@@ -236,33 +511,90 @@ Lemma: Let P be a bounded finite poset. Let L = [x_0, ⋯, x_m] be a list of ele
 Then L is a maximal chain if and only if  x_0 is the minimal element, x_n is the maximal element, and x_i ⋖ x_{i+1} for all i.
 -/
 lemma maximal_chain_iff_cover {P : Type*} [PartialOrder P] [BoundedOrder P]  [Fintype P] (L: List P) :
-  maximal_chain L ↔ ((L.head? = (⊥ : P)) ∧ (L.getLast? = (⊤ : P)) ∧ (List.Chain' (· ⋖ · ) L)) := by sorry
+  maximal_chain L ↔ ((L.head? = (⊥ : P)) ∧ (L.getLast? = (⊤ : P)) ∧ (List.Chain' (· ⋖ · ) L)) := by
+  constructor
+  · intro maxchain
+    constructor
+    · by_contra h
+      have h₁ : chain (⊥ :: L) := by
+        match L with
+        | [] => simp
+        | a :: L' =>
+            have : a ≠ ⊥ := by
+              intro abot
+              rw [abot] at h
+              simp at h
+            apply List.Chain'.cons (lt_of_le_of_ne bot_le this.symm) maxchain.1
+      have h₂: L.Sublist (⊥ :: L) := by simp
+      have : L = (⊥ :: L) := by apply maxchain.2 _ h₁ h₂
+      have : List.length L = List.length (⊥ :: L) := by congr
+      simp [(Nat.succ_ne_self (List.length L)).symm] at this
+    · constructor
+      · by_contra h
+        have h₁ : chain (L ++ [⊤]) := by
+          apply List.Chain'.append maxchain.1
+          simp
+          intro x hx y hy
+          simp at hy
+          subst hy
+          apply lt_of_le_of_ne le_top
+          intro e
+          simp [e] at *
+          exact h hx
+        have h₂ : L.Sublist (L ++ [⊤]) := by simp
+        have : L = L ++ [⊤] := maxchain.2 _ h₁ h₂
+        simp at this
+      · apply maximal_chain_cover maxchain
+  · rintro ⟨h₁, h₂, h₃⟩
+    constructor
+    · exact (maximal_chain'_of_cover_chain h₃).1
+    · intro L' chain_l' sublst
+      have : maximal_chain L := maximal_chain_of_cover_chain ⟨h₃, h₁, h₂⟩
+      apply this.2 L' chain_l' sublst
 
 /-
 Lemma: Let L : x_0 < x_1 < ⋯ < x_n be a maximal chain of P. Then (x_i, x_{i+1}) is an (cover) edge of P.
 -/
 lemma max_chain_mem_edge {P : Type*} [PartialOrder P] {L: List P} {e: P × P} :
-  maximal_chain L →  e ∈ L.adjPairs → e ∈ edges P:= sorry
+  maximal_chain L →  e ∈ L.adjPairs → e ∈ edges P:= by
+    intro maxc eadj
+    have := maximal_chain_cover maxc
+    simp [edges]
+    rw [mem_adjPairs_iff] at eadj
+    rcases eadj with ⟨l₁, l₂, h⟩
+    subst h
+    simp at this
+    exact this.2.1
 
 
 /-
 We define the set of all maximal chains of P.
 -/
-abbrev maximalChains (P : Type*) [PartialOrder P] : Set (List P) := { L | maximal_chain L }
+
+instance : Fintype (Set.Elem {L : List P | L.Nodup}) :=
+  inferInstanceAs (Fintype {L : List P // L.Nodup})
+
+def auxinj : { L : List P | maximal_chain L } → Set.toFinset {L : List P | L.Nodup} :=
+  fun l ↦ ⟨l.val, by simp; apply chain_nodup l.prop.1⟩
+
+instance : Fintype { L : List P| maximal_chain L } :=
+  Fintype.ofInjective auxinj (by simp [Function.Injective, auxinj])
+
+abbrev maximalChains (P : Type*) [PartialOrder P] [Fintype P] : Finset (List P) :=
+  Set.toFinset { L | maximal_chain L }
 
 /-
 (Programming)
 -/
-
-def edgePairs {P : Type*} [PartialOrder P] (L : maximalChains P) : List (edges P) :=
-  List.map (fun e => ⟨e.val, max_chain_mem_edge L.prop  e.prop⟩) <| L.val.adjEPairs
+def edgePairs {P : Type*} [PartialOrder P] [Fintype P] (L : maximalChains P) : List (edges P) :=
+  List.map (fun e => ⟨e.val, max_chain_mem_edge  (Set.mem_setOf_eq.mp (Set.mem_toFinset.mp L.prop))  e.prop⟩) <| L.val.adjEPairs
 
 /- Definition: Define rank to be the Sup of the lenghts of all maximal chains.
 
   Note that if the length is unbounded,then rank = 0.
  -/
-noncomputable def rank (P : Type*) [PartialOrder P] : ℕ :=
-⨆ L ∈ maximalChains P, L.length
+def rank (P : Type*) [PartialOrder P] [Fintype P] : ℕ :=
+  Finset.sup (maximalChains P) List.length
 
 
 end maximal_chain
