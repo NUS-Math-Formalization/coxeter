@@ -746,7 +746,7 @@ end CoxeterMatrix
 namespace CoxeterMatrix
 open OrderTwoGen
 
-variable {α : Type*} [DecidableEq α] {m : Matrix α α ℕ} [CoxeterMatrix m]
+variable {α : Type*} [DecidableEq α] {m : Matrix α α ℕ} [cm : CoxeterMatrix m]
 
 instance ofCoxeterSystem : CoxeterSystem (toGroup m) (SimpleRefl m) where
   order_two := order_two m
@@ -758,5 +758,9 @@ instance ofCoxeterGroup : CoxeterGroup (toGroup m) where
   order_two := order_two m
   expression := toGroup_expression m
   exchange := exchange
+  -- matrix x y := sorry
+  -- symmetric := sorry -- cm.symmtric
+  -- oneIff := sorry -- cm.oneIff
+
 
 end CoxeterMatrix

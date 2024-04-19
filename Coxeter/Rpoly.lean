@@ -2,11 +2,7 @@ import Coxeter.Hecke
 import Coxeter.BruhatOrder
 --import Coxeter.Morphism
 
-import Mathlib.Data.Polynomial.Degree.Definitions
-import Mathlib.Data.Polynomial.Reverse
-import Mathlib.Data.Polynomial.Basic
 import Mathlib.LinearAlgebra.FreeModule.Basic
-import Mathlib.Data.Polynomial.Laurent
 
 variable {G :(Type _)} [hG:CoxeterGroup G]
 
