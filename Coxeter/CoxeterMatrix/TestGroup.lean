@@ -67,3 +67,7 @@ lemma μ₂.even_pow_iff_eq_one {n : ℕ} : μ₂.gen ^ n = 1 ↔ Even n := by
 
 lemma μ₂.odd_pow_iff_eq_gen {n : ℕ} : μ₂.gen ^ n = μ₂.gen ↔ Odd n := by
   rw [Nat.odd_iff_not_even, ← μ₂.even_pow_iff_eq_one, not_iff_not]
+
+lemma μ₂.mul_self_eq_one (u : μ₂) : u * u = 1 :=
+  if h : u = μ₂.gen then (by rw [h]; exact rfl)
+  else (by rw [Or.resolve_right (μ₂.mem_iff' u) h]; exact rfl)

@@ -639,10 +639,10 @@ lemma eta_t (t : T) : eta (t : G) t = μ₂.gen := by
   clear ht
   rw [@eta_equiv_nn α m hm _ _ (L ++ [s] ++ L.reverse) rfl,
     nn_prod_eta_aux]
-  let f : Fin (L ++ [s] ++ L.reverse).length → μ₂ := fun i ↦ eta_aux' ((L ++ [s] ++ L.reverse).get i)
+  let fnat : ℕ → μ₂ := fun i ↦ if h : i < (L ++ [s] ++ L.reverse).length then
+    eta_aux' ((L ++ [s] ++ L.reverse).get ⟨i, h⟩)
     ⟨((L ++ [s] ++ L.reverse).take i).reverse * t * (L ++ [s] ++ L.reverse).take i,
-    by apply Refl_palindrome_in_Refl⟩
-  let fnat : ℕ → μ₂ := fun i ↦ if h : i < (L ++ [s] ++ L.reverse).length then f ⟨i, h⟩ else 1
+    by apply Refl_palindrome_in_Refl⟩ else 1
   calc
     _ = ∏ i : Fin (L ++ [s] ++ L.reverse).length, fnat i := by
       congr 1
@@ -652,14 +652,15 @@ lemma eta_t (t : T) : eta (t : G) t = μ₂.gen := by
       rw [h]
     _ = ∏ i : Fin (2 * L.length + 1), fnat i := by
       congr 1
-      repeat rw [List.append_singleton_reverse_length]
+      all_goals rw [List.append_singleton_reverse_length]
     _ = fnat L.length * ∏ i : Fin L.length, (fnat i * fnat (2 * L.length - i)) :=
       @halve_odd_prod μ₂ _ L.length fnat
     _ = μ₂.gen * ∏ i : Fin L.length, (fnat i * fnat (2 * L.length - i)) := by
       congr
-      simp_rw [fnat, f, List.append_assoc, List.singleton_append, List.length_append,
+      simp_rw [fnat, List.append_assoc, List.singleton_append, List.length_append,
         List.length_cons, List.length_reverse, Set.mem_setOf_eq, gprod_reverse,
         lt_add_iff_pos_right, Nat.zero_lt_succ, reduceDite, List.take_left, eta_aux']
+      clear fnat
       rw [List.get_append_left _ _ (List.lt_append s L),
         @List.get_append_right _ _ _ _ (lt_irrefl L.length) _
         (by simp only [List.length_singleton, Nat.sub_self, zero_lt_one])]
@@ -672,18 +673,15 @@ lemma eta_t (t : T) : eta (t : G) t = μ₂.gen := by
       congr
       ext x
       simp only [fnat, List.lt_append_singleton_reverse, reduceDite,
-        List.lt_append_singleton_reverse', reduceDite, f]
+        List.lt_append_singleton_reverse']
+      clear fnat
       rw [@List.get_append_right _ _ _ _ (List.not_lt_append_singleton s L x) _ (List.lt_append_singleton' s L x),
         List.get_append_left _ _ (List.lt_append' s L x), List.get_append_left _ _ x.2,
         ← List.get_reverse L.reverse _ (List.lt_reverse_reverse s L x) (List.lt_append_singleton' s L x)]
       have htLgL : (t : G) = (L : G) * s * L.reverse := by
         simp_rw [h, gprod_append, gprod_reverse, gprod_singleton]
-      rw [(List.reverse_reverse_get s L x), eta_aux'_reflection L s t x htLgL]
-      congr
-      have (u2 : μ₂) : u2 * u2 = (1 : μ₂) :=
-        if h : u2 = μ₂.gen then (by rw [h]; exact rfl)
-        else (by rw [Or.resolve_right (μ₂.mem_iff' u2) h]; exact rfl)
-      exact this _
+      rw [(List.reverse_reverse_get s L x), eta_aux'_reflection L s t x htLgL,
+        μ₂.mul_self_eq_one _]
     _ = _ := by
       rw [Finset.prod_const_one, mul_one]
 
