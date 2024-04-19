@@ -204,6 +204,7 @@ If the size of simplices in F is unbounded, it has rank `0` by definition.
 
 Remark: We should general be careful with the unbounded case.
 -/
+
 noncomputable def rank (F : AbstractSimplicialComplex V) : ℕ := iSup fun s : F.faces => s.1.card
 
 /-- Definition: For a collection s of subsets of V, we denote by closure s the smallest ASC over V containing all elements in s
