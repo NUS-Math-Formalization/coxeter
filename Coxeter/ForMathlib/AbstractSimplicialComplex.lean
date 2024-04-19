@@ -298,8 +298,43 @@ lemma closure_eq_iSup (s : Set (Finset V)) : closure s = ⨆ f : s,  closure {f.
   rw [← closure_union_eq_iSup_closure,
     Set.iUnion_singleton_eq_range, Subtype.range_coe_subtype, Set.setOf_mem_eq]
 
+
 theorem closure_eq_closurePower (s: Set (Finset V)) : closure s = closurePower s := by
-  sorry
+  ext t
+  constructor
+  · intro ts
+    rw[closure] at ts
+    simp at ts
+    unfold closurePower
+    apply ts
+    by_cases h : Nonempty s <;> simp [h]
+    · rw[Set.subset_def]
+      intro x xs
+      simp only [Set.mem_iUnion, Set.mem_setOf_eq, exists_prop]
+      use x
+    · simp at h
+      apply Set.eq_empty_of_forall_not_mem at h
+      intro g hg
+      rw [h] at hg
+      contradiction
+  · intro ts
+    rw[closurePower] at ts
+    by_cases h : Nonempty s <;> simp [h]
+    · simp [closurePower,h] at ts
+      intro K sK
+      obtain ⟨f,fs⟩ := ts
+      rw[Set.subset_def] at sK
+      --have ts : t ∈ s:= by sorry
+      obtain ⟨fs, tf⟩ := fs
+      apply sK at fs
+      exact mem_faces.1 <| K.lower' tf <| fs
+    · simp [closurePower,h] at ts
+      intro K _
+      apply mem_faces.1
+      rw [ts]
+      exact K.empty_mem
+
+
 
 /--
 Lemma: Let F be an ASC. Then the closure of the set of faces is just F.
@@ -319,21 +354,5 @@ lemma closure_le {F : AbstractSimplicialComplex V} (h: s ⊆ F.faces) : closure 
   rintro s2 h2
   simp only [sInf_def, Set.mem_setOf_eq, Set.mem_iInter, mem_faces, Set.coe_setOf, Subtype.forall] at h2
   exact h2 F h
-
-/--
-Definition: G is a cone over F with cone point x if
-x ∈ G.vertices - F.vertices
-s ∈ F ⇔ s ∪ {x} ∈ G.
--/
-def Cone (F G: AbstractSimplicialComplex V) (x : V) :=
-  x ∈ G.vertices \ F.vertices ∧
-  ∀ s, s ∈ F.faces ↔ s ∪ {x} ∈ G.faces
-
-def isCone (G: AbstractSimplicialComplex V) := ∃ F x, Cone F G x
-
-lemma cons_pure (hc : Cone F G x) (hp : Pure F) : Pure G := by sorry
-
-/- the following lemma is not true -/
--- lemma cons_pure' (hc : isCone G) : Pure G := by sorry
 
 end AbstractSimplicialComplex
