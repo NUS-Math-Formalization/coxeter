@@ -1,5 +1,6 @@
 import Coxeter.OrderTwoGen
 import Coxeter.Aux_
+import Mathlib.Data.Matrix.Basic
 
 /-!
 # A Characterization

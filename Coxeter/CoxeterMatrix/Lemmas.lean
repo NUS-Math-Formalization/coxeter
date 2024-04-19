@@ -70,19 +70,38 @@ lemma length_diff_one {s : hG.S} {g : G} : ℓ(s * g) = ℓ(g) + 1  ∨ ℓ(g) =
   · apply fun h ↦ lt_of_le_of_ne h (length_smul_neq s g) at h
     simp only [HOrderTwoGenGroup.length] at *
     have := @length_le_length_smul_add_one _ _ _ _ g s
+    apply Or.intro_right
+    linarith
+  · rw [not_le] at h
+    simp only [HOrderTwoGenGroup.length] at *
     have := @length_smul_le_length_add_one _ _ _ _ g s
-    have := length_smul_neq s g
     apply Or.intro_left
-    sorry --linarith
-  · sorry
+    linarith
 
-lemma length_smul_of_length_lt {s : hG.S} {w:G} (h : w ≠ 1) (lt: ℓ(s*w) < ℓ(w)) : ℓ(s*w) = ℓ(w) - 1 := sorry
+lemma length_smul_of_length_lt {s : hG.S} {w:G} (lt: ℓ(s * w) < ℓ(w)) : ℓ(s * w) = ℓ(w) - 1 := by
+  rw [← Nat.succ_inj, Nat.succ_eq_add_one, Nat.succ_eq_add_one, Nat.sub_add_cancel]
+  . contrapose! lt
+    symm at lt
+    apply Or.resolve_right (length_diff_one) at lt
+    linarith
+  . linarith
 
-lemma length_muls_of_length_lt {s : hG.S} {w:G} (h : w ≠ 1) (lt: ℓ(w*s) < ℓ(w)) : ℓ(w*s) = ℓ(w) - 1 := sorry
+lemma length_muls_of_length_lt {s : hG.S} {w:G} (lt: ℓ(w * s) < ℓ(w)) : ℓ(w * s) = ℓ(w) - 1 := by
+  simp only [HOrderTwoGenGroup.length] at *
+  rw [length_muls w s, @length_eq_inv_length _ _ _ _ w] at *
+  repeat rw [← HOrderTwoGenGroup.length] at *
+  exact length_smul_of_length_lt lt
 
-lemma length_smul_of_length_gt {s : hG.S} {w:G} (gt: ℓ(w) < ℓ(s*w)) : ℓ(s*w) = ℓ(w) + 1 := sorry
+lemma length_smul_of_length_gt {s : hG.S} {w:G} (gt: ℓ(w) < ℓ(s * w)) : ℓ(s * w) = ℓ(w) + 1 := by
+  contrapose! gt
+  apply Or.resolve_left (length_diff_one) at gt
+  linarith
 
-lemma length_muls_of_length_gt {s : hG.S} {w:G} (gt: ℓ(w) < ℓ(w*s)) : ℓ(w*s) = ℓ(w) + 1 := sorry
+lemma length_muls_of_length_gt {s : hG.S} {w:G} (gt: ℓ(w) < ℓ(w * s)) : ℓ(w * s) = ℓ(w) + 1 := by
+  simp only [HOrderTwoGenGroup.length] at *
+  rw [length_muls w s, @length_eq_inv_length _ _ _ _ w] at *
+  repeat rw [← HOrderTwoGenGroup.length] at *
+  exact length_smul_of_length_gt gt
 
 lemma length_muls_of_mem_leftDescent (s : leftDescent w) : ℓ(s*w) = ℓ(w) - 1 :=sorry
 

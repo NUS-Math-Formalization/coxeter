@@ -8,6 +8,7 @@ import Mathlib.Data.List.Chain
 import Mathlib.Order.Cover
 import Mathlib.Tactic.Linarith.Frontend
 import Coxeter.ForMathlib.AdjacentPair
+import Mathlib.SetTheory.Cardinal.Basic
 
 noncomputable section
 namespace PartialOrder
