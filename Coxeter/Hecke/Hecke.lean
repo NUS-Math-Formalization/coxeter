@@ -11,6 +11,7 @@ import Mathlib.Init.Data.List.Instances
 import Mathlib.Data.Finsupp.Pointwise
 import Mathlib.Algebra.Polynomial.Laurent
 
+
 --aux instance & lemma, help to simp, but not in Mathlib (or not find in Mathlib)
 noncomputable instance (F : Type*)  (R : outParam (Type*)) (M : outParam (Type*)) (M₂ : outParam (Type*)) [Semiring R] [AddCommMonoid M] [AddCommMonoid M₂] [Module R M] [Module R M₂] [FunLike F M M₂] [LinearMapClass F R M M₂] : ZeroHomClass F  M M₂ where
   map_zero := fun f:F => by simp [LinearMap.map_zero]
@@ -22,9 +23,13 @@ lemma Algebra.mem_adjoin_of_mem_s {R : Type uR} {A : Type uA} [CommRing R] [Ring
   intro h
   have := @Algebra.subset_adjoin R A _ _ _ s
   exact Set.mem_of_mem_of_subset h this
+
 open Classical List CoxeterSystem OrderTwoGen CoxeterGroup HOrderTwoGenGroup
 
 variable {G :(Type _)} [hG:CoxeterGroup G] {w : G}
+
+lemma length_induction {p : G → Prop} (h1 : p 1) (hws :∀ w:G, ∀ s:hG.S, s.1 ∈ (rightDescent w) → p (w*s) → p w) :
+  ∀ u:G, p u := by sorry
 
 local notation : max "q" => @LaurentPolynomial.T ℤ _ 1
 
@@ -483,8 +488,6 @@ lemma subalg.id_eq :(alg_hom G).symm (TT 1) = 1:=by
 lemma subalg.zero :(alg_hom G).symm 0 = 0 := by
   simp only [alg_hom, map_zero]
 
-lemma alg_hom_symm_apply_TT {w : G} : (alg_hom G).symm (TT w) = sorry := sorry
-
 @[simp]
 noncomputable def HeckeMul : Hecke G → Hecke G → Hecke G := fun x =>(fun y => alg_hom G <| (alg_hom G).symm x * (alg_hom G).symm y)
 
@@ -567,6 +570,21 @@ noncomputable def listToSubalg : List hG.S → subalg G :=
   fun L => (List.map (fun s => ⟨opl' s,opl'_mem_subalg s⟩) L).prod
 
 noncomputable def preTT : G → subalg G := fun g => listToSubalg (choose_reduced_word hG.S g )
+#check length_induction
+
+lemma choose_reduced_word_one : choose_reduced_word hG.S 1 = [] := sorry
+
+lemma preimage_eq {w : G} : (alg_hom G) (preTT w) = TT w := by
+  -- simp [alg_hom, preTT]
+  let p:= fun w : G => (alg_hom G) (preTT w) = TT w
+  --apply length_induction (p := p)
+  have p1 : (alg_hom G) (preTT 1) = TT 1 := by
+    simp only [preTT,listToSubalg,choose_reduced_word_one,map_nil, prod_nil,alg_hom_id,one_def]
+  have hws :  ∀ (w : G) (s : ↑S), s.1 ∈ rightDescent w →
+    (alg_hom G) (preTT (w*s)) = TT (w*s) → (alg_hom G) (preTT w) = TT w := by
+      intro w' s' hs hws'
+      sorry
+  exact length_induction (G:=G) (p := p) p1 hws w
 
 @[simp]
 lemma mul_gt : ℓ(w) < ℓ(s*w) → TT s.1 * TT w = TT (s*w) := by
@@ -602,12 +620,16 @@ lemma listToHecke_nil_eq_one : listToHecke ([] : List hG.S) = 1 :=rfl
 theorem TTw_eq_reduced_word_TTmul : ∀ L : List S,∀ w:G, reduced_word L → w = L.gprod → TT w = listToHecke L := by
   intro L
   induction' L with s L hL
-  · intros w red heq
+  · intros w _ heq
     simp [heq]
     rfl
   · intro w red heq
     have redL : reduced_word L:= reduced_imp_tail_reduced red
-    have lgt: ℓ(L.gprod) < ℓ(((s :: L):G)) := sorry
+    have lgt: ℓ(L.gprod) < ℓ(((s :: L):G)) := by
+      rw [length_eq_iff] at red redL
+      simp only [HOrderTwoGenGroup.length]
+      rw [←red, ←redL]
+      simp only [List.length_cons, Nat.lt_succ_self]
     rw [gprod_cons] at heq lgt
     have : L.gprod = L.gprod := rfl
     rw [heq,←mul_gt lgt,listToHecke_cons,←hL L.gprod redL this]
