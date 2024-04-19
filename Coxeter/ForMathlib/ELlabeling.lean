@@ -3,8 +3,10 @@ import Coxeter.ForMathlib.PosetGraded
 import Coxeter.ForMathlib.PosetShelling
 
 namespace PartialOrder
-variable {P : Type*} [PartialOrder P]
+variable {P : Type*} [PartialOrder P] [Fintype P]
 variable {A : Type*} [PartialOrder A]
+
+instance {x y : P} : Fintype (Set.Icc x y) := sorry -- temperory
 
 /-
 Definition: Let P and A be posets. An edge labelling of P in A is a map from the set of edges of P to the poset A.

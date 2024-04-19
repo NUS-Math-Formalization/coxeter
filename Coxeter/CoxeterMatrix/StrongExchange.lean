@@ -758,9 +758,9 @@ instance ofCoxeterGroup : CoxeterGroup (toGroup m) where
   order_two := order_two m
   expression := toGroup_expression m
   exchange := exchange
-  matrix x y := sorry
-  symmetric := sorry -- cm.symmtric
-  oneIff := sorry -- cm.oneIff
+  -- matrix x y := sorry
+  -- symmetric := sorry -- cm.symmtric
+  -- oneIff := sorry -- cm.oneIff
 
 
 end CoxeterMatrix

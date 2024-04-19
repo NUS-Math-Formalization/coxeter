@@ -1,6 +1,4 @@
-import Coxeter.CoxeterSystem
 import Coxeter.CoxeterMatrix.CoxeterMatrix
-import Coxeter.CoxeterMatrix.AlternatingWord
 import Coxeter.StrongExchange
 import Coxeter.BruhatOrder
 import Coxeter.ForMathlib.ELlabeling
