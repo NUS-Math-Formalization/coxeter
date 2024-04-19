@@ -75,7 +75,7 @@ lemma maximal_chain'_of_maximal_chain {L: List P} : maximal_chain L → maximal_
 /-
 Lemma: A singleton is a chain by definition.
 -/
-lemma chain_singleton {a : P} : chain [a] := by simp
+lemma chain_singleton {a : P} : chain [a] := chain'_singleton _
 
 lemma getLast_eq_of_getLast?_eq_coe {L : List P} (h : L ≠ []) (h' : L.getLast? = .some a) : L.getLast h = a := by
   unfold List.getLast? at *
@@ -210,10 +210,10 @@ lemma maximal_chain'_tail {a : P} {tail : List P} : maximal_chain' (a :: tail) �
 lemma in_of_in_sublist {a : P} {L L' : List P} (g : List.Sublist L L') (h : a ∈ L) : a ∈ L' := by
   induction g with
   | slnil => exact h
-  | cons hd hsl htrans =>
+  | cons hd _ htrans =>
     exact List.mem_cons_of_mem hd (htrans h)
-  | cons₂ hd hsl htrans =>
-    rename_i L₁ L₂
+  | cons₂ hd _ htrans =>
+    rename_i L₁ L₂ _
     by_cases ha : a = hd
     · rw [ha]
       exact List.mem_cons_self hd _
@@ -569,18 +569,18 @@ lemma max_chain_mem_edge {P : Type*} [PartialOrder P] {L: List P} {e: P × P} :
 /-
 We define the set of all maximal chains of P.
 -/
-abbrev maximalChains_aux (P : Type*) [PartialOrder P] : Set (List P) := { L | maximal_chain L }
-abbrev nodupList (P : Type*) [PartialOrder P] [Fintype P] : Set (List P) := {L | L.Nodup }
 
-instance : Fintype (Set.Elem (nodupList P)) := inferInstanceAs (Fintype {L : List P // L.Nodup})
+instance : Fintype (Set.Elem {L : List P | L.Nodup}) :=
+  inferInstanceAs (Fintype {L : List P // L.Nodup})
 
-abbrev nodupList' (P : Type*) [PartialOrder P] [Fintype P] : Finset (List P) := Set.toFinset (nodupList P)
+def auxinj : { L : List P | maximal_chain L } → Set.toFinset {L : List P | L.Nodup} :=
+  fun l ↦ ⟨l.val, by simp; apply chain_nodup l.prop.1⟩
 
-def auxinj : maximalChains_aux P → nodupList' P := fun l ↦ ⟨l.val, by simp; apply chain_nodup l.prop.1⟩
+instance : Fintype { L : List P| maximal_chain L } :=
+  Fintype.ofInjective auxinj (by simp [Function.Injective, auxinj])
 
-instance : Fintype (maximalChains_aux P) := Fintype.ofInjective auxinj (by simp [Function.Injective, auxinj])
-
-abbrev maximalChains (P : Type*) [PartialOrder P] [Fintype P] : Finset (List P) := Set.toFinset (maximalChains_aux  P)
+abbrev maximalChains (P : Type*) [PartialOrder P] [Fintype P] : Finset (List P) :=
+  Set.toFinset { L | maximal_chain L }
 
 /-
 (Programming)
@@ -593,7 +593,7 @@ def edgePairs {P : Type*} [PartialOrder P] [Fintype P] (L : maximalChains P) : L
   Note that if the length is unbounded,then rank = 0.
  -/
 def rank (P : Type*) [PartialOrder P] [Fintype P] : ℕ :=
-Finset.sup (maximalChains P) List.length
+  Finset.sup (maximalChains P) List.length
 
 
 end maximal_chain
