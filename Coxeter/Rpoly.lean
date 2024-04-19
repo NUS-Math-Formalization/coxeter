@@ -57,7 +57,7 @@ lemma mul_lt_of_mem_rD {v :G} {s: hG.S} (h: s.1 ∈ rightDescent v) : v*s < v :=
   have hlt : lt_adj (v*s) v := by
     rw [lt_adj]
     use s.1
-    exact ⟨SimpleRefl_is_Refl s.2, ⟨mul_SimpleRefl_twice v s, length_muls_lt_of_mem_rightDescent ⟨s.1,h⟩⟩⟩
+    exact ⟨SimpleRefl_is_Refl s.2, ⟨mul_SimpleRefl_twice v s, length_muls_of_mem_rightDescent ⟨s.1,h⟩⟩⟩
   exact (Relation.transGen_iff lt_adj (v*s) v).2 (Or.inl hlt)
 
 lemma mul_gt_of_not_mem_rD {v :G} {s: hG.S} (h: s.1 ∉ rightDescent v) : v < v*s := by

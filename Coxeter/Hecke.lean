@@ -244,7 +244,7 @@ lemma opl_commute_opr : ∀ s t:hG.S, LinearMap.comp (opr' t) (opl' s) = LinearM
           simp_rw[TT_muls_eq_mul_of_length_gt h1,LinearMap.map_add,LinearMap.map_smul,TT_muls_right_eq_mul_of_length_gt h2,TT_muls_right_eq_mul_of_length_lt h3,LinearMap.map_add,LinearMap.map_smul,TT_muls_eq_mul_of_length_gt h1,TT_muls_eq_mul_of_length_lt h4,←mul_assoc]
           nth_rewrite 2 [smul_eq_muls_of_length_eq s t w]
           rfl
-          exact ⟨h,(by rw[length_smul_of_length_lt h1,length_muls_of_length_lt h2])⟩
+          exact ⟨h,(by rw[length_smul_of_length_lt (sorry) h1,length_muls_of_length_lt (sorry) h2])⟩
         }
         --(e) length (↑s * w) < length w = ℓ(s*w*t) < length (w * ↑t)
         {
@@ -579,8 +579,7 @@ noncomputable def listToSubalg : List hG.S → subalg G := fun L => (List.map (f
 
 noncomputable def preTT : G → subalg G := fun g => sorry
 --how to simp * to def?
-@[simp]
-lemma mul_gt : ℓ(w) < ℓ(s*w) → TT s.1 * TT w = TT (s*w) := by
+
 @[simp]
 lemma mul_gt : ℓ(w) < ℓ(s*w) → TT s.1 * TT w = TT (s*w) := by
   intro hl
@@ -596,14 +595,7 @@ lemma mul_gt' : ℓ(w) < ℓ(w*s) → TT w * TT s.1 = TT (w*s) := by sorry
 
 @[simp]
 lemma mul_lt' : ℓ(w*s) < ℓ(w) → TT w * TT s.1 = (q-1) • (TT w) + q • (TT (w*s)) := by sorry
-@[simp]
-lemma mul_lt : ℓ(s*w) < ℓ(w) → TT s.1 * TT w = (q-1) • (TT w) + q • (TT (s*w)) := sorry
 
-@[simp]
-lemma mul_gt' : ℓ(w) < ℓ(w*s) → TT w * TT s.1 = TT (w*s) := by sorry
-
-@[simp]
-lemma mul_lt' : ℓ(w*s) < ℓ(w) → TT w * TT s.1 = (q-1) • (TT w) + q • (TT (w*s)) := by sorry
 
 @[simp]
 lemma Ts_square : TT s.1 * TT s.1 = (q - 1) • TT s.1 + q • 1 := sorry
@@ -687,26 +679,3 @@ lemma TTInv_unique : TT w * h = 1 → h = TTInv w := by
   assumption
 
 end Hecke
-
-noncomputable section involution
-
-open Hecke
-#check Basis.constr
-#check LaurentPolynomial.invert
-#check Finsupp.total
-#check Finsupp.mapDomain
-#check Basis.repr (TT.Basis (G:=G))
-
-def involution_aux : G → Hecke G := fun w => TTInv w⁻¹
-
-def involution : Hecke G → Hecke G := fun h => Finsupp.mapRange LaurentPolynomial.invert (by simp) ((Finsupp.total G (Hecke G) (LaurentPolynomial ℤ)  involution_aux) h)
-
-
-instance : RingHom (Hecke G) (Hecke G) where
-  toFun := involution
-  map_one' := by sorry
-  map_mul' := sorry
-  map_zero' := by simp;sorry
-  map_add' := sorry
-
-end involution
