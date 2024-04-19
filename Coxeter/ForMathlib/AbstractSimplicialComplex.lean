@@ -275,7 +275,7 @@ def closurePower (s : Set (Finset V)) : AbstractSimplicialComplex V where
       congr
     · exact Finset.isLowerSet_singleton_empty V
 
-theorem closure_union_eq_iSup_closure {ι : Type*} (p : ι → Set (Finset V)) :
+theorem closure_iUnion_eq_iSup_closure {ι : Type*} (p : ι → Set (Finset V)) :
   closure (⋃ i : ι, p i) = ⨆ i : ι, closure (p i) := by
   apply le_antisymm
   · apply sInf_le
@@ -288,13 +288,25 @@ theorem closure_union_eq_iSup_closure {ι : Type*} (p : ι → Set (Finset V)) :
     intro i
     apply closure_mono <| Set.subset_iUnion p i
 
+lemma closure_union_eq_sup_closure {f g : Set (Finset V)} :
+  closure (f ∪ g) = closure f ⊔ closure g := by
+  sorry
+
+theorem closure_iInter_eq_iInf_closure {ι : Type*} (p : ι → Set (Finset V)) :
+  closure (⋂ i : ι, p i) = ⨅ i : ι, closure (p i) := by
+  sorry
+
+lemma closure_inter_eq_inf_closure {f g : Set (Finset V)} :
+  closure (f ∩ g) = closure f ⊔ closure g := by
+  sorry
+
 /--
 Lemma: Let s be a collection of finsets in V. Then the closure of s is just the union of the closure of elements in s.
 
 Remark: So taking closure commuts with taking union.
 -/
 lemma closure_eq_iSup (s : Set (Finset V)) : closure s = ⨆ f : s,  closure {f.1} := by
-  rw [← closure_union_eq_iSup_closure,
+  rw [← closure_iUnion_eq_iSup_closure,
     Set.iUnion_singleton_eq_range, Subtype.range_coe_subtype, Set.setOf_mem_eq]
 
 theorem closure_eq_closurePower (s: Set (Finset V)) : closure s = closurePower s := by

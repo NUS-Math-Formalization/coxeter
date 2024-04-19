@@ -31,6 +31,10 @@ lemma shelling_iff_shelling' [DecidableEq V] {F : AbstractSimplicialComplex V}  
     constructor
     · refine fun a ↦ ⟨a.1, ?_⟩
       intro k i ilek
+      unfold Shelling at a
+      have kge1 : 1 < k.1 := by
+
+
       sorry
     · refine fun a ↦ ⟨a.1, ?_⟩
       intro i ige1
