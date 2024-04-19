@@ -564,15 +564,8 @@ lemma max_chain_mem_edge {P : Type*} [PartialOrder P] {L: List P} {e: P × P} :
     subst h
     simp at this
     exact this.2.1
-  maximal_chain L →  e ∈ L.adjPairs → e ∈ edges P:= by
-    intro maxc eadj
-    have := maximal_chain_cover maxc
-    simp [edges]
-    rw [mem_adjPairs_iff] at eadj
-    rcases eadj with ⟨l₁, l₂, h⟩
-    subst h
-    simp at this
-    exact this.2.1
+
+
 
 
 /-
