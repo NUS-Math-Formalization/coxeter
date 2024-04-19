@@ -76,9 +76,9 @@ lemma length_diff_one {s : hG.S} {g : G} : ℓ(s * g) = ℓ(g) + 1  ∨ ℓ(g) =
     sorry --linarith
   · sorry
 
-lemma length_smul_of_length_lt {s : hG.S} {w:G} (h : w ≠ 1) (lt: ℓ(s*w) < ℓ(w)) : ℓ(s*w) = ℓ(w) - 1 := sorry
+lemma length_smul_of_length_lt {s : hG.S} {w:G} (lt: ℓ(s*w) < ℓ(w)) : ℓ(s*w) = ℓ(w) - 1 := sorry
 
-lemma length_muls_of_length_lt {s : hG.S} {w:G} (h : w ≠ 1) (lt: ℓ(w*s) < ℓ(w)) : ℓ(w*s) = ℓ(w) - 1 := sorry
+lemma length_muls_of_length_lt {s : hG.S} {w:G} (lt: ℓ(w*s) < ℓ(w)) : ℓ(w*s) = ℓ(w) - 1 := sorry
 
 lemma length_smul_of_length_gt {s : hG.S} {w:G} (gt: ℓ(w) < ℓ(s*w)) : ℓ(s*w) = ℓ(w) + 1 := sorry
 
