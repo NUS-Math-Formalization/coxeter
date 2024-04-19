@@ -79,6 +79,9 @@ protected def mul (f g : ReflAlgebra G) : ReflAlgebra G :=
 
 protected def one : ReflAlgebra G := ⟨fun w A => if w = 1 then (1 : ℛ) else 0, sorry⟩
 
+instance : One (ReflAlgebra G) where
+  one := ReflAlgebra.one
+
 instance : Ring (ReflAlgebra G) where
   mul := ReflAlgebra.mul
   left_distrib := sorry
@@ -86,7 +89,6 @@ instance : Ring (ReflAlgebra G) where
   zero_mul := sorry
   mul_zero := sorry
   mul_assoc := sorry
-  one := ReflAlgebra.one
   one_mul := sorry
   mul_one := sorry
   sub_eq_add_neg := sorry

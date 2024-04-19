@@ -12,6 +12,8 @@ variable {w:G}
 
 open Hecke CoxeterGroup CoxeterMatrix OrderTwoGen
 
+local notation : max "q" => @LaurentPolynomial.T ℤ _ 1
+
 local notation : max "q⁻¹" => @LaurentPolynomial.T ℤ _ (-1)
 
 
