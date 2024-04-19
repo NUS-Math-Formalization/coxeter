@@ -2,11 +2,7 @@ import Coxeter.Hecke
 import Coxeter.BruhatOrder
 --import Coxeter.Morphism
 
-import Mathlib.Data.Polynomial.Degree.Definitions
-import Mathlib.Data.Polynomial.Reverse
-import Mathlib.Data.Polynomial.Basic
 import Mathlib.LinearAlgebra.FreeModule.Basic
-import Mathlib.Data.Polynomial.Laurent
 
 variable {G :(Type _)} [hG:CoxeterGroup G]
 
@@ -15,7 +11,6 @@ open Hecke CoxeterGroup CoxeterMatrix OrderTwoGen Classical Bruhat
 local notation : max "q" => @LaurentPolynomial.T ℤ _ 1
 local notation : max "q⁻¹" => @LaurentPolynomial.T ℤ _ (-1)
 #check SimpleRefl_is_Refl
-
 
 -- trans to ...
 lemma length_induction_aux {p : G → Prop} (h1 : p 1) (hws :∀w, ∀ s:hG.S, s.1 ∈ rightDescent w → p (w*s) → p w) :
@@ -39,12 +34,13 @@ lemma length_induction_aux {p : G → Prop} (h1 : p 1) (hws :∀w, ∀ s:hG.S, s
 lemma length_induction {p : G → Prop} (h1 : p 1) (hws :∀w, ∀ s:hG.S, s.1 ∈ rightDescent w → p (w*s) → p w) :
   ∀ u:G, p u := by
     intro u
-    exact length_induction_aux h1 hws ℓ(u) u rfl
+    exact length_induction_aux h1 hws (ℓ(u)) u rfl
 
 lemma mul_SimpleRefl_ne_self {w:G} {s: hG.S} : w*s ≠ w := sorry
+
 -- trans to CoxeterSystem
 lemma mul_SimpleRefl_twice (w:G) (s: hG.S) : w = w*s*s := by
-  rw [mul_assoc,gen_square_eq_one' s,mul_one]
+  rw [_root_.mul_assoc,gen_square_eq_one' s,_root_.mul_one]
 
 lemma mem_rightDescent_of_length_muls_lt {w:G} {s: hG.S} (h: ℓ(w*s) < ℓ(w)) : s.1 ∈ rightDescent w := by
   sorry
@@ -121,7 +117,7 @@ lemma muls_apply_antidiagonal_of_memrD (h : Hecke G) (s : hG.S) (w : G) (h1 : �
 lemma muls_apply_antidiagonal_of_not_memrD (h : Hecke G) (s : hG.S) (w : G) (h1 : ℓ(w) < ℓ(w*s)) :  (h * TT s.1) w = q * h (w*s) := sorry
 
 @[simp] lemma TTInv_one : TTInv (1:G) = 1 := by
-  have h2: TT (1:G) * TT 1 = 1 := by rw [←one_eq,one_mul]
+  have h2: TT (1:G) * TT 1 = 1 := by rw [←one_def,_root_.one_mul]
   rw [←(TTInv_unique h2)]
   rfl
 
@@ -131,10 +127,10 @@ lemma TTInv_muls_of_length_gt' (s:hG.S) (h: ℓ(w) < ℓ(s*w)): TTInv (s.1*w) = 
   suffices h1 : TTInv (s.1*w) * TT (s.1*w) = TTInv w * TTInv s.1 * TT (s.1*w) from by
     have h2 : TTInv (s.1*w) * TT (s.1*w) * TTInv (s.1*w) = TTInv w * TTInv s.1 * TT (s.1*w) * TTInv (s.1*w)
     := by rw [h1]
-    rw [mul_assoc,mul_TTInv,mul_assoc,mul_TTInv] at h2
+    rw [_root_.mul_assoc,mul_TTInv,_root_.mul_assoc,mul_TTInv] at h2
     simp at h2
     assumption
-  rw [TTInv_mul,←mul_gt _ h,mul_assoc,←mul_assoc (TTInv s.1),TTInv_mul]
+  rw [TTInv_mul,←mul_gt _ h,_root_.mul_assoc,←_root_.mul_assoc (TTInv s.1),TTInv_mul]
   simp [TTInv_mul]
 
 class Rpoly (R : G → G → LaurentPolynomial ℤ) where
@@ -161,7 +157,7 @@ lemma Rpoly_eq' : ∀ l, ∀ w : G, l = ℓ(w) → TTInv w⁻¹ w = q⁻¹^(ℓ(
   induction' l with n hn
   · intro w hw
     have : w = 1 := length_zero_iff_one.1 (eq_comm.1 hw)
-    rw [this,inv_one,TTInv_one,←this,←hw,this,one_eq]
+    rw [this,inv_one,TTInv_one,←this,←hw,this,one_def]
     simp [TT_apply_ne_self]
   · intro w hw
     have : ℓ(w) ≠ 0 := by simp [←hw]
@@ -175,14 +171,14 @@ lemma Rpoly_eq' : ∀ l, ∀ w : G, l = ℓ(w) → TTInv w⁻¹ w = q⁻¹^(ℓ(
     have smemS : s.1 ∈ hG.S := Set.mem_of_mem_inter_right s.2
     rw [←Rpoly_aux (s:=⟨s.1,smemS⟩) hsmem hsmem] at hypo
     have hlw : ℓ(w) = ℓ(w*s) + 1 := by linarith
-    rw [hlw,pow_add,←hypo,pow_one,mul_assoc,←LaurentPolynomial.T_add]
+    rw [hlw,pow_add,←hypo,pow_one,_root_.mul_assoc,←LaurentPolynomial.T_add]
     simp
 
 lemma Rpoly_eq : ∀ (u : G), R G u u = 1 := by
   intro u
   rw [R]
   simp
-  have := Rpoly_eq' ℓ(u) u (rfl)
+  have := Rpoly_eq' (ℓ(u)) u (rfl)
   rw [this,LaurentPolynomial.T_pow,←LaurentPolynomial.T_add]
   simp
 
@@ -198,8 +194,8 @@ lemma Rpoly_mem_rD : ∀(u v:G) (s:hG.S),s.1 ∈ rightDescent v → s.1 ∈ righ
       have hlus : ℓ(u*s) + 1 = ℓ(u) := by
         rw [length_muls_of_mem_rightDescent ⟨s.1,h2⟩,←Nat.pred_eq_sub_one,←Nat.succ_eq_add_one,Nat.succ_pred]
         exact Function.mt length_zero_iff_one.1 (rightDescent_NE_iff_ne_one.2 hn')
-      have hlusv : ℓ(v) + ℓ(u) = ℓ(v*s) + ℓ(u*s) + 2:= by rw [←hlvs,←hlus];ring
-      rw [hlusv,pow_add,neg_one_pow_two,mul_one,←hlvs,pow_add q,pow_one]
+      have hlusv : ℓ(v) + (ℓ(u)) = ℓ(v*s) + (ℓ(u*s)) + 2:= by rw [←hlvs,←hlus];ring
+      rw [hlusv,pow_add,neg_one_pow_two,_root_.mul_one,←hlvs,pow_add q,pow_one]
       ring
     · have : Nonempty (rightDescent u) := Nonempty.intro ⟨s,h2⟩
       contradiction
@@ -211,7 +207,7 @@ lemma Rpoly_not_mem_rD : ∀(u v:G) (s:hG.S),s.1 ∈ rightDescent v → s.1 ∉ 
     intro u v s hsv hsu
     by_cases hn : Nonempty (rightDescent v)
     · rw [R,R,R]
-      have vss : v = v*s*s := by rw [mul_assoc,gen_square_eq_one' s,mul_one]
+      have vss : v = v*s*s := by rw [_root_.mul_assoc,gen_square_eq_one' s,_root_.mul_one]
       have hl : ℓ((v * s)⁻¹) < ℓ(s * (v * s)⁻¹) := by
         rw [mul_inv_rev]
         simp
@@ -221,7 +217,7 @@ lemma Rpoly_not_mem_rD : ∀(u v:G) (s:hG.S),s.1 ∈ rightDescent v → s.1 ∉ 
         have : v ≠ 1 := rightDescent_NE_iff_ne_one.2 hn
         rw [←HOrderTwoGenGroup.length,length_muls_of_mem_rightDescent ⟨s.1,hsv⟩]
         have h': 0 < ℓ(v) := Nat.ne_zero_iff_zero_lt.1 (Function.mt length_zero_iff_one.1 this)
-        rw [←Nat.pred_eq_sub_one,←mul_inv_rev,mul_assoc]
+        rw [←Nat.pred_eq_sub_one,←mul_inv_rev,_root_.mul_assoc]
         simp
         rw [HOrderTwoGenGroup.length,length_eq_inv_length (S:=hG.S)] at *
         exact Nat.pred_lt_self h'
@@ -229,7 +225,7 @@ lemma Rpoly_not_mem_rD : ∀(u v:G) (s:hG.S),s.1 ∈ rightDescent v → s.1 ∉ 
       rw [mul_inv_rev,←inv_eq_self' s,TTInv_muls_of_length_gt' s hl,TTInv_s_eq]
       calc
         _ = (TTInv (v * s)⁻¹ * (q⁻¹ • TT s.1) - TTInv (v * s)⁻¹ * (1 - q⁻¹) • 1) u *
-        (-1) ^(ℓ(v * s * s) + ℓ(u)) * q ^ ℓ(v * s * s) := by rw [mul_sub,←vss]
+        (-1) ^(ℓ(v * s * s) + (ℓ(u)) ) * q ^ (ℓ(v * s * s)) := by rw [mul_sub,←vss]
         _ = _ := by sorry
     · have : Nonempty (rightDescent v) := Nonempty.intro ⟨s,hsv⟩
       contradiction

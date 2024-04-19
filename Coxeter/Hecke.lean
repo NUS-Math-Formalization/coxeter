@@ -1,7 +1,5 @@
 import Coxeter.CoxeterSystem
-import Coxeter.CoxeterMatrix.CoxeterMatrix
 import Coxeter.WellFounded
---import Coxeter.Morphism
 
 import Mathlib.LinearAlgebra.FreeModule.Basic
 import Mathlib.Algebra.DirectSum.Basic
@@ -19,7 +17,7 @@ noncomputable instance (F : Type*)  (R : outParam (Type*)) (M : outParam (Type*)
 noncomputable instance (F : Type*)  (R : outParam (Type*)) (M : outParam (Type*)) (M₂ : outParam (Type*)) [Semiring R] [AddCommMonoid M] [AddCommMonoid M₂] [Module R M] [Module R M₂] [EquivLike F M M₂] [LinearEquivClass F R M M₂] : ZeroHomClass F  M M₂ where
   map_zero := fun f:F => by simp [LinearMap.map_zero]
 
-open Classical List CoxeterSystem OrderTwoGen CoxeterGroup HOrderTwoGenGroup CoxeterMatrix
+open Classical List CoxeterSystem OrderTwoGen CoxeterGroup HOrderTwoGenGroup
 
 variable {G :(Type _)} [hG:CoxeterGroup G] {w : G}
 
@@ -505,6 +503,10 @@ noncomputable instance : Mul (Hecke G) where
 noncomputable instance : One (Hecke G) where
   one := TT (1:G)
 
+theorem one_def : (1 : Hecke G ) = TT 1 := rfl
+
+theorem mul_def {h h' : Hecke G} : h * h' = HeckeMul h h' := rfl
+
 lemma one_mul : ∀ (a : Hecke G), HeckeMul (TT 1) a = a := by
   intro a
   rw [HeckeMul, subalg.id_eq]
@@ -570,8 +572,6 @@ Algebra.ofModule (smul_assoc) (smul_comm)
 
 noncomputable instance : Ring (Hecke G) := Algebra.semiringToRing  (LaurentPolynomial ℤ)
 
-lemma te {h h': Hecke G}: h * h' = HeckeMul h h' := rfl
-
 noncomputable def listToSubalg : List hG.S → subalg G := fun L => (List.map (fun s => ⟨opl' s,opl'_mem_subalg s⟩) L).prod
 
 noncomputable def preTT : G → subalg G := fun g => sorry
@@ -579,9 +579,8 @@ noncomputable def preTT : G → subalg G := fun g => sorry
 @[simp]
 lemma mul_gt : ℓ(w) < ℓ(s*w) → TT s.1 * TT w = TT (s*w) := by
   intro hl
-  rw [te]
+  rw [mul_def]
   simp only [HeckeMul]
-
   sorry
 
 @[simp]
@@ -626,9 +625,9 @@ noncomputable def TT_inv_s (s:hG.S) := q⁻¹ • (TT s.val) - (1-q⁻¹) • 1
 lemma TT_inv_mul {s:hG.S}:  TT s.1 * (TT_inv_s s) = 1 := by
   dsimp [TT_inv_s]
   set qinv := @LaurentPolynomial.T ℤ _ (-1)
-  --rw [mul_sub (TT s.1) (qinv • TT s.1) ((1 - qinv) • 1)]
-  sorry
-  -- rw [sub_eq_add_neg,mul_add,mul_smul_comm,Ts_square,smul_add,smul_smul,mul_sub,mul_one,q_inv_mul,add_comm,mul_neg (TT s),sub_self]
+  rw [mul_sub,mul_smul_comm,Ts_square,smul_add,smul_smul,mul_sub,q_inv_mul]
+  simp
+  rw [smul_smul,q_inv_mul,one_smul]
 
 noncomputable def listToHeckeInv : List hG.S → Hecke G := fun L => (List.map TT_inv_s L.reverse).prod
 
@@ -674,5 +673,27 @@ lemma TTInv_unique : TT w * h = 1 → h = TTInv w := by
   rw [TTInv_mul,_root_.one_mul] at h2
   assumption
 
-#check mul_eq_mul_left_iff
 end Hecke
+
+noncomputable section involution
+
+open Hecke
+#check Basis.constr
+#check LaurentPolynomial.invert
+#check Finsupp.total
+#check Finsupp.mapDomain
+#check Basis.repr (TT.Basis (G:=G))
+
+def involution_aux : G → Hecke G := fun w => TTInv w⁻¹
+
+def involution : Hecke G → Hecke G := fun h => Finsupp.mapRange LaurentPolynomial.invert (by simp) ((Finsupp.total G (Hecke G) (LaurentPolynomial ℤ)  involution_aux) h)
+
+
+instance : RingHom (Hecke G) (Hecke G) where
+  toFun := involution
+  map_one' := by sorry
+  map_mul' := sorry
+  map_zero' := by simp;sorry
+  map_add' := sorry
+
+end involution
