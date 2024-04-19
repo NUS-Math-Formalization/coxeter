@@ -316,8 +316,8 @@ lemma alternating_word_power (s t : α) (n : ℕ) : (alternating_word s t (2 * n
     List.range_zero, List.map_nil, pow_zero, gprod_nil]
   | succ k ih =>
     rw [Nat.succ_eq_add_one, pow_add, pow_one, mul_add, mul_one,
-      alternating_word_append_even (toSimpleRefl m s) (toSimpleRefl m t) (2 * k + 2) (2 * k)
-      (by linarith) (by simp), add_tsub_cancel_left, gprod_append, ih, mul_right_inj]
+      alternating_word_append_even (toSimpleRefl m s) (toSimpleRefl m t) (2 * k) 2 (by simp),
+      gprod_append, ih, mul_right_inj]
     repeat rw [alternating_word]
     rfl
 
@@ -334,33 +334,20 @@ lemma alternating_word_palindrome (s t : α) (n : ℕ) (i : Fin n) :
   by_cases h : (Even (i.1 + 1))
   . rw [even_alternating_word_reverse _ _ _ h]
     nth_rw 2 [alternating_word]
-    rw [List.tail_cons, alternating_word_append_even s' t'
-      (2 * i.1 + 1) (i.1 + 1) (by linarith) h]
-    simp only [Nat.succ_sub_succ_eq_sub, List.append_cancel_left_eq]
-    rw [two_mul, Nat.add_sub_cancel]
+    rw [List.tail_cons, two_mul, add_assoc, add_comm, ← add_assoc,
+      alternating_word_append_even s' t' (i.1 + 1) i.1 h, add_comm]
   . rw [odd_alternating_word_reverse _ _ _ (Nat.odd_iff_not_even.mpr h)]
     nth_rw 2 [alternating_word]
-    rw [List.tail_cons, alternating_word_append_odd s' t' (2 * i.1 + 1)
-      (i.1 + 1) (by linarith) (Nat.odd_iff_not_even.mpr h)]
-    simp only [Nat.succ_sub_succ_eq_sub, List.append_cancel_left_eq]
-    rw [two_mul, Nat.add_sub_cancel]
+    rw [List.tail_cons, two_mul, add_assoc, add_comm, ← add_assoc,
+      alternating_word_append_odd s' t' (i.1 + 1) i.1 (Nat.odd_iff_not_even.mpr h),
+      add_comm]
 
 lemma alternating_word_palindrome_periodic (s t : α) (i : ℕ) :
     ((alternating_word s t (2 * (i + m s t) + 1) : List S) : G)
     = ((alternating_word s t (2 * i + 1) : List S) : G) := by
-  rw [alternating_word_append_odd (s : S) t (2 * (i + m s t) + 1) (2 * i + 1)
-    (by linarith : 2 * i + 1 ≤ 2 * (i + m s t) + 1)
-    (by use i : Odd (2 * i + 1)), gprod_append]
-  apply (mul_one (alternating_word s t (2 * i + 1) : List S).gprod).subst
-    (motive := fun x ↦ (alternating_word s t (2 * i + 1) : List S).gprod *
-    (alternating_word t s (2 * (i + m s t) + 1 - (2 * i + 1)) : List S).gprod = x)
-  congr
-  rw [← alternating_word_relation t s]
-  congr 2
-  ring_nf
-  rw [add_comm, Nat.add_sub_cancel]
-  congr 1
-  exact symmetric s t
+  rw [mul_add, add_assoc, add_comm _ 1, ← add_assoc,
+    alternating_word_append_odd (s : S) t (2 * i + 1) (2 * m s t) (by use i : Odd (2 * i + 1)),
+    gprod_append, @symmetric _ m _ s t, alternating_word_relation, mul_one]
 
 lemma pi_relation_word_nn_even (s s' : α) (t : T) : Even (nn (alternating_word (s : S) s' (2 * m s s')) t) := by
   use ((List.range (m s s')).map fun i ↦ (alternating_word (s : S) s' (2 * i + 1)).gprod).count (t : G)
@@ -474,7 +461,7 @@ lemma pi_aux_list_mul (s t : α) : ((pi_aux' s : Equiv.Perm R) * (pi_aux' t : Eq
   . simp only [pow_zero, alternating_word, Nat.zero_eq, mul_zero, List.range_zero, List.map_nil,
       List.prod_nil]
   . rw [Nat.succ_eq_add_one, pow_succ, mul_add, add_comm, mul_one,
-      alternating_word_append_even s t (2 + 2 * k) 2 (by norm_num) (by norm_num)]
+      alternating_word_append_even s t 2 (2 * k) (by simp)]
     simp only [add_tsub_cancel_left, List.map_append, List.prod_append, ← ih, mul_left_inj,
       AlternatingWord.alternating_word]
     rw [pow_mul_comm']
