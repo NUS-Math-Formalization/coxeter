@@ -631,10 +631,13 @@ lemma eta_aux'_reflection (L : List S) (s : S) (t : T) (i : Fin L.length)
 lemma eta_t (t : T) : eta (t : G) t = μ₂.gen := by
   rcases h : t with ⟨t', ⟨g, s, ht⟩⟩
   obtain ⟨L, hgL⟩ := @exists_prod G _ S _ g
+  rw [hgL] at ht; clear hgL
   have tLgL : t' = (L ++ [s] ++ L.reverse : G) := by
-    rw [gprod_append, gprod_append, gprod_singleton, gprod_reverse, ← hgL]
+    rw [gprod_append, gprod_append, gprod_singleton, gprod_reverse]
     exact ht
-  rw [@eta_equiv_nn α m hm t' ⟨t', ⟨g, s, ht⟩⟩ (L ++ [s] ++ L.reverse) tLgL,
+  simp_rw [tLgL] at *; clear tLgL
+  clear ht
+  rw [@eta_equiv_nn α m hm _ _ (L ++ [s] ++ L.reverse) rfl,
     nn_prod_eta_aux]
   let f : Fin (L ++ [s] ++ L.reverse).length → μ₂ := fun i ↦ eta_aux' ((L ++ [s] ++ L.reverse).get i)
     ⟨((L ++ [s] ++ L.reverse).take i).reverse * t * (L ++ [s] ++ L.reverse).take i,
@@ -662,9 +665,7 @@ lemma eta_t (t : T) : eta (t : G) t = μ₂.gen := by
         (by simp only [List.length_singleton, Nat.sub_self, zero_lt_one])]
       simp only [List.length_singleton, le_refl, Nat.sub_self,
         Fin.zero_eta, List.get_cons_zero, eta_aux']
-      have : t = t' := by rw [h]
-      apply this.symm.subst (motive := fun x ↦ (if ↑s = (L⁻¹ : G) * x * L then μ₂.gen else 1) = μ₂.gen)
-      rw [tLgL, gprod_append, gprod_append, gprod_reverse, gprod_singleton]
+      simp_rw [h, gprod_append, gprod_reverse, gprod_singleton]
       group
       exact ite_true _ _
     _ = μ₂.gen * ∏ __ : Fin L.length, (1 : μ₂) := by
@@ -676,7 +677,7 @@ lemma eta_t (t : T) : eta (t : G) t = μ₂.gen := by
         List.get_append_left _ _ (List.lt_append' s L x), List.get_append_left _ _ x.2,
         ← List.get_reverse L.reverse _ (List.lt_reverse_reverse s L x) (List.lt_append_singleton' s L x)]
       have htLgL : (t : G) = (L : G) * s * L.reverse := by
-        rw [h, gprod_reverse, ← hgL, ← ht]
+        simp_rw [h, gprod_append, gprod_reverse, gprod_singleton]
       rw [(List.reverse_reverse_get s L x), eta_aux'_reflection L s t x htLgL]
       congr
       have (u2 : μ₂) : u2 * u2 = (1 : μ₂) :=
