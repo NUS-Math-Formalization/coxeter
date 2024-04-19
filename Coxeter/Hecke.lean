@@ -7,6 +7,8 @@ import Mathlib.Algebra.DirectSum.Basic
 import Mathlib.Algebra.Ring.Defs
 import Mathlib.Algebra.Algebra.Hom
 import Mathlib.Algebra.Algebra.Equiv
+import Mathlib.Algebra.Polynomial.Laurent
+import Mathlib.Data.Finsupp.Defs
 import Mathlib.Init.Data.List.Instances
 import Mathlib.Data.Finsupp.Pointwise
 import Mathlib.Algebra.Polynomial.Laurent
@@ -373,10 +375,14 @@ lemma subalg_commute_subalg' (f:subalg G) (g:subalg' G): f.1 ∘ₗ g.1 = g.1 �
     intro g
     rw [Subalgebra.coe_mul,LinearMap.mul_eq_comp,LinearMap.comp_assoc,h2 g,←LinearMap.comp_assoc,h1 g,LinearMap.comp_assoc]
 
-set_option synthInstance.maxHeartbeats 50000
+/-- Shortcut for instance AddCommMonoid (subalg G) to avoid timeout -/
+noncomputable instance : AddCommMonoid (subalg G) := NonUnitalNonAssocSemiring.toAddCommMonoid
+
+/-- Shortcut for instance AddCommMonoid (subalg' G) to avoid timeout -/
+noncomputable instance : AddCommMonoid (subalg' G) := NonUnitalNonAssocSemiring.toAddCommMonoid
 
 noncomputable instance alg_hom_aux.IsLinearMap : IsLinearMap (LaurentPolynomial ℤ) (alg_hom_aux: subalg G → Hecke G) where
-  map_add:=by intro x y; simp
+  map_add:= by intro x y; simp
   map_smul := by intro c x; simp
 
 noncomputable instance alg_hom_aux'.IsLinearMap : IsLinearMap (LaurentPolynomial ℤ) (alg_hom_aux': subalg' G → Hecke G) where
@@ -487,7 +493,10 @@ LinearEquiv (@RingHom.id (LaurentPolynomial ℤ) _) (subalg G) (Hecke G) where
   left_inv := Function.leftInverse_surjInv alg_hom_aux_bijective
   right_inv := Function.rightInverse_surjInv alg_hom_aux_surjective
 
-lemma alg_hom_id : (alg_hom G) 1 = TT 1 := by simp [alg_hom]
+lemma alg_hom_id : alg_hom G 1 = TT 1 := by
+  unfold One.toOfNat1 alg_hom
+  simp
+  rfl
 
 lemma subalg.id_eq :(alg_hom G).symm (TT 1) = 1:=by
   simp_rw [←alg_hom_id, LinearEquiv.symm_apply_eq]
@@ -551,14 +560,30 @@ lemma right_distrib : ∀ (a b c : Hecke G),  HeckeMul (a + b)  c =  HeckeMul a 
   nth_rw 1 [LinearEquiv.map_add,add_mul]
   rw [LinearEquiv.map_add]
 
-noncomputable instance Semiring : Semiring (Hecke G) where
-  mul_zero:= mul_zero
-  zero_mul:= zero_mul
-  left_distrib:= left_distrib
-  right_distrib:= right_distrib
-  mul_assoc:=mul_assoc
-  one_mul:=one_mul
-  mul_one:=mul_one
+noncomputable instance semiring : Semiring (Hecke G) where
+  mul:=HeckeMul
+  mul_zero:= Hecke.mul_zero
+  zero_mul:= Hecke.zero_mul
+  left_distrib:= Hecke.left_distrib
+  right_distrib:= Hecke.right_distrib
+  mul_assoc:=Hecke.mul_assoc
+  one:=TT 1
+  one_mul:=Hecke.one_mul
+  mul_one:=Hecke.mul_one
+
+/- `not needed, should change to the following`
+-- noncomputable instance : NonUnitalSemiring (Hecke G) := Semiring.toNonUnitalSemiring (α := Hecke G)
+
+-- noncomputable instance : NonUnitalNonAssocSemiring (Hecke G) := NonUnitalSemiring.toNonUnitalNonAssocSemiring (α := Hecke G)
+
+-- noncomputable instance : NonUnitalNonAssocRing (Hecke G) :=
+--   {instNonUnitalNonAssocSemiringHecke with
+--     add_left_neg := by simp}
+-/
+
+noncomputable instance ring : Ring (Hecke G) where
+  add_left_neg := by simp
+  zsmul := zsmulRec
 
 lemma smul_assoc : ∀ (r : LaurentPolynomial ℤ) (x y : Hecke G), HeckeMul (r • x) y = r • (HeckeMul x y):=by
   intro r x y
@@ -606,7 +631,9 @@ noncomputable def TT' : G → Hecke G := fun g => listToHecke (@choose_reduced_w
 
 @[simp]
 lemma listToHecke_cons : listToHecke (s :: L) = TT s.1 * listToHecke L :=by
-  simp [listToHecke]
+  dsimp [listToHecke]
+  erw [List.prod_cons]
+  rfl
 
 @[simp]
 lemma listToHecke_nil_eq_one : listToHecke ([] : List hG.S) = 1 :=rfl
@@ -630,9 +657,9 @@ noncomputable def TT_inv_s (s:hG.S) := q⁻¹ • (TT s.val) - (1-q⁻¹) • 1
 lemma TT_inv_mul {s:hG.S}:  TT s.1 * (TT_inv_s s) = 1 := by
   dsimp [TT_inv_s]
   set qinv := @LaurentPolynomial.T ℤ _ (-1)
-  rw [mul_sub,mul_smul_comm,Ts_square,smul_add,smul_smul,mul_sub,q_inv_mul]
+  simp_rw [mul_sub (TT s.1),mul_smul_comm,Ts_square,smul_add,smul_smul,mul_sub, _root_.mul_one]
+  rw [q_inv_mul,add_sub_right_comm,sub_self]
   simp
-  rw [smul_smul,q_inv_mul,one_smul]
 
 noncomputable def listToHeckeInv : List hG.S → Hecke G := fun L => (List.map TT_inv_s L.reverse).prod
 
