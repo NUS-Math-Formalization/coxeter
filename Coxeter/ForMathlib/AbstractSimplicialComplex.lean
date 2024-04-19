@@ -199,7 +199,8 @@ lemma pure_def {F : AbstractSimplicialComplex V} [Pure F] : ∀ s ∈ F.Facets, 
 lemma pure_isPure {F : AbstractSimplicialComplex V} [Pure F] : IsPure F := pure_def
 
 /--
-If the size of simplices in F is unbounded, it has rank 0 by definition.
+The rank of an ASC is defined to be the supremum of the cardinals of its faces.
+If the size of simplices in F is unbounded, it has rank `0` by definition.
 
 Remark: We should general be careful with the unbounded case.
 -/
