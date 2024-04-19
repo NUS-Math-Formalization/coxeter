@@ -56,7 +56,7 @@ lemma mul_lt_of_mem_rD {v :G} {s: hG.S} (h: s.1 ∈ rightDescent v) : v*s < v :=
   have hlt : lt_adj (v*s) v := by
     rw [lt_adj]
     use s.1
-    exact ⟨SimpleRefl_is_Refl s.2, ⟨mul_SimpleRefl_twice v s, length_muls_of_mem_rightDescent ⟨s.1,h⟩⟩⟩
+    exact ⟨SimpleRefl_is_Refl s.2, ⟨mul_SimpleRefl_twice v s, Set.mem_setOf.1 (Set.mem_of_mem_inter_left h).2 ⟩⟩
   exact (Relation.transGen_iff lt_adj (v*s) v).2 (Or.inl hlt)
 
 lemma mul_gt_of_not_mem_rD {v :G} {s: hG.S} (h: s.1 ∉ rightDescent v) : v < v*s := by
@@ -88,7 +88,7 @@ lemma Rpoly_aux {u v :G} {s:hG.S} (h1:s.1 ∈ rightDescent v) (h2:s.1 ∈ rightD
     (TTInv v⁻¹) u * q = (TTInv (v * s)⁻¹) (u * s) := by
       have hl : ℓ((v * s)⁻¹) < ℓ(s * (v * s)⁻¹) := sorry
       nth_rw 1 [mul_SimpleRefl_twice v s]
-      rw [mul_inv_rev,←inv_eq_self' s,TTInv_muls_of_length_gt' s hl]
+      rw [mul_inv_rev,←inv_eq_self' s,TTInv_muls_of_length_gt (s:=s) hl]
       rw [TTInv_s_eq,mul_sub,sub_apply,mul_smul_comm,smul_apply,muls_apply_antidiagonal_of_memrD]
 
       sorry
@@ -164,7 +164,7 @@ lemma Rpoly_not_mem_rD : ∀(u v:G) (s:hG.S),s.1 ∈ rightDescent v → s.1 ∉ 
         rw [HOrderTwoGenGroup.length,length_eq_inv_length (S:=hG.S)] at *
         exact Nat.pred_lt_self h'
       nth_rw 1 [vss]
-      rw [mul_inv_rev,←inv_eq_self' s,TTInv_muls_of_length_gt' (s) hl,TTInv_s_eq]
+      rw [mul_inv_rev,←inv_eq_self' s,TTInv_muls_of_length_gt (s:=s) hl,TTInv_s_eq]
       calc
         _ = (TTInv (v * s)⁻¹ * (q⁻¹ • TT s.1) - TTInv (v * s)⁻¹ * (1 - q⁻¹) • 1) u *
         (-1) ^(ℓ(v * s * s) + (ℓ(u)) ) * q ^ (ℓ(v * s * s)) := by rw [mul_sub,←vss]
