@@ -12,9 +12,9 @@
 <meta name="generator" content="plasTeX" />
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Coxeter Group and Bruhat Order: Coxeter Matrix</title>
-<link rel="next" href="sect0001.html" title="Alternating Word" />
-<link rel="prev" href="sec-coxeter-group.html" title="Coxeter Group" />
+<title>Coxeter Group and Bruhat Order: Coxeter Group</title>
+<link rel="next" href="sec-coxeter-matrix.html" title="Coxeter Matrix" />
+<link rel="prev" href="sec-order-2-generated-group.html" title="Order-2-Generated Group" />
 <link rel="up" href="index.html" title="Coxeter Group and Bruhat Order" />
 <link rel="stylesheet" href="styles/theme-white.css" />
 <link rel="stylesheet" href="styles/amsthm.css" />
@@ -33,10 +33,10 @@
 <li class="">
   <a href="sec-order-2-generated-group.html"><span class="toc_ref">1</span> <span class="toc_entry">Order-2-Generated Group</span></a>
  </li>
-<li class="">
+<li class=" active current">
   <a href="sec-coxeter-group.html"><span class="toc_ref">2</span> <span class="toc_entry">Coxeter Group</span></a>
  </li>
-<li class=" active current">
+<li class="">
   <a href="sec-coxeter-matrix.html"><span class="toc_ref">3</span> <span class="toc_entry">Coxeter Matrix</span></a>
  </li>
 <li class="">
@@ -60,48 +60,17 @@
 
 
 <div class="main-text">
-<h1 id="sec:coxeter-matrix">3 Coxeter Matrix</h1>
+<h1 id="sec:coxeter-group">2 Coxeter Group</h1>
 
-<div class="definition_thmwrapper" id="def:coxeter-matrix">
+<div class="definition_thmwrapper" id="def:exchange-property">
   <div class="definition_thmheading">
     <span class="definition_thmcaption">
     Definition
     </span>
-    <span class="definition_thmlabel">3.1</span>
+    <span class="definition_thmlabel">2.1</span>
     ✓
     <div class="thm_icons">
-    <a class="icon proof" href="sec-coxeter-matrix.html#def:coxeter-matrix">#</a>
-    <button class="modal lean">L∃∀N</button>
-    <div class="modal-container">
-      <div class="modal-content">
-        <header>
-          <h1>Lean declarations</h1>
-          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
-</button>
-        </header>
-                <ul class="uses">
-          <li><a href="http://13.210.23.89:8080/find/#doc/CoxeterMatrix" class="lean_decl">CoxeterMatrix</a></li>
-        </ul>
-
-      </div>
-    </div>
-
-  </div>
-  </div>
-  <div class="definition_thmcontent">
-  <p>  A square matrix \(m : \alpha \times \alpha \to \mathbb {N}\) with non-negative integer entries is a Coxeter matrix if it is symmetric, that is, \(m_{a,b} = m_{b,a}\) for any \((a,b)\); the entry \(m_{a,b}\) is \(1\) if and only if \(a=b\). </p>
-
-  </div>
-</div>
-<div class="definition_thmwrapper" id="def:to-group">
-  <div class="definition_thmheading">
-    <span class="definition_thmcaption">
-    Definition
-    </span>
-    <span class="definition_thmlabel">3.2</span>
-    ✓
-    <div class="thm_icons">
-    <a class="icon proof" href="sec-coxeter-matrix.html#def:to-group">#</a>
+    <a class="icon proof" href="sec-coxeter-group.html#def:exchange-property">#</a>
     <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
 </button>
     <div class="modal-container">
@@ -112,7 +81,7 @@
 </button>
         </header>
                 <ul class="uses">
-          <li><a href="sec-coxeter-matrix.html#def:coxeter-matrix">Definition 3.1</a></li>
+          <li><a href="sec-order-2-generated-group.html#def:order-2-generated">Definition 1.1</a></li>
         </ul>
 
       </div>
@@ -126,7 +95,7 @@
 </button>
         </header>
                 <ul class="uses">
-          <li><a href="http://13.210.23.89:8080/find/#doc/CoxeterMatrix.ToGroup" class="lean_decl">CoxeterMatrix.ToGroup</a></li>
+          <li><a href="http://13.210.23.89:8080/find/#doc/OrderTwoGen.ExchangeProp" class="lean_decl">OrderTwoGen.ExchangeProp</a></li>
         </ul>
 
       </div>
@@ -135,19 +104,19 @@
   </div>
   </div>
   <div class="definition_thmcontent">
-  <p>   Given a Coxeter matrix \(m\), we can construct a group \(G\) with generators \(s_i\) and relations \(s_i^2 = 1\) and \((s_i s_j)^{m_{i,j}} = 1\). </p>
+  <p>   \((G, S)\) is an order-two generated system. We say the system satisfy the exchange property if given a reduced expression \(w = s_1 s_2 \cdots s_n \in G\) and \(s \in S\), there exists \(1 \leq i {\lt} n\) such that \(s s_1 \cdots s_n = s_1 \cdots \hat{s_i} \cdots s_n\). </p>
 
   </div>
 </div>
-<div class="definition_thmwrapper" id="def:simple-reflection">
+<div class="definition_thmwrapper" id="def:deletion-property">
   <div class="definition_thmheading">
     <span class="definition_thmcaption">
     Definition
     </span>
-    <span class="definition_thmlabel">3.3</span>
+    <span class="definition_thmlabel">2.2</span>
     ✓
     <div class="thm_icons">
-    <a class="icon proof" href="sec-coxeter-matrix.html#def:simple-reflection">#</a>
+    <a class="icon proof" href="sec-coxeter-group.html#def:deletion-property">#</a>
     <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
 </button>
     <div class="modal-container">
@@ -158,7 +127,7 @@
 </button>
         </header>
                 <ul class="uses">
-          <li><a href="sec-coxeter-matrix.html#def:coxeter-matrix">Definition 3.1</a></li>
+          <li><a href="sec-order-2-generated-group.html#def:order-2-generated">Definition 1.1</a></li>
         </ul>
 
       </div>
@@ -172,7 +141,7 @@
 </button>
         </header>
                 <ul class="uses">
-          <li><a href="http://13.210.23.89:8080/find/#doc/CoxeterMatrix.SimpleRefl" class="lean_decl">CoxeterMatrix.SimpleRefl</a></li>
+          <li><a href="http://13.210.23.89:8080/find/#doc/OrderTwoGen.DeletionProp" class="lean_decl">OrderTwoGen.DeletionProp</a></li>
         </ul>
 
       </div>
@@ -181,20 +150,20 @@
   </div>
   </div>
   <div class="definition_thmcontent">
-  <p>   A set of simple reflections is a subset \(S \subseteq G\) such that every element is obtained by the domain of matrix index set \(\alpha \). </p>
+  <p>   \((G, S)\) is an order-two generated system. We say the system satisfy the deletion property if given an expression \(w = s_1 s_2 \cdots s_n \in G\), there exists \(1 \leq i \leq j {\lt} n\) such that \(w = s_1 \cdots \hat{s_i} \cdots \hat{s_j} \cdots s_n\). </p>
 
   </div>
 </div>
-<div class="lemma_thmwrapper" id="lem:to-group-expression">
-  <div class="lemma_thmheading">
-    <span class="lemma_thmcaption">
-    Lemma
+<div class="theorem_thmwrapper" id="thm:exchange-deletion">
+  <div class="theorem_thmheading">
+    <span class="theorem_thmcaption">
+    Theorem
     </span>
-    <span class="lemma_thmlabel">3.4</span>
+    <span class="theorem_thmlabel">2.3</span>
     ✓
     <div class="thm_icons">
-    <a class="icon proof" href="sec-coxeter-matrix.html#lem:to-group-expression">#</a>
-    <a class="icon proof" href="sec-coxeter-matrix.html#a0000000007"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+    <a class="icon proof" href="sec-coxeter-group.html#thm:exchange-deletion">#</a>
+    <a class="icon proof" href="sec-coxeter-group.html#a0000000006"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
 </a>
     <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
 </button>
@@ -206,8 +175,8 @@
 </button>
         </header>
                 <ul class="uses">
-          <li><a href="sec-coxeter-matrix.html#def:to-group">Definition 3.2</a></li>
-          <li><a href="sec-coxeter-matrix.html#def:simple-reflection">Definition 3.3</a></li>
+          <li><a href="sec-coxeter-group.html#def:exchange-property">Definition 2.1</a></li>
+          <li><a href="sec-coxeter-group.html#def:deletion-property">Definition 2.2</a></li>
         </ul>
 
       </div>
@@ -221,7 +190,7 @@
 </button>
         </header>
                 <ul class="uses">
-          <li><a href="http://13.210.23.89:8080/find/#doc/CoxeterMatrix.toGroup_expression" class="lean_decl">CoxeterMatrix.toGroup_expression</a></li>
+          <li><a href="http://13.210.23.89:8080/find/#doc/OrderTwoGen.exchange_imp_deletion" class="lean_decl">OrderTwoGen.exchange_imp_deletion</a></li>
         </ul>
 
       </div>
@@ -229,72 +198,12 @@
 
   </div>
   </div>
-  <div class="lemma_thmcontent">
-  <p>   Given a Coxeter matrix \(m\), the group \(G\) can be expressed as the group generated by the simple reflections \(s_i \in S\). </p>
+  <div class="theorem_thmcontent">
+  <p>   If \((G, S)\) is an order-two generated system that satisfies the exchange property if and only if it satisfies the deletion property. </p>
 
   </div>
 </div>
-<div class="proof_wrapper" id="a0000000007">
-  <div class="proof_heading">
-    <span class="proof_caption">
-    Proof
-    </span>
-    <span class="expand-proof">▼</span>
-  </div>
-  <div class="proof_content">
-  <p> is a direct consequence of the definition of the group \(G\) and the simple reflections \(S\). </p>
-
-  </div>
-</div>
-<div class="lemma_thmwrapper" id="lem:coxeter-matrix-order-2-generated">
-  <div class="lemma_thmheading">
-    <span class="lemma_thmcaption">
-    Lemma
-    </span>
-    <span class="lemma_thmlabel">3.5</span>
-    ✓
-    <div class="thm_icons">
-    <a class="icon proof" href="sec-coxeter-matrix.html#lem:coxeter-matrix-order-2-generated">#</a>
-    <a class="icon proof" href="sec-coxeter-matrix.html#a0000000008"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
-</a>
-    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
-</button>
-    <div class="modal-container">
-      <div class="modal-content">
-        <header>
-          <h1>Uses</h1>
-          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
-</button>
-        </header>
-                <ul class="uses">
-          <li><a href="sec-coxeter-matrix.html#lem:to-group-expression">Lemma 3.4</a></li>
-        </ul>
-
-      </div>
-    </div>
-    <button class="modal lean">L∃∀N</button>
-    <div class="modal-container">
-      <div class="modal-content">
-        <header>
-          <h1>Lean declarations</h1>
-          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
-</button>
-        </header>
-                <ul class="uses">
-          <li><a href="http://13.210.23.89:8080/find/#doc/CoxeterMatrix.ofOrderTwoGen" class="lean_decl">CoxeterMatrix.ofOrderTwoGen</a></li>
-        </ul>
-
-      </div>
-    </div>
-
-  </div>
-  </div>
-  <div class="lemma_thmcontent">
-  <p>   The group \(G\) with the simple reflection set \(S\) is an Order-2-generated group. </p>
-
-  </div>
-</div>
-<div class="proof_wrapper" id="a0000000008">
+<div class="proof_wrapper" id="a0000000006">
   <div class="proof_heading">
     <span class="proof_caption">
     Proof
@@ -308,6 +217,53 @@
 
   </div>
 </div>
+<div class="definition_thmwrapper" id="def:coxeter-group">
+  <div class="definition_thmheading">
+    <span class="definition_thmcaption">
+    Definition
+    </span>
+    <span class="definition_thmlabel">2.4</span>
+    ✓
+    <div class="thm_icons">
+    <a class="icon proof" href="sec-coxeter-group.html#def:coxeter-group">#</a>
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+    <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+                <ul class="uses">
+          <li><a href="sec-coxeter-group.html#def:exchange-property">Definition 2.1</a></li>
+          <li><a href="sec-coxeter-group.html#thm:exchange-deletion">Theorem 2.3</a></li>
+        </ul>
+
+      </div>
+    </div>
+    <button class="modal lean">L∃∀N</button>
+    <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+                <ul class="uses">
+          <li><a href="http://13.210.23.89:8080/find/#doc/CoxeterGroup" class="lean_decl">CoxeterGroup</a></li>
+        </ul>
+
+      </div>
+    </div>
+
+  </div>
+  </div>
+  <div class="definition_thmcontent">
+  <p>   A Coxeter group is an order-two generated group \((G, S)\) that satisfies the exchange property. </p>
+
+  </div>
+</div>
 
 </div> <!--main-text -->
 </div> <!-- content-wrapper -->
@@ -315,11 +271,11 @@
 </div> <!-- wrapper -->
 
 <nav class="prev_up_next">
-  <a href="sec-coxeter-group.html" title="Coxeter Group"><svg  class="icon icon-arrow-left "><use xlink:href="symbol-defs.svg#icon-arrow-left"></use></svg>
+  <a href="sec-order-2-generated-group.html" title="Order-2-Generated Group"><svg  class="icon icon-arrow-left "><use xlink:href="symbol-defs.svg#icon-arrow-left"></use></svg>
 </a>
   <a href="index.html" title="Coxeter Group and Bruhat Order"><svg  class="icon icon-arrow-up "><use xlink:href="symbol-defs.svg#icon-arrow-up"></use></svg>
 </a>
-  <a href="sect0001.html" title="Alternating Word"><svg  class="icon icon-arrow-right "><use xlink:href="symbol-defs.svg#icon-arrow-right"></use></svg>
+  <a href="sec-coxeter-matrix.html" title="Coxeter Matrix"><svg  class="icon icon-arrow-right "><use xlink:href="symbol-defs.svg#icon-arrow-right"></use></svg>
 </a>
 </nav>
 

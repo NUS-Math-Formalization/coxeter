@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>
+  MathJax = { 
+    tex: {
+		    inlineMath: [['$','$'], ['\\(','\\)']]
+	} }
+</script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js">
+</script>
+<meta name="generator" content="plasTeX" />
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Coxeter Group and Bruhat Order: Alternating Word</title>
+<link rel="next" href="sect0002.html" title="Test Group" />
+<link rel="prev" href="sec-coxeter-matrix.html" title="Coxeter Matrix" />
+<link rel="up" href="index.html" title="Coxeter Group and Bruhat Order" />
+<link rel="stylesheet" href="styles/theme-white.css" />
+<link rel="stylesheet" href="styles/amsthm.css" />
+<link rel="stylesheet" href="styles/style.css" />
+</head>
+
+<body>
+<header>
+<svg  id="toc-toggle" class="icon icon-list-numbered "><use xlink:href="symbol-defs.svg#icon-list-numbered"></use></svg>
+<h1 id="doc_title"><a href="index.html">Coxeter Group and Bruhat Order</a></h1>
+</header>
+
+<div class="wrapper">
+<nav class="toc">
+<ul class="sub-toc-0">
+<li class="">
+  <a href="sec-order-2-generated-group.html"><span class="toc_ref">1</span> <span class="toc_entry">Order-2-Generated Group</span></a>
+ </li>
+<li class="">
+  <a href="sec-coxeter-group.html"><span class="toc_ref">2</span> <span class="toc_entry">Coxeter Group</span></a>
+ </li>
+<li class="">
+  <a href="sec-coxeter-matrix.html"><span class="toc_ref">3</span> <span class="toc_entry">Coxeter Matrix</span></a>
+ </li>
+<li class=" active current">
+  <a href="sect0001.html"><span class="toc_ref">4</span> <span class="toc_entry">Alternating Word</span></a>
+ </li>
+<li class="">
+  <a href="sect0002.html"><span class="toc_ref">5</span> <span class="toc_entry">Test Group</span></a>
+ </li>
+<li class="">
+  <a href="sec-reflection-representation.html"><span class="toc_ref">6</span> <span class="toc_entry">Reflection Representation</span></a>
+ </li>
+<li class="">
+  <a href="sect0003.html"><span class="toc_ref">7</span> <span class="toc_entry">Bibliography</span></a>
+ </li>
+<li ><a href="dep_graph_document.html">Dependency graph</a></li>
+</ul>
+</nav>
+
+<div class="content">
+<div class="content-wrapper">
+
+
+<div class="main-text">
+<h1 id="a0000000002">4 Alternating Word</h1>
+<div class="definition_thmwrapper" id="def:alternating-word">
+  <div class="definition_thmheading">
+    <span class="definition_thmcaption">
+    Definition
+    </span>
+    <span class="definition_thmlabel">4.1</span>
+    ✓
+    <div class="thm_icons">
+    <a class="icon proof" href="sect0001.html#def:alternating-word">#</a>
+    <button class="modal lean">L∃∀N</button>
+    <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+                <ul class="uses">
+          <li><a href="http://13.210.23.89:8080/find/#doc/AlternatingWord.alternating_word" class="lean_decl">AlternatingWord.alternating_word</a></li>
+        </ul>
+
+      </div>
+    </div>
+
+  </div>
+  </div>
+  <div class="definition_thmcontent">
+  <p>  An alternating word is a word \(w = a b a b \cdots \) of length \(n\). </p>
+
+  </div>
+</div>
+<div class="lemma_thmwrapper" id="lem:alternating-word-map">
+  <div class="lemma_thmheading">
+    <span class="lemma_thmcaption">
+    Lemma
+    </span>
+    <span class="lemma_thmlabel">4.2</span>
+    ✓
+    <div class="thm_icons">
+    <a class="icon proof" href="sect0001.html#lem:alternating-word-map">#</a>
+    <a class="icon proof" href="sect0001.html#a0000000009"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+    <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+                <ul class="uses">
+          <li><a href="sect0001.html#def:alternating-word">Definition 4.1</a></li>
+        </ul>
+
+      </div>
+    </div>
+    <button class="modal lean">L∃∀N</button>
+    <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+                <ul class="uses">
+          <li><a href="http://13.210.23.89:8080/find/#doc/AlternatingWord.alternating_word_map" class="lean_decl">AlternatingWord.alternating_word_map</a></li>
+        </ul>
+
+      </div>
+    </div>
+
+  </div>
+  </div>
+  <div class="lemma_thmcontent">
+  <p>   Given an alternating word \(w = a b a b \cdots \), the map preserves the alternating pattern. </p>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000009">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▼</span>
+  </div>
+  <div class="proof_content">
+  
+
+  </div>
+</div>
+
+</div> <!--main-text -->
+</div> <!-- content-wrapper -->
+</div> <!-- content -->
+</div> <!-- wrapper -->
+
+<nav class="prev_up_next">
+  <a href="sec-coxeter-matrix.html" title="Coxeter Matrix"><svg  class="icon icon-arrow-left "><use xlink:href="symbol-defs.svg#icon-arrow-left"></use></svg>
+</a>
+  <a href="index.html" title="Coxeter Group and Bruhat Order"><svg  class="icon icon-arrow-up "><use xlink:href="symbol-defs.svg#icon-arrow-up"></use></svg>
+</a>
+  <a href="sect0002.html" title="Test Group"><svg  class="icon icon-arrow-right "><use xlink:href="symbol-defs.svg#icon-arrow-right"></use></svg>
+</a>
+</nav>
+
+<script type="text/javascript" src="js/jquery.min.js"></script>
+<script type="text/javascript" src="js/plastex.js"></script>
+<script type="text/javascript" src="js/svgxuse.js"></script>
+</body>
+</html>
