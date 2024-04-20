@@ -105,16 +105,6 @@ lemma chain_nodup {L : List P} (h : chain L) : L.Nodup := by
         apply List.Chain'.tail h
       exact hl' this
 
-lemma chain_head_lt_tail {L : List P} (h : chain L) : ∀ x ∈ L, List.head? L < x ∨ x = List.head? L:= by
-  match L with
-  | [] => simp
-  | head :: tail =>
-      simp
-      intro a ain
-      left
-      sorry
-      -- match tail with
-
 
 -- May not be needed, use chain_nodup
 lemma chain_singleton_of_head_eq_tail  {L : List P} (a : P) (chain_l : chain L)
