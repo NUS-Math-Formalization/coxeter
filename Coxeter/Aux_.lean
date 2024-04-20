@@ -15,9 +15,9 @@ import Mathlib.Logic.Equiv.Fin
 
 import Coxeter.AttrRegister
 
-#check List.eraseDups
-#check List.eraseReps
-#check List.groupBy
+--#check List.eraseDups
+--#check List.eraseReps
+--#check List.groupBy
 
 namespace  List
 variable {α : Type _} [BEq α] [Inhabited α]
