@@ -613,7 +613,6 @@ lemma eta_aux'_reflection (L : List S) (s : S) (t : T) (i : Fin L.length)
   rw [← mul_assoc _ _ ((L.get i)⁻¹ : G)]
   exact propext (Group.eq_iff_eq_conjugate _ _)
 
-
 lemma eta_t_equal_lemma (t : T) (s : S) (L : List S) (n : ℕ) (h1 : 1 ≤ n) (h2 : n ≤ L.length) (h3 : (t : G) = (L : G) * s * L.reverse) :
     eta_aux' (L.get ⟨L.length - n, (by omega)⟩) ⟨((L ++ [s] ++ L.reverse).take (L.length - n)).reverse * t * (L ++ [s] ++ L.reverse).take (L.length - n),
     by apply Refl_palindrome_in_Refl⟩ = eta_aux' (L.get ⟨L.length - n, (by omega)⟩)
@@ -655,6 +654,51 @@ lemma eta_t_equal_lemma (t : T) (s : S) (L : List S) (n : ℕ) (h1 : 1 ≤ n) (h
     sorry
   simp [this, gprod_simps]
 
+lemma eta_t_equal_lemma' (t : T) (s : S) (L : List S) (n : ℕ) (h1 : 1 ≤ n) (h2 : n ≤ L.length) (h3 : (t : G) = (L : G) * s * L.reverse) :
+    eta_aux' (L.get ⟨L.length - n, (by omega)⟩) ⟨((L ++ [s] ++ L.reverse).take (L.length - n)).reverse * t * (L ++ [s] ++ L.reverse).take (L.length - n),
+    by apply Refl_palindrome_in_Refl⟩ = eta_aux' (L.get ⟨L.length - n, (by omega)⟩)
+    ⟨((L ++ [s] ++ L.reverse).take (L.length + n)).reverse * t * (L ++ [s] ++ L.reverse).take (L.length + n),
+    by apply Refl_palindrome_in_Refl⟩ := by
+  simp_rw [eta_aux']
+  congr 1
+  have : (L ++ [s] ++ L.reverse).take (L.length + n) =
+      L ++ [s] ++ (L.reverse.take (n - 1)) := by
+    have : L.length + n = (L ++ [s]).length + (n - 1) := by
+      rw [List.length_append_singleton, ← Nat.add_sub_assoc h1, add_assoc,
+        add_comm 1 n, ← add_assoc, Nat.add_sub_cancel]
+    simp_rw [this, List.take_append]
+  simp_rw [this]; clear this
+  have : (L ++ [s] ++ L.reverse).take (L.length - n) = L.take (L.length - n) := by
+    have : L.length - n ≤ (L ++ [s]).length := by
+      rw [List.length_append_singleton]; omega
+    simp_rw [List.take_append_of_le_length this,
+      List.take_append_of_le_length (Nat.sub_le L.length n)]
+  simp_rw [this]; clear this
+  simp only [SimpleRefl, Set.mem_setOf_eq, gprod_reverse, List.append_assoc, List.singleton_append,
+    List.reverse_append, List.reverse_cons, gprod_append, gprod_simps]
+  have : (L.reverse.take (n - 1)).gprod = (L.reverse.take n).gprod * (L.get ⟨L.length - n, by omega⟩ : G) := by
+    rcases n with (_ | m)
+    · contradiction
+    · simp only [Nat.succ_sub_succ_eq_sub, tsub_zero, List.take_succ, gprod_append]
+      rw [mul_assoc]
+      apply self_eq_mul_right.mpr
+      rw [List.get?_eq_get (by rw [List.length_reverse]; exact h2)]
+      simp only [Option.toList_some, gprod_singleton]
+      rw [List.get_reverse' L _ (by omega)]
+      simp only [Nat.succ_eq_add_one, add_comm, Nat.sub_sub]
+      exact of_square_eq_one' _ (Subtype.mem _)
+  simp_rw [this]; clear this
+  simp only [Set.mem_setOf_eq, mul_inv_rev, inv_eq_self'', h3, gprod_simps]
+  simp_rw [← mul_assoc (s : G) (s : G), of_square_eq_one' m s.2,
+    one_mul, ← mul_assoc _ _ (L.get _ : G)]
+  rw [← propext (SimpleRefl_eq_iff_eq m _ _)]
+  congr 1
+  have : (L.reverse.take n : G) = (L : G)⁻¹ * (L.take (L.length - n) : G) := by
+    sorry
+  simp [this, gprod_simps]
+
+#exit
+
 lemma eta_t_product_lemma (t : T) (s : S) (L : List S) (n : ℕ) (h1 : 1 ≤ n) (h2 : n ≤ L.length) (h3 : (t : G) = (L : G) * s * L.reverse) :
     eta_aux' ((L ++ [s] ++ L.reverse).get ⟨L.length - n, by simp_rw [List.length_append, List.length_singleton, List.length_reverse]; omega⟩)
     ⟨((L ++ [s] ++ L.reverse).take (L.length - n)).reverse * t * (L ++ [s] ++ L.reverse).take (L.length - n),
@@ -662,31 +706,39 @@ lemma eta_t_product_lemma (t : T) (s : S) (L : List S) (n : ℕ) (h1 : 1 ≤ n) 
     ⟨((L ++ [s] ++ L.reverse).take (L.length + n)).reverse * t * (L ++ [s] ++ L.reverse).take (L.length + n),
     by apply Refl_palindrome_in_Refl⟩ = 1 := by
   apply (μ₂.mul_eq_one_iff_eq _ _).mpr
-  rw [@List.get_append_right _ (L.length + n) (L ++ [s]) L.reverse
-    (by rw [List.length_append_singleton]; linarith)
-    (by simp_rw [List.length_append, List.length_singleton, List.length_reverse]; linarith)
-    (by simp_rw [List.length_append, List.length_singleton, List.length_reverse]; omega),
-    @List.get_append_left _ (L.length - n) (L ++ [s]) L.reverse
-    (by rw [List.length_append, List.length_singleton]; omega)
-    (by simp_rw [List.length_append, List.length_singleton, List.length_reverse]; omega),
-    @List.get_append_left _ (L.length - n) L [s] (by omega)
-    (by rw [List.length_append, List.length_singleton]; omega),
-    ← List.get_reverse L.reverse _
-    (by simp_rw [List.length_append, List.length_singleton, List.length_reverse]; omega)]
-  conv=>
-    enter [2, 1]
-    rw [List.get_reverse _ _
-      (by simp_rw [List.length_append, List.length_singleton, List.length_reverse]; omega)
-      (by rw [List.length_append, List.length_singleton, List.length_reverse]; omega),
-      List.get_reverse' _ _ (by simp_rw [List.length_append_singleton]; omega)]
-    enter [2, 1, 2, 1, 1]
-    rw [List.length_append, List.length_singleton, add_comm,
-      ← Nat.sub_sub, Nat.add_sub_cancel]
-  simp only []
-  conv=>
-    enter [2, 1, 2, 1]
-    rw [Nat.sub_sub, ← Nat.add_sub_assoc h1, add_comm, Nat.add_sub_cancel]
-  apply eta_t_equal_lemma t s L n h1 h2 h3
+  calc
+    _ = eta_aux' (L.get ⟨L.length - n, (by omega)⟩) ⟨((L ++ [s] ++ L.reverse).take (L.length - n)).reverse * t * (L ++ [s] ++ L.reverse).take (L.length - n),
+        by apply Refl_palindrome_in_Refl⟩ := by
+      rw [@List.get_append_left _ (L.length - n) (L ++ [s]) L.reverse
+        (by rw [List.length_append, List.length_singleton]; omega)
+        (by simp_rw [List.length_append, List.length_singleton, List.length_reverse]; omega),
+        @List.get_append_left _ (L.length - n) L [s] (by omega)
+        (by rw [List.length_append, List.length_singleton]; omega)]
+    _ = eta_aux' (L.get ⟨L.length - n, (by omega)⟩)
+      ⟨((L ++ [s] ++ L.reverse).take (L.length + n)).reverse * t * (L ++ [s] ++ L.reverse).take (L.length + n),
+      by apply Refl_palindrome_in_Refl⟩ := eta_t_equal_lemma t s L n h1 h2 h3
+    _ = eta_aux' ((L ++ [s] ++ L.reverse).get ⟨L.length + n, by simp_rw [List.length_append, List.length_singleton, List.length_reverse]; linarith⟩)
+        ⟨((L ++ [s] ++ L.reverse).take (L.length + n)).reverse * t * (L ++ [s] ++ L.reverse).take (L.length + n),
+        by apply Refl_palindrome_in_Refl⟩ := by
+      rw [@List.get_append_right _ (L.length + n) (L ++ [s]) L.reverse
+        (by rw [List.length_append_singleton]; linarith)
+        (by simp_rw [List.length_append, List.length_singleton, List.length_reverse]; linarith)
+        (by simp_rw [List.length_append, List.length_singleton, List.length_reverse]; omega),
+        ← List.get_reverse L.reverse _
+        (by simp_rw [List.length_append, List.length_singleton, List.length_reverse]; omega)]
+      conv=>
+        enter [2, 1]
+        rw [List.get_reverse _ _
+          (by simp_rw [List.length_append, List.length_singleton, List.length_reverse]; omega)
+          (by rw [List.length_append, List.length_singleton, List.length_reverse]; omega),
+          List.get_reverse' _ _ (by simp_rw [List.length_append_singleton]; omega)]
+        enter [2, 1, 2, 1, 1]
+        rw [List.length_append, List.length_singleton, add_comm,
+          ← Nat.sub_sub, Nat.add_sub_cancel]
+      simp only []
+      conv=>
+        enter [2, 1, 2, 1]
+        rw [Nat.sub_sub, ← Nat.add_sub_assoc h1, add_comm, Nat.add_sub_cancel]
 
 lemma eta_t (t : T) : eta (t : G) t = μ₂.gen := by
   rcases h : t with ⟨t', ⟨g, s, ht⟩⟩

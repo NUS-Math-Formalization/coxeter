@@ -133,62 +133,6 @@ lemma lt_append' {α : Type _} (s : α) (L : List α) (x : Fin L.length) : x.1 <
   rw [List.length_append, List.length_singleton]
   exact Fin.val_lt_of_le x (Nat.le.step Nat.le.refl)
 
-lemma lt_append_singleton_reverse {α : Type _} (s : α) (L : List α) (x : Fin L.length) :
-  x.1 < (L ++ [s] ++ L.reverse).length := by
-  rw [List.length_append, List.length_append]
-  linarith [x.2]
-
-lemma lt_append_singleton_reverse' {α : Type _} (s : α) (L : List α) (x : Fin L.length) :
-  2 * L.length - x.1 < (L ++ [s] ++ L.reverse).length := by
-  rw [List.length_append, List.length_append, List.length_singleton,
-    List.length_reverse, two_mul, Nat.add_sub_assoc (by linarith [x.2]), add_assoc]
-  refine Nat.add_lt_add_left ?_ L.length
-  rw [add_comm]
-  exact Nat.lt_succ.mpr (Nat.sub_le L.length x)
-
-lemma not_lt_append_singleton {α : Type _} (s : α) (L : List α) (x : Fin L.length) :
-  ¬2 * L.length - x.1 < (L ++ [s]).length := by
-  push_neg
-  rw [two_mul, List.length_append, List.length_singleton,
-    Nat.add_sub_assoc (by linarith [x.2])]
-  refine Nat.add_le_add_left (Nat.le_sub_of_add_le ?_) L.length
-  rw [add_comm]
-  exact x.2
-
-lemma lt_append_singleton' {α : Type _} (s : α) (L : List α) (x : Fin L.length) :
-  2 * L.length - x.1 - (L ++ [s]).length < L.reverse.length := by
-  have : 2 * L.length - x.1 < (L ++ [s] ++ L.reverse).length := lt_append_singleton_reverse' s L x
-  rw [List.length_append] at this
-  apply Nat.sub_lt_left_of_lt_add
-  apply Nat.le_of_not_lt (not_lt_append_singleton s L x)
-  rw [← List.length_append]
-  apply lt_append_singleton_reverse'
-
-lemma lt_reverse_reverse {α : Type _} (s : α) (L : List α) (x : Fin L.length) :
-  L.reverse.length - 1 - (2 * L.length - x.1 - (L ++ [s]).length) < L.reverse.reverse.length := by
-  repeat rw [List.length_reverse]
-  refine lt_of_le_of_lt (Nat.sub_le _ _) ?_
-  exact Nat.sub_lt_of_pos_le (by norm_num) (by linarith [x.2])
-
-lemma reverse_reverse_get {α : Type _} (s : α) (L : List α) (x : Fin L.length) :
-  L.reverse.reverse.get ⟨L.reverse.length - 1 - (2 * L.length - x.1 - (L ++ [s]).length),
-    (lt_reverse_reverse s L x)⟩ = L.get x := by
-  simp only [List.length_reverse, List.length_append, List.length_singleton,
-    two_mul, Nat.sub_sub, Nat.add_comm x (L.length + 1), List.reverse_reverse]
-  have : L.length - (1 + (L.length + L.length - (L.length + 1 + x.1))) = x := by
-    nth_rw 2 [← Nat.sub_sub]
-    nth_rw 2 [← Nat.sub_sub]
-    rw [Nat.add_sub_cancel, Nat.sub_sub, ← Nat.add_sub_assoc (by linarith [x.2]),
-      add_comm 1 L.length, ← Nat.sub_sub, Nat.add_sub_cancel]
-    exact Nat.sub_sub_self (by linarith [x.2])
-  simp only [this]
-  have : x.1 < L.reverse.reverse.length := by
-    rw [List.reverse_reverse]
-    exact x.2
-  congr 1
-  · exact List.reverse_reverse L
-  · exact (Fin.heq_ext_iff (by rw [List.reverse_reverse L])).mpr rfl
-
 lemma reverse_drop {α : Type _} (L : List α) (n : ℕ) :
   (L.drop n).reverse = L.reverse.take (L.length - n) := by
   induction L generalizing n with
