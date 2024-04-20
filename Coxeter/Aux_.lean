@@ -561,6 +561,17 @@ lemma halve_odd_prod {M : Type u} [CommMonoid M] {n : ℕ} (f : ℕ → M) :
         rfl
       _ = _ := by dsimp only [f', g]; rfl
 
+lemma prod_reverse {M : Type u} [CommMonoid M] {n : ℕ} (f : Fin n → M) :
+    ∏ i : Fin n, f ⟨n - 1 - i, by omega⟩ = ∏ i : Fin n, f i := by
+  let rev : Fin n → Fin n := fun x ↦ ⟨n - 1 - x, by omega⟩
+  have : ∀ i ∈ Finset.univ, rev (rev i) = i := by
+    intro _ _
+    simp only [rev, Fin.ext_iff]
+    exact Nat.sub_sub_self (by omega)
+  apply Finset.prod_nbij' rev rev (fun _ _ ↦ Finset.mem_univ _) (fun _ _ ↦ Finset.mem_univ _) this this ?_
+  intro _ _
+  simp only [rev]
+
 end BigOperators
 
 
@@ -874,3 +885,13 @@ end List
 
 
 end Sublist
+
+section Group
+
+namespace Group
+
+lemma eq_iff_eq_conjugate [Group G] (s g : G) : s = g ↔ s = s * g * s⁻¹ := by
+  refine Iff.intro (fun h ↦ ?_) (fun h ↦ @conj_injective _ _ s s g ?_)
+  all_goals simp [mul_inv_cancel_right, ← h]
+
+end Group

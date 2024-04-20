@@ -171,6 +171,10 @@ lemma of_square_eq_one' : s ∈ SimpleRefl m → s * s = 1 := by
 lemma of_inv_eq_of {x : α} : (of m x)⁻¹ = of m x :=
   inv_eq_of_mul_eq_one_left (@of_square_eq_one α m hm x)
 
+lemma SimpleRefl_eq_iff_eq (s : S) (g : G) : s = g ↔ s = s * g * s := by
+  convert Group.eq_iff_eq_conjugate (s : G) g
+  apply mul_eq_one_iff_eq_inv.mp (of_square_eq_one' m s.2)
+
 lemma SimpleRefl_closed_under_inverse : S = S⁻¹ := by
   ext y
   constructor

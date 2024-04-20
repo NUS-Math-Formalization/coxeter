@@ -71,3 +71,9 @@ lemma μ₂.odd_pow_iff_eq_gen {n : ℕ} : μ₂.gen ^ n = μ₂.gen ↔ Odd n :
 lemma μ₂.mul_self_eq_one (u : μ₂) : u * u = 1 :=
   if h : u = μ₂.gen then (by rw [h]; exact rfl)
   else (by rw [Or.resolve_right (μ₂.mem_iff' u) h]; exact rfl)
+
+lemma μ₂.mul_eq_one_iff_eq (u v : μ₂) : u * v = 1 ↔ u = v := by
+  refine Iff.intro (fun h ↦ ?_) (fun h ↦ by rw [h, μ₂.mul_self_eq_one])
+  rw [← mul_eq_one_iff_inv_eq.mp h]
+  exact if h' : u = gen then (by simp [h', gen_inv])
+    else (by simp [(μ₂.not_iff_not' u).mp h'])
