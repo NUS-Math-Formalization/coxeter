@@ -168,8 +168,24 @@ lemma of_square_eq_one' : s ∈ SimpleRefl m → s * s = 1 := by
   intro x h
   simp_all only [← h, of_square_eq_one]
 
+@[gprod_simps]
+lemma of_square_eq_one'' (s : SimpleRefl m) : (s : G) * s = 1 :=
+  of_square_eq_one' m s.2
+
+@[gprod_simps]
+lemma of_square_eq_one_right (s : SimpleRefl m) (g : G) : g * (s : G) * s = g := by
+  rw [mul_assoc, of_square_eq_one'' m s, mul_one]
+
 lemma of_inv_eq_of {x : α} : (of m x)⁻¹ = of m x :=
   inv_eq_of_mul_eq_one_left (@of_square_eq_one α m hm x)
+
+@[gprod_simps]
+lemma of_inv_eq_of' (s : SimpleRefl m) : (s : G)⁻¹ = s :=
+  inv_eq_of_mul_eq_one_left (of_square_eq_one'' m s)
+
+lemma SimpleRefl_eq_iff_eq (s : S) (g : G) : s = g ↔ s = s * g * s := by
+  convert Group.eq_iff_eq_conjugate (s : G) g
+  apply mul_eq_one_iff_eq_inv.mp (of_square_eq_one' m s.2)
 
 lemma SimpleRefl_closed_under_inverse : S = S⁻¹ := by
   ext y

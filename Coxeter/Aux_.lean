@@ -15,9 +15,9 @@ import Mathlib.Logic.Equiv.Fin
 
 import Coxeter.AttrRegister
 
-#check List.eraseDups
-#check List.eraseReps
-#check List.groupBy
+--#check List.eraseDups
+--#check List.eraseReps
+--#check List.groupBy
 
 namespace  List
 variable {α : Type _} [BEq α] [Inhabited α]
@@ -132,62 +132,6 @@ lemma lt_append {α : Type _} (s : α) (L : List α) : L.length < (L ++ [s]).len
 lemma lt_append' {α : Type _} (s : α) (L : List α) (x : Fin L.length) : x.1 < (L ++ [s]).length := by
   rw [List.length_append, List.length_singleton]
   exact Fin.val_lt_of_le x (Nat.le.step Nat.le.refl)
-
-lemma lt_append_singleton_reverse {α : Type _} (s : α) (L : List α) (x : Fin L.length) :
-  x.1 < (L ++ [s] ++ L.reverse).length := by
-  rw [List.length_append, List.length_append]
-  linarith [x.2]
-
-lemma lt_append_singleton_reverse' {α : Type _} (s : α) (L : List α) (x : Fin L.length) :
-  2 * L.length - x.1 < (L ++ [s] ++ L.reverse).length := by
-  rw [List.length_append, List.length_append, List.length_singleton,
-    List.length_reverse, two_mul, Nat.add_sub_assoc (by linarith [x.2]), add_assoc]
-  refine Nat.add_lt_add_left ?_ L.length
-  rw [add_comm]
-  exact Nat.lt_succ.mpr (Nat.sub_le L.length x)
-
-lemma not_lt_append_singleton {α : Type _} (s : α) (L : List α) (x : Fin L.length) :
-  ¬2 * L.length - x.1 < (L ++ [s]).length := by
-  push_neg
-  rw [two_mul, List.length_append, List.length_singleton,
-    Nat.add_sub_assoc (by linarith [x.2])]
-  refine Nat.add_le_add_left (Nat.le_sub_of_add_le ?_) L.length
-  rw [add_comm]
-  exact x.2
-
-lemma lt_append_singleton' {α : Type _} (s : α) (L : List α) (x : Fin L.length) :
-  2 * L.length - x.1 - (L ++ [s]).length < L.reverse.length := by
-  have : 2 * L.length - x.1 < (L ++ [s] ++ L.reverse).length := lt_append_singleton_reverse' s L x
-  rw [List.length_append] at this
-  apply Nat.sub_lt_left_of_lt_add
-  apply Nat.le_of_not_lt (not_lt_append_singleton s L x)
-  rw [← List.length_append]
-  apply lt_append_singleton_reverse'
-
-lemma lt_reverse_reverse {α : Type _} (s : α) (L : List α) (x : Fin L.length) :
-  L.reverse.length - 1 - (2 * L.length - x.1 - (L ++ [s]).length) < L.reverse.reverse.length := by
-  repeat rw [List.length_reverse]
-  refine lt_of_le_of_lt (Nat.sub_le _ _) ?_
-  exact Nat.sub_lt_of_pos_le (by norm_num) (by linarith [x.2])
-
-lemma reverse_reverse_get {α : Type _} (s : α) (L : List α) (x : Fin L.length) :
-  L.reverse.reverse.get ⟨L.reverse.length - 1 - (2 * L.length - x.1 - (L ++ [s]).length),
-    (lt_reverse_reverse s L x)⟩ = L.get x := by
-  simp only [List.length_reverse, List.length_append, List.length_singleton,
-    two_mul, Nat.sub_sub, Nat.add_comm x (L.length + 1), List.reverse_reverse]
-  have : L.length - (1 + (L.length + L.length - (L.length + 1 + x.1))) = x := by
-    nth_rw 2 [← Nat.sub_sub]
-    nth_rw 2 [← Nat.sub_sub]
-    rw [Nat.add_sub_cancel, Nat.sub_sub, ← Nat.add_sub_assoc (by linarith [x.2]),
-      add_comm 1 L.length, ← Nat.sub_sub, Nat.add_sub_cancel]
-    exact Nat.sub_sub_self (by linarith [x.2])
-  simp only [this]
-  have : x.1 < L.reverse.reverse.length := by
-    rw [List.reverse_reverse]
-    exact x.2
-  congr 1
-  · exact List.reverse_reverse L
-  · exact (Fin.heq_ext_iff (by rw [List.reverse_reverse L])).mpr rfl
 
 lemma reverse_drop {α : Type _} (L : List α) (n : ℕ) :
   (L.drop n).reverse = L.reverse.take (L.length - n) := by
@@ -424,6 +368,9 @@ lemma take_range {n i : ℕ} (h : i ≤ n) : (List.range n).take i = List.range 
   rw [length_range] at h1
   exact h1
 
+lemma take_length_add (L : List S) (n : ℕ) : L.take (L.length + n) = L := by
+  rw [List.take_length_le (by linarith)]
+
 end List
 
 
@@ -442,6 +389,13 @@ lemma sub_one_sub_lt_self {i n: Nat} (h : 0 < n) : n - 1 - i < n := by
 lemma sub_sub_one_lt_self {i n: Nat} (h : 0 < n) : n - i - 1 < n := by
   rw [Nat.sub_sub, Nat.add_comm, ←Nat.sub_sub]
   exact sub_one_sub_lt_self h
+
+lemma sub_sub_self_eq_zero (a b : ℕ) : a - b - a = 0 := by simp
+
+lemma sub_sub_self_add_eq_zero (a b c : ℕ) : a - b - (a + c) = 0 := by
+  rw [← Nat.sub_sub]
+  nth_rw 2 [Nat.sub_right_comm]
+  simp
 
 end Nat
 
@@ -560,6 +514,17 @@ lemma halve_odd_prod {M : Type u} [CommMonoid M] {n : ℕ} (f : ℕ → M) :
         rw [prod_insert_zero_fin (fun i ↦ rfl)]
         rfl
       _ = _ := by dsimp only [f', g]; rfl
+
+lemma prod_reverse {M : Type u} [CommMonoid M] {n : ℕ} (f : Fin n → M) :
+    ∏ i : Fin n, f ⟨n - 1 - i, by omega⟩ = ∏ i : Fin n, f i := by
+  let rev : Fin n → Fin n := fun x ↦ ⟨n - 1 - x, by omega⟩
+  have : ∀ i ∈ Finset.univ, rev (rev i) = i := by
+    intro _ _
+    simp only [rev, Fin.ext_iff]
+    exact Nat.sub_sub_self (by omega)
+  apply Finset.prod_nbij' rev rev (fun _ _ ↦ Finset.mem_univ _) (fun _ _ ↦ Finset.mem_univ _) this this ?_
+  intro _ _
+  simp only [rev]
 
 end BigOperators
 
@@ -683,8 +648,6 @@ lemma gprod_inv_eq_inv_reverse (L: List S) : (L : G)⁻¹ = inv_reverse L := by 
 
 lemma inv_reverse_prod_prod_eq_one {L: List S} : inv_reverse L * (L : G) = 1 :=
   by rw [inv_reverse, ← gprod_inv_eq_inv_reverse, mul_left_inv]
-
-attribute [gprod_simps] mul_assoc mul_one one_mul mul_inv_rev mul_left_inv mul_right_inv inv_inv inv_one mul_inv_cancel_left inv_mul_cancel_left
 
 namespace Submonoid
 variable {M : Type*} {M : Type*} [Monoid M] (T : Set M)
@@ -874,3 +837,17 @@ end List
 
 
 end Sublist
+
+section Group
+
+lemma mul_assoc' {G : Type u} [inst : Semigroup G] (a b c : G) : a * (b * c) = a * b * c :=
+  (inst.mul_assoc a b c).symm
+
+namespace Group
+lemma eq_iff_eq_conjugate [Group G] (s g : G) : s = g ↔ s = s * g * s⁻¹ := by
+  refine Iff.intro (fun h ↦ ?_) (fun h ↦ @conj_injective _ _ s s g ?_)
+  all_goals simp [mul_inv_cancel_right, ← h]
+
+end Group
+
+attribute [gprod_simps] mul_assoc' mul_one one_mul mul_inv_rev mul_left_inv mul_right_inv inv_inv inv_one mul_inv_cancel_right inv_mul_cancel_right
