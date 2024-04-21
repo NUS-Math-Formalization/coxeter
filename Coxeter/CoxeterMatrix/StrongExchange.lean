@@ -202,11 +202,9 @@ lemma nn_cons (L : List S) (s : S) (t : T) : nn (s :: L) t = (if (s : G) = t the
         ext i
         simp only [hxh, ti1, Function.comp_apply, toPalindrome_i,
           toPalindrome, List.take_cons, List.reverse_cons]
-        rw [List.tail_append_of_ne_nil _ _]
+        rw [List.tail_append_of_ne_nil _ _
+          (List.append_singleton_ne_nil (ttail.take i).reverse th)]
         simp only [gprod_simps]
-        repeat rw [← mul_assoc]
-        rw [mul_assoc _ s.1 s.1, gen_square_eq_one s.1 s.2, one_mul, mul_one]
-        exact (List.append_singleton_ne_nil (ttail.take i).reverse th)
     _ = _ := by
       congr
       rw [List.count_singleton']
@@ -590,50 +588,52 @@ lemma eta_equiv_nn {g : G} {t : T} : ∀ {L : List S}, g = L → eta g t = μ₂
 
 lemma eta_equiv_nn' {L : List S} {t : T} : eta L t = μ₂.gen ^ nn L t := eta_equiv_nn rfl
 
+lemma gprod_take_reverse (L : List S) (n : ℕ) : (L.reverse.take n).gprod = L.reverse.gprod * (L.take (L.length - n)).gprod := by
+  nth_rw 2 [← List.take_append_drop (List.length L - n) L]
+  simp only [gprod_simps]
+  rw [← gprod_reverse, List.reverse_drop]
+  by_cases h : n ≤ L.length
+  · rw [Nat.sub_sub_self h]
+  · rw [List.take_all_of_le (by rw [List.length_reverse]; linarith),
+      Nat.sub_eq_zero_iff_le.mpr (by linarith : L.length ≤ n), Nat.sub_zero,
+      ← List.length_reverse, List.take_length]
+
+lemma gprod_take_append (L L' : List S) (n : ℕ) : ((L ++ L').take n).gprod
+    = (L.take n).gprod * (L'.take (n - L.length)).gprod := by
+  by_cases h : n ≤ L.length
+  · rw [List.take_append_of_le_length h, Nat.sub_eq_zero_iff_le.mpr h]
+    simp [gprod_simps]
+  · have : n = L.length + (n - L.length) := by
+      rw [← Nat.add_sub_assoc (by linarith)]
+      exact (Nat.add_sub_self_left L.length n).symm
+    nth_rw 1 [this]
+    rw [List.take_append, List.take_all_of_le (by linarith : L.length ≤ n)]
+    simp [gprod_simps]
+
+lemma gprod_list_take_length_sub_succ (L : List S) (n : Fin L.length) : (L.take (L.length - Nat.succ n) : G)
+    = (L.take (L.length - n) : G) * (L.get ⟨L.length - Nat.succ n, Nat.sub_lt (lt_of_le_of_lt (Nat.zero_le n.1) n.2) (Nat.zero_lt_succ n)⟩ : G) := by
+  have : L.length - n = Nat.succ (L.length - Nat.succ n) := by
+    simp_rw [Nat.succ_eq_add_one, ← Nat.sub_sub,
+      Nat.sub_add_cancel (by omega : 1 ≤ L.length - n)]
+  rw [this, List.take_succ, List.get?_eq_get <| Nat.sub_lt
+    (lt_of_le_of_lt (Nat.zero_le n.1) n.2) (Nat.zero_lt_succ n)]
+  simp only [Option.toList_some, gprod_simps]
+
 lemma eta_t_equal_lemma (t : T) (s : S) (L : List S) (n : ℕ) (h1 : 1 ≤ n) (h2 : n ≤ L.length) (h3 : (t : G) = (L : G) * s * L.reverse) :
     eta_aux' (L.get ⟨L.length - n, (by omega)⟩) ⟨((L ++ [s] ++ L.reverse).take (L.length - n)).reverse * t * (L ++ [s] ++ L.reverse).take (L.length - n),
     by apply Refl_palindrome_in_Refl⟩ = eta_aux' (L.get ⟨L.length - n, (by omega)⟩)
     ⟨((L ++ [s] ++ L.reverse).take (L.length + n)).reverse * t * (L ++ [s] ++ L.reverse).take (L.length + n),
     by apply Refl_palindrome_in_Refl⟩ := by
-  simp_rw [eta_aux']
+  simp_rw [eta_aux', h3]
   rw [propext (SimpleRefl_eq_iff_eq m _ _)]
   congr 2
-  have : (L ++ [s] ++ L.reverse).take (L.length + n) =
-      L ++ [s] ++ (L.reverse.take (n - 1)) := by
-    have : L.length + n = (L ++ [s]).length + (n - 1) := by
-      rw [List.length_append_singleton, ← Nat.add_sub_assoc h1, add_assoc,
-        add_comm 1 n, ← add_assoc, Nat.add_sub_cancel]
-    simp_rw [this, List.take_append]
-  simp_rw [this]; clear this
-  have : (L ++ [s] ++ L.reverse).take (L.length - n) = L.take (L.length - n) := by
-    have : L.length - n ≤ (L ++ [s]).length := by
-      rw [List.length_append_singleton]; omega
-    simp_rw [List.take_append_of_le_length this,
-      List.take_append_of_le_length (Nat.sub_le L.length n)]
-  simp_rw [this]; clear this
-  simp only [SimpleRefl, Set.mem_setOf_eq, gprod_reverse, List.append_assoc, List.singleton_append,
-    List.reverse_append, List.reverse_cons, gprod_append, gprod_simps]
-  have : (L.reverse.take (n - 1)).gprod = (L.reverse.take n).gprod * (L.get ⟨L.length - n, by omega⟩ : G) := by
-    rcases n with (_ | m)
-    · contradiction
-    · simp only [Nat.succ_sub_succ_eq_sub, tsub_zero, List.take_succ, gprod_append]
-      rw [mul_assoc]
-      apply self_eq_mul_right.mpr
-      rw [List.get?_eq_get (by rw [List.length_reverse]; exact h2)]
-      simp only [Option.toList_some, gprod_singleton]
-      rw [List.get_reverse' L _ (by omega)]
-      simp only [Nat.succ_eq_add_one, add_comm, Nat.sub_sub]
-      exact of_square_eq_one' _ (Subtype.mem _)
-  simp_rw [this]; clear this
-  simp only [Set.mem_setOf_eq, mul_inv_rev, inv_eq_self'', h3, gprod_simps]
-  simp_rw [← mul_assoc (s : G) (s : G), of_square_eq_one' m s.2,
-    one_mul, ← mul_assoc _ _ (L.get _ : G)]
-  congr 2
-  have : (L.reverse.take n : G) = (L : G)⁻¹ * (L.take (L.length - n) : G) := by
-    nth_rw 2 [← List.take_append_drop (List.length L - n) L]
-    simp only [gprod_simps]
-    rw [← gprod_reverse, List.reverse_drop, Nat.sub_sub_self h2]
-  simp [this]; group
+  rcases n with (_ | m)
+  contradiction
+  simp only [gprod_simps, gprod_take_reverse, gprod_take_append, List.length_reverse, Nat.sub_sub_self_eq_zero,
+    List.length_append, List.length_singleton, List.take_zero, List.reverse_nil, Set.mem_setOf_eq,
+    Nat.add_sub_cancel_left, Nat.add_sub_add_left, Nat.sub_sub_self_add_eq_zero, Nat.sub_zero, List.take_length,
+    List.take_length_le (by rw [List.length_singleton]; exact h1 : [s].length ≤ Nat.succ m),
+    List.take_length_add, Nat.succ_sub_succ_eq_sub, gprod_list_take_length_sub_succ _ ⟨m, h2⟩]
 
 lemma eta_t_product_lemma (t : T) (s : S) (L : List S) (n : ℕ) (h1 : 1 ≤ n) (h2 : n ≤ L.length) (h3 : (t : G) = (L : G) * s * L.reverse) :
     eta_aux' ((L ++ [s] ++ L.reverse).get ⟨L.length - n, by simp_rw [List.length_append, List.length_singleton, List.length_reverse]; omega⟩)
@@ -722,9 +722,7 @@ lemma eta_t (t : T) : eta (t : G) t = μ₂.gen := by
         (by simp only [List.length_singleton, Nat.sub_self, zero_lt_one])]
       simp only [List.length_singleton, le_refl, Nat.sub_self,
         Fin.zero_eta, List.get_cons_zero, eta_aux']
-      simp_rw [h, gprod_append, gprod_reverse, gprod_singleton]
-      group
-      exact ite_true _ _
+      simp [h, gprod_simps]
     _ = μ₂.gen * ∏ __ : Fin L.length, (1 : μ₂) := by
       congr
       ext x
@@ -734,8 +732,7 @@ lemma eta_t (t : T) : eta (t : G) t = μ₂.gen := by
         simp_rw [List.length_append, List.length_singleton, List.length_reverse]; omega
       simp only [fnat, h1, h2, reduceDite]
       clear fnat
-      have h3 : (t : G) = (L : G) * s * L.reverse := by
-        simp_rw [h, gprod_append, gprod_reverse, gprod_singleton]
+      have h3 : (t : G) = (L : G) * s * L.reverse := by simp [h, gprod_simps]
       simp_rw [Nat.sub_sub, Nat.add_assoc]
       rw [eta_t_product_lemma t s L (1 + x.1) (Nat.le_add_right 1 x.1) (by omega : 1 + x.1 ≤ L.length) h3]
     _ = _ := by
@@ -746,15 +743,15 @@ lemma lt_iff_eta_eq_gen (g : G) (t : T) : ℓ(t * g) < ℓ(g) ↔ eta g t = μ�
     intro h
     obtain ⟨L, hL⟩ := exists_reduced_word S g
     have h1 : nn L t > 0 := by
-      have : (μ₂.gen)^(nn L t) = μ₂.gen := by rw [← eta_equiv_nn']; rw [← hL.right]; assumption
+      have : μ₂.gen ^ (nn L t) = μ₂.gen := by rw [← eta_equiv_nn']; rw [← hL.right]; assumption
       exact Odd.pos (μ₂.odd_pow_iff_eq_gen.mp this)
-    have : ∃ i : Fin L.length, (Palindrome.toPalindrome_i L i:G) = t := exists_of_nn_ne_zero L t h1
-    obtain ⟨i, hi⟩ := this;
+    have : ∃ i : Fin L.length, (Palindrome.toPalindrome_i L i : G) = t := exists_of_nn_ne_zero L t h1
+    obtain ⟨i, hi⟩ := this
     rw [← hi, hL.right, Palindrome.removeNth_of_palindrome_prod L i]
     have h2 : (L.removeNth i).length < L.length := by
       rw [List.length_removeNth i.2]
       exact Nat.pred_lt' i.2
-    rw [←OrderTwoGen.length_eq_iff.mp hL.left]
+    rw [← OrderTwoGen.length_eq_iff.mp hL.left]
     exact lt_of_le_of_lt length_le_list_length h2
 
   have mp (g : G) (t : T) : ℓ(t * g) < ℓ(g) → eta g t = μ₂.gen := by
@@ -784,7 +781,7 @@ lemma lt_iff_eta_eq_gen (g : G) (t : T) : ℓ(t * g) < ℓ(g) ↔ eta g t = μ�
       rw [eq1] at eq2
       have : μ₂.gen * eta ((t : G) * g) t = 1 := (Prod.eq_iff_fst_eq_snd_eq.mp eq2).right
       apply (@mul_left_cancel_iff _ _ _ μ₂.gen).mp
-      rw [μ₂.gen_square]; assumption;
+      rw [μ₂.gen_square]; assumption
     let hh := mpr (t * g) t this
     rw [← mul_assoc, ← pow_two, OrderTwoGen.Refl.square_eq_one, one_mul] at hh
     rw [not_lt]

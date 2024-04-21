@@ -368,6 +368,9 @@ lemma take_range {n i : ℕ} (h : i ≤ n) : (List.range n).take i = List.range 
   rw [length_range] at h1
   exact h1
 
+lemma take_length_add (L : List S) (n : ℕ) : L.take (L.length + n) = L := by
+  rw [List.take_length_le (by linarith)]
+
 end List
 
 
@@ -386,6 +389,13 @@ lemma sub_one_sub_lt_self {i n: Nat} (h : 0 < n) : n - 1 - i < n := by
 lemma sub_sub_one_lt_self {i n: Nat} (h : 0 < n) : n - i - 1 < n := by
   rw [Nat.sub_sub, Nat.add_comm, ←Nat.sub_sub]
   exact sub_one_sub_lt_self h
+
+lemma sub_sub_self_eq_zero (a b : ℕ) : a - b - a = 0 := by simp
+
+lemma sub_sub_self_add_eq_zero (a b c : ℕ) : a - b - (a + c) = 0 := by
+  rw [← Nat.sub_sub]
+  nth_rw 2 [Nat.sub_right_comm]
+  simp
 
 end Nat
 
@@ -639,8 +649,6 @@ lemma gprod_inv_eq_inv_reverse (L: List S) : (L : G)⁻¹ = inv_reverse L := by 
 lemma inv_reverse_prod_prod_eq_one {L: List S} : inv_reverse L * (L : G) = 1 :=
   by rw [inv_reverse, ← gprod_inv_eq_inv_reverse, mul_left_inv]
 
-attribute [gprod_simps] mul_assoc mul_one one_mul mul_inv_rev mul_left_inv mul_right_inv inv_inv inv_one mul_inv_cancel_left inv_mul_cancel_left
-
 namespace Submonoid
 variable {M : Type*} {M : Type*} [Monoid M] (T : Set M)
 
@@ -832,10 +840,14 @@ end Sublist
 
 section Group
 
-namespace Group
+lemma mul_assoc' {G : Type u} [inst : Semigroup G] (a b c : G) : a * (b * c) = a * b * c :=
+  (inst.mul_assoc a b c).symm
 
+namespace Group
 lemma eq_iff_eq_conjugate [Group G] (s g : G) : s = g ↔ s = s * g * s⁻¹ := by
   refine Iff.intro (fun h ↦ ?_) (fun h ↦ @conj_injective _ _ s s g ?_)
   all_goals simp [mul_inv_cancel_right, ← h]
 
 end Group
+
+attribute [gprod_simps] mul_assoc' mul_one one_mul mul_inv_rev mul_left_inv mul_right_inv inv_inv inv_one mul_inv_cancel_right inv_mul_cancel_right
