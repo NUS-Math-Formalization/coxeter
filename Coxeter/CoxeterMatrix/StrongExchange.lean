@@ -790,14 +790,15 @@ lemma lt_iff_eta_eq_gen (g : G) (t : T) : ℓ(t * g) < ℓ(g) ↔ eta g t = μ�
 
 end ReflRepresentation
 
-lemma strong_exchange : ∀ (L : List S) (t : T), ℓ((t:G) * L) < ℓ(L) →
-  ∃ (i : Fin L.length), (t : G) * L = (L.removeNth i) := by
+lemma strong_exchange : ∀ (L : List S) (t : T), ℓ((t : G) * L) < ℓ(L) →
+    ∃ (i : Fin L.length), (t : G) * L = (L.removeNth i) := by
   intro L t h
   have eta_eq_gen : eta L t = μ₂.gen := (lt_iff_eta_eq_gen L t).mp h
   have h1 : nn L t > 0 := by
-    have : (μ₂.gen)^(nn L t) = μ₂.gen := by rw [← eta_equiv_nn']; assumption
+    have : μ₂.gen ^ nn L t = μ₂.gen := by rw [← eta_equiv_nn']; assumption
     exact Odd.pos (μ₂.odd_pow_iff_eq_gen.mp this)
-  have : ∃ i : Fin L.length, (Palindrome.toPalindrome_i L i:G) = t := exists_of_nn_ne_zero L t h1
+  have : ∃ i : Fin L.length, (Palindrome.toPalindrome_i L i:G) = t :=
+    exists_of_nn_ne_zero L t h1
   obtain ⟨i, hi⟩ := this; use i; rw [← hi]
   exact Palindrome.removeNth_of_palindrome_prod L i
 
