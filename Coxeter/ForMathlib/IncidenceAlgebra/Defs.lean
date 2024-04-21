@@ -23,5 +23,4 @@ instance : FunLike (Labelling E Λ) E Λ where
     ext : 1
     assumption
 
-
 def unique_extend (h : X → ℛ) :  X → ℛ := sorry
