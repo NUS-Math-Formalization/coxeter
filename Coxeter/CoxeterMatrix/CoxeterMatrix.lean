@@ -22,6 +22,8 @@ This result relies on the file `TextGroup.lean` for the construction of `μ₂`.
 open BigOperators
 
 section
+
+
 variable {α : Type*} [DecidableEq α]
 variable (m : Matrix α α ℕ)
 
