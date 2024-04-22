@@ -14,14 +14,23 @@ variable {G : Type*} [Group G] (S : Set G) [OrderTwoGen S]
 
 local notation : max "ℓ(" g ")" => (length S g)
 
+/-- Exchange Property:
+Given an `OrderTwoGen` group, we say the system satisfy the Exchange Property if
+given a reduced expression `w = s₁ s₂ ⋯ sₙ ∈ G` and `s ∈ S`,
+there exists `1 ≤ i < n` such that `s s₁ ⋯ sₙ = s₁ ⋯ sᵢ₋₁ sᵢ₊₁ ⋯ sₙ` -/
 @[simp]
 abbrev ExchangeProp := ∀ {L : List S} {s : S}, reduced_word L →
   ℓ(s * L) ≤ ℓ(L) → ∃ (i : Fin L.length), (s : G) * L = L.removeNth i
 
+/-- Mirrored version of Exchange Property -/
 @[simp]
 abbrev ExchangeProp' := ∀ {L : List S} {s : S}, reduced_word L →
   ℓ(L * s) ≤ ℓ(L) → ∃ (i : Fin L.length), (L : G) * s = L.removeNth i
 
+/-- Deletion Property:
+Given an `OrderTwoGen` group, we say the system satisfy the deletion property if
+given an expression `w = s₁ s₂ ⋯ sₙ ∈ G`, there exists `1 ≤ i, j < n` such that
+`w = s₁ ⋯ sᵢ₋₁ sᵢ₊₁ ⋯ sⱼ₋₁ sⱼ₋₁ ⋯ sₙ` -/
 @[simp]
 abbrev DeletionProp := ∀ (L : List S), ℓ(L) < L.length →
   ∃ (j : Fin L.length), ∃ (i : Fin j), (L : G) = (L.removeNth j).removeNth i
