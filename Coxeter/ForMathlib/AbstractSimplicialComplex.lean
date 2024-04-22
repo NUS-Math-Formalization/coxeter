@@ -66,7 +66,7 @@ instance partialOrder : PartialOrder (AbstractSimplicialComplex V) where
 lemma le_def {G F : AbstractSimplicialComplex V} : G ≤ F ↔ G.faces ⊆ F.faces := by rfl
 
 /--
-Definition: The simplex with verteces s ⊆ V is the complex of all finite subsets of s.
+Definition: The simplex with verteces `s ⊆ V` is the complex of all finite subsets of `s`.
 -/
 def simplex (s : Set V) : AbstractSimplicialComplex V where
   faces := {t | t.toSet ⊆ s}
@@ -94,13 +94,13 @@ lemma sInf_isGLB (s : Set (AbstractSimplicialComplex V)) : IsGLB s (sInf s) := b
     simp only [subset_of_eq]
   . intro x hx
     simp_rw [mem_lowerBounds,le_def] at hx
-    rw [le_def,sInf_def]
+    rw [le_def, sInf_def]
     simp only [Set.subset_iInter_iff, Subtype.coe_prop, hx, Subtype.forall, implies_true, forall_const]
 
 
-/-- instance: The set of all ASCs on V is a complete lattice with intersections and unions of the set of faces.
+/-- instance: The set of all ASCs on `V` is a complete lattice with intersections and unions of the set of faces.
 -/
-instance complete_lattice : CompleteLattice (AbstractSimplicialComplex V)
+instance instCompleteLatticeToAbstractSimplicialComplex : CompleteLattice (AbstractSimplicialComplex V)
 where
   inf := fun F G => ⟨F.faces ∩ G.faces, Set.mem_inter F.empty_mem G.empty_mem, IsLowerSet.inter F.lower' G.lower'⟩
   le_inf := fun _ _ _ hab hac _ ha =>
@@ -109,6 +109,9 @@ where
       ha.2
   inf_le_left := fun _ _ _ ha => ha.1
   __ := completeLatticeOfInf (AbstractSimplicialComplex V) sInf_isGLB
+
+@[simp]
+lemma inf_faces (F G : AbstractSimplicialComplex V) : (F ⊓ G).faces = F.faces ∩ G.faces := rfl
 
 def unionSubset {s : Set <| AbstractSimplicialComplex V} (hs : s.Nonempty) : AbstractSimplicialComplex V where
   faces := ⋃ F : s, F.1.faces
@@ -138,6 +141,7 @@ lemma bot_eq_ofEmpty : (⊥ : AbstractSimplicialComplex V) = ofEmpty := by
   rw [eq_bot_iff, le_def, show ofEmpty.faces = {∅} by rfl, Set.singleton_subset_iff]
   apply (⊥ : AbstractSimplicialComplex V).empty_mem
 
+@[simp]
 lemma bot_faces_eq_empty : (⊥ : AbstractSimplicialComplex V).faces = {∅} := by
   rw [bot_eq_ofEmpty]; rfl
 
@@ -145,13 +149,26 @@ lemma bot_faces_eq_empty : (⊥ : AbstractSimplicialComplex V).faces = {∅} := 
 lemma sSup_faces_of_nonempty {s : Set (AbstractSimplicialComplex V)} (h : s.Nonempty) : (sSup s).faces = ⋃ F : s, F.1.faces := by
   rw [sSup_eq_unionSubset h]; rfl
 
+@[simp]
+lemma sup_faces (F G : AbstractSimplicialComplex V) : (F ⊔ G).faces = F.faces ∪ G.faces := by
+  let s : Set (AbstractSimplicialComplex V) := {F, G}
+  rw [show F ⊔ G = sSup s by simp [s], show F.faces ∪ G.faces = ⋃ i : s, i.1.faces by simp [s], sSup_faces_of_nonempty (by simp [s])]
+
+@[simp]
+theorem iInf_faces {ι : Type*} (x : ι → AbstractSimplicialComplex V) : (⨅ i, x i).faces = ⨅ i, (x i).faces := by --might be wrong
+  sorry
+
+@[simp]
+theorem iSup_faces {ι : Type*} (x : ι → AbstractSimplicialComplex V) : (⨆ i, x i).faces = ⨆ i, (x i).faces := by
+  sorry
+
 /--
 Definition: For any ASC F, we denote by vertices F the set of vertices of F.
 -/
 def vertices (F : AbstractSimplicialComplex V) : Set V := ⋃ s : F.faces, s.1.toSet
 
 /--
-Definition: Let F be an ASC. A maximal face of F is called a facet of F.
+Definition: Let `F` be an ASC. A maximal face of F is called a facet of F.
 -/
 def IsFacet (F : AbstractSimplicialComplex V) (s : Finset V) := s ∈ F ∧ ∀ t ∈ F, s ⊆ t → s = t
 
@@ -198,13 +215,15 @@ lemma pure_def {F : AbstractSimplicialComplex V} [Pure F] : ∀ s ∈ F.Facets, 
 
 lemma pure_isPure {F : AbstractSimplicialComplex V} [Pure F] : IsPure F := pure_def
 
+theorem isPure_iSup {ι : Type*} {p : ι → AbstractSimplicialComplex V} (hp : ∀i : ι, IsPure (p i)) : IsPure (⨆ i : ι, p i) := by
+  sorry
+
 /--
 The rank of an ASC is defined to be the supremum of the cardinals of its faces.
 If the size of simplices in F is unbounded, it has rank `0` by definition.
 
 Remark: We should general be careful with the unbounded case.
 -/
-
 noncomputable def rank (F : AbstractSimplicialComplex V) : ℕ := iSup fun s : F.faces => s.1.card
 
 /-- Definition: For a collection s of subsets of V, we denote by closure s the smallest ASC over V containing all elements in s
@@ -219,6 +238,9 @@ lemma subset_closure_faces (s : Set (Finset V)) : s ⊆ (closure s).faces := by
   simp only [sInf_def, Set.coe_setOf, Set.mem_setOf_eq, Set.subset_iInter_iff, Subtype.forall,
     imp_self, forall_const]
 
+lemma closure_faces_eq_self (F : AbstractSimplicialComplex V) : closure F.faces = F := by
+  sorry
+
 lemma closure_mono {s t: Set (Finset V)} : s ⊆ t → closure s ≤ closure t := by
   intro hst
   apply sInf_le_sInf
@@ -226,7 +248,7 @@ lemma closure_mono {s t: Set (Finset V)} : s ⊆ t → closure s ≤ closure t :
   intro _ h; exact Set.Subset.trans hst h
 
 /--
-Lemma: For a finset f, the closure of {f} is the simplex of f.
+Lemma: For a `f : Finset V`, the closure of `{f}` is the simplex of `f`.
 -/
 lemma closure_simplex (f : Finset V) : closure {f} =  simplex f := by
   have h1 : (closure {f}).faces = (simplex f).faces:= by
@@ -261,7 +283,7 @@ def closureSingleton (f : Finset V) : AbstractSimplicialComplex V where
 def closurePower (s : Set (Finset V)) : AbstractSimplicialComplex V where
   faces :=
     if Nonempty s then
-      ⨆ f : s, {t | t.toSet ⊆ f}
+      ⋃ f : s, {t | t.toSet ⊆ f}
     else
       {∅}
   empty_mem := by
@@ -276,7 +298,8 @@ def closurePower (s : Set (Finset V)) : AbstractSimplicialComplex V where
       congr
     · exact Finset.isLowerSet_singleton_empty V
 
-theorem closure_union_eq_iSup_closure {ι : Type*} (p : ι → Set (Finset V)) :
+/-- Similar statement for `⨅` is not true.-/
+theorem closure_iUnion_eq_iSup_closure {ι : Type*} (p : ι → Set (Finset V)) :
   closure (⋃ i : ι, p i) = ⨆ i : ι, closure (p i) := by
   apply le_antisymm
   · apply sInf_le
@@ -290,12 +313,12 @@ theorem closure_union_eq_iSup_closure {ι : Type*} (p : ι → Set (Finset V)) :
     apply closure_mono <| Set.subset_iUnion p i
 
 /--
-Lemma: Let s be a collection of finsets in V. Then the closure of s is just the union of the closure of elements in s.
+Lemma: Let `s` be a collection of finsets in `V`. Then the closure of `s` is just the union of the closure of elements in `s`.
 
 Remark: So taking closure commuts with taking union.
 -/
 lemma closure_eq_iSup (s : Set (Finset V)) : closure s = ⨆ f : s,  closure {f.1} := by
-  rw [← closure_union_eq_iSup_closure,
+  rw [← closure_iUnion_eq_iSup_closure,
     Set.iUnion_singleton_eq_range, Subtype.range_coe_subtype, Set.setOf_mem_eq]
 
 
@@ -324,7 +347,6 @@ theorem closure_eq_closurePower (s: Set (Finset V)) : closure s = closurePower s
       intro K sK
       obtain ⟨f,fs⟩ := ts
       rw[Set.subset_def] at sK
-      --have ts : t ∈ s:= by sorry
       obtain ⟨fs, tf⟩ := fs
       apply sK at fs
       exact mem_faces.1 <| K.lower' tf <| fs
@@ -334,7 +356,7 @@ theorem closure_eq_closurePower (s: Set (Finset V)) : closure s = closurePower s
       rw [ts]
       exact K.empty_mem
 
-
+instance instNonemptyToAbstractSimplicialComplexContainingSet (s : Set (Finset V)) : Nonempty {x : AbstractSimplicialComplex V // s ⊆ x.faces} := ⟨closure s, subset_closure_faces _⟩
 
 /--
 Lemma: Let F be an ASC. Then the closure of the set of faces is just F.
@@ -354,5 +376,26 @@ lemma closure_le {F : AbstractSimplicialComplex V} (h: s ⊆ F.faces) : closure 
   rintro s2 h2
   simp only [sInf_def, Set.mem_setOf_eq, Set.mem_iInter, mem_faces, Set.coe_setOf, Subtype.forall] at h2
   exact h2 F h
+
+instance instCompleteDistribLatticeToAbstractSimplicialComplex : CompleteDistribLattice (AbstractSimplicialComplex V) := {
+  instCompleteLatticeToAbstractSimplicialComplex with
+  inf_sSup_le_iSup_inf := by
+    intro a s
+    by_cases hs : s.Nonempty
+    · simp [hs, Set.inter_iUnion]
+      intro i is f hf
+      rw [Set.mem_iUnion]
+      use i
+      simp [is, hf]
+    · simp [Set.not_nonempty_iff_eq_empty.mp hs]
+  iInf_sup_le_sup_sInf := by
+    intro a s
+    simp [Set.union_iInter]
+    intro i is f hf
+    rw [Set.mem_iInter] at hf
+    replace hf := hf i
+    simp [is] at hf
+    simp [hf]
+}
 
 end AbstractSimplicialComplex

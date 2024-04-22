@@ -16,6 +16,12 @@ variable {G : Type*} {w : G} [hG:CoxeterGroup G]
 -- some lemmas are symmetric, such as muls_twice : w*s*s = w, the symm version is s*s*w = w.
 -- this section only contain lemmas that needed in Hecke.lean, you can also formulate the symms if u want.
 
+lemma ne_one_of_length_smul_lt {s : hG.S} {w:G} (lt: ℓ(s*w) < ℓ(w)) : w ≠ 1 := by
+  have : 0 < HOrderTwoGenGroup.length w := lt_of_le_of_lt (Nat.zero_le _) lt
+  contrapose! this
+  rw [HOrderTwoGenGroup.length]
+  apply (length_zero_iff_one (S := hG.S)).mpr at this
+  rw [this]
 
 lemma leftDescent_NE_of_ne_one (h : w ≠ 1) : Nonempty $ leftDescent w := by
   revert h
@@ -33,17 +39,21 @@ lemma leftDescent_NE_of_ne_one (h : w ≠ 1) : Nonempty $ leftDescent w := by
   rw [← length_eq_iff.mp this, ← length_eq_iff.mp hr]
   simp
 
+lemma ne_one_of_leftDescent_NE (h: Nonempty $ leftDescent w) : w ≠ 1 := by
+  let s:= Classical.choice h
+  have : ℓ(s*w) < ℓ(w) := (Set.mem_setOf.1 (Set.mem_of_mem_inter_left s.2)).2
+  exact ne_one_of_length_smul_lt (s:= ⟨s.1, Set.mem_of_mem_inter_right s.2⟩) this
+
 lemma rightDescent_NE_of_ne_one (h : w ≠ 1) : Nonempty $ rightDescent w := by
   rw [← inv_inv w, rightDescent_inv_eq_leftDescent]
   have : w⁻¹ ≠ 1 := by contrapose! h; exact inv_eq_one.mp h
   exact leftDescent_NE_of_ne_one this
 
-lemma ne_one_of_length_smul_lt {s : hG.S} {w:G} (lt: ℓ(s*w) < ℓ(w)) : w ≠ 1 := by
-  have : 0 < HOrderTwoGenGroup.length w := lt_of_le_of_lt (Nat.zero_le _) lt
+lemma ne_one_of_rightDescent_NE(h: Nonempty $ rightDescent w) : w ≠ 1 := by
+  rw [← inv_inv w, rightDescent_inv_eq_leftDescent] at h
+  have := ne_one_of_leftDescent_NE h
   contrapose! this
-  rw [HOrderTwoGenGroup.length]
-  apply (length_zero_iff_one (S := hG.S)).mpr at this
-  rw [this]
+  exact inv_eq_one.mpr this
 
 lemma length_smul_neq (s:hG.S) (w:G) : ℓ(s*w) ≠ ℓ(w) := by
   obtain ⟨L, hr, hL⟩ := @exists_reduced_word G _ hG.S _ w
@@ -53,7 +63,6 @@ lemma length_smul_neq (s:hG.S) (w:G) : ℓ(s*w) ≠ ℓ(w) := by
   rw [hi, ← length_eq_iff.mp hr] at eq_len
   linarith [List.removeNth_length L i,
     @length_le_list_length G _ hG.S _ (L.removeNth i)]
-
 
 lemma length_muls (w : G) (s : hG.S) : OrderTwoGen.length hG.S (w * s) = OrderTwoGen.length hG.S (s * w⁻¹) := by
   nth_rw 1 [← inv_inv (w * s)]
@@ -77,6 +86,17 @@ lemma length_diff_one {s : hG.S} {g : G} : ℓ(s * g) = ℓ(g) + 1  ∨ ℓ(g) =
     have := @length_smul_le_length_add_one _ _ _ _ g s
     apply Or.intro_left
     linarith
+
+lemma length_diff_one' {s : hG.S} {g : G} : ℓ(g * s) = ℓ(g) + 1 ∨ ℓ(g) = ℓ(g * s) + 1 := by
+  by_cases h : ℓ(g * s) ≤ ℓ(g)
+  . apply fun h ↦ lt_of_le_of_ne h (length_muls_neq g s) at h
+    simp only [HOrderTwoGenGroup.length] at *
+    have := @length_le_length_muls_add_one _ _ _ _ g s
+    right; linarith
+  · rw [not_le] at h
+    simp only [HOrderTwoGenGroup.length] at *
+    have := @length_muls_le_length_add_one _ _ _ _ g s
+    left; linarith
 
 lemma length_smul_of_length_lt {s : hG.S} {w:G} (lt: ℓ(s * w) < ℓ(w)) : ℓ(s * w) = ℓ(w) - 1 := by
   rw [← Nat.succ_inj, Nat.succ_eq_add_one, Nat.succ_eq_add_one, Nat.sub_add_cancel]
@@ -103,9 +123,17 @@ lemma length_muls_of_length_gt {s : hG.S} {w:G} (gt: ℓ(w) < ℓ(w * s)) : ℓ(
   repeat rw [← HOrderTwoGenGroup.length] at *
   exact length_smul_of_length_gt gt
 
-lemma length_muls_of_mem_leftDescent (s : leftDescent w) : ℓ(s*w) = ℓ(w) - 1 :=sorry
+lemma length_muls_of_mem_leftDescent (s : leftDescent w) : ℓ(s*w) = ℓ(w) - 1 := by
+  have hNE : Nonempty $ leftDescent w := Nonempty.intro s
+  have := ne_one_of_leftDescent_NE hNE
+  have hlt : ℓ(s*w) < ℓ(w) := Set.mem_setOf.1 (Set.mem_of_mem_inter_left s.2).2
+  exact length_smul_of_length_lt (s := ⟨s.1, Set.mem_of_mem_inter_right s.2⟩) hlt
 
-lemma length_muls_of_mem_rightDescent (s : rightDescent w) : ℓ(w*s) = ℓ(w) - 1 :=sorry
+lemma length_muls_of_mem_rightDescent (s : rightDescent w) : ℓ(w*s) = ℓ(w) - 1 := by
+  have hNE : Nonempty $ rightDescent w := Nonempty.intro s
+  have := ne_one_of_rightDescent_NE hNE
+  have hlt : ℓ(w*s) < ℓ(w) := Set.mem_setOf.1 (Set.mem_of_mem_inter_left s.2).2
+  exact length_muls_of_length_lt (s := ⟨s.1, Set.mem_of_mem_inter_right s.2⟩) hlt
 
 lemma muls_twice (w:G) (s:hG.S) : w*s*s = w := by
   rw [mul_assoc]
@@ -172,7 +200,8 @@ lemma smul_eq_muls_of_length_eq_pre (s t : hG.S) (w : G) :
     rw [this, List.removeNth, gprod_cons, ← hL] at exch_prop'
     exact exch_prop'
 
-lemma smul_eq_muls_of_length_eq (s t:hG.S) (w:G) :ℓ(s*w*t) = ℓ(w) ∧ ℓ(s*w)=ℓ(w*t) → s*w=w*t := by
+lemma smul_eq_muls_of_length_eq (s t : hG.S) (w : G) :
+  ℓ(s * w * t) = ℓ(w) ∧ ℓ(s * w) = ℓ(w * t) → s * w = w * t := by
   intro h; rcases h with ⟨h₁, h₂⟩
   by_cases k : ℓ(s * w) > ℓ(w)
   . apply smul_eq_muls_of_length_eq_pre
@@ -192,13 +221,63 @@ lemma smul_eq_muls_of_length_eq (s t:hG.S) (w:G) :ℓ(s*w*t) = ℓ(w) ∧ ℓ(s*
       . rw [← mul_assoc, gen_square_eq_one', one_mul]
         exact h₂.symm
       . constructor
-        rw [← mul_assoc, gen_square_eq_one', one_mul]
-        . exact h₁.symm
+        . rw [← mul_assoc, gen_square_eq_one', one_mul]
+          exact h₁.symm
         . exact this
     rw [mul_assoc, mul_right_inj] at this
     exact this
 
-lemma length_smul_eq_length_muls_of_length_neq (s t :hG.S) (w:G): ℓ(s*w*t) ≠ ℓ(w) → ℓ(s*w)=ℓ(w*t):= sorry
+lemma length_swt (s t : hG.S) (w : G) :
+  ℓ(s * w * t) = ℓ(w) ∨ ℓ(s * w * t) = ℓ(w) + 2 ∨ ℓ(w) = ℓ(s * w * t) + 2 := by
+  by_cases h : ℓ(s * w) = ℓ(w) + 1
+  . by_cases h' : ℓ(s * w * t) = ℓ(s * w) + 1
+    . right; left; omega
+    . have : ℓ(s * w) = ℓ(s * w * t) + 1 := (Or.resolve_left (length_diff_one')) h'
+      left; omega
+  . have : ℓ(w) = ℓ(s * w) + 1 := (Or.resolve_left (length_diff_one)) h
+    by_cases h' : ℓ(s * w * t) = ℓ(s * w) + 1
+    . left; omega
+    . have : ℓ(s * w) = ℓ(s * w * t) + 1 := (Or.resolve_left (length_diff_one')) h'
+      right; right; omega
+
+lemma length_smul_eq_length_muls_of_length_neq_pre (s t : hG.S) (w : G) :
+  ℓ(s * w * t) = ℓ(w) + 2 → ℓ(s * w) = ℓ(w * t):= by
+  intro h
+  have : ℓ(s * w) = ℓ(w) + 1 := by
+    by_contra h'
+    have : ℓ(w) = ℓ(s * w) + 1 := (Or.resolve_left (length_diff_one)) h'
+    have : (ℓ(s * w * t) = ℓ(s * w) + 1) ∨ (ℓ(s * w) = ℓ(s * w * t) + 1) := length_diff_one'
+    rcases this with h₁ | h₂
+    . omega
+    . omega
+  have : ℓ(w * t) = ℓ(w) + 1 := by
+    by_contra h'
+    have : ℓ(w) = ℓ(w * t) + 1 := (Or.resolve_left (length_diff_one')) h'
+    have : (ℓ(s * (w * t)) = ℓ(w * t) + 1) ∨ (ℓ(w * t) = ℓ(s * (w * t)) + 1) := length_diff_one
+    rw [← mul_assoc] at this
+    rcases this with h₁ | h₂
+    . rw [← this, h] at h₁
+      omega
+    . rw [← add_left_inj 1, ← this, ← add_left_inj 2, ← h, add_assoc, add_assoc] at h₂
+      simp only [Nat.reduceAdd, self_eq_add_right, OfNat.ofNat_ne_zero] at h₂
+  omega
+
+lemma length_smul_eq_length_muls_of_length_neq (s t : hG.S) (w : G) :
+  ℓ(s * w * t) ≠ ℓ(w) → ℓ(s * w) = ℓ(w * t) := by
+  intro h
+  have : ℓ(s * w * t) = ℓ(w) + 2 ∨ ℓ(w) = ℓ(s * w * t) + 2 := (Or.resolve_left (length_swt s t w)) h
+  rcases this with h₁ | h₂
+  . apply length_smul_eq_length_muls_of_length_neq_pre s t w h₁
+  . apply Eq.symm
+    nth_rw 1 [← one_mul w, ← gen_square_eq_one' s]
+    rw [mul_assoc, mul_assoc]
+    nth_rw 2 [← mul_assoc, ← mul_one w]
+    rw [← gen_square_eq_one' t]
+    nth_rw 3 [← mul_assoc]
+    nth_rw 2 [← mul_assoc, ← mul_assoc]
+    apply length_smul_eq_length_muls_of_length_neq_pre s t (s * w * t)
+    rw [← mul_assoc, ← mul_assoc, gen_square_eq_one', one_mul, mul_assoc, gen_square_eq_one', mul_one]
+    exact h₂
 
 -- ℓ(s*w*t) = ℓ(w) or ℓ(s*w*t) = ℓ(w) + 2 or ℓ(s*w*t) = ℓ(w) - 2
 -- ℓ(s*w*t) < ℓ(w) →  ℓ(s*w*t) < ℓ(s*w) <ℓ(w) ∧ ℓ(s*w*t) < ℓ(w*t) <ℓ(w)
