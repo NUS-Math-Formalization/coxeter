@@ -155,6 +155,10 @@ lemma sup_faces (F G : AbstractSimplicialComplex V) : (F ⊔ G).faces = F.faces 
   rw [show F ⊔ G = sSup s by simp [s], show F.faces ∪ G.faces = ⋃ i : s, i.1.faces by simp [s], sSup_faces_of_nonempty (by simp [s])]
 
 @[simp]
+theorem iInf_faces {ι : Type*} (x : ι → AbstractSimplicialComplex V) : (⨅ i, x i).faces = ⨅ i, (x i).faces := by --might be wrong
+  sorry
+
+@[simp]
 theorem iSup_faces {ι : Type*} (x : ι → AbstractSimplicialComplex V) : (⨆ i, x i).faces = ⨆ i, (x i).faces := by
   sorry
 
@@ -294,6 +298,7 @@ def closurePower (s : Set (Finset V)) : AbstractSimplicialComplex V where
       congr
     · exact Finset.isLowerSet_singleton_empty V
 
+/-- Similar statement for `⨅` is not true.-/
 theorem closure_iUnion_eq_iSup_closure {ι : Type*} (p : ι → Set (Finset V)) :
   closure (⋃ i : ι, p i) = ⨆ i : ι, closure (p i) := by
   apply le_antisymm
@@ -385,12 +390,12 @@ instance instCompleteDistribLatticeToAbstractSimplicialComplex : CompleteDistrib
     · simp [Set.not_nonempty_iff_eq_empty.mp hs]
   iInf_sup_le_sup_sInf := by
     intro a s
-    by_cases hs : s.Nonempty
-    · simp [Set.union_iInter]
-      intro i is f hf
-      sorry
-      -- rw [Set.mem_iInter]
-    · sorry
+    simp [Set.union_iInter]
+    intro i is f hf
+    rw [Set.mem_iInter] at hf
+    replace hf := hf i
+    simp [is] at hf
+    simp [hf]
 }
 
 end AbstractSimplicialComplex

@@ -33,8 +33,7 @@ lemma shelling_iff_shelling' {F : AbstractSimplicialComplex V}  [hpure: Pure F] 
     constructor
     · sorry
     · refine fun ⟨a, b⟩ ↦ ⟨a, ?_⟩
-      intro k kge0
-      intro s hs
+      intro k kge0 s hs
       rw [iSup_inf_eq (a := closure {(l k).1})] at hs
       sorry
 
