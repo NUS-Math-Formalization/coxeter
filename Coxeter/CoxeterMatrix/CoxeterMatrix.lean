@@ -20,6 +20,22 @@ This result relies on the file `TextGroup.lean` for the construction of `μ₂`.
 -/
 
 open BigOperators
+
+section
+variable {α : Type*} [DecidableEq α]
+variable (m : Matrix α α ℕ)
+
+/-- Definition of Coxeter matrices:
+A square matrix `m` with non-negative integer entries is a Coxeter matrix if
+it is symmetric, that is, `m a b = m b a` for any `(a,b)`;
+the entry `m a b` is `1` if and only if `a = b`.
+-/
+class CoxeterMatrix : Prop where
+  symmetric : ∀ (a b : α), m a b = m b a
+  oneIff : ∀ (a b : α), m a b = 1 ↔ a = b
+end
+
+
 open Classical
 
 section
