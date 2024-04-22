@@ -30,8 +30,6 @@ class CoxeterGroup (G : Type*) extends HOrderTwoGenGroup G where
   exchange': ExchangeProp' S := (exchange_iff_exchange' S).1 exchange
   deletion: DeletionProp S := exchange_imp_deletion S exchange
 
-
-
 end
 
 namespace CoxeterGroup
