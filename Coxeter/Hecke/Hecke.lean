@@ -1,6 +1,7 @@
 import Coxeter.CoxeterMatrix.Basic
 import Coxeter.CoxeterMatrix.Lemmas
 import Coxeter.Wellfounded
+import Coxeter.Hecke.trans
 
 import Mathlib.LinearAlgebra.FreeModule.Basic
 import Mathlib.Algebra.DirectSum.Basic
@@ -12,7 +13,6 @@ import Mathlib.Data.Finsupp.Defs
 import Mathlib.Init.Data.List.Instances
 import Mathlib.Data.Finsupp.Pointwise
 import Mathlib.Algebra.Polynomial.Laurent
-
 
 --aux instance & lemma, help to simp, but not in Mathlib (or not find in Mathlib)
 noncomputable instance (F : Type*)  (R : outParam (Type*)) (M : outParam (Type*)) (M₂ : outParam (Type*)) [Semiring R] [AddCommMonoid M] [AddCommMonoid M₂] [Module R M] [Module R M₂] [FunLike F M M₂] [LinearMapClass F R M M₂] : ZeroHomClass F  M M₂ where
@@ -29,9 +29,6 @@ lemma Algebra.mem_adjoin_of_mem_s {R : Type uR} {A : Type uA} [CommRing R] [Ring
 open Classical List CoxeterSystem OrderTwoGen CoxeterGroup HOrderTwoGenGroup
 
 variable {G :(Type _)} [hG:CoxeterGroup G] {w : G}
-
-lemma length_induction {p : G → Prop} (h1 : p 1) (hws :∀ w:G, ∀ s:hG.S, s.1 ∈ (rightDescent w) → p (w*s) → p w) :
-  ∀ u:G, p u := by sorry
 
 local notation : max "q" => @LaurentPolynomial.T ℤ _ 1
 
@@ -595,28 +592,32 @@ noncomputable def listToSubalg : List hG.S → subalg G :=
   fun L => (List.map (fun s => ⟨opl' s,opl'_mem_subalg s⟩) L).prod
 
 noncomputable def preTT : G → subalg G := fun g => listToSubalg (choose_reduced_word hG.S g )
-#check length_induction
 
-lemma choose_reduced_word_one : choose_reduced_word hG.S 1 = [] := sorry
+lemma preTT_mul_of_lt (h : ℓ(w) < ℓ(s*w)) : preTT s.1 * preTT w = preTT (s*w) := sorry
 
-lemma preimage_eq {w : G} : (alg_hom G) (preTT w) = TT w := by
-  -- simp [alg_hom, preTT]
+lemma preimage_eq_aux {w : G} : (alg_hom G) (preTT w) = TT w := by
   let p:= fun w : G => (alg_hom G) (preTT w) = TT w
-  --apply length_induction (p := p)
+  --apply length_induction' (p := p)
   have p1 : (alg_hom G) (preTT 1) = TT 1 := by
     simp only [preTT,listToSubalg,choose_reduced_word_one,map_nil, prod_nil,alg_hom_id,one_def]
-  have hws :  ∀ (w : G) (s : ↑S), s.1 ∈ rightDescent w →
-    (alg_hom G) (preTT (w*s)) = TT (w*s) → (alg_hom G) (preTT w) = TT w := by
+  have hws :  ∀ (w : G) (s : ↑S), s.1 ∈ leftDescent w →
+    (alg_hom G) (preTT (s*w)) = TT (s*w) → (alg_hom G) (preTT w) = TT w := by
       intro w' s' hs hws'
+      have hlt : ℓ(s'*w') < ℓ(s'*(s'*w')) := sorry
+      nth_rw 1 [smul_twice w' s',_root_.mul_assoc,←preTT_mul_of_lt hlt]
+      --alg_hom s' * (s'* w') = alg_hom s' * alg_hom (s' * w')
       sorry
   exact length_induction (G:=G) (p := p) p1 hws w
+
+lemma preimage_eq {w : G} :  (preTT w) = (alg_hom G).symm (TT w) := by
+  sorry
 
 @[simp]
 lemma mul_gt : ℓ(w) < ℓ(s*w) → TT s.1 * TT w = TT (s*w) := by
   intro hl
-  rw [mul_def]
-  simp only [HeckeMul]
-  sorry
+  simp only [mul_def,HeckeMul]
+  rw [←preimage_eq,←preimage_eq,←LinearEquiv.eq_symm_apply,←preimage_eq]
+  exact preTT_mul_of_lt hl
 
 @[simp]
 lemma mul_lt : ℓ(s*w) < ℓ(w) → TT s.1 * TT w = (q-1) • (TT w) + q • (TT (s*w)) := sorry
@@ -626,7 +627,6 @@ lemma mul_gt' : ℓ(w) < ℓ(w*s) → TT w * TT s.1 = TT (w*s) := by sorry
 
 @[simp]
 lemma mul_lt' : ℓ(w*s) < ℓ(w) → TT w * TT s.1 = (q-1) • (TT w) + q • (TT (w*s)) := by sorry
-
 
 @[simp]
 lemma Ts_square : TT s.1 * TT s.1 = (q - 1) • TT s.1 + q • 1 := sorry
@@ -692,6 +692,9 @@ theorem is_inv_aux' (red : reduced_word L) : (listToHeckeInv L) * listToHecke (G
 
 noncomputable def TTInv : G → Hecke G := fun g =>  listToHeckeInv <| choose_reduced_word hG.S g
 
+lemma TTInv_one : TTInv (1:G) = 1 := by
+  simp only [TTInv,choose_reduced_word_one,listToHeckeInv_nil_eq_one]
+
 lemma mul_TTInv {w : G} : TT w * TTInv w = 1 := by
   dsimp [TTInv]
   set L := choose_reduced_word hG.S w
@@ -709,6 +712,20 @@ lemma TTInv_unique : TT w * h = 1 → h = TTInv w := by
   intro h1
   have h2 : TTInv w * TT w * h = TTInv w := by rw [_root_.mul_assoc,h1];simp
   rw [TTInv_mul,_root_.one_mul] at h2
+  assumption
+
+lemma TTInv_unique' : h * TT w = 1 → h = TTInv w:= by
+  have := TTInv_mul (w:=w)
+  intro h1
+  have h2 : h * TT w * TTInv w = TTInv w := by rw [h1];simp
+  rw [_root_.mul_assoc,mul_TTInv,_root_.mul_one] at h2
+  assumption
+
+lemma TTInv_s_eq {s : hG.S} : TTInv s.1 = q⁻¹ • (TT s.val) - (1-q⁻¹) • 1 := by
+  have := TTs_mul_inv (s := s)
+  symm
+  apply TTInv_unique
+  rw [TT_inv_s] at this
   assumption
 
 end Hecke

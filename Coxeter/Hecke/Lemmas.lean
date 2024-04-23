@@ -7,7 +7,7 @@ local notation : max "q" => @LaurentPolynomial.T ℤ _ 1
 
 local notation : max "q⁻¹" => @LaurentPolynomial.T ℤ _ (-1)
 
-open Hecke
+open Hecke OrderTwoGen
 
 --trans to CoxeterMatrix.Lemmas
 lemma mul_SimpleRefl_ne_self : w * s ≠ w := sorry
@@ -40,7 +40,7 @@ lemma muls_apply_antidiagonal_of_memrD (h : Hecke G) (s : hG.S) (w : G) (h1 : �
     have h1' :ℓ(w*s) < ℓ(w*s*s) := by nth_rw 2 [←muls_twice w s] at h1;assumption
     rw [Finset.sum_eq_add w (w*s) (ne_comm.1 mul_SimpleRefl_ne_self) this]
     simp
-    rw [mul_lt' s h1,mul_gt' s h1',smul_apply,Finsupp.add_apply,mul_add,smul_apply,TT_apply_self,smul_apply,TT_apply_ne_self]
+    rw [mul_lt' h1,mul_gt' h1',smul_apply,Finsupp.add_apply,mul_add,smul_apply,TT_apply_self,smul_apply,TT_apply_ne_self]
     simp_rw [muls_twice,smul_apply,TT_apply_self]
     ring
     exact mul_SimpleRefl_ne_self
@@ -65,5 +65,15 @@ lemma TTInv_muls_of_length_gt (s:hG.S) (h: ℓ(w) < ℓ(s*w)): TTInv (s.1*w) = T
     rw [_root_.mul_assoc,mul_TTInv,_root_.mul_assoc,mul_TTInv] at h2
     simp at h2
     assumption
-  rw [TTInv_mul,←mul_gt _ h,_root_.mul_assoc,←_root_.mul_assoc (TTInv s.1),TTInv_mul]
+  rw [TTInv_mul,←mul_gt h,_root_.mul_assoc,←_root_.mul_assoc (TTInv s.1),TTInv_mul]
   simp [TTInv_mul]
+
+lemma TTInv_eq_of_length_lt (h : ℓ(s*w) < ℓ(w)) : TTInv w⁻¹ = TTInv s.1 * TTInv (w⁻¹*s) := by
+  nth_rw 1 [←muls_twice w⁻¹ s]
+  have hl : ℓ(w⁻¹*s) < ℓ(w⁻¹*s*s) := by
+    simp only [_root_.mul_assoc,gen_square_eq_one', _root_.mul_one]
+    rw [inv_eq_self',←mul_inv_rev]
+    simp only [HOrderTwoGenGroup.length] at *
+    rw [←length_eq_inv_length,←length_eq_inv_length]
+    assumption
+  nth_rw 1 [TTInv_muls_of_length_gt' hl]

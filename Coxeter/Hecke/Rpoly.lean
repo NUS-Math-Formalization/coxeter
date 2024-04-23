@@ -13,30 +13,6 @@ open Hecke CoxeterGroup CoxeterMatrix OrderTwoGen Classical Bruhat
 local notation : max "q" => @LaurentPolynomial.T ℤ _ 1
 local notation : max "q⁻¹" => @LaurentPolynomial.T ℤ _ (-1)
 
--- trans to ...
-lemma length_induction_aux {p : G → Prop} (h1 : p 1) (hws :∀w, ∀ s:hG.S, s.1 ∈ rightDescent w → p (w*s) → p w) :
-  ∀ l, ∀ u:G, l = ℓ(u) → p u := by
-    intro l
-    induction' l with n hn
-    · intro u hu
-      have := length_zero_iff_one.1 (eq_comm.1 hu)
-      rw [this]
-      assumption
-    · intro u hu
-      have hune1 : u ≠ 1 := (Function.mt length_zero_iff_one.2) (hu ▸ (Nat.succ_ne_zero n))
-      let s:= choice (rightDescent_NE_of_ne_one hune1)
-      have hlws : n = ℓ(u*s.1):= by
-        have :=length_muls_of_mem_rightDescent s
-        rw [←hu,Nat.succ_sub_one] at this
-        exact eq_comm.1 this
-      have smemS : s.1 ∈ hG.S := Set.mem_of_mem_inter_right s.2
-      exact hws u ⟨s.1,smemS⟩ s.2 (hn _ hlws)
-
-lemma length_induction {p : G → Prop} (h1 : p 1) (hws :∀w, ∀ s:hG.S, s.1 ∈ rightDescent w → p (w*s) → p w) :
-  ∀ u:G, p u := by
-    intro u
-    exact length_induction_aux h1 hws (ℓ(u)) u rfl
-
 -- trans to CoxeterSystem
 lemma mul_SimpleRefl_twice (w:G) (s: hG.S) : w = w*s*s := by
   rw [_root_.mul_assoc,gen_square_eq_one' s,_root_.mul_one]
@@ -90,7 +66,6 @@ lemma Rpoly_aux {u v :G} {s:hG.S} (h1:s.1 ∈ rightDescent v) (h2:s.1 ∈ rightD
       nth_rw 1 [mul_SimpleRefl_twice v s]
       rw [mul_inv_rev,←inv_eq_self' s,TTInv_muls_of_length_gt (s:=s) hl]
       rw [TTInv_s_eq,mul_sub,sub_apply,mul_smul_comm,smul_apply,muls_apply_antidiagonal_of_memrD]
-
       sorry
       sorry
 
@@ -131,11 +106,11 @@ lemma Rpoly_mem_rD : ∀(u v:G) (s:hG.S),s.1 ∈ rightDescent v → s.1 ∈ righ
     · rw [R,R]
       have hlvs : ℓ(v*s) + 1 = ℓ(v) := by
         rw [length_muls_of_mem_rightDescent ⟨s.1,h1⟩,←Nat.pred_eq_sub_one,←Nat.succ_eq_add_one,Nat.succ_pred]
-        exact Function.mt length_zero_iff_one.1 (rightDescent_NE_of_ne_one.2 hn)
+        exact Function.mt length_zero_iff_one.1 (ne_one_of_rightDescent_NE hn)
       rw [←Rpoly_aux h1 h2]
       have hlus : ℓ(u*s) + 1 = ℓ(u) := by
         rw [length_muls_of_mem_rightDescent ⟨s.1,h2⟩,←Nat.pred_eq_sub_one,←Nat.succ_eq_add_one,Nat.succ_pred]
-        exact Function.mt length_zero_iff_one.1 (rightDescent_NE_iff_ne_one.2 hn')
+        exact Function.mt length_zero_iff_one.1 (ne_one_of_rightDescent_NE hn')
       have hlusv : ℓ(v) + (ℓ(u)) = ℓ(v*s) + (ℓ(u*s)) + 2:= by rw [←hlvs,←hlus];ring
       rw [hlusv,pow_add,neg_one_pow_two,_root_.mul_one,←hlvs,pow_add q,pow_one]
       ring
@@ -156,7 +131,7 @@ lemma Rpoly_not_mem_rD : ∀(u v:G) (s:hG.S),s.1 ∈ rightDescent v → s.1 ∉ 
         rw [inv_eq_self',←mul_inv_rev]
         repeat
           rw [HOrderTwoGenGroup.length,←length_eq_inv_length (S:=hG.S)]
-        have : v ≠ 1 := rightDescent_NE_iff_ne_one.2 hn
+        have : v ≠ 1 := ne_one_of_rightDescent_NE hn
         rw [←HOrderTwoGenGroup.length,length_muls_of_mem_rightDescent ⟨s.1,hsv⟩]
         have h': 0 < ℓ(v) := Nat.ne_zero_iff_zero_lt.1 (Function.mt length_zero_iff_one.1 this)
         rw [←Nat.pred_eq_sub_one,←mul_inv_rev,_root_.mul_assoc]
