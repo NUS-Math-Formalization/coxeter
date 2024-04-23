@@ -1,7 +1,8 @@
 import Coxeter.OrderTwoGen
 import Coxeter.CoxeterMatrix.TestGroup
 import Mathlib.GroupTheory.Coxeter.Matrix
-import Mathlib.GroupTheory.Coxeter.Basic
+import Mathlib.GroupTheory.Coxeter.Length
+
 /-!
 # Coxeter Matrices
 
@@ -32,11 +33,20 @@ local prefix:max "ris" => cs.rightInvSeq
 
 namespace CoxeterMatrix
 
-lemma one_iff : ∀ (a b : B), M a b = 1 ↔ a = b := sorry -- hm.oneIff
 
-lemma diagonal_one {a : B} : M a a = 1 := sorry --by rw [hm.oneIff]
 
-lemma off_diagonal_ne_one {a b : B} : a ≠ b → M a b ≠ 1 := sorry --by simp [hm.oneIff]
+lemma diagonal_one {a : B} : M a a = 1 := diagonal M a
+
+lemma off_diagonal_ne_one {a b : B} : a ≠ b → M a b ≠ 1 := off_diagonal M a b
+
+lemma one_iff {a b : B}: M a b = 1 ↔ a = b := by
+  constructor
+  · convert (off_diagonal M a b).mt <;>
+    tauto
+  · intro h
+    simp only [h, diagonal]
+
+local notation "F" => FreeGroup B
 
 lemma lift.of {A : Type _} [Group A] {f : B → A} (h : IsLiftable M f) (w : B) : CoxeterSystem.lift cs h (s w) = f w := by
   sorry
