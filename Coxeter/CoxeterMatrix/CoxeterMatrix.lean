@@ -64,32 +64,15 @@ lemma epsilon_of (u : B) : epsilon cs (s u) = μ₂.gen := by
   simp only [epsilon, lift.of cs]
 
 @[simp]
-lemma of_relation (u v : B) : ((s u) * (s v)) ^ (M u v) = 1 := by
-  sorry
-  /-set M := toRelationSet m
-  set k := ((FreeGroup.of s) * (FreeGroup.of t))^(m s t)
-  have kM : (k ∈ M) := by exact Exists.intro (s, t) rfl
-  have MN : (M ⊆ N) := by exact Subgroup.subset_normalClosure
-  have kN : (k ∈ N) := by exact MN kM
-  rw [of, of]
-  have : (((QuotientGroup.mk' N) (FreeGroup.of s) * (QuotientGroup.mk' N) (FreeGroup.of t)) ^ (m s t)
-    = (QuotientGroup.mk' N) ((FreeGroup.of (s) * FreeGroup.of (t)) ^ (m s t))) := by rfl
-  rw [this]
-  apply (QuotientGroup.eq_one_iff k).2
-  exact kN-/
+lemma of_relation (u v : B) : ((s u) * (s v)) ^ (M u v) = 1 := CoxeterSystem.simple_mul_simple_pow cs u v
 
-lemma of_square_eq_one {u : B} : (s u) * (s u) = 1 := by
-  sorry
-  /- have : m s s = 1 := diagonal_one m
-  rw [← pow_one ((of m s) * (of m s)), ←this]
-  apply of_relation m s s -/
+lemma of_square_eq_one {u : B} : (s u) * (s u) = 1 := CoxeterSystem.simple_mul_simple_self cs u
 
 -- @[gprod_simps]
-lemma of_square_eq_one_right (u : B) (g : W) : g * (s u) * (s u) = g := by
-  sorry /- rw [mul_assoc, of_square_eq_one'' m s, mul_one] -/
+lemma of_square_eq_one_right (u : B) (g : W) : g * (s u) * (s u) = g := CoxeterSystem.simple_mul_simple_cancel_right cs u
 
-lemma of_inv_eq_of {x : B} : (s x)⁻¹ = s x :=
-  sorry /- inv_eq_of_mul_eq_one_left (@of_square_eq_one α m hm x) -/
+lemma of_inv_eq_of {x : B} : (s x)⁻¹ = s x := CoxeterSystem.inv_simple cs x
+
 
 @[gprod_simps]
 lemma of_inv_eq_of' (s : SimpleRefl m) : (s : G)⁻¹ = s :=
