@@ -156,10 +156,6 @@ theorem iSup_faces_of_nonempty {ι : Type*} (x : ι → AbstractSimplicialComple
     apply Set.not_nonempty_iff_eq_empty.1 at h
     simp at h
 
-@[simp]
-theorem iSup_faces_of_isEmpty {ι : Type*} [IsEmpty ι] (x : ι → AbstractSimplicialComplex V) : (⨆ i, x i).faces = {∅} := by
-  sorry
-
 /-- Definition: For any ASC `F`, we denote by `vertices F` the set of vertices of F. -/
 def vertices (F : AbstractSimplicialComplex V) : Set V := ⋃ s : F.faces, s.1.toSet
 
@@ -210,18 +206,6 @@ lemma isPure_iff_isPure' {F : AbstractSimplicialComplex V} : F.IsPure ↔ ∃ d,
 lemma pure_def {F : AbstractSimplicialComplex V} [Pure F] : ∀ s ∈ F.Facets, ∀ t ∈ F.Facets, s.card = t.card := Pure.pure
 
 lemma pure_isPure {F : AbstractSimplicialComplex V} [Pure F] : IsPure F := pure_def
-
-theorem iSup_Facets_le {ι : Type*} {p : ι → AbstractSimplicialComplex V} : (⨆ i : ι, p i).Facets ≤ ⋃ i : ι, (p i).Facets := by
-  intro a ha
-  rw [Set.mem_iUnion]
-  rcases ha with ⟨ha_mem, ha_max⟩
-  by_cases hi : Nonempty ι
-  · sorry
-  · sorry
-
-theorem isPure_iSup {ι : Type*} {p : ι → AbstractSimplicialComplex V} (hp : ∀i : ι, IsPure (p i)) : IsPure (⨆ i : ι, p i) := by
-  intro s hs t ht
-  sorry
 
 /--
 The rank of an ASC is defined to be the supremum of the cardinals of its faces.
@@ -399,5 +383,24 @@ lemma bot_eq_ofEmpty : (⊥ : AbstractSimplicialComplex V) = closure ∅ := by
 lemma bot_faces_eq_empty : (⊥ : AbstractSimplicialComplex V).faces = {∅} := by
   rw [bot_eq_ofEmpty']
   simp[closurePower]
+
+@[simp]
+theorem iSup_faces_of_isEmpty {ι : Type*} [IsEmpty ι] (x : ι → AbstractSimplicialComplex V) : (⨆ i, x i).faces = {∅} := by
+  simp [iSup_of_empty]
+
+theorem iSup_Facets_le {ι : Type*} {p : ι → AbstractSimplicialComplex V} : (⨆ i : ι, p i).Facets ≤ ⋃ i : ι, (p i).Facets := by
+  intro a ha
+  rw [Set.mem_iUnion]
+  rcases ha with ⟨ha_mem, ha_max⟩
+  by_cases hi : Nonempty ι
+  · sorry
+  · sorry
+
+theorem isPure_iSup {ι : Type*} {p : ι → AbstractSimplicialComplex V} (hp : ∀i : ι, IsPure (p i)) : IsPure (⨆ i : ι, p i) := by
+  intro s hs t ht
+  sorry
+
+
+
 
 end AbstractSimplicialComplex
