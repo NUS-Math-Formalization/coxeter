@@ -29,6 +29,7 @@ local prefix:max "s" => cs.simple
 local prefix:max "ℓ" => cs.length
 local prefix:max "ris" => cs.rightInvSeq
 
+
 namespace CoxeterMatrix
 
 lemma one_iff : ∀ (a b : B), M a b = 1 ↔ a = b := sorry -- hm.oneIff
@@ -41,17 +42,17 @@ lemma off_diagonal_ne_one {a b : B} : a ≠ b → M a b ≠ 1 := sorry --by simp
 @[simp]
 abbrev SimpleRefl := Set.range cs.simple
 
-local notation "S" => (SimpleRefl B)
+local notation "S" => (SimpleRefl cs)
 
 @[simp]
-def toSimpleRefl (a : α) : SimpleRefl m := ⟨of m a, by simp⟩
+def toSimpleRefl (a : B) : S := ⟨s a, by simp⟩
 
-lemma toSimpleRefl_surj (s : S) : ∃ (y : α), toSimpleRefl m y = s := by
+lemma toSimpleRefl_surj (u : S) : ∃ (y : B), toSimpleRefl cs y = u := by
   simp only [toSimpleRefl]
-  have : s = ⟨s.1, s.2⟩ := by rfl
+  have : u = ⟨u.1, u.2⟩ := by rfl
   rw [this]
   simp only [Subtype.mk.injEq]
-  exact Set.mem_range.mp (Subtype.mem s)
+  exact Set.mem_range.mp (Subtype.mem u)
 
 lemma toSimpleRefl_surj_list (L : List S) : ∃ (K : List α), K.map (toSimpleRefl m) = L := by
   induction L with
