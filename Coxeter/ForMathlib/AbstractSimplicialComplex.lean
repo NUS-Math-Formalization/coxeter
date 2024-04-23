@@ -142,13 +142,13 @@ lemma sup_faces (F G : AbstractSimplicialComplex V) : (F ⊔ G).faces = F.faces 
   rw [show F ⊔ G = sSup s by simp [s], show F.faces ∪ G.faces = ⋃ i : s, i.1.faces by simp [s], sSup_faces_of_nonempty (by simp [s])]
 
 @[simp]
-theorem iInf_faces {ι : Type*} (x : ι → AbstractSimplicialComplex V) : (⨅ i, x i).faces = ⨅ i, (x i).faces := by --might be wrong
+theorem iInf_faces {ι : Type*} (x : ι → AbstractSimplicialComplex V) : (⨅ i, x i).faces = ⋂ i, (x i).faces := by
   unfold iInf
   simp only [sInf_def, Set.iInter_coe_set, Set.mem_range, Set.iInter_exists, Set.iInter_iInter_eq',
     Set.sInf_eq_sInter, Set.sInter_range]
 
 @[simp]
-theorem iSup_faces_of_nonempty {ι : Type*} (x : ι → AbstractSimplicialComplex V) [Nonempty ι] : (⨆ i, x i).faces = ⨆ i, (x i).faces := by
+theorem iSup_faces_of_nonempty {ι : Type*} (x : ι → AbstractSimplicialComplex V) [Nonempty ι] : (⨆ i, x i).faces = ⋃ i, (x i).faces := by
   unfold iSup
   rw [sSup_faces_of_nonempty]
   · simp
@@ -368,6 +368,9 @@ instance instCompleteDistribLatticeToAbstractSimplicialComplex : CompleteDistrib
     simp [hf]
 }
 
+/-- WARNING : Not sure about correctness -/
+theorem isPure_closure_singelton (f : Finset V) : IsPure (closure {f}) := by sorry
+
 lemma bot_eq_ofEmpty' : (⊥ : AbstractSimplicialComplex V) = closurePower ∅ := by
   symm
   rw [eq_bot_iff, le_def, show (closurePower ∅).faces = {∅} by simp[closurePower], Set.singleton_subset_iff]
@@ -375,30 +378,57 @@ lemma bot_eq_ofEmpty' : (⊥ : AbstractSimplicialComplex V) = closurePower ∅ :
 
 lemma bot_eq_ofEmpty : (⊥ : AbstractSimplicialComplex V) = closure ∅ := by
   symm
-  rw[closure_eq_closurePower]
+  rw [closure_eq_closurePower]
   rw [eq_bot_iff, le_def, show (closurePower ∅).faces = {∅} by simp[closurePower], Set.singleton_subset_iff]
   apply (⊥ : AbstractSimplicialComplex V).empty_mem
 
 @[simp]
 lemma bot_faces_eq_empty : (⊥ : AbstractSimplicialComplex V).faces = {∅} := by
   rw [bot_eq_ofEmpty']
-  simp[closurePower]
+  simp only [closurePower, nonempty_subtype, Set.mem_empty_iff_false, exists_const, ↓reduceIte]
+
+@[simp]
+theorem bot_Facets : (⊥ : AbstractSimplicialComplex V).Facets = {∅} := by
+  ext x; constructor <;> intro hx
+  · rw [← bot_faces_eq_empty, mem_faces]
+    exact hx.1
+  · rw [Set.mem_singleton_iff.mp hx]
+    refine ⟨(⊥ : AbstractSimplicialComplex V).empty_mem, ?_⟩
+    intro t ht _
+    rw [← mem_faces, bot_faces_eq_empty, Set.mem_singleton_iff] at ht
+    exact ht.symm
+
+@[simp]
+theorem isPure_bot : IsPure (⊥ : AbstractSimplicialComplex V) := by
+  intro s hs t ht
+  rw [bot_Facets, Set.mem_singleton_iff] at *
+  rw [hs, ht]
 
 @[simp]
 theorem iSup_faces_of_isEmpty {ι : Type*} [IsEmpty ι] (x : ι → AbstractSimplicialComplex V) : (⨆ i, x i).faces = {∅} := by
-  simp [iSup_of_empty]
+  simp only [iSup_of_empty, bot_faces_eq_empty]
 
-theorem iSup_Facets_le {ι : Type*} {p : ι → AbstractSimplicialComplex V} : (⨆ i : ι, p i).Facets ≤ ⋃ i : ι, (p i).Facets := by
+theorem iSup_Facets_le_of_nonempty {ι : Type*} [Nonempty ι] {p : ι → AbstractSimplicialComplex V} : (⨆ i : ι, p i).Facets ≤ ⋃ i : ι, (p i).Facets := by
   intro a ha
   rw [Set.mem_iUnion]
   rcases ha with ⟨ha_mem, ha_max⟩
-  by_cases hi : Nonempty ι
-  · sorry
-  · sorry
+  rw [← mem_faces, iSup_faces_of_nonempty, Set.mem_iUnion] at ha_mem
+  rcases ha_mem with ⟨i, hi⟩
+  use i
+  constructor
+  · exact mem_faces.mpr hi
+  · intro t ht
+    apply ha_max
+    rw [← mem_faces, iSup_faces_of_nonempty]
+    apply Set.mem_iUnion_of_mem i ht
 
 theorem isPure_iSup {ι : Type*} {p : ι → AbstractSimplicialComplex V} (hp : ∀i : ι, IsPure (p i)) : IsPure (⨆ i : ι, p i) := by
-  intro s hs t ht
-  sorry
+  by_cases hemp : Nonempty ι
+  · intro s hs t ht
+    sorry
+  · rw [not_nonempty_iff] at hemp
+    rw [iSup_of_empty]
+    sorry
 
 
 
