@@ -49,6 +49,7 @@ lemma one_iff {a b : B}: M a b = 1 ↔ a = b := by
 local notation "F" => FreeGroup B
 
 lemma lift.of {A : Type _} [Group A] {f : B → A} (h : IsLiftable M f) (w : B) : CoxeterSystem.lift cs h (s w) = f w := by
+
   sorry
 
 open TestGroup
