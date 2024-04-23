@@ -257,7 +257,7 @@ lemma closure_simplex (f : Finset V) : closure {f} =  simplex f := by
 def closurePower (s : Set (Finset V)) : AbstractSimplicialComplex V where
   faces :=
     if Nonempty s then
-      ⋃ f : s, {t | t.toSet ⊆ f}
+      ⋃ f : s, {t | t ⊆ f}
     else
       {∅}
   empty_mem := by
@@ -297,12 +297,12 @@ lemma closure_eq_iSup (s : Set (Finset V)) : closure s = ⨆ f : s,  closure {f.
 theorem closure_eq_closurePower (s: Set (Finset V)) : closure s = closurePower s := by
   ext t
   constructor <;> intro ts
-  · rw [closure] at ts
-    simp at ts
+  · simp only [sInf_def, Set.coe_setOf, Set.mem_setOf_eq, Set.mem_iInter, mem_faces,
+    Subtype.forall] at ts
     unfold closurePower
     apply ts
     by_cases h : Nonempty s <;> simp [h]
-    · rw[Set.subset_def]
+    · rw [Set.subset_def]
       intro x xs
       simp only [Set.mem_iUnion, Set.mem_setOf_eq, exists_prop]
       use x
@@ -311,12 +311,12 @@ theorem closure_eq_closurePower (s: Set (Finset V)) : closure s = closurePower s
       intro g hg
       rw [h] at hg
       contradiction
-  · rw[closurePower] at ts
+  · rw [closurePower] at ts
     by_cases h : Nonempty s <;> simp [h]
     · simp [closurePower,h] at ts
       intro K sK
       obtain ⟨f,fs⟩ := ts
-      rw[Set.subset_def] at sK
+      rw [Set.subset_def] at sK
       obtain ⟨fs, tf⟩ := fs
       apply sK at fs
       exact mem_faces.1 <| K.lower' tf <| fs
@@ -325,6 +325,15 @@ theorem closure_eq_closurePower (s: Set (Finset V)) : closure s = closurePower s
       apply mem_faces.1
       rw [ts]
       exact K.empty_mem
+
+lemma closure_faces (s : Set (Finset V)) : (closure s).faces = if Nonempty s then ⋃ f : s, {t : Finset V | t ⊆ f} else {∅} := by
+  rw [closure_eq_closurePower]; rfl
+
+lemma closure_singleton_faces (f : Finset V) : (closure {f}).faces = {t : Finset V | t ⊆ f} := by
+  letI : Nonempty ({f} : Set (Finset V)) := by sorry
+  rw [closure_faces]
+  simp only [nonempty_subtype, Set.mem_singleton_iff, exists_eq, ↓reduceIte, Set.iUnion_coe_set,
+    Set.iUnion_iUnion_eq_left]
 
 instance instNonemptyToAbstractSimplicialComplexContainingSet (s : Set (Finset V)) : Nonempty {x : AbstractSimplicialComplex V // s ⊆ x.faces} := ⟨closure s, subset_closure_faces _⟩
 
@@ -347,6 +356,9 @@ lemma closure_le {F : AbstractSimplicialComplex V} (h: s ⊆ F.faces) : closure 
   simp only [sInf_def, Set.mem_setOf_eq, Set.mem_iInter, mem_faces, Set.coe_setOf, Subtype.forall] at h2
   exact h2 F h
 
+@[deprecated]
+theorem isPure_inf_of_Pure {F G : AbstractSimplicialComplex V} (hF : IsPure F) (hG : IsPure G) : IsPure (F ⊓ G) := by sorry
+
 instance instCompleteDistribLatticeToAbstractSimplicialComplex : CompleteDistribLattice (AbstractSimplicialComplex V) := {
   instCompleteLatticeToAbstractSimplicialComplex with
   inf_sSup_le_iSup_inf := by
@@ -368,8 +380,28 @@ instance instCompleteDistribLatticeToAbstractSimplicialComplex : CompleteDistrib
     simp [hf]
 }
 
-/-- WARNING : Not sure about correctness -/
-theorem isPure_closure_singelton (f : Finset V) : IsPure (closure {f}) := by sorry
+@[simp]
+theorem closure_singleton_Facets (f : Finset V) : (closure {f}).Facets = {f} := by
+  -- rw [closure_eq_closurePower]
+  ext g; constructor <;> intro hg
+  · rcases hg with ⟨hg_mem, hg_max⟩
+    rw [Set.mem_singleton_iff]
+    contrapose! hg_max
+    use f
+    constructor
+    · apply mem_faces.mp
+      apply Set.mem_of_subset_of_mem <| subset_closure_faces {f}
+      rfl
+    · refine ⟨?_, hg_max⟩
+      rw [← mem_faces, closure_faces] at hg_mem
+      sorry
+  · sorry
+
+
+theorem isPure_closure_singelton (f : Finset V) : IsPure (closure {f}) := by
+  intro s hs t ht
+  rw [closure_singleton_Facets, Set.mem_singleton_iff] at *
+  rw [hs, ht]
 
 lemma bot_eq_ofEmpty' : (⊥ : AbstractSimplicialComplex V) = closurePower ∅ := by
   symm
@@ -422,6 +454,7 @@ theorem iSup_Facets_le_of_nonempty {ι : Type*} [Nonempty ι] {p : ι → Abstra
     rw [← mem_faces, iSup_faces_of_nonempty]
     apply Set.mem_iUnion_of_mem i ht
 
+@[deprecated]
 theorem isPure_iSup {ι : Type*} {p : ι → AbstractSimplicialComplex V} (hp : ∀i : ι, IsPure (p i)) : IsPure (⨆ i : ι, p i) := by
   by_cases hemp : Nonempty ι
   · intro s hs t ht
