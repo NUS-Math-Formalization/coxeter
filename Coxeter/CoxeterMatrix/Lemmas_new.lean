@@ -193,13 +193,48 @@ lemma length_smul_eq_length_muls_of_length_neq :
     exact h₂.symm
 
 lemma length_lt_of_length_smuls_lt (h : ℓ ((s i) * w * (s j)) < ℓ w) :
-  ℓ ((s i) * w * (s j)) < ℓ ((s i) * w) := by sorry
+  ℓ ((s i) * w * (s j)) < ℓ ((s i) * w) := by
+  have : ℓ ((s i) * w * (s j)) + 2 = ℓ w := by
+    have : ℓ ((s i) * w * (s j)) = ℓ w + 2 ∨ ℓ ((s i) * w * (s j)) + 2 = ℓ w := by
+      exact (length_smul_muls cs).resolve_left (by linarith)
+    exact this.resolve_left (by omega)
+  rcases (length_simple_mul cs w i) with h₁ | h₂
+  . omega
+  . omega
 
 lemma length_lt_of_length_smuls_lt' (h : ℓ ((s i) * w * (s j)) < ℓ w) :
-  ℓ ((s i) * w) < ℓ w := by sorry
+  ℓ ((s i) * w) < ℓ w := by
+  have : ℓ ((s i) * w * (s j)) + 2 = ℓ w := by
+    have : ℓ ((s i) * w * (s j)) = ℓ w + 2 ∨ ℓ ((s i) * w * (s j)) + 2 = ℓ w := by
+      exact (length_smul_muls cs).resolve_left (by linarith)
+    exact this.resolve_left (by omega)
+  have : ℓ ((s i) * w) + 1 = ℓ w := by
+    by_contra h'
+    have : ℓ ((s i) * w) = ℓ w + 1 := (Or.resolve_right (length_simple_mul cs w i)) h'
+    rcases (length_mul_simple cs ((s i) * w) j) with h₁ | h₂
+    . omega
+    . omega
+  . omega
 
 lemma length_gt_of_length_smuls_gt (h : ℓ w < ℓ ((s i) * w * (s j))) :
-  ℓ w < ℓ ((s i) * w) := by sorry
+  ℓ w < ℓ ((s i) * w) := by
+  have : ℓ ((s i) * w * (s j)) = ℓ w + 2 := by
+    have : ℓ ((s i) * w * (s j)) = ℓ w + 2 ∨ ℓ ((s i) * w * (s j)) + 2 = ℓ w := by
+      apply (length_smul_muls cs).resolve_left (by linarith)
+    exact this.resolve_right (by omega)
+  have : ℓ ((s i) * w) = ℓ w + 1 := by
+    by_contra h'
+    have : ℓ ((s i) * w) + 1 = ℓ w := (Or.resolve_left (length_simple_mul cs w i)) h'
+    rcases (length_mul_simple cs ((s i) * w) j) with h₁ | h₂
+    . omega
+    . omega
+  omega
+
 
 lemma length_gt_of_length_smuls_gt' (h : ℓ w < ℓ ((s i) * w * (s j))) :
-  ℓ w < ℓ ((s i) * w * (s j)) := by sorry
+  ℓ w < ℓ ((s i) * w * (s j)) := by
+  have : ℓ ((s i) * w * (s j)) = ℓ w + 2 := by
+    have : ℓ ((s i) * w * (s j)) = ℓ w + 2 ∨ ℓ ((s i) * w * (s j)) + 2 = ℓ w := by
+      apply (length_smul_muls cs).resolve_left (by linarith)
+    exact this.resolve_right (by omega)
+  omega
