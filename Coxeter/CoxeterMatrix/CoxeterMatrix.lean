@@ -58,18 +58,15 @@ by mapping each simple reflection to the generator of `μ₂`.
 -/
 
 -- @[simp]
-def epsilon : W →* μ₂ := lift (fun _ => μ₂.gen) (by intro u v; ext; simp)
+def epsilon : W →* μ₂ := CoxeterSystem.lift cs (f := (fun _ => μ₂.gen)) (by intro u v; ext; simp)
 
-lemma epsilon_of (s : α) : epsilon m (of m s) = μ₂.gen := by
-  simp only [epsilon, lift.of m]
-
-lemma epsilon_S {a : S} : epsilon m a = μ₂.gen := by
-  simp only [epsilon, lift.of m]
-  aesop
+lemma epsilon_of (u : B) : epsilon cs (s u) = μ₂.gen := by
+  simp only [epsilon, lift.of cs]
 
 @[simp]
-lemma of_relation (s t: α) : ((of m s) * (of m t))^(m s t) = 1 := by
-  set M := toRelationSet m
+lemma of_relation (u v : B) : ((s u) * (s v)) ^ (M u v) = 1 := by
+  sorry
+  /-set M := toRelationSet m
   set k := ((FreeGroup.of s) * (FreeGroup.of t))^(m s t)
   have kM : (k ∈ M) := by exact Exists.intro (s, t) rfl
   have MN : (M ⊆ N) := by exact Subgroup.subset_normalClosure
@@ -79,22 +76,13 @@ lemma of_relation (s t: α) : ((of m s) * (of m t))^(m s t) = 1 := by
     = (QuotientGroup.mk' N) ((FreeGroup.of (s) * FreeGroup.of (t)) ^ (m s t))) := by rfl
   rw [this]
   apply (QuotientGroup.eq_one_iff k).2
-  exact kN
+  exact kN-/
 
-lemma of_square_eq_one {s : α} : (of m s) * (of m s) = 1 := by
-  have : m s s = 1 := diagonal_one m
+lemma of_square_eq_one {u : B} : (s u) * (s u) = 1 := by
+  sorry
+  /- have : m s s = 1 := diagonal_one m
   rw [← pow_one ((of m s) * (of m s)), ←this]
-  apply of_relation m s s
-
-@[simp]
-lemma of_square_eq_one' : s ∈ SimpleRefl m → s * s = 1 := by
-  simp only [SimpleRefl, Set.mem_range, forall_exists_index]
-  intro x h
-  simp_all only [← h, of_square_eq_one]
-
-@[gprod_simps]
-lemma of_square_eq_one'' (s : SimpleRefl m) : (s : G) * s = 1 :=
-  of_square_eq_one' m s.2
+  apply of_relation m s s -/
 
 @[gprod_simps]
 lemma of_square_eq_one_right (s : SimpleRefl m) (g : G) : g * (s : G) * s = g := by
