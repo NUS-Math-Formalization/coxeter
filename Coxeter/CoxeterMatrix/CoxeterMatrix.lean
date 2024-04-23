@@ -86,10 +86,10 @@ lemma of_square_eq_one {u : B} : (s u) * (s u) = 1 := by
 
 -- @[gprod_simps]
 lemma of_square_eq_one_right (u : B) (g : W) : g * (s u) * (s u) = g := by
-  rw [mul_assoc, of_square_eq_one'' m s, mul_one]
+  sorry /- rw [mul_assoc, of_square_eq_one'' m s, mul_one] -/
 
-lemma of_inv_eq_of {x : α} : (of m x)⁻¹ = of m x :=
-  inv_eq_of_mul_eq_one_left (@of_square_eq_one α m hm x)
+lemma of_inv_eq_of {x : B} : (s x)⁻¹ = s x :=
+  sorry /- inv_eq_of_mul_eq_one_left (@of_square_eq_one α m hm x) -/
 
 @[gprod_simps]
 lemma of_inv_eq_of' (s : SimpleRefl m) : (s : G)⁻¹ = s :=
