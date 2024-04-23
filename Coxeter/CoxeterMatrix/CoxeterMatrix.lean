@@ -29,24 +29,12 @@ local prefix:max "ris" => CoxeterSystem.rightInvSeq
 
 variable {B W : Type*} [Group W] {M : CoxterMatrix B} (cs: CoxterSystem M W)
 
-namespace CoxterSystem
-
-end CoxterSystem
-
-
 
 namespace CoxeterMatrix
-variable {α} (m : Matrix α α ℕ) [hm : CoxeterMatrix m]
-/-
-For the rest of this section, we fix a Coxeter matrix m index by type α with entries in ℕ
--/
 
-/--
-This part introduce three lemmas rewriting the definitions.
--/
-lemma one_iff : ∀ (a b : α), m a b = 1 ↔ a = b := hm.oneIff
+lemma one_iff : ∀ (a b : B), M a b = 1 ↔ a = b := sorry -- hm.oneIff
 
-lemma diagonal_one {s : α} : m s s = 1 := by rw [hm.oneIff]
+lemma diagonal_one {a : B} : M a a = 1 := sorry --by rw [hm.oneIff]
 
 lemma off_diagonal_ne_one {s : α} : s ≠ t → m s t ≠ 1 := by simp [hm.oneIff]
 /- We denote by F the free group of type α.
