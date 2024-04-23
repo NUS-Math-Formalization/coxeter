@@ -32,13 +32,19 @@ variable {B W : Type*} [Group W] {M : CoxeterMatrix B} (cs: CoxeterSystem M W)
 
 namespace CoxeterMatrix
 
-lemma one_iff : ∀ (a b : B), M a b = 1 ↔ a = b := sorry -- hm.oneIff
 
-lemma diagonal_one {a : B} : M a a = 1 := sorry --by rw [hm.oneIff]
 
-lemma off_diagonal_ne_one {a b : B} : a ≠ b → M a b ≠ 1 := sorry --by simp [hm.oneIff]
-/- We denote by F the free group of type α.
--/
+lemma diagonal_one {a : B} : M a a = 1 := diagonal M a
+
+lemma off_diagonal_ne_one {a b : B} : a ≠ b → M a b ≠ 1 := off_diagonal M a b
+
+lemma one_iff {a b : B}: M a b = 1 ↔ a = b := by
+  constructor
+  · convert (off_diagonal M a b).mt <;>
+    tauto
+  · intro h
+    simp only [h, diagonal]
+
 local notation "F" => FreeGroup B
 
 /--
