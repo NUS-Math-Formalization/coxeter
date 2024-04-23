@@ -4,6 +4,8 @@ import Mathlib.Tactic.Ring
 import Mathlib.GroupTheory.Coxeter.Matrix
 import Mathlib.GroupTheory.Coxeter.Length
 
+import Coxeter.OrderTwoGen
+
 variable {B W : Type*} [Group W] {M : CoxeterMatrix B} (cs: CoxeterSystem M W)
 
 open CoxeterMatrix List
@@ -12,6 +14,10 @@ local prefix:max "s" => cs.simple
 local prefix:max "ℓ" => cs.length
 local prefix:max "π" => cs.wordProd
 
+section
+
+-- The content here should be placed in another file, but for now, let's store them here temporarily.
+
 namespace CoxeterSystem
 
 protected def refl : Set W := {x : W | ∃ (w : W) (i : B), x = w * (s i) * w⁻¹}
@@ -19,6 +25,8 @@ protected def refl : Set W := {x : W | ∃ (w : W) (i : B), x = w * (s i) * w⁻
 end CoxeterSystem
 
 local notation:max "T" => cs.refl
+
+end
 
 namespace List
 
@@ -40,16 +48,15 @@ notation:210 "t(" L:211 "," i:212 ")" => toPalindrome_i L i
 
 variable {L : List B}
 
-lemma toPalindrome_in_Refl (hL : L ≠ []) : (π L.toPalindrome) ∈ T := by sorry
-  /- apply OrderTwoGen.Refl.simplify.mpr
-  use L.reverse.tail.reverse.gprod, (L.getLast hL)
+lemma toPalindrome_in_Refl (hL : L ≠ []) : (π L.toPalindrome) ∈ T := by
+  use π L.reverse.tail.reverse, (L.getLast hL)
   rw [← OrderTwoGen.gprod_reverse, List.reverse_reverse]
   have : L.reverse.tail.reverse.gprod * (L.getLast hL) = L.gprod := by
     have : L = L.reverse.tail.reverse ++ [L.getLast hL] :=
       (List.reverse_tail_reverse_append hL).symm
     nth_rw 3 [this]
     exact gprod_append_singleton.symm
-  rw [this, toPalindrome, gprod_append] -/
+  rw [this, toPalindrome, gprod_append]
 
 lemma toPalindrome_i_in_Refl (i : Fin L.length) : (π (toPalindrome_i L i)) ∈ T := by sorry
   /- rw [toPalindrome_i]
@@ -62,8 +69,8 @@ lemma toPalindrome_i_in_Refl (i : Fin L.length) : (π (toPalindrome_i L i)) ∈ 
   exact toPalindrome_in_Refl h -/
 
 lemma mul_Palindrome_i_cancel_i (i : Fin L.length) :
-  (π (toPalindrome_i L i)) * (π L) = π (L.removeNth i) := by sorry
-  /- rw [Palindrome.toPalindrome_i, toPalindrome, List.removeNth_eq_take_drop, List.take_get_lt _ _ i.2]
+  (π (toPalindrome_i L i)) * (π L) = π (L.removeNth i) := by
+  rw [toPalindrome_i, toPalindrome, List.removeNth_eq_take_drop, List.take_get_lt _ _ i.2]
   simp only [gprod_append, gprod_singleton, List.reverse_append, List.reverse_singleton,
     List.singleton_append, List.tail]
   have : L = (L.take i).gprod * (L.drop i).gprod := by
@@ -74,7 +81,7 @@ lemma mul_Palindrome_i_cancel_i (i : Fin L.length) :
   apply (mul_right_inj (L.take i).gprod).2
   rw [← List.get_drop_eq_drop _ _ i.2, gprod_cons, ← mul_assoc]
   dsimp only [Fin.is_lt, Fin.eta, gt_iff_lt, List.getElem_eq_get _ _ i.2]
-  rw [gen_square_eq_one', one_mul] -/
+  rw [gen_square_eq_one', one_mul]
 
 lemma distinct_toPalindrome_i_of_reduced (hr : cs.IsReduced L) (i j : Fin L.length) (hne : i ≠ j) : π (toPalindrome_i L i) ≠ π (toPalindrome_i L j) := by sorry
   /- intro rl
