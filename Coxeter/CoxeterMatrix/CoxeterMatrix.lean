@@ -1,6 +1,6 @@
 import Coxeter.OrderTwoGen
 import Coxeter.CoxeterMatrix.TestGroup
-
+import Mathlib.GroupTheory.Coxeter.Matrix
 /-!
 # Coxeter Matrices
 
