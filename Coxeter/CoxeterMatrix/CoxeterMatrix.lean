@@ -22,9 +22,9 @@ open BigOperators
 
 section
 
-variable {B W : Type*} [Group W] {M : CoxterMatrix B} (cs: CoxterSystem M W)
+variable {B W : Type*} [Group W] {M : CoxeterMatrix B} (cs: CoxeterSystem M W)
 
-namespace CoxterSystem
+namespace CoxeterSystem
 
 local prefix:max "s" => CoxeterSystem.simple
 local prefix:max "ℓ" => CoxeterSystem.length
