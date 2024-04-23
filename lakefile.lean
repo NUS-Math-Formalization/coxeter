@@ -6,7 +6,7 @@ package Coxeter {
 }
 
 require mathlib from git
-  "https://github.com/leanprover-community/mathlib4.git"
+  "https://github.com/leanprover-community/mathlib4.git" @ "trivial1711-coxeter-groups-all"
 
 
 meta if get_config? env = some "dev" then -- dev is so not everyone has to build it
