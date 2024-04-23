@@ -116,33 +116,27 @@ lemma toGroup_expression : ∀ (x : W), ∃ L : List B, x = π L := by
 /--
 Lemma: Let `s ∈ S` be a generator of `G`, then `s` is non-trivial.
 -/
-lemma generator_ne_one (s : α) : of m s ≠ 1 := by
-  intro h
+lemma generator_ne_one (u : B) : s u ≠ 1 := by
+  sorry
+  /- intro h
   have h1 : epsilon m (of m s) = 1 := by rw [h]; simp
   have h2 : epsilon m (of m s) = μ₂.gen := by rw [epsilon_of]
-  rw [h2] at h1; exact μ₂.gen_ne_one h1
-
-/--
-Lemma: Let `s ∈ S` be a generator of `G`, then `s` is non-trivial.
--/
-lemma generator_ne_one' {x : G} : x ∈ S → x ≠ 1 := by
-  rintro ⟨s, hs⟩
-  rw [← hs]
-  exact generator_ne_one m s
+  rw [h2] at h1; exact μ₂.gen_ne_one h1 -/
 
 /--
 Lemma: Let `s ∈ S` be a generator of `G`, then `s^2 = 1` and `s ≠ 1`.
 -/
-lemma order_two : ∀ (x : G), x ∈ S → x * x = (1 : G) ∧ x ≠ 1 := by
-  rintro x ⟨s, hs⟩
+lemma order_two : ∀ (x : B), (s x) * (s x) = (1 : W) ∧ (s x) ≠ 1 := by
+  sorry
+  /- rintro x ⟨s, hs⟩
   rw [← hs]
-  exact ⟨of_square_eq_one m, generator_ne_one m s⟩
+  exact ⟨of_square_eq_one m, generator_ne_one m s⟩ -/
 
-/--
+/- /--
 Instance: The group `G` with the generating set `S` is a group generators by order 2 elements.
 -/
 instance ofOrderTwoGen : OrderTwoGen (SimpleRefl m) where
   order_two := order_two m
-  expression := toGroup_expression m
+  expression := toGroup_expression m -/
 
 end CoxeterMatrix
