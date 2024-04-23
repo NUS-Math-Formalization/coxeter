@@ -19,54 +19,33 @@ This result relies on the file `TextGroup.lean` for the construction of `μ₂`.
 -/
 
 open BigOperators
+open Classical
 
 section
-
-variable {B W : Type*} [Group W] {M : CoxterMatrix B} (cs: CoxterSystem M W)
-
-namespace CoxterSystem
 
 local prefix:max "s" => CoxeterSystem.simple
 local prefix:max "ℓ" => CoxeterSystem.length
 local prefix:max "ris" => CoxeterSystem.rightInvSeq
 
-
-/--
-Definition of Coxeter matrices:
-A square matrix `m` with non-negative integer entries is a Coxeter matrix if it is symmetric, that is, $m_{a,b} = m_{b,a}$ for any (a,b);
-the entry $m_{a,b}$ is $1$ if and only if $a=b$.
--/
-class CoxeterMatrix : Prop where
-  symmetric : ∀ (a b : α), m a b = m b a
-  oneIff : ∀ (a b : α), m a b = 1 ↔ a = b
-end
-
-open Classical
+variable {B W : Type*} [Group W] {M : CoxeterMatrix B} (cs: CoxeterSystem M W)
 
 
 namespace CoxeterMatrix
-variable {α} (m : Matrix α α ℕ) [hm : CoxeterMatrix m]
-/-
-For the rest of this section, we fix a Coxeter matrix m index by type α with entries in ℕ
--/
 
-/--
-This part introduce three lemmas rewriting the definitions.
--/
-lemma one_iff : ∀ (a b : α), m a b = 1 ↔ a = b := hm.oneIff
+lemma one_iff : ∀ (a b : B), M a b = 1 ↔ a = b := sorry -- hm.oneIff
 
-lemma diagonal_one {s : α} : m s s = 1 := by rw [hm.oneIff]
+lemma diagonal_one {a : B} : M a a = 1 := sorry --by rw [hm.oneIff]
 
-lemma off_diagonal_ne_one {s : α} : s ≠ t → m s t ≠ 1 := by simp [hm.oneIff]
+lemma off_diagonal_ne_one {a b : B} : a ≠ b → M a b ≠ 1 := sorry --by simp [hm.oneIff]
 /- We denote by F the free group of type α.
 -/
-local notation "F" => FreeGroup α
+local notation "F" => FreeGroup B
 
 /--
 For any `s` and `t` of type `α`, and a natural number `n`, we define a element `(s t) ^ n`
 (relation) in the free group `F`.
 -/
-@[simp] def toRelation (s t : α) (n : ℕ) : F := (FreeGroup.of s * FreeGroup.of t) ^ n
+@[simp] def toRelation (a b : B) (n : ℕ) : F := (FreeGroup.of s * FreeGroup.of t) ^ n
 
 /--
 For any `s` of type `α × α`, we define a relation in the free group `F` by $(s_1 s_2)^(m_{s_1, s_2})$
