@@ -69,8 +69,8 @@ lemma toPalindrome_i_in_Refl (i : Fin L.length) : (π (toPalindrome_i L i)) ∈ 
   exact toPalindrome_in_Refl h -/
 
 lemma mul_Palindrome_i_cancel_i (i : Fin L.length) :
-  (π (toPalindrome_i L i)) * (π L) = π (L.removeNth i) := by sorry
-  /- rw [Palindrome.toPalindrome_i, toPalindrome, List.removeNth_eq_take_drop, List.take_get_lt _ _ i.2]
+  (π (toPalindrome_i L i)) * (π L) = π (L.removeNth i) := by
+  rw [toPalindrome_i, toPalindrome, List.removeNth_eq_take_drop, List.take_get_lt _ _ i.2]
   simp only [gprod_append, gprod_singleton, List.reverse_append, List.reverse_singleton,
     List.singleton_append, List.tail]
   have : L = (L.take i).gprod * (L.drop i).gprod := by
@@ -81,7 +81,7 @@ lemma mul_Palindrome_i_cancel_i (i : Fin L.length) :
   apply (mul_right_inj (L.take i).gprod).2
   rw [← List.get_drop_eq_drop _ _ i.2, gprod_cons, ← mul_assoc]
   dsimp only [Fin.is_lt, Fin.eta, gt_iff_lt, List.getElem_eq_get _ _ i.2]
-  rw [gen_square_eq_one', one_mul] -/
+  rw [gen_square_eq_one', one_mul]
 
 lemma distinct_toPalindrome_i_of_reduced (hr : cs.IsReduced L) (i j : Fin L.length) (hne : i ≠ j) : π (toPalindrome_i L i) ≠ π (toPalindrome_i L j) := by sorry
   /- intro rl
