@@ -23,12 +23,11 @@ open Classical
 
 section
 
-local prefix:max "s" => CoxeterSystem.simple
-local prefix:max "ℓ" => CoxeterSystem.length
-local prefix:max "ris" => CoxeterSystem.rightInvSeq
-
 variable {B W : Type*} [Group W] {M : CoxeterMatrix B} (cs: CoxeterSystem M W)
 
+local prefix:max "s" => cs.simple
+local prefix:max "ℓ" => cs.length
+local prefix:max "ris" => cs.rightInvSeq
 
 namespace CoxeterMatrix
 
@@ -37,46 +36,12 @@ lemma one_iff : ∀ (a b : B), M a b = 1 ↔ a = b := sorry -- hm.oneIff
 lemma diagonal_one {a : B} : M a a = 1 := sorry --by rw [hm.oneIff]
 
 lemma off_diagonal_ne_one {a b : B} : a ≠ b → M a b ≠ 1 := sorry --by simp [hm.oneIff]
-/- We denote by F the free group of type α.
--/
-local notation "F" => FreeGroup B
-
-/--
-For any `s` and `t` of type `α`, and a natural number `n`, we define a element `(s t) ^ n`
-(relation) in the free group `F`.
--/
-@[simp] def toRelation (a b : B) (n : ℕ) : F := (FreeGroup.of s * FreeGroup.of t) ^ n
-
-/--
-For any `s` of type `α × α`, we define a relation in the free group `F` by $(s_1 s_2)^(m_{s_1, s_2})$
--/
-@[simp] def toRelation' (s : α × α) : F := toRelation s.1 s.2 (m s.1 s.2)
-
-/--
-We define a set of relations in F by R = {(s_as_b)^{m_{a,b}} | a b ∈ α}.
---/
-def toRelationSet : (Set F) := Set.range <| toRelation' m
-
-/--
-We define a group `G` by the presentation `⟨α | R⟩`
--/
-def toGroup := PresentedGroup <| toRelationSet m
-
-local notation "N" => Subgroup.normalClosure (toRelationSet m)
-local notation "G" => toGroup m
-
-/--
-The group `G` we just defined is indeed a group.
--/
-instance : Group <| toGroup m := QuotientGroup.Quotient.group _
-
-def of (x : α) : G := QuotientGroup.mk' N (FreeGroup.of x)
 
 /-- The set of simple reflections -/
 @[simp]
-abbrev SimpleRefl := Set.range (of m)
+abbrev SimpleRefl := Set.range cs.simple
 
-local notation "S" => (SimpleRefl m)
+local notation "S" => (SimpleRefl B)
 
 @[simp]
 def toSimpleRefl (a : α) : SimpleRefl m := ⟨of m a, by simp⟩
