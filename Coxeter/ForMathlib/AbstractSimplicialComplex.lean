@@ -131,19 +131,6 @@ lemma sSup_eq_unionSubset {s : Set <| AbstractSimplicialComplex V} (hs : s.Nonem
   · rw [le_sSup_iff]
     exact fun _ hb ↦ Set.iUnion_subset fun i ↦ hb i.2
 
-def ofEmpty : AbstractSimplicialComplex V where
-  faces := {∅}
-  empty_mem := rfl
-  lower' := Finset.isLowerSet_singleton_empty V
-
-lemma bot_eq_ofEmpty : (⊥ : AbstractSimplicialComplex V) = ofEmpty := by
-  symm
-  rw [eq_bot_iff, le_def, show ofEmpty.faces = {∅} by rfl, Set.singleton_subset_iff]
-  apply (⊥ : AbstractSimplicialComplex V).empty_mem
-
-@[simp]
-lemma bot_faces_eq_empty : (⊥ : AbstractSimplicialComplex V).faces = {∅} := by
-  rw [bot_eq_ofEmpty]; rfl
 
 @[simp]
 lemma sSup_faces_of_nonempty {s : Set (AbstractSimplicialComplex V)} (h : s.Nonempty) : (sSup s).faces = ⋃ F : s, F.1.faces := by
@@ -273,19 +260,6 @@ lemma closure_simplex (f : Finset V) : closure {f} =  simplex f := by
       apply mem_faces.1 <| i.lower' h1 <| mem_faces.2 fi
   exact instSetLikeAbstractSimplicialComplexFinset.proof_1 (closure {f}) (simplex ↑f) h1
 
-def closureSingleton (f : Finset V) : AbstractSimplicialComplex V where
-  faces :=
-    if Nonempty f then
-      {t | t.toSet ⊆ f}
-    else
-      {∅}
-  empty_mem := by
-    by_cases h : Nonempty f <;> simp [h]
-  lower' := by
-    by_cases h : Nonempty f <;> simp [h]
-    · exact antitone_le
-    · exact Finset.isLowerSet_singleton_empty V
-
 /-- Explicit construction of `closure s` for `s : Set (Finset V)`-/
 def closurePower (s : Set (Finset V)) : AbstractSimplicialComplex V where
   faces :=
@@ -327,7 +301,6 @@ Remark: So taking closure commuts with taking union.
 lemma closure_eq_iSup (s : Set (Finset V)) : closure s = ⨆ f : s,  closure {f.1} := by
   rw [← closure_iUnion_eq_iSup_closure,
     Set.iUnion_singleton_eq_range, Subtype.range_coe_subtype, Set.setOf_mem_eq]
-
 
 theorem closure_eq_closurePower (s: Set (Finset V)) : closure s = closurePower s := by
   ext t
@@ -404,5 +377,21 @@ instance instCompleteDistribLatticeToAbstractSimplicialComplex : CompleteDistrib
     simp [is] at hf
     simp [hf]
 }
+
+lemma bot_eq_ofEmpty' : (⊥ : AbstractSimplicialComplex V) = closurePower ∅ := by
+  symm
+  rw [eq_bot_iff, le_def, show (closurePower ∅).faces = {∅} by simp[closurePower], Set.singleton_subset_iff]
+  apply (⊥ : AbstractSimplicialComplex V).empty_mem
+
+lemma bot_eq_ofEmpty : (⊥ : AbstractSimplicialComplex V) = closure ∅ := by
+  symm
+  rw[closure_eq_closurePower]
+  rw [eq_bot_iff, le_def, show (closurePower ∅).faces = {∅} by simp[closurePower], Set.singleton_subset_iff]
+  apply (⊥ : AbstractSimplicialComplex V).empty_mem
+
+@[simp]
+lemma bot_faces_eq_empty : (⊥ : AbstractSimplicialComplex V).faces = {∅} := by
+  rw [bot_eq_ofEmpty']
+  simp[closurePower]
 
 end AbstractSimplicialComplex
