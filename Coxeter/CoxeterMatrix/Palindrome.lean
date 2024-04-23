@@ -1,18 +1,29 @@
 import Mathlib.Data.List.Basic
 import Mathlib.Tactic.Zify
 import Mathlib.Tactic.Ring
+import Mathlib.GroupTheory.Coxeter.Matrix
+import Mathlib.GroupTheory.Coxeter.Basic
 
-import Coxeter.CoxeterMatrix.CoxeterMatrix
 import Coxeter.OrderTwoGen
+
+variable {B W : Type*} [Group W] {M : CoxterMatrix B} (cs: CoxterSystem M W)
+
+set_option quotPrecheck false
+local notation "G" => cs.Group M
+local prefix:max "s" => cs.simple
+local prefix:max "ℓ" => cs.length
+local prefix:max "ris" => cs.rightInvSeq
 
 namespace Palindrome
 variable {β : Type*}
+
 -- For a list L := [b₀, b₁, b₂, ..., bₙ], we define the Palindrome of L as [b₀, b₁, b₂, ..., bₙ, bₙ₋₁, ..., b₁, b₀]
+
 open CoxeterMatrix
 open OrderTwoGen
-variable {α} {m : Matrix α α ℕ} [hm : CoxeterMatrix m]
-local notation "G" => toGroup m
-local notation "S" => SimpleRefl m
+
+def refl : Set G := {x : G | ∃ (w : G) (i : B), x = w * (s i) * w⁻¹}
+
 local notation "T" => OrderTwoGen.Refl (SimpleRefl m)
 
 @[simp]
