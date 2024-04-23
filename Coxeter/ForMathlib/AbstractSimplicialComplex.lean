@@ -150,6 +150,19 @@ Definition: For any ASC F, we denote by vertices F the set of vertices of F.
 -/
 def vertices (F : AbstractSimplicialComplex V) : Set V := ⋃ s : F.faces, s.1.toSet
 
+lemma vertices_iff_singleton_set_face (F : AbstractSimplicialComplex V) (x : V) :
+    {x} ∈ F.faces ↔ x ∈ vertices F := by
+  constructor
+  · intro hx
+    simp only [vertices, Set.iUnion_coe_set, mem_faces,
+      Set.mem_iUnion, Finset.mem_coe, exists_prop]
+    exact ⟨{x}, And.intro hx (Finset.mem_singleton.mpr rfl)⟩
+  · rintro ⟨sx, ⟨⟨a, ha⟩, hxsx⟩⟩
+    rw [← ha] at hxsx
+    refine @lower' V F a.1 _ ?_ a.2
+    simp only [Finset.le_eq_subset, Finset.singleton_subset_iff]
+    exact hxsx
+
 /--
 Definition: Let F be an ASC. A maximal face of F is called a facet of F.
 -/
