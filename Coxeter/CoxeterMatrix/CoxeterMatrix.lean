@@ -36,16 +36,16 @@ lemma one_iff : ∀ (a b : B), M a b = 1 ↔ a = b := sorry -- hm.oneIff
 
 lemma diagonal_one {a : B} : M a a = 1 := sorry --by rw [hm.oneIff]
 
-lemma off_diagonal_ne_one {s : α} : s ≠ t → m s t ≠ 1 := by simp [hm.oneIff]
+lemma off_diagonal_ne_one {a b : B} : a ≠ b → M a b ≠ 1 := sorry --by simp [hm.oneIff]
 /- We denote by F the free group of type α.
 -/
-local notation "F" => FreeGroup α
+local notation "F" => FreeGroup B
 
 /--
 For any `s` and `t` of type `α`, and a natural number `n`, we define a element `(s t) ^ n`
 (relation) in the free group `F`.
 -/
-@[simp] def toRelation (s t : α) (n : ℕ) : F := (FreeGroup.of s * FreeGroup.of t) ^ n
+@[simp] def toRelation (a b : B) (n : ℕ) : F := (FreeGroup.of s * FreeGroup.of t) ^ n
 
 /--
 For any `s` of type `α × α`, we define a relation in the free group `F` by $(s_1 s_2)^(m_{s_1, s_2})$
