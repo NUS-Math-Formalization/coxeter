@@ -19,29 +19,27 @@ This result relies on the file `TextGroup.lean` for the construction of `μ₂`.
 -/
 
 open BigOperators
+open Classical
 
 section
 
+<<<<<<< HEAD
 variable {B W : Type*} [Group W] {M : CoxeterMatrix B} (cs: CoxeterSystem M W)
 
 namespace CoxeterSystem
 
+=======
+>>>>>>> d85860abbe99ae5fa81d0a3831bc6e6a1e9d6b8e
 local prefix:max "s" => CoxeterSystem.simple
 local prefix:max "ℓ" => CoxeterSystem.length
 local prefix:max "ris" => CoxeterSystem.rightInvSeq
 
+variable {B W : Type*} [Group W] {M : CoxterMatrix B} (cs: CoxterSystem M W)
 
-/--
-Definition of Coxeter matrices:
-A square matrix `m` with non-negative integer entries is a Coxeter matrix if it is symmetric, that is, $m_{a,b} = m_{b,a}$ for any (a,b);
-the entry $m_{a,b}$ is $1$ if and only if $a=b$.
--/
-class CoxeterMatrix : Prop where
-  symmetric : ∀ (a b : α), m a b = m b a
-  oneIff : ∀ (a b : α), m a b = 1 ↔ a = b
-end
+namespace CoxterSystem
 
-open Classical
+end CoxterSystem
+
 
 
 namespace CoxeterMatrix
