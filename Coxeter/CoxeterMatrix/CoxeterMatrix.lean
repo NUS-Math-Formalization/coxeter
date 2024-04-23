@@ -23,13 +23,6 @@ open Classical
 
 section
 
-<<<<<<< HEAD
-variable {B W : Type*} [Group W] {M : CoxeterMatrix B} (cs: CoxeterSystem M W)
-
-namespace CoxeterSystem
-
-=======
->>>>>>> d85860abbe99ae5fa81d0a3831bc6e6a1e9d6b8e
 local prefix:max "s" => CoxeterSystem.simple
 local prefix:max "ℓ" => CoxeterSystem.length
 local prefix:max "ris" => CoxeterSystem.rightInvSeq
