@@ -38,57 +38,17 @@ lemma diagonal_one {a : B} : M a a = 1 := sorry --by rw [hm.oneIff]
 
 lemma off_diagonal_ne_one {a b : B} : a ≠ b → M a b ≠ 1 := sorry --by simp [hm.oneIff]
 
-/-- The set of simple reflections -/
-@[simp]
-abbrev SimpleRefl := Set.range cs.simple
-
-local notation "S" => (SimpleRefl cs)
-
-@[simp]
-def toSimpleRefl (a : B) : S := ⟨s a, by simp⟩
-
-lemma toSimpleRefl_surj (u : S) : ∃ (y : B), toSimpleRefl cs y = u := by
-  simp only [toSimpleRefl]
-  have : u = ⟨u.1, u.2⟩ := by rfl
-  rw [this]
-  simp only [Subtype.mk.injEq]
-  exact Set.mem_range.mp (Subtype.mem u)
-
-lemma toSimpleRefl_surj_list (L : List S) : ∃ (K : List α), K.map (toSimpleRefl m) = L := by
-  induction L with
-  | nil => simp only [SimpleRefl, List.map_eq_nil, exists_eq]
-  | cons hd tail ih =>
-    rcases ih with ⟨l, el⟩
-    rcases (toSimpleRefl_surj m hd) with ⟨y, ey⟩
-    use y :: l
-    rw [List.map_cons]
-    congr
-
-instance coe_group: Coe α (toGroup m) where
-  coe := of m
-
-instance coe_simple_refl: Coe α (SimpleRefl m) where
-  coe := toSimpleRefl m
-
-lemma liftHom_aux {A:Type*} [Group A] (f : α → A) (h : ∀ (s t : α), (f s * f t) ^ (m s t) = 1) : ∀ r ∈ toRelationSet m, (FreeGroup.lift f) r = 1 := by
-  intro r hr
-  obtain ⟨⟨s, t⟩, hst⟩ := hr
-  simp only [toRelation', toRelation] at hst
-  simp only [← hst, map_pow, map_mul, FreeGroup.lift.of, h]
-
-/-- Lift map from α → A to Coxeter group → A -/
-def lift {A : Type _} [Group A] (f : α → A) (h : ∀ (s t : α), (f s * f t) ^ (m s t) = 1) : G →* A := PresentedGroup.toGroup <| liftHom_aux m f h
-
-lemma lift.of {A : Type _} [Group A] (f : α → A) (h : ∀ (s t : α), (f s * f t) ^ (m s t) = 1) (s : α) : lift m f h (of m s) = f s := by
-  apply PresentedGroup.toGroup.of
+lemma lift.of {A : Type _} [Group A] {f : B → A} (h : IsLiftable M f) (w : B) : CoxeterSystem.lift cs h (s w) = f w := by
+  sorry
 
 open TestGroup
 
-/-- We define (and prove) a group homomorphism from `G` to `μ₂`
+/- We define (and prove) a group homomorphism from `W` to `μ₂`
 by mapping each simple reflection to the generator of `μ₂`.
 -/
-@[simp]
-def epsilon : G →* μ₂ := lift m (fun _=> μ₂.gen) (by intro s t; ext; simp)
+
+-- @[simp]
+def epsilon : W →* μ₂ := lift (fun _ => μ₂.gen) (by intro u v; ext; simp)
 
 lemma epsilon_of (s : α) : epsilon m (of m s) = μ₂.gen := by
   simp only [epsilon, lift.of m]
