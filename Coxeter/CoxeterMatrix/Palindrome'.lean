@@ -6,25 +6,26 @@ import Mathlib.GroupTheory.Coxeter.Length
 
 variable {B W : Type*} [Group W] {M : CoxeterMatrix B} (cs: CoxeterSystem M W)
 
-open CoxeterMatrix
+open CoxeterMatrix List
 
-local notation3 "s " => cs.simple
-local notation3 "ℓ " => cs.length
+local prefix:max "s" => cs.simple
+local prefix:max "ℓ" => cs.length
+local prefix:max "π" => cs.wordProd
 
-namespace CoxterSystem
+namespace CoxeterSystem
 
 protected def refl : Set W := {x : W | ∃ (w : W) (i : B), x = w * (s i) * w⁻¹}
 
-end CoxterSystem
+end CoxeterSystem
 
-local prefix:max "T" => cs.Refl
+local notation:max "T" => cs.refl
 
-namespace Palindrome
+namespace List
 
 def toPalindrome (L : List B) : List B := L ++ L.reverse.tail
 
 /-- Note that 0-1 = 0 -/
-lemma toPalindrome_length {L : List β} : (toPalindrome L).length = 2 * L.length - 1 := by
+lemma toPalindrome_length {L : List B} : (toPalindrome L).length = 2 * L.length - 1 := by
   simp only [toPalindrome, List.length_append, List.length_reverse, List.length_tail]
   by_cases h : L.length = 0
   . simp [h]
@@ -34,10 +35,13 @@ lemma toPalindrome_length {L : List β} : (toPalindrome L).length = 2 * L.length
 
 /-- Our index starts from 0 -/
 def toPalindrome_i (L : List S) (i : ℕ) := toPalindrome (L.take (i+1))
+
 notation:210 "t(" L:211 "," i:212 ")" => toPalindrome_i L i
 
-lemma toPalindrome_in_Refl [CoxeterMatrix m] {L:List S} (hL : L ≠ []) : (toPalindrome L:G) ∈ T := by
-  apply OrderTwoGen.Refl.simplify.mpr
+variable {L : List B}
+
+lemma toPalindrome_in_Refl (hL : L ≠ []) : (π L.toPalindrome) ∈ T := by sorry
+  /- apply OrderTwoGen.Refl.simplify.mpr
   use L.reverse.tail.reverse.gprod, (L.getLast hL)
   rw [← OrderTwoGen.gprod_reverse, List.reverse_reverse]
   have : L.reverse.tail.reverse.gprod * (L.getLast hL) = L.gprod := by
@@ -45,22 +49,21 @@ lemma toPalindrome_in_Refl [CoxeterMatrix m] {L:List S} (hL : L ≠ []) : (toPal
       (List.reverse_tail_reverse_append hL).symm
     nth_rw 3 [this]
     exact gprod_append_singleton.symm
-  rw [this, toPalindrome, gprod_append]
+  rw [this, toPalindrome, gprod_append] -/
 
-lemma toPalindrome_i_in_Refl [CoxeterMatrix m] {L : List S} (i : Fin L.length) :
-    (toPalindrome_i L i : G) ∈ T := by
-  rw [toPalindrome_i]
+lemma toPalindrome_i_in_Refl (i : Fin L.length) : (π (toPalindrome_i L i)) ∈ T := by sorry
+  /- rw [toPalindrome_i]
   have tklen : (L.take (i+1)).length = i + 1 :=
     List.take_le_length L (by linarith [i.prop] : i + 1 ≤ L.length)
   have tkpos : (L.take (i+1)).length ≠ 0 := by linarith
   have h : List.take (i + 1) L ≠ [] := by
     contrapose! tkpos
     exact List.length_eq_zero.mpr tkpos
-  exact toPalindrome_in_Refl h
+  exact toPalindrome_in_Refl h -/
 
-lemma mul_Palindrome_i_cancel_i [CoxeterMatrix m] {L : List S} (i : Fin L.length) :
-  (t(L, i) : G) * L = (L.removeNth i) := by
-  rw [Palindrome.toPalindrome_i, toPalindrome, List.removeNth_eq_take_drop, List.take_get_lt _ _ i.2]
+lemma mul_Palindrome_i_cancel_i (i : Fin L.length) :
+  (π (toPalindrome_i L i)) * (π L) = π (L.removeNth i) := by sorry
+  /- rw [Palindrome.toPalindrome_i, toPalindrome, List.removeNth_eq_take_drop, List.take_get_lt _ _ i.2]
   simp only [gprod_append, gprod_singleton, List.reverse_append, List.reverse_singleton,
     List.singleton_append, List.tail]
   have : L = (L.take i).gprod * (L.drop i).gprod := by
@@ -71,14 +74,10 @@ lemma mul_Palindrome_i_cancel_i [CoxeterMatrix m] {L : List S} (i : Fin L.length
   apply (mul_right_inj (L.take i).gprod).2
   rw [← List.get_drop_eq_drop _ _ i.2, gprod_cons, ← mul_assoc]
   dsimp only [Fin.is_lt, Fin.eta, gt_iff_lt, List.getElem_eq_get _ _ i.2]
-  rw [gen_square_eq_one', one_mul]
+  rw [gen_square_eq_one', one_mul] -/
 
-lemma removeNth_of_palindrome_prod (L : List S) (n : Fin L.length) :
-  (toPalindrome_i L n:G) * L = (L.removeNth n) := mul_Palindrome_i_cancel_i n
-
-lemma distinct_toPalindrome_i_of_reduced [CoxeterMatrix m] {L : List S} : reduced_word L →
-    (∀ (i j : Fin L.length), (hij : i ≠ j) → (toPalindrome_i L i).gprod ≠ (toPalindrome_i L j)) := by
-  intro rl
+lemma distinct_toPalindrome_i_of_reduced (hr : cs.IsReduced L) (i j : Fin L.length) (hne : i ≠ j) : π (toPalindrome_i L i) ≠ π (toPalindrome_i L j) := by sorry
+  /- intro rl
   by_contra! eqp
   rcases eqp with ⟨i, j, ⟨inej, eqp⟩⟩
   wlog iltj : i < j generalizing i j
@@ -113,6 +112,6 @@ lemma distinct_toPalindrome_i_of_reduced [CoxeterMatrix m] {L : List S} : reduce
       rl ((L.removeNth j).removeNth i) hL
     have lenremNip : ((L.removeNth j).removeNth i).length + 1 = (L.removeNth j).length :=
       List.removeNth_length (L.removeNth j) ⟨i.val, hi⟩
-    linarith [hlen, lenremNip, lenremNjp]
+    linarith [hlen, lenremNip, lenremNjp] -/
 
-end Palindrome
+end List
