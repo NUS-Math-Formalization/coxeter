@@ -402,7 +402,7 @@ noncomputable def metric {G : Type*} [Group G] (S : Set G) [@OrderTwoGen G _ S] 
     simp only [Nat.cast_eq_zero, length_zero_iff_one] at h
     rw [← one_mul y, ← h, mul_assoc, mul_left_inv, mul_one]
   edist_dist := fun x y ↦ by
-    simp only [Nonneg.mk_nat_cast, ENNReal.ofReal_natCast]
+    simp only [Nonneg.mk_natCast, ENNReal.ofReal_natCast]
     exact rfl
 
 

@@ -432,13 +432,13 @@ lemma pi_aux_list (L : List α) (r : R) : (L.map pi_aux').prod r =
       rw [replace_prod, prod_insert_last_fin, mul_comm]
       congr
       . rw [List.get_last]
-        simp only [List.length_map, List.length_reverse, Fin.val_nat_cast, Nat.mod_succ,
+        simp only [List.length_map, List.length_reverse, Fin.val_natCast, Nat.mod_succ,
           lt_self_iff_false, not_false_eq_true]
       . rw [← gprod_reverse]
-        simp only [Fin.val_nat_cast, Nat.mod_succ, th, n, t]
+        simp only [Fin.val_natCast, Nat.mod_succ, th, n, t]
         rw [List.take_append_of_le_length (by rfl), List.take_length,
           List.map_reverse, List.reverse_reverse]
-      . simp only [Fin.val_nat_cast, Nat.mod_succ]
+      . simp only [Fin.val_natCast, Nat.mod_succ]
         rw [List.take_left]
       . funext i
         simp only [List.get_map, Fin.coe_eq_castSucc, Fin.coe_castSucc]
