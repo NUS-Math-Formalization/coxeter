@@ -156,11 +156,18 @@ lemma sup_faces (F G : AbstractSimplicialComplex V) : (F ⊔ G).faces = F.faces 
 
 @[simp]
 theorem iInf_faces {ι : Type*} (x : ι → AbstractSimplicialComplex V) : (⨅ i, x i).faces = ⨅ i, (x i).faces := by --might be wrong
-  sorry
+  unfold iInf
+  simp only [sInf_def, Set.iInter_coe_set, Set.mem_range, Set.iInter_exists, Set.iInter_iInter_eq',
+    Set.sInf_eq_sInter, Set.sInter_range]
 
 @[simp]
-theorem iSup_faces {ι : Type*} (x : ι → AbstractSimplicialComplex V) : (⨆ i, x i).faces = ⨆ i, (x i).faces := by
-  sorry
+theorem iSup_faces_of_nonempty {ι : Type*} (x : ι → AbstractSimplicialComplex V) [Nonempty ι] : (⨆ i, x i).faces = ⨆ i, (x i).faces := by
+  unfold iSup
+  rw [sSup_faces_of_nonempty]
+  · simp
+  · by_contra h
+    apply Set.not_nonempty_iff_eq_empty.1 at h
+    simp at h
 
 /--
 Definition: For any ASC F, we denote by vertices F the set of vertices of F.
