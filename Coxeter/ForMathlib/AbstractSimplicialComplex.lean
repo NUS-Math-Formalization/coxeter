@@ -325,8 +325,7 @@ x ∈ G.vertices - F.vertices
 s ∈ F ⇔ s ∪ {x} ∈ G.
 -/
 def Cone (F G: AbstractSimplicialComplex V) (x : V) :=
-  x ∈ G.vertices \ F.vertices ∧
-  ∀ s, s ∈ F.faces ↔ s ∪ {x} ∈ G.faces
+  ¬(x ∈ F.vertices) ∧ ∀ s, s ∈ F.faces ↔ s ∈ G.faces ∧ s ∪ {x} ∈ G.faces
 
 def isCone (G: AbstractSimplicialComplex V) := ∃ F x, Cone F G x
 
