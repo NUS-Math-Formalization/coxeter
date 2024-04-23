@@ -3,6 +3,7 @@ import Mathlib.Tactic.Zify
 import Mathlib.Tactic.Ring
 import Mathlib.GroupTheory.Coxeter.Matrix
 import Mathlib.GroupTheory.Coxeter.Length
+import Coxeter.Aux_
 
 variable {B W : Type*} [Group W] {M : CoxeterMatrix B} (cs: CoxeterSystem M W)
 
@@ -66,7 +67,7 @@ lemma mul_Palindrome_i_cancel_i (i : Fin L.length) :
   rw [toPalindrome_i, toPalindrome, List.removeNth_eq_take_drop, List.take_get_lt _ _ i.2]
   simp only [gprod_append, gprod_singleton, List.reverse_append, List.reverse_singleton,
     List.singleton_append, List.tail]
-  have : L = (L.take i).gprod * (L.drop i).gprod := by
+  have : π L = π (L.take i) * π (L.drop i) := by
     nth_rw 1 [← List.take_append_drop i L]
     rw [gprod_append]
   rw [this, mul_assoc, ← mul_assoc ((List.reverse (List.take i L)).gprod),
