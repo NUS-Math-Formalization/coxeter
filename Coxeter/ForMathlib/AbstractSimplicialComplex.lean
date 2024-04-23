@@ -155,16 +155,18 @@ lemma sup_faces (F G : AbstractSimplicialComplex V) : (F ⊔ G).faces = F.faces 
   rw [show F ⊔ G = sSup s by simp [s], show F.faces ∪ G.faces = ⋃ i : s, i.1.faces by simp [s], sSup_faces_of_nonempty (by simp [s])]
 
 @[simp]
-theorem iInf_faces {ι : Type*} (x : ι → AbstractSimplicialComplex V) : (⨅ i, x i).faces = ⨅ i, (x i).faces := by --might be wrong
+theorem iInf_faces {ι : Type*} (x : ι → AbstractSimplicialComplex V) : (⨅ i, x i).faces = ⨅ i, (x i).faces := by
   sorry
 
 @[simp]
 theorem iSup_faces {ι : Type*} (x : ι → AbstractSimplicialComplex V) : (⨆ i, x i).faces = ⨆ i, (x i).faces := by
   sorry
 
-/--
-Definition: For any ASC F, we denote by vertices F the set of vertices of F.
--/
+@[simp]
+theorem iSup_faces_of_isEmpty {ι : Type*} [IsEmpty ι] (x : ι → AbstractSimplicialComplex V) : (⨆ i, x i).faces = {∅} := by
+  sorry
+
+/-- Definition: For any ASC `F`, we denote by `vertices F` the set of vertices of F. -/
 def vertices (F : AbstractSimplicialComplex V) : Set V := ⋃ s : F.faces, s.1.toSet
 
 /--
@@ -207,7 +209,7 @@ lemma isPure_iff_isPure' {F : AbstractSimplicialComplex V} : F.IsPure ↔ ∃ d,
       use d
     · intro
       simp only [nonempty_subtype, not_exists] at hemp
-      intro s hs t _
+      intro s hs
       exfalso
       exact hemp s hs
 
@@ -215,7 +217,16 @@ lemma pure_def {F : AbstractSimplicialComplex V} [Pure F] : ∀ s ∈ F.Facets, 
 
 lemma pure_isPure {F : AbstractSimplicialComplex V} [Pure F] : IsPure F := pure_def
 
+theorem iSup_Facets_le {ι : Type*} {p : ι → AbstractSimplicialComplex V} : (⨆ i : ι, p i).Facets ≤ ⋃ i : ι, (p i).Facets := by
+  intro a ha
+  rw [Set.mem_iUnion]
+  rcases ha with ⟨ha_mem, ha_max⟩
+  by_cases hi : Nonempty ι
+  · sorry
+  · sorry
+
 theorem isPure_iSup {ι : Type*} {p : ι → AbstractSimplicialComplex V} (hp : ∀i : ι, IsPure (p i)) : IsPure (⨆ i : ι, p i) := by
+  intro s hs t ht
   sorry
 
 /--
@@ -239,7 +250,9 @@ lemma subset_closure_faces (s : Set (Finset V)) : s ⊆ (closure s).faces := by
     imp_self, forall_const]
 
 lemma closure_faces_eq_self (F : AbstractSimplicialComplex V) : closure F.faces = F := by
-  sorry
+  apply le_antisymm
+  · apply sInf_le; simp; rfl
+  · simp
 
 lemma closure_mono {s t: Set (Finset V)} : s ⊆ t → closure s ≤ closure t := by
   intro hst
@@ -247,18 +260,14 @@ lemma closure_mono {s t: Set (Finset V)} : s ⊆ t → closure s ≤ closure t :
   rw [Set.setOf_subset_setOf]
   intro _ h; exact Set.Subset.trans hst h
 
-/--
-Lemma: For a `f : Finset V`, the closure of `{f}` is the simplex of `f`.
--/
+/-- Lemma: For a `f : Finset V`, the closure of `{f}` is the simplex of `f`.-/
 lemma closure_simplex (f : Finset V) : closure {f} =  simplex f := by
   have h1 : (closure {f}).faces = (simplex f).faces:= by
-    apply Set.Subset.antisymm
-    · rw [sInf_def]
-      rintro s h1
+    apply Set.Subset.antisymm <;> rw [sInf_def]
+    · rintro s h1
       simp only [Set.singleton_subset_iff, mem_faces, Set.mem_setOf_eq, Set.mem_iInter, Set.coe_setOf, Subtype.forall] at h1
       exact h1 (simplex ↑f) fun ⦃_⦄ a => a
-    · rw [sInf_def]
-      rintro s h1
+    · rintro s h1
       apply simplex_face.1 at h1
       simp only [Finset.coe_subset] at h1
       simp only [Set.singleton_subset_iff, mem_faces, Set.mem_setOf_eq, Set.mem_iInter, Set.coe_setOf, Subtype.forall]
@@ -292,8 +301,7 @@ def closurePower (s : Set (Finset V)) : AbstractSimplicialComplex V where
   lower' := by
     by_cases h : Nonempty s <;> simp [h]
     · refine isLowerSet_iUnion₂ ?_
-      intro t _
-      intro a b h1 h2
+      intro t _ a b h1 h2
       refine' Set.Subset.trans ?_ h2
       congr
     · exact Finset.isLowerSet_singleton_empty V
@@ -324,9 +332,8 @@ lemma closure_eq_iSup (s : Set (Finset V)) : closure s = ⨆ f : s,  closure {f.
 
 theorem closure_eq_closurePower (s: Set (Finset V)) : closure s = closurePower s := by
   ext t
-  constructor
-  · intro ts
-    rw[closure] at ts
+  constructor <;> intro ts
+  · rw [closure] at ts
     simp at ts
     unfold closurePower
     apply ts
@@ -340,8 +347,7 @@ theorem closure_eq_closurePower (s: Set (Finset V)) : closure s = closurePower s
       intro g hg
       rw [h] at hg
       contradiction
-  · intro ts
-    rw[closurePower] at ts
+  · rw[closurePower] at ts
     by_cases h : Nonempty s <;> simp [h]
     · simp [closurePower,h] at ts
       intro K sK
