@@ -51,17 +51,68 @@ def Star (F : AbstractSimplicialComplex V) (s : F.faces) : Set F.faces :=
 lemma LinkFace_subset_Star (F : AbstractSimplicialComplex V) (s : F.faces) :
   LinkFace F s ⊆ Star F s := fun _ h ↦ h.2
 
+lemma delete_vertex (F : AbstractSimplicialComplex V) (x : vertices F) :
+    vertices F \ {x.1} = (vertices (DeletionSimplex F x.1)) := by
+  ext t
+  simp [DeletionSimplex, Deletion]
+  constructor
+  · intro h
+    simp [Set.image]
+    use {t}
+    simp only [id_eq, Set.coe_setOf, Set.mem_setOf_eq, Set.mem_range, Finset.coe_eq_singleton,
+      Subtype.exists, exists_prop, exists_eq_right, Finset.mem_singleton, Set.mem_singleton_iff,
+      and_true]
+    refine And.intro ?_ ((vertices_iff_singleton_set_face F t).mpr h.1)
+    by_contra a
+    rw [a] at h
+    exact h.2 rfl
+  · rintro ⟨s, ⟨⟨a, ha⟩, hts⟩⟩
+    refine And.intro ⟨s, And.intro ?_ hts⟩ ?_
+    · simp only [Set.image, Set.range, Set.mem_setOf_eq]
+      have := a.2
+      simp only [id_eq, Set.mem_image, Set.mem_setOf_eq, Subtype.exists, mem_faces, exists_and_left,
+        exists_prop, exists_eq_right_right] at this
+      refine ⟨⟨a.1, this.2⟩, ?_⟩
+      rw [← ha]
+    · by_contra tx
+      rw [tx, ← ha] at hts
+      --apply a.2.2.1
+      sorry
+      /-have : x.1 ∈ a.1 := by
+        sorry
+      sorry
+      --simp [ha]-/
+
+lemma terminating_size [Fintype V] (F : AbstractSimplicialComplex V) (x : vertices F) :
+    (vertices (DeletionSimplex F x.1)).ncard < (vertices F).ncard := by
+  sorry
+
+-- Consider replacing Fintype V -> Fintype (vertices F)
+def VertexDecomposableInductive (r n : ℕ) [Fintype V] (F : AbstractSimplicialComplex V)
+    (h1 : r = F.rank) (h2 : n = (vertices F).ncard) : Prop :=
+  match r, n with
+  | 0, _ => True
+  --| _, 0 => True
+  | r' + 1, _ => (Pure F) ∧ (∃ (f : Finset V), F = simplex f) ∨
+      (∃ (x : vertices F), (by
+    let nd := (vertices (DeletionSimplex F x.1)).ncard
+    let nl := (vertices (LinkSimplex F x)).ncard
+    by_cases h : ((DeletionSimplex F x.1).rank = r' + 1) ∧ (LinkSimplex F x).rank = r'
+    · have := terminating_size F x
+      refine VertexDecomposableInductive (r' + 1) nd (DeletionSimplex F x) h.1.symm rfl ∧
+        VertexDecomposableInductive r' nl (LinkSimplex F x) h.2.symm rfl
+    · exact False
+      ))
+
+lemma fin_vertex_iff_fin_faces (F : AbstractSimplicialComplex V) : Finite F.faces ↔ Finite (vertices F) := by
+  sorry
+
+def VertexDecomposable [Fintype V] (F : AbstractSimplicialComplex V) : Prop :=
+  VertexDecomposableInductive F.rank (vertices F).ncard F rfl rfl
+
 -- see if we can remove Fintype V
 -- something is off, need to check empty set
-def VertexDecomposable [Fintype V] (F : AbstractSimplicialComplex V) : Prop :=
-  (Pure F) ∧ ((∃ (f : Finset V), F = simplex f) ∨
-  (∃ (x : vertices F), (DeletionSimplex F x.1).rank = F.rank ∧ VertexDecomposable (DeletionSimplex F x) ∧
-  (LinkSimplex F x).rank + 1 = F.rank ∧ VertexDecomposable (LinkSimplex F x)))
-termination_by (F.rank, (vertices F).ncard)
-decreasing_by
-  all_goals simp_wf
-  sorry
-  sorry
+
 
 
 -- Page 83: define VertexDecomposable, SheddingVertex
