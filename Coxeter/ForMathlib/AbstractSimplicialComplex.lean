@@ -339,9 +339,6 @@ lemma closure_singleton_faces (f : Finset V) : (closure {f}).faces = {t : Finset
   simp only [nonempty_subtype, Set.mem_singleton_iff, exists_eq, ↓reduceIte, Set.iUnion_coe_set,
     Set.iUnion_iUnion_eq_left]
 
--- lemma closure_singleton_faces' (f : Finset V) : (closure {f}).faces = Finset.powerset f := by
---   rw [closure_singleton_faces]
-
 instance instNonemptyToAbstractSimplicialComplexContainingSet (s : Set (Finset V)) : Nonempty {x : AbstractSimplicialComplex V // s ⊆ x.faces} := ⟨closure s, subset_closure_faces _⟩
 
 /--
@@ -476,16 +473,6 @@ theorem iSup_Facets_le_of_nonempty {ι : Type*} [Nonempty ι] {p : ι → Abstra
     apply ha_max
     rw [← mem_faces, iSup_faces_of_nonempty]
     apply Set.mem_iUnion_of_mem i ht
-
-@[deprecated]
-theorem isPure_iSup {ι : Type*} {p : ι → AbstractSimplicialComplex V} {d : ℕ} (hp : ∀i : ι, IsPure' (p i) d) : IsPure' (⨆ i : ι, p i) d := by
-  by_cases hemp : Nonempty ι
-  · sorry
-  · rw [not_nonempty_iff] at hemp
-    rw [iSup_of_empty]
-    sorry
-
-
 
 
 end AbstractSimplicialComplex
