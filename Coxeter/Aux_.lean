@@ -761,85 +761,85 @@ abbrev inv_reverse (s : B → G) (L : List B) : List G := (map (fun i ↦ (π [i
 
 
 
--- end list_properties
+end list_properties
 
--- section Sublist
+section Sublist
 
--- namespace List
+namespace List
 
--- variable {α : Type*} [DecidableEq α]
+variable {α : Type*} [DecidableEq α]
 
--- /-
--- Return the index list of the longest sublist of l' in l with respect to the greedy algorithm
+/-
+Return the index list of the longest sublist of l' in l with respect to the greedy algorithm
 
--- example:
--- #eval indices_of [1,2,3] [4,5,1,2,0,4,1,2,3]
--- returns [2,3,8]
--- -/
--- def indices_of (l' : List α) (l : List α) : List (Fin l.length)
---   := match l', l with
---   | _, [] => []
---   | [], _ => []
---   | x::xs, y::ys =>
---     if x = y then
---       ⟨0, by simp⟩  :: List.map (Fin.succ) (indices_of xs ys)
---     else
---       List.map (Fin.succ) (indices_of l' ys)
+example:
+#eval indices_of [1,2,3] [4,5,1,2,0,4,1,2,3]
+returns [2,3,8]
+-/
+def indices_of (l' : List α) (l : List α) : List (Fin l.length)
+  := match l', l with
+  | _, [] => []
+  | [], _ => []
+  | x::xs, y::ys =>
+    if x = y then
+      ⟨0, by simp⟩  :: List.map (Fin.succ) (indices_of xs ys)
+    else
+      List.map (Fin.succ) (indices_of l' ys)
 
--- lemma indices_of_increasing (l' : List α) (l : List α) : (indices_of l' l).Pairwise (·  < ·) := by
---   induction' l with y ys ih generalizing l'
---   . simp [indices_of]
---   . match l' with
---     | [] => simp [indices_of]
---     | x::xs =>
---       rw [indices_of]
---       by_cases h : x = y
---       . rw [if_pos h,pairwise_cons]
---         constructor <;> simp [pairwise_map,ih xs]
---       . simp [if_neg h,pairwise_map, ih (x::xs)]
+lemma indices_of_increasing (l' : List α) (l : List α) : (indices_of l' l).Pairwise (·  < ·) := by
+  induction' l with y ys ih generalizing l'
+  . simp [indices_of]
+  . match l' with
+    | [] => simp [indices_of]
+    | x::xs =>
+      rw [indices_of]
+      by_cases h : x = y
+      . rw [if_pos h,pairwise_cons]
+        constructor <;> simp [pairwise_map,ih xs]
+      . simp [if_neg h,pairwise_map, ih (x::xs)]
 
--- lemma ne_cons_sublist {a b : α} (h: a≠ b) : a :: l' <+ b::l → a::l' <+ l := by
---   intro hl
---   rcases hl
---   . assumption
---   . contradiction
+lemma ne_cons_sublist {a b : α} (h: a≠ b) : a :: l' <+ b::l → a::l' <+ l := by
+  intro hl
+  rcases hl
+  . assumption
+  . contradiction
 
--- lemma sublist_eq_map_get_index_of {l' l : List α } (h : l' <+ l) : l' = map (get l) (indices_of l' l) := by
---   induction' l with y ys ih generalizing l'
---   . simp only [sublist_nil.1 h, length_nil, indices_of, map_nil]
---   . match l' with
---     | [] => simp [indices_of]
---     | x::xs =>
---       rw [indices_of]
---       by_cases hxy: x=y
---       . rw [hxy] at h
---         have h' : xs <+ ys := cons_sublist_cons.1 h
---         simp_rw [if_pos hxy,map_cons,hxy,map_map]
---         nth_rw 1 [ih h']
---         congr
---       . rw [if_neg hxy]
---         have h' : x::xs <+ ys := ne_cons_sublist hxy h
---         have ih := ih h'
---         rw [map_map,ih]
---         congr
+lemma sublist_eq_map_get_index_of {l' l : List α } (h : l' <+ l) : l' = map (get l) (indices_of l' l) := by
+  induction' l with y ys ih generalizing l'
+  . simp only [sublist_nil.1 h, length_nil, indices_of, map_nil]
+  . match l' with
+    | [] => simp [indices_of]
+    | x::xs =>
+      rw [indices_of]
+      by_cases hxy: x=y
+      . rw [hxy] at h
+        have h' : xs <+ ys := cons_sublist_cons.1 h
+        simp_rw [if_pos hxy,map_cons,hxy,map_map]
+        nth_rw 1 [ih h']
+        congr
+      . rw [if_neg hxy]
+        have h' : x::xs <+ ys := ne_cons_sublist hxy h
+        have ih := ih h'
+        rw [map_map,ih]
+        congr
 
--- def complement_indices_of' (l':List α) (l:List α) : List (Fin l.length) := List.filter (fun x => x ∉ indices_of l' l) (Fin.list l.length)
+def complement_indices_of' (l':List α) (l:List α) : List (Fin l.length) := List.filter (fun x => x ∉ indices_of l' l) (Fin.list l.length)
 
--- end List
+end List
 
 
--- end Sublist
+end Sublist
 
--- section Group
+section Group
 
--- lemma mul_assoc' {G : Type u} [inst : Semigroup G] (a b c : G) : a * (b * c) = a * b * c :=
---   (inst.mul_assoc a b c).symm
+lemma mul_assoc' {G : Type u} [inst : Semigroup G] (a b c : G) : a * (b * c) = a * b * c :=
+  (inst.mul_assoc a b c).symm
 
--- namespace Group
--- lemma eq_iff_eq_conjugate [Group G] (s g : G) : s = g ↔ s = s * g * s⁻¹ := by
---   refine Iff.intro (fun h ↦ ?_) (fun h ↦ @conj_injective _ _ s s g ?_)
---   all_goals simp [mul_inv_cancel_right, ← h]
+namespace Group
+lemma eq_iff_eq_conjugate [Group G] (s g : G) : s = g ↔ s = s * g * s⁻¹ := by
+  refine Iff.intro (fun h ↦ ?_) (fun h ↦ @conj_injective _ _ s s g ?_)
+  all_goals simp [mul_inv_cancel_right, ← h]
 
--- end Group
+end Group
 
 -- attribute [gprod_simps] mul_assoc' mul_one one_mul mul_inv_rev mul_left_inv mul_right_inv inv_inv inv_one mul_inv_cancel_right inv_mul_cancel_right
