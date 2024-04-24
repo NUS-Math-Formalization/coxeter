@@ -212,13 +212,3 @@ lemma length_gt_of_length_smuls_gt' (h : ℓ w < ℓ ((s i) * w * (s j))) :
     have := (length_smul_muls cs).resolve_left (by linarith)
     exact this.resolve_right (by omega)
   omega
-
-lemma length_lt_of_length_smuls_lt'' (h : ℓ ((s i) * w * (s j)) < ℓ w) :
-  ℓ ((s i) * w * (s j)) < ℓ ((s i) * w) := by
-  rw [length_smul_eq_length_muls_of_length_neq cs (LT.lt.ne h)]
-  have : (s i) * ((s i) * w * (s j)) * (s j) = w := by
-    rw [← mul_assoc]; simp only [simple_mul_simple_cancel_left, simple_mul_simple_cancel_right]
-  nth_rw 2 [← this] at h
-  have : w * (s j) = (s i) * ((s i) * w * (s j)) := by
-    rw [← mul_assoc]; simp only [simple_mul_simple_cancel_left]
-  rw [this]; apply length_gt_of_length_smuls_gt cs h
