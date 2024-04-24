@@ -38,18 +38,18 @@ lemma gen_square_eq_one' (i : B) : s i * s i = 1:= by simp [gen_square_eq_one i]
 
 --@[simp] -- makes expression more complex
 lemma inv_eq_self : ∀ i : B, s i = (s i)⁻¹ :=
-  fun x hx ↦ mul_eq_one_iff_eq_inv.1 (h.order_two x hx).1
+  fun i ↦ mul_eq_one_iff_eq_inv.1 (h.order_two i).1
 
---@[simp] -- makes expression more complex
-lemma inv_eq_self' : ∀ (x : S), x = (x : G)⁻¹ := fun x ↦ inv_eq_self x.1 x.2
+-- --@[simp] -- makes expression more complex
+-- lemma inv_eq_self' : ∀ (x : S), x = (x : G)⁻¹ := fun x ↦ inv_eq_self x.1 x.2
 
-@[simp, gprod_simps]
-lemma inv_eq_self'' : ∀ (x : S), (x : G)⁻¹ = x := fun x ↦ Eq.symm (inv_eq_self x.1 x.2)
+-- @[simp, gprod_simps]
+-- lemma inv_eq_self'' : ∀ (x : S), (x : G)⁻¹ = x := fun x ↦ Eq.symm (inv_eq_self x.1 x.2)
 
 -- The lemma was called non_one
-lemma gen_ne_one : ∀ x ∈ S, x ≠ 1 :=
-  fun x hx ↦ (h.order_two x hx).2
+lemma gen_ne_one : ∀ i : B, s i ≠ 1 := fun i => (h.1 i).2
 
+/-
 lemma gen_ne_one' : ∀ (x : S), (x : G) ≠ 1 :=
   fun x ↦ gen_ne_one x.1 x.2
 
@@ -701,3 +701,4 @@ noncomputable def length  (g :H) := OrderTwoGen.length (hH.S) g
 notation:65 "ℓ(" g:66 ")" => (length g)
 variable (s w :G)
 end HOrderTwoGenGroup
+-/
