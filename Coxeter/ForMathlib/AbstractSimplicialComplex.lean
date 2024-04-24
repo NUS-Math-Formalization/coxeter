@@ -222,6 +222,8 @@ noncomputable def rank (F : AbstractSimplicialComplex V) : ℕ := iSup fun s : F
 as faces.
 
 Remark: Here we secretly consider the ambient space as the simplex with vertex set V.
+
+Maybe don't use `abbrev` will be better? Because sometimes we don't want `simp` to expand this construction.
 -/
 abbrev closure (s : Set (Finset V))
   : AbstractSimplicialComplex V := sInf {K | s ⊆  K.faces}
@@ -476,10 +478,9 @@ theorem iSup_Facets_le_of_nonempty {ι : Type*} [Nonempty ι] {p : ι → Abstra
     apply Set.mem_iUnion_of_mem i ht
 
 @[deprecated]
-theorem isPure_iSup {ι : Type*} {p : ι → AbstractSimplicialComplex V} (hp : ∀i : ι, IsPure (p i)) : IsPure (⨆ i : ι, p i) := by
+theorem isPure_iSup {ι : Type*} {p : ι → AbstractSimplicialComplex V} {d : ℕ} (hp : ∀i : ι, IsPure' (p i) d) : IsPure' (⨆ i : ι, p i) d := by
   by_cases hemp : Nonempty ι
-  · intro s hs t ht
-    sorry
+  · sorry
   · rw [not_nonempty_iff] at hemp
     rw [iSup_of_empty]
     sorry
