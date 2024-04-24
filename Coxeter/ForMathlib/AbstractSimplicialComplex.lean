@@ -47,6 +47,9 @@ instance : SetLike (AbstractSimplicialComplex V) (Finset V) where
 theorem mem_faces {F : AbstractSimplicialComplex V} {x : Finset V} : x ∈ F.faces ↔ x ∈ F :=
   Iff.rfl
 
+lemma eq_iff_faces (F G : AbstractSimplicialComplex V) : F = G ↔ F.faces = G.faces := by
+  constructor <;> (intro h; ext; rw [h])
+
 @[simp]
 def le (G F : AbstractSimplicialComplex V) := G.faces ⊆ F.faces
 
@@ -320,7 +323,7 @@ theorem closure_eq_closurePower (s: Set (Finset V)) : closure s = closurePower s
       obtain ⟨fs, tf⟩ := fs
       apply sK at fs
       exact mem_faces.1 <| K.lower' tf <| fs
-    · simp [closurePower,h] at ts
+    · simp [closurePower, h] at ts
       intro K _
       apply mem_faces.1
       rw [ts]
@@ -330,10 +333,12 @@ lemma closure_faces (s : Set (Finset V)) : (closure s).faces = if Nonempty s the
   rw [closure_eq_closurePower]; rfl
 
 lemma closure_singleton_faces (f : Finset V) : (closure {f}).faces = {t : Finset V | t ⊆ f} := by
-  letI : Nonempty ({f} : Set (Finset V)) := by sorry
   rw [closure_faces]
   simp only [nonempty_subtype, Set.mem_singleton_iff, exists_eq, ↓reduceIte, Set.iUnion_coe_set,
     Set.iUnion_iUnion_eq_left]
+
+-- lemma closure_singleton_faces' (f : Finset V) : (closure {f}).faces = Finset.powerset f := by
+--   rw [closure_singleton_faces]
 
 instance instNonemptyToAbstractSimplicialComplexContainingSet (s : Set (Finset V)) : Nonempty {x : AbstractSimplicialComplex V // s ⊆ x.faces} := ⟨closure s, subset_closure_faces _⟩
 
@@ -356,9 +361,6 @@ lemma closure_le {F : AbstractSimplicialComplex V} (h: s ⊆ F.faces) : closure 
   simp only [sInf_def, Set.mem_setOf_eq, Set.mem_iInter, mem_faces, Set.coe_setOf, Subtype.forall] at h2
   exact h2 F h
 
-@[deprecated]
-theorem isPure_inf_of_Pure {F G : AbstractSimplicialComplex V} (hF : IsPure F) (hG : IsPure G) : IsPure (F ⊓ G) := by sorry
-
 instance instCompleteDistribLatticeToAbstractSimplicialComplex : CompleteDistribLattice (AbstractSimplicialComplex V) := {
   instCompleteLatticeToAbstractSimplicialComplex with
   inf_sSup_le_iSup_inf := by
@@ -368,40 +370,59 @@ instance instCompleteDistribLatticeToAbstractSimplicialComplex : CompleteDistrib
       intro i is f hf
       rw [Set.mem_iUnion]
       use i
-      simp [is, hf]
-    · simp [Set.not_nonempty_iff_eq_empty.mp hs]
+      simp only [is, iSup_pos, inf_faces, hf]
+    · simp only [Set.not_nonempty_iff_eq_empty.mp hs, sSup_empty, ge_iff_le, bot_le,
+      inf_of_le_right, Set.mem_empty_iff_false, not_false_eq_true, iSup_neg, iSup_bot, le_refl]
   iInf_sup_le_sup_sInf := by
     intro a s
-    simp [Set.union_iInter]
+    simp only [le_def, iInf_faces, sup_faces, sInf_def, Set.iInter_coe_set, Set.union_iInter,
+      Set.subset_iInter_iff]
     intro i is f hf
     rw [Set.mem_iInter] at hf
     replace hf := hf i
-    simp [is] at hf
-    simp [hf]
+    simp only [is, iInf_pos, sup_faces, Set.mem_union, mem_faces] at hf
+    simp only [Set.mem_union, mem_faces, hf]
 }
 
 @[simp]
 theorem closure_singleton_Facets (f : Finset V) : (closure {f}).Facets = {f} := by
-  -- rw [closure_eq_closurePower]
   ext g; constructor <;> intro hg
   · rcases hg with ⟨hg_mem, hg_max⟩
     rw [Set.mem_singleton_iff]
     contrapose! hg_max
-    use f
-    constructor
+    use f; constructor
     · apply mem_faces.mp
       apply Set.mem_of_subset_of_mem <| subset_closure_faces {f}
       rfl
     · refine ⟨?_, hg_max⟩
       rw [← mem_faces, closure_faces] at hg_mem
-      sorry
-  · sorry
+      simpa only [nonempty_subtype, Set.mem_singleton_iff, exists_eq, ↓reduceIte,
+        Set.iUnion_coe_set, Set.iUnion_iUnion_eq_left, Set.mem_setOf_eq] using hg_mem
+  · rw [Set.mem_singleton_iff] at hg
+    subst hg; constructor
+    · apply Set.mem_of_subset_of_mem <| subset_closure_faces {g}; rfl
+    · intro t ht
+      rw [← mem_faces, closure_faces] at ht
+      simp only [nonempty_subtype, Set.mem_singleton_iff, exists_eq, ↓reduceIte, Set.iUnion_coe_set,
+        Set.iUnion_iUnion_eq_left, Set.mem_setOf_eq] at ht
+      apply fun h ↦ subset_antisymm h ht
 
 
 theorem isPure_closure_singelton (f : Finset V) : IsPure (closure {f}) := by
   intro s hs t ht
   rw [closure_singleton_Facets, Set.mem_singleton_iff] at *
   rw [hs, ht]
+
+theorem closure_singleton_inter_eq_inf {f g : Finset V} : closure {f ∩ g} = closure {f} ⊓ closure {g} := by
+  simp only [eq_iff_faces, inf_faces, closure_singleton_faces]
+  ext x; constructor <;> {
+    intro h
+    simpa only [Set.mem_inter_iff, Set.mem_setOf_eq, Finset.subset_inter_iff] using h
+  }
+
+theorem isPure_inf_closure_singleton {f g : Finset V} : IsPure (closure {f} ⊓ closure {g}) := by
+  rw [← closure_singleton_inter_eq_inf]
+  apply isPure_closure_singelton
 
 lemma bot_eq_ofEmpty' : (⊥ : AbstractSimplicialComplex V) = closurePower ∅ := by
   symm
