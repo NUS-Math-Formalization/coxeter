@@ -3,116 +3,143 @@ import Mathlib.Tactic.Zify
 import Mathlib.Tactic.Ring
 import Mathlib.GroupTheory.Coxeter.Matrix
 import Mathlib.GroupTheory.Coxeter.Length
+import Coxeter.Aux_
+
+import Coxeter.OrderTwoGen
 
 variable {B W : Type*} [Group W] {M : CoxeterMatrix B} (cs: CoxeterSystem M W)
 
-open CoxeterMatrix
+open CoxeterMatrix List CoxeterSystem
 
-local notation3 "s " => cs.simple
-local notation3 "ℓ " => cs.length
+local prefix:max "s" => cs.simple
+local prefix:max "ℓ" => cs.length
+local prefix:max "π" => cs.wordProd
 
-namespace CoxterSystem
+section
+
+-- The content here should be placed in another file, but for now, let's store them here temporarily.
+
+namespace CoxeterSystem
 
 protected def refl : Set W := {x : W | ∃ (w : W) (i : B), x = w * (s i) * w⁻¹}
 
-end CoxterSystem
+end CoxeterSystem
 
-local prefix:max "T" => cs.Refl
+end
 
-namespace Palindrome
+local notation:max "T" => cs.refl
 
+namespace List
+
+@[pp_dot]
 def toPalindrome (L : List B) : List B := L ++ L.reverse.tail
 
-/-- Note that 0-1 = 0 -/
-lemma toPalindrome_length {L : List β} : (toPalindrome L).length = 2 * L.length - 1 := by
+-- Note that 0-1 = 0.
+lemma toPalindrome_length {L : List B} : (toPalindrome L).length = 2 * L.length - 1 := by
   simp only [toPalindrome, List.length_append, List.length_reverse, List.length_tail]
   by_cases h : L.length = 0
-  . simp [h]
+  . simp only [h, ge_iff_le, zero_le, tsub_eq_zero_of_le, add_zero, mul_zero]
   . rw [← Nat.add_sub_assoc]
     zify; ring_nf
-    apply Nat.pos_of_ne_zero h
+    exact Nat.pos_of_ne_zero h
 
-/-- Our index starts from 0 -/
-def toPalindrome_i (L : List S) (i : ℕ) := toPalindrome (L.take (i+1))
-notation:210 "t(" L:211 "," i:212 ")" => toPalindrome_i L i
+lemma nil_toPalindrome : ([] : List B).toPalindrome = [] := rfl
 
-lemma toPalindrome_in_Refl [CoxeterMatrix m] {L:List S} (hL : L ≠ []) : (toPalindrome L:G) ∈ T := by
-  apply OrderTwoGen.Refl.simplify.mpr
-  use L.reverse.tail.reverse.gprod, (L.getLast hL)
-  rw [← OrderTwoGen.gprod_reverse, List.reverse_reverse]
-  have : L.reverse.tail.reverse.gprod * (L.getLast hL) = L.gprod := by
-    have : L = L.reverse.tail.reverse ++ [L.getLast hL] :=
-      (List.reverse_tail_reverse_append hL).symm
-    nth_rw 3 [this]
-    exact gprod_append_singleton.symm
-  rw [this, toPalindrome, gprod_append]
+lemma toPalindrome_eq_nil_of_eq_nil (hL : L = []) : L.toPalindrome = [] := by
+  rw [hL]
+  rfl
 
-lemma toPalindrome_i_in_Refl [CoxeterMatrix m] {L : List S} (i : Fin L.length) :
-    (toPalindrome_i L i : G) ∈ T := by
-  rw [toPalindrome_i]
-  have tklen : (L.take (i+1)).length = i + 1 :=
-    List.take_le_length L (by linarith [i.prop] : i + 1 ≤ L.length)
-  have tkpos : (L.take (i+1)).length ≠ 0 := by linarith
-  have h : List.take (i + 1) L ≠ [] := by
-    contrapose! tkpos
-    exact List.length_eq_zero.mpr tkpos
-  exact toPalindrome_in_Refl h
+-- Our index starts from 0.
+def toPalindrome_i (L : List S) (i : ℕ) := toPalindrome (L.take (i + 1))
 
-lemma mul_Palindrome_i_cancel_i [CoxeterMatrix m] {L : List S} (i : Fin L.length) :
-  (t(L, i) : G) * L = (L.removeNth i) := by
-  rw [Palindrome.toPalindrome_i, toPalindrome, List.removeNth_eq_take_drop, List.take_get_lt _ _ i.2]
-  simp only [gprod_append, gprod_singleton, List.reverse_append, List.reverse_singleton,
-    List.singleton_append, List.tail]
-  have : L = (L.take i).gprod * (L.drop i).gprod := by
-    nth_rw 1 [← List.take_append_drop i L]
-    rw [gprod_append]
-  rw [this, mul_assoc, ← mul_assoc ((List.reverse (List.take i L)).gprod),
-    OrderTwoGen.reverse_prod_prod_eq_one, one_mul, mul_assoc]
-  apply (mul_right_inj (L.take i).gprod).2
-  rw [← List.get_drop_eq_drop _ _ i.2, gprod_cons, ← mul_assoc]
-  dsimp only [Fin.is_lt, Fin.eta, gt_iff_lt, List.getElem_eq_get _ _ i.2]
-  rw [gen_square_eq_one', one_mul]
+--notation:210 "t(" L:211 "," i:212 ")" => toPalindrome_i L i
 
-lemma removeNth_of_palindrome_prod (L : List S) (n : Fin L.length) :
-  (toPalindrome_i L n:G) * L = (L.removeNth n) := mul_Palindrome_i_cancel_i n
+variable {L : List B}
 
-lemma distinct_toPalindrome_i_of_reduced [CoxeterMatrix m] {L : List S} : reduced_word L →
-    (∀ (i j : Fin L.length), (hij : i ≠ j) → (toPalindrome_i L i).gprod ≠ (toPalindrome_i L j)) := by
-  intro rl
-  by_contra! eqp
-  rcases eqp with ⟨i, j, ⟨inej, eqp⟩⟩
+@[simp]
+lemma toPalindrome_rev : L.toPalindrome.reverse = L.toPalindrome := by
+  by_cases hL : L = []
+  · rw [hL]
+    rfl
+  · unfold toPalindrome
+    simp only [reverse_append]
+    nth_rw 3 [← reverse_tail_reverse_append hL]
+    simp
+    rw [reverse_head]
+    congr
+
+@[simp]
+lemma toPalindrome_inv_eq_self : (π L.toPalindrome)⁻¹ = π L.toPalindrome := by
+  rw [← wordProd_reverse, toPalindrome_rev]
+
+@[simp]
+lemma toPalindrome_sq_eq_one : π L.toPalindrome * π L.toPalindrome = 1 := by
+  nth_rw 1 [← L.toPalindrome_inv_eq_self, inv_mul_self]
+
+@[simp]
+lemma toPalindrome_i_rev (i : ℕ) : (toPalindrome_i L i).reverse = toPalindrome_i L i :=
+  (L.take (i + 1)).toPalindrome_rev
+
+@[simp]
+lemma toPalindrome_i_inv_eq_self (i : ℕ) : (π (toPalindrome_i L i))⁻¹ = π (toPalindrome_i L i) :=
+  (L.take (i + 1)).toPalindrome_inv_eq_self cs
+
+@[simp]
+lemma toPalindrome_i_sq_eq_one (i : ℕ) : π (toPalindrome_i L i) * π (toPalindrome_i L i) = 1 :=
+  (L.take (i + 1)).toPalindrome_sq_eq_one cs
+
+lemma toPalindrome_in_refl (hL : L ≠ []) : π L.toPalindrome ∈ T := by
+  use π L.reverse.tail.reverse, (L.getLast hL)
+  rw [← wordProd_reverse, reverse_reverse, ← wordProd_concat]
+  rw [← CoxeterSystem.wordProd_append, toPalindrome, concat_eq_append]
+  congr
+  exact (reverse_tail_reverse_append hL).symm
+
+lemma toPalindrome_i_eq_take_mul_take_inv {i : ℕ} (hi : i < L.length) : π (toPalindrome_i L i) = π (L.take (i + 1)) * (π (L.take i))⁻¹ := by
+  rw [← wordProd_reverse, ← CoxeterSystem.wordProd_append, toPalindrome_i, toPalindrome]
+  have h : L.take i = (L.take (i + 1)).reverse.tail.reverse := by
+    rw [← (L.take (i + 1)).dropLast_eq_reverse_tail_reverse]
+    by_cases hi : i + 1 < L.length
+    · rw [dropLast_take hi, Nat.pred_succ]
+    · have hi : i + 1 = L.length := by linarith
+      rw [hi, take_length, dropLast_eq_take, ← hi, Nat.pred_succ]
+  rw [h, reverse_reverse]
+
+lemma toPalindrome_i_eq_take_mul_take_inv' {i : ℕ} (hi : i < L.length) : π (toPalindrome_i L i) = π (L.take i) * (π (L.take (i + 1)))⁻¹ := by
+  rw [← toPalindrome_i_rev, wordProd_reverse, toPalindrome_i_eq_take_mul_take_inv cs hi]
+  simp only [mul_inv_rev, mul_assoc, inv_inv]
+
+lemma toPalindrome_i_in_refl (hL : L ≠ []) {i : ℕ} : π (toPalindrome_i L i) ∈ T :=
+  toPalindrome_in_refl cs <| (L.take_eq_nil_iff).not.mpr <| by
+    simp only [hL, add_eq_zero, one_ne_zero, and_false, or_self, not_false_eq_true]
+
+lemma toPalindrome_i_mul_eq_removeNth {i : ℕ} (hi : i < L.length) : (π (toPalindrome_i L i)) * (π L) = π (L.removeNth i) := by
+  have h : π L = π (L.take (i + 1)) * π (L.drop (i + 1)) := by
+    rw [← CoxeterSystem.wordProd_append, take_append_drop (i + 1) L]
+  rw [h, removeNth_eq_take_drop, CoxeterSystem.wordProd_append, ← mul_assoc]
+  rw [L.toPalindrome_i_eq_take_mul_take_inv' cs hi, inv_mul_cancel_right]
+
+lemma distinct_toPalindrome_i_of_reduced (hr : cs.IsReduced L) {i j : ℕ} (hi : i < L.length) (hj : j < L.length) (hij : i ≠ j) : π (toPalindrome_i L i) ≠ π (toPalindrome_i L j) := by
+  intro heq
   wlog iltj : i < j generalizing i j
-  · have jlei : j ≤ i := le_of_not_lt iltj
-    have ilej : i ≤ j := le_of_not_lt (this j i inej.symm eqp.symm)
-    exact inej (le_antisymm ilej jlei)
-  · have h : (toPalindrome_i L i).gprod * (toPalindrome_i L j) = 1 := by
+  · exact hij (Nat.le_antisymm (le_of_not_lt (this hj hi hij.symm heq.symm)) (le_of_not_lt iltj))
+  · have hij : i < length (removeNth L j) :=
+      (iltj.trans_le (Nat.le_sub_one_of_lt hj)).trans_eq (L.length_removeNth hj).symm
+    have hL : π L = π ((L.removeNth j).removeNth i) := by
       calc
-        _ = (toPalindrome_i L i).gprod * (toPalindrome_i L i).gprod := by
-          rw [← eqp]
-        _ = 1 := by
-          let ti : T := ⟨(t(L, i)).gprod, toPalindrome_i_in_Refl i⟩
-          have : (ti : G) ^ 2 = 1 := OrderTwoGen.Refl.square_eq_one
-          exact (pow_two _).subst (motive := fun (x : G) ↦ x = 1) this
-    have lenremNjp : (L.removeNth j).length + 1 = L.length := List.removeNth_length L j
-    have hi : i < (L.removeNth j).length := by
-      rw [List.length_removeNth j.2]
-      exact lt_of_lt_of_le iltj (Nat.le_pred_of_lt j.2)
-    have hL : L.gprod = (L.removeNth j).removeNth i := by
-      calc
-        _ = (toPalindrome_i L i : G) * toPalindrome_i L j * L := by
-          rw [h, one_mul]
-        _ = (toPalindrome_i L i : G) * L.removeNth j := by
-          rw [mul_assoc, removeNth_of_palindrome_prod]
-        _ = (toPalindrome_i (L.removeNth j) i : G) * L.removeNth j := by
-          repeat rw [toPalindrome_i]
-          congr 3
-          apply (List.take_of_removeNth L (Nat.add_one_le_iff.mpr iltj)).symm
-        _ = (L.removeNth j).removeNth i :=
-          removeNth_of_palindrome_prod (L.removeNth j) ⟨i.val, hi⟩
-    have hlen : L.length ≤ ((L.removeNth j).removeNth i).length :=
-      rl ((L.removeNth j).removeNth i) hL
-    have lenremNip : ((L.removeNth j).removeNth i).length + 1 = (L.removeNth j).length :=
-      List.removeNth_length (L.removeNth j) ⟨i.val, hi⟩
-    linarith [hlen, lenremNip, lenremNjp]
-
-end Palindrome
+        _ = π (toPalindrome_i L i) * π (toPalindrome_i L j) * π L := by
+          rw [heq, L.toPalindrome_i_sq_eq_one cs j, one_mul]
+        _ = π (toPalindrome_i L i) * π (L.removeNth j) := by
+          rw [mul_assoc, toPalindrome_i_mul_eq_removeNth cs hj]
+        _ = π (toPalindrome_i (L.removeNth j) i) * π (L.removeNth j) := by
+          simp only [toPalindrome_i, mul_left_inj]
+          congr 2
+          exact (L.take_of_removeNth (Nat.add_one_le_iff.mpr iltj)).symm
+        _ = π ((L.removeNth j).removeNth i) :=
+          (L.removeNth j).toPalindrome_i_mul_eq_removeNth cs hij
+    have h := length_wordProd_le cs ((L.removeNth j).removeNth i)
+    rw [← hL] at h
+    have hle := hr.symm.trans_le h
+    have hm := (L.removeNth j).length_removeNth hij
+    rw [L.length_removeNth hj] at hm
+    omega
