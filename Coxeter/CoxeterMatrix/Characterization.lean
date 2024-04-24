@@ -1,4 +1,4 @@
-import Coxeter.OrderTwoGen
+/- import Coxeter.OrderTwoGen
 import Coxeter.Aux_
 import Mathlib.Data.Matrix.Basic
 
@@ -189,3 +189,4 @@ lemma deletion_imp_exchange : @DeletionProp G _ S _ → @ExchangeProp G _ S _ :=
       exact lt_irrefl _ h_i_lt_k
 
 end OrderTwoGen
+ -/
