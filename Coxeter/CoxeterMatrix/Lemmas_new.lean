@@ -134,27 +134,30 @@ lemma length_smul_muls :
         (Or.resolve_left (length_mul_simple cs ((s i) * w) j)) h'
       right; right; omega
 
+lemma length_smul_muls_imp_smul : ℓ ((s i) * w * (s j)) = ℓ w + 2 → ℓ ((s i) * w) = ℓ w + 1 := by
+  intro h
+  by_contra h'
+  have : ℓ ((s i) * w) + 1 = ℓ w := (Or.resolve_left (length_simple_mul cs w i)) h'
+  rcases (length_mul_simple cs ((s i) * w) j) with h₁ | h₂
+  . omega
+  . omega
+
+lemma length_smul_muls_imp_muls : ℓ ((s i) * w * (s j)) = ℓ w + 2 → ℓ (w * (s j)) = ℓ w + 1 := by
+  intro h
+  by_contra h'
+  have : ℓ (w * (s j)) + 1 = ℓ w := (Or.resolve_left (length_mul_simple cs w j)) h'
+  have : ℓ ((s i) * (w * (s j))) = ℓ (w * (s j)) + 1 ∨ ℓ ((s i) * (w * (s j))) + 1 = ℓ (w * (s j)) :=
+    length_simple_mul cs (w * (s j)) i
+  rw [← mul_assoc] at this
+  rcases this with h₁ | h₂
+  . rw [this, h] at h₁
+    omega
+  . rw [← add_left_inj 1, this, ← add_left_inj 2, ← h, add_assoc, add_assoc] at h₂
+    simp only [Nat.reduceAdd, add_right_eq_self, OfNat.ofNat_ne_zero] at h₂
+
 lemma length_smul_eq_length_muls_of_length_neq_pre :
   ℓ ((s i) * w * (s j)) = ℓ w + 2 → ℓ ((s i) * w) = ℓ (w * (s j)) := by
-  intro h
-  have : ℓ ((s i) * w) = ℓ w + 1 := by
-    by_contra h'
-    have : ℓ ((s i) * w) + 1 = ℓ w := (Or.resolve_left (length_simple_mul cs w i)) h'
-    rcases (length_mul_simple cs ((s i) * w) j) with h₁ | h₂
-    . omega
-    . omega
-  have : ℓ (w * (s j)) = ℓ w + 1 := by
-    by_contra h'
-    have : ℓ (w * (s j)) + 1 = ℓ w := (Or.resolve_left (length_mul_simple cs w j)) h'
-    have : ℓ ((s i) * (w * (s j))) = ℓ (w * (s j)) + 1 ∨ ℓ ((s i) * (w * (s j))) + 1 = ℓ (w * (s j)) :=
-      length_simple_mul cs (w * (s j)) i
-    rw [← mul_assoc] at this
-    rcases this with h₁ | h₂
-    . rw [this, h] at h₁
-      omega
-    . rw [← add_left_inj 1, this, ← add_left_inj 2, ← h, add_assoc, add_assoc] at h₂
-      simp only [Nat.reduceAdd, add_right_eq_self, OfNat.ofNat_ne_zero] at h₂
-  omega
+  intro h; linarith [(length_smul_muls_imp_smul cs h), (length_smul_muls_imp_muls cs h)]
 
 lemma length_smul_eq_length_muls_of_length_neq :
   ℓ ((s i) * w * (s j)) ≠ ℓ w → ℓ ((s i) * w) = ℓ (w * (s j)) := by
@@ -193,20 +196,14 @@ lemma length_lt_of_length_smuls_lt' (h : ℓ ((s i) * w * (s j)) < ℓ w) :
     rcases (length_mul_simple cs ((s i) * w) j) with h₁ | h₂
     . omega
     . omega
-  . omega
+  omega
 
 lemma length_gt_of_length_smuls_gt (h : ℓ w < ℓ ((s i) * w * (s j))) :
   ℓ w < ℓ ((s i) * w) := by
   have : ℓ ((s i) * w * (s j)) = ℓ w + 2 := by
     have := (length_smul_muls cs).resolve_left (by linarith)
     exact this.resolve_right (by omega)
-  have : ℓ ((s i) * w) = ℓ w + 1 := by
-    by_contra h'
-    have := (Or.resolve_left (length_simple_mul cs w i)) h'
-    rcases (length_mul_simple cs ((s i) * w) j) with h₁ | h₂
-    . omega
-    . omega
-  omega
+  linarith [length_smul_muls_imp_smul cs this]
 
 
 lemma length_gt_of_length_smuls_gt' (h : ℓ w < ℓ ((s i) * w * (s j))) :
@@ -215,3 +212,13 @@ lemma length_gt_of_length_smuls_gt' (h : ℓ w < ℓ ((s i) * w * (s j))) :
     have := (length_smul_muls cs).resolve_left (by linarith)
     exact this.resolve_right (by omega)
   omega
+
+lemma length_lt_of_length_smuls_lt'' (h : ℓ ((s i) * w * (s j)) < ℓ w) :
+  ℓ ((s i) * w * (s j)) < ℓ ((s i) * w) := by
+  rw [length_smul_eq_length_muls_of_length_neq cs (LT.lt.ne h)]
+  have : (s i) * ((s i) * w * (s j)) * (s j) = w := by
+    rw [← mul_assoc]; simp only [simple_mul_simple_cancel_left, simple_mul_simple_cancel_right]
+  nth_rw 2 [← this] at h
+  have : w * (s j) = (s i) * ((s i) * w * (s j)) := by
+    rw [← mul_assoc]; simp only [simple_mul_simple_cancel_left]
+  rw [this]; apply length_gt_of_length_smuls_gt cs h
