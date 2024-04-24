@@ -40,7 +40,14 @@ def LinkSimplex (F : AbstractSimplicialComplex V) (x : vertices F) : AbstractSim
     simp only [Set.mem_setOf_eq, Finset.not_mem_empty, not_false_eq_true, Finset.union_empty,
       true_and]
     exact (vertices_iff_singleton_set_face F x).mpr x.2
-  lower' := sorry
+  lower' t s st tF := by
+    simp only [Link, mem_faces, Set.mem_image, Set.mem_setOf_eq, Subtype.exists, exists_and_left,
+      exists_prop, exists_eq_right_right] at tF ⊢
+    rcases tF with ⟨⟨x_t, xtF⟩, tF⟩
+    refine ⟨?_, F.lower' st tF⟩
+    refine ⟨fun a => x_t (st a), ?_⟩
+    refine mem_faces.mp (F.lower' ?_ xtF)
+    exact Finset.union_subset_union_right st
 
 def LinkFace (F : AbstractSimplicialComplex V) (s : F.faces) : Set F.faces :=
   {f | s.1 ∩ f.1 = ∅ ∧ s.1 ∪ f.1 ∈ F.faces }
