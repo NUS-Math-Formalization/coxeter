@@ -69,8 +69,20 @@ lemma toPalindrome_rev : L.toPalindrome.reverse = L.toPalindrome := by
 lemma toPalindrome_inv_eq_self : (π L.toPalindrome)⁻¹ = π L.toPalindrome := sorry
 
 @[simp]
+lemma toPalindrome_sq_eq_one : π L.toPalindrome * π L.toPalindrome = 1 := by
+  nth_rw 1 [← L.toPalindrome_inv_eq_self, inv_mul_self]
+
+@[simp]
 lemma toPalindrome_i_rev (i : ℕ) : (toPalindrome_i L i).reverse = toPalindrome_i L i :=
   (L.take (i + 1)).toPalindrome_rev
+
+@[simp]
+lemma toPalindrome_i_inv_eq_self (i : ℕ) : (π (toPalindrome_i L i))⁻¹ = π (toPalindrome_i L i) :=
+  (L.take (i + 1)).toPalindrome_inv_eq_self cs
+
+@[simp]
+lemma toPalindrome_i_sq_eq_one (i : ℕ) : π (toPalindrome_i L i) * π (toPalindrome_i L i) = 1 :=
+  (L.take (i + 1)).toPalindrome_sq_eq_one cs
 
 lemma toPalindrome_in_refl (hL : L ≠ []) : π L.toPalindrome ∈ T := by
   use π L.reverse.tail.reverse, (L.getLast hL)
@@ -101,42 +113,27 @@ lemma toPalindrome_i_mul_eq_removeNth {i : ℕ} (hi : i < L.length) : (π (toPal
   rw [h, removeNth_eq_take_drop, wordProd_append, ← mul_assoc]
   rw [L.toPalindrome_i_eq_take_mul_take_inv' cs hi, inv_mul_cancel_right]
 
-lemma distinct_toPalindrome_i_of_reduced (hr : cs.IsReduced L) (i j : Fin L.length) (hne : i ≠ j) : π (toPalindrome_i L i) ≠ π (toPalindrome_i L j) := by sorry
-  /- intro rl
-  by_contra! eqp
-  rcases eqp with ⟨i, j, ⟨inej, eqp⟩⟩
+lemma distinct_toPalindrome_i_of_reduced (hr : cs.IsReduced L) {i j : ℕ} (hi : i < L.length) (hj : j < L.length) (hij : i ≠ j) : π (toPalindrome_i L i) ≠ π (toPalindrome_i L j) := by
+  intro heq
   wlog iltj : i < j generalizing i j
-  · have jlei : j ≤ i := le_of_not_lt iltj
-    have ilej : i ≤ j := le_of_not_lt (this j i inej.symm eqp.symm)
-    exact inej (le_antisymm ilej jlei)
-  · have h : (toPalindrome_i L i).gprod * (toPalindrome_i L j) = 1 := by
+  · exact hij (Nat.le_antisymm (le_of_not_lt (this hj hi hij.symm heq.symm)) (le_of_not_lt iltj))
+  · have hij : i < length (removeNth L j) :=
+      (iltj.trans_le (Nat.le_sub_one_of_lt hj)).trans_eq (L.length_removeNth hj).symm
+    have hL : π L = π ((L.removeNth j).removeNth i) := by
       calc
-        _ = (toPalindrome_i L i).gprod * (toPalindrome_i L i).gprod := by
-          rw [← eqp]
-        _ = 1 := by
-          let ti : T := ⟨(t(L, i)).gprod, toPalindrome_i_in_Refl i⟩
-          have : (ti : G) ^ 2 = 1 := OrderTwoGen.Refl.square_eq_one
-          exact (pow_two _).subst (motive := fun (x : G) ↦ x = 1) this
-    have lenremNjp : (L.removeNth j).length + 1 = L.length := List.removeNth_length L j
-    have hi : i < (L.removeNth j).length := by
-      rw [List.length_removeNth j.2]
-      exact lt_of_lt_of_le iltj (Nat.le_pred_of_lt j.2)
-    have hL : L.gprod = (L.removeNth j).removeNth i := by
-      calc
-        _ = (toPalindrome_i L i : G) * toPalindrome_i L j * L := by
-          rw [h, one_mul]
-        _ = (toPalindrome_i L i : G) * L.removeNth j := by
-          rw [mul_assoc, removeNth_of_palindrome_prod]
-        _ = (toPalindrome_i (L.removeNth j) i : G) * L.removeNth j := by
-          repeat rw [toPalindrome_i]
-          congr 3
-          apply (List.take_of_removeNth L (Nat.add_one_le_iff.mpr iltj)).symm
-        _ = (L.removeNth j).removeNth i :=
-          removeNth_of_palindrome_prod (L.removeNth j) ⟨i.val, hi⟩
-    have hlen : L.length ≤ ((L.removeNth j).removeNth i).length :=
-      rl ((L.removeNth j).removeNth i) hL
-    have lenremNip : ((L.removeNth j).removeNth i).length + 1 = (L.removeNth j).length :=
-      List.removeNth_length (L.removeNth j) ⟨i.val, hi⟩
-    linarith [hlen, lenremNip, lenremNjp] -/
-
-end List
+        _ = π (toPalindrome_i L i) * π (toPalindrome_i L j) * π L := by
+          rw [heq, L.toPalindrome_i_sq_eq_one cs j, one_mul]
+        _ = π (toPalindrome_i L i) * π (L.removeNth j) := by
+          rw [mul_assoc, toPalindrome_i_mul_eq_removeNth cs hj]
+        _ = π (toPalindrome_i (L.removeNth j) i) * π (L.removeNth j) := by
+          simp only [toPalindrome_i, mul_left_inj]
+          congr 2
+          exact (L.take_of_removeNth (Nat.add_one_le_iff.mpr iltj)).symm
+        _ = π ((L.removeNth j).removeNth i) :=
+          (L.removeNth j).toPalindrome_i_mul_eq_removeNth cs hij
+    have h := length_wordProd_le cs ((L.removeNth j).removeNth i)
+    rw [← hL] at h
+    have hle := hr.symm.trans_le h
+    have hm := (L.removeNth j).length_removeNth hij
+    rw [L.length_removeNth hj] at hm
+    omega
