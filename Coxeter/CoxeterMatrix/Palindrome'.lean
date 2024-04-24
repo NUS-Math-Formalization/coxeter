@@ -3,6 +3,7 @@ import Mathlib.Tactic.Zify
 import Mathlib.Tactic.Ring
 import Mathlib.GroupTheory.Coxeter.Matrix
 import Mathlib.GroupTheory.Coxeter.Length
+import Coxeter.Aux_
 
 import Coxeter.OrderTwoGen
 
