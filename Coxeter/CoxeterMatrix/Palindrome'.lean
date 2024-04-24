@@ -91,12 +91,12 @@ lemma toPalindrome_i_sq_eq_one (i : ℕ) : π (toPalindrome_i L i) * π (toPalin
 lemma toPalindrome_in_refl (hL : L ≠ []) : π L.toPalindrome ∈ T := by
   use π L.reverse.tail.reverse, (L.getLast hL)
   rw [← wordProd_reverse, reverse_reverse, ← wordProd_concat,
-    ← wordProd_append, toPalindrome, concat_eq_append]
+    ← (wordProd_append cs), toPalindrome, concat_eq_append]
   congr
   exact (reverse_tail_reverse_append hL).symm
 
 lemma toPalindrome_i_eq_take_mul_take_inv {i : ℕ} (hi : i < L.length) : π (toPalindrome_i L i) = π (L.take (i + 1)) * (π (L.take i))⁻¹ := by
-  rw [← wordProd_reverse, ← wordProd_append, toPalindrome_i, toPalindrome]
+  rw [← wordProd_reverse, ← (wordProd_append cs), toPalindrome_i, toPalindrome]
   have h : L.take i = (L.take (i + 1)).reverse.tail.reverse := by
     rw [← (L.take (i + 1)).dropLast_eq_reverse_tail_reverse]
     by_cases hi : i + 1 < L.length
@@ -115,8 +115,8 @@ lemma toPalindrome_i_in_refl (hL : L ≠ []) {i : ℕ} : π (toPalindrome_i L i)
 
 lemma toPalindrome_i_mul_eq_removeNth {i : ℕ} (hi : i < L.length) : (π (toPalindrome_i L i)) * (π L) = π (L.removeNth i) := by
   have h : π L = π (L.take (i + 1)) * π (L.drop (i + 1)) := by
-    rw [← wordProd_append, take_append_drop (i + 1) L]
-  rw [h, removeNth_eq_take_drop, wordProd_append, ← mul_assoc]
+    rw [← (wordProd_append cs), take_append_drop (i + 1) L]
+  rw [h, removeNth_eq_take_drop, (wordProd_append cs), ← mul_assoc]
   rw [L.toPalindrome_i_eq_take_mul_take_inv' cs hi, inv_mul_cancel_right]
 
 lemma distinct_toPalindrome_i_of_reduced (hr : cs.IsReduced L) {i j : ℕ} (hi : i < L.length) (hj : j < L.length) (hij : i ≠ j) : π (toPalindrome_i L i) ≠ π (toPalindrome_i L j) := by
