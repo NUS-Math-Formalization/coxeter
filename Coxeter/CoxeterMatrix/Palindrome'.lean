@@ -8,7 +8,7 @@ import Coxeter.OrderTwoGen
 
 variable {B W : Type*} [Group W] {M : CoxeterMatrix B} (cs: CoxeterSystem M W)
 
-open CoxeterMatrix List
+open CoxeterMatrix List CoxeterSystem
 
 local prefix:max "s" => cs.simple
 local prefix:max "ℓ" => cs.length
@@ -24,64 +24,81 @@ protected def refl : Set W := {x : W | ∃ (w : W) (i : B), x = w * (s i) * w⁻
 
 end CoxeterSystem
 
-local notation:max "T" => cs.refl
-
 end
+
+local notation:max "T" => cs.refl
 
 namespace List
 
+@[pp_dot]
 def toPalindrome (L : List B) : List B := L ++ L.reverse.tail
 
-/-- Note that 0-1 = 0 -/
+-- Note that 0-1 = 0.
 lemma toPalindrome_length {L : List B} : (toPalindrome L).length = 2 * L.length - 1 := by
   simp only [toPalindrome, List.length_append, List.length_reverse, List.length_tail]
   by_cases h : L.length = 0
-  . simp [h]
+  . simp only [h, ge_iff_le, zero_le, tsub_eq_zero_of_le, add_zero, mul_zero]
   . rw [← Nat.add_sub_assoc]
     zify; ring_nf
-    apply Nat.pos_of_ne_zero h
+    exact Nat.pos_of_ne_zero h
 
-/-- Our index starts from 0 -/
-def toPalindrome_i (L : List S) (i : ℕ) := toPalindrome (L.take (i+1))
+lemma nil_toPalindrome : ([] : List B).toPalindrome = [] := rfl
 
-notation:210 "t(" L:211 "," i:212 ")" => toPalindrome_i L i
+lemma toPalindrome_eq_nil_of_eq_nil (hL : L = []) : L.toPalindrome = [] := by
+  rw [hL]
+  rfl
+
+-- Our index starts from 0.
+def toPalindrome_i (L : List S) (i : ℕ) := toPalindrome (L.take (i + 1))
+
+--notation:210 "t(" L:211 "," i:212 ")" => toPalindrome_i L i
 
 variable {L : List B}
 
-lemma toPalindrome_in_Refl (hL : L ≠ []) : (π L.toPalindrome) ∈ T := by
+@[simp]
+lemma toPalindrome_rev : L.toPalindrome.reverse = L.toPalindrome := by
+  by_cases hL : L = []
+  · rw [hL]
+    sorry
+  · unfold toPalindrome
+    simp only [reverse_append]
+    sorry
+
+@[simp]
+lemma toPalindrome_inv_eq_self : (π L.toPalindrome)⁻¹ = π L.toPalindrome := sorry
+
+@[simp]
+lemma toPalindrome_i_rev (i : ℕ) : (toPalindrome_i L i).reverse = toPalindrome_i L i :=
+  (L.take (i + 1)).toPalindrome_rev
+
+lemma toPalindrome_in_refl (hL : L ≠ []) : π L.toPalindrome ∈ T := by
   use π L.reverse.tail.reverse, (L.getLast hL)
-  rw [← OrderTwoGen.gprod_reverse, List.reverse_reverse]
-  have : L.reverse.tail.reverse.gprod * (L.getLast hL) = L.gprod := by
-    have : L = L.reverse.tail.reverse ++ [L.getLast hL] :=
-      (List.reverse_tail_reverse_append hL).symm
-    nth_rw 3 [this]
-    exact gprod_append_singleton.symm
-  rw [this, toPalindrome, gprod_append]
+  rw [← wordProd_reverse, reverse_reverse, ← wordProd_concat,
+    ← wordProd_append, toPalindrome, concat_eq_append]
+  congr
+  exact (reverse_tail_reverse_append hL).symm
 
-lemma toPalindrome_i_in_Refl (i : Fin L.length) : (π (toPalindrome_i L i)) ∈ T := by sorry
-  /- rw [toPalindrome_i]
-  have tklen : (L.take (i+1)).length = i + 1 :=
-    List.take_le_length L (by linarith [i.prop] : i + 1 ≤ L.length)
-  have tkpos : (L.take (i+1)).length ≠ 0 := by linarith
-  have h : List.take (i + 1) L ≠ [] := by
-    contrapose! tkpos
-    exact List.length_eq_zero.mpr tkpos
-  exact toPalindrome_in_Refl h -/
+lemma toPalindrome_i_eq_take_mul_take_inv {i : ℕ} (hi : i < L.length) : π (toPalindrome_i L i) = π (L.take (i + 1)) * (π (L.take i))⁻¹ := by
+  rw [← wordProd_reverse, ← wordProd_append, toPalindrome_i, toPalindrome]
+  have h : L.take i = (L.take (i + 1)).reverse.tail.reverse := by
+    rw [← (L.take (i + 1)).dropLast_eq_reverse_tail_reverse]
+    by_cases hi : i + 1 < L.length
+    · rw [dropLast_take hi, Nat.pred_succ]
+    · have hi : i + 1 = L.length := by linarith
+      rw [hi, take_length, dropLast_eq_take, ← hi, Nat.pred_succ]
+  rw [h, reverse_reverse]
 
-lemma mul_Palindrome_i_cancel_i (i : Fin L.length) :
-  (π (toPalindrome_i L i)) * (π L) = π (L.removeNth i) := by
-  rw [toPalindrome_i, toPalindrome, List.removeNth_eq_take_drop, List.take_get_lt _ _ i.2]
-  simp only [gprod_append, gprod_singleton, List.reverse_append, List.reverse_singleton,
-    List.singleton_append, List.tail]
-  have : L = (L.take i).gprod * (L.drop i).gprod := by
-    nth_rw 1 [← List.take_append_drop i L]
-    rw [gprod_append]
-  rw [this, mul_assoc, ← mul_assoc ((List.reverse (List.take i L)).gprod),
-    OrderTwoGen.reverse_prod_prod_eq_one, one_mul, mul_assoc]
-  apply (mul_right_inj (L.take i).gprod).2
-  rw [← List.get_drop_eq_drop _ _ i.2, gprod_cons, ← mul_assoc]
-  dsimp only [Fin.is_lt, Fin.eta, gt_iff_lt, List.getElem_eq_get _ _ i.2]
-  rw [gen_square_eq_one', one_mul]
+lemma toPalindrome_i_eq_take_mul_take_inv' {i : ℕ} (hi : i < L.length) : π (toPalindrome_i L i) = π (L.take i) * (π (L.take (i + 1)))⁻¹ := sorry
+
+lemma toPalindrome_i_in_refl (hL : L ≠ []) {i : ℕ} : π (toPalindrome_i L i) ∈ T :=
+  toPalindrome_in_refl cs <| (L.take_eq_nil_iff).not.mpr <| by
+    simp only [hL, add_eq_zero, one_ne_zero, and_false, or_self, not_false_eq_true]
+
+lemma toPalindrome_i_mul_eq_removeNth {i : ℕ} (hi : i < L.length) : (π (toPalindrome_i L i)) * (π L) = π (L.removeNth i) := by
+  have h : π L = π (L.take (i + 1)) * π (L.drop (i + 1)) := by
+    rw [← wordProd_append, take_append_drop (i + 1) L]
+  rw [h, removeNth_eq_take_drop, wordProd_append, ← mul_assoc]
+  rw [L.toPalindrome_i_eq_take_mul_take_inv' cs hi, inv_mul_cancel_right]
 
 lemma distinct_toPalindrome_i_of_reduced (hr : cs.IsReduced L) (i j : Fin L.length) (hne : i ≠ j) : π (toPalindrome_i L i) ≠ π (toPalindrome_i L j) := by sorry
   /- intro rl
