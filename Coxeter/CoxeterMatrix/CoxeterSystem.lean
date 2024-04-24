@@ -16,11 +16,15 @@ without set `S`.
 open OrderTwoGen
 section
 
+/-- Definition for Coxeter System:
+Coxeter System is an `OrderTwoGen` system with `ExchangeProp` as well as `DeletionProp` -/
 class CoxeterSystem (G : Type*) [Group G] (S : Set G) extends OrderTwoGen S where
   exchange : ExchangeProp S
   exchange' : ExchangeProp' S := (exchange_iff_exchange' S).1 exchange
   deletion : DeletionProp S := exchange_imp_deletion S exchange
 
+/-- Definition for Coxeter Group:
+Coxeter System is an `OrderTwoGen` group with `ExchangeProp` as well as `DeletionProp` -/
 class CoxeterGroup (G : Type*) extends HOrderTwoGenGroup G where
   exchange : ExchangeProp S
   exchange': ExchangeProp' S := (exchange_iff_exchange' S).1 exchange
