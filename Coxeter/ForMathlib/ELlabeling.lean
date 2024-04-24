@@ -43,7 +43,7 @@ class ELLabeling (l : edgeLabeling P A) where
 
 /-Theorem: Let P be a graded finite poset with an EL-labelling l to a poset A. Then P is shellable.
 -/
-theorem shellable_of_ELLabeling {P : Type*} [PartialOrder P] [PartialOrder A] [Fintype P] [GradedPoset P] (l : edgeLabeling P A) (h: ELLabeling l): Shellable P :=sorry
+theorem shellable_of_ELLabeling {P : Type*} [PartialOrder P] [PartialOrder A] [Fintype P] [GradedPoset P] (l : edgeLabeling P A) (h: ELLabeling l): Shellable_Delta P :=sorry
 
 
 end PartialOrder

@@ -8,8 +8,8 @@ open AbstractSimplicialComplex
 /-
 Definition: Let P be a graded poset. We say P is shellable, if the order complex Delta.ASC is shellable.
 -/
-def Shellable (P : Type*) [PartialOrder P] [Fintype P] [GradedPoset P] :=
-  shellable (Delta P)
+def Shellable_Delta (P : Type*) [PartialOrder P] [Fintype P] [GradedPoset P] :=
+  Shellable (Delta P)
 
 
 
