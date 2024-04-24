@@ -2,6 +2,7 @@ import Mathlib.GroupTheory.Coxeter.Basic
 import Mathlib.GroupTheory.Coxeter.Length
 
 import Coxeter.Aux_
+import Coxeter.CoxeterMatrix.Characterization'
 
 variable {B : Type*}
 variable {W : Type*}[Group W]
@@ -21,6 +22,7 @@ local prefix:max "π" => cs.wordProd
 -- all descent lemmas are omitted
 
 -- length_diff_one, length_smul/muls lemmas are omitted
+open CoxeterGroup
 
 lemma length_smul_neq : ℓ ((s i) * w) ≠ ℓ w := by
   by_contra h
@@ -38,6 +40,26 @@ lemma length_muls_neq : ℓ (w * (s i)) ≠ ℓ w := by
 
 -- muls_twice omitted: simple_mul_simple_cancel_right
 
+-- the following lemma is to be moved to aux_ once the file is ready
+lemma eraseIdx_length (L : List B) (k : ℕ) (h : k < L.length) : (L.eraseIdx k).length = L.length - 1 := by
+  induction L generalizing k with
+  | nil =>
+    simp only [List.eraseIdx_nil, List.length_nil, ge_iff_le, zero_le, tsub_eq_zero_of_le]
+  | cons hd tail ih =>
+    simp only [List.length_cons, Nat.succ_sub_succ_eq_sub, tsub_zero]
+    by_cases l : k = 0
+    . rw [l]; simp only [List.eraseIdx_cons_zero]
+    . have k_pos := Nat.pos_of_ne_zero l
+      rw [← Nat.sub_add_cancel k_pos]
+      simp only [Nat.reduceSucc, List.eraseIdx_cons_succ, List.length_cons]
+      rw [Nat.succ_eq_add_one]
+      have : k - 1 < tail.length := by rw [List.length_cons] at h; omega
+      have tlen_pos : 0 < tail.length := by omega
+      rw [← Nat.sub_add_cancel tlen_pos]
+      simp only [Nat.reduceSucc, add_left_inj]
+      apply ih
+      apply this
+
 lemma smul_eq_muls_of_length_eq_pre :
   ℓ ((s i) * w * (s j)) = ℓ w ∧ ℓ ((s i) * w) = ℓ (w * (s j)) ∧ ℓ ((s i) * w) > ℓ w
     → (s i) * w = w * (s j) := by
@@ -52,46 +74,42 @@ lemma smul_eq_muls_of_length_eq_pre :
     exact h₁
   . push_neg at y
     have lt_len : ℓ ((s i) * w * (s j)) < ℓ ((s i) * w) := by rw [h₁]; exact h₃
-    have exch_prop : ∃ (k : Fin (i :: L).length), (π (i :: L)) * (s j) = π ((i :: L).removeNth k) := by
-      have : cs.IsReduced (i :: L) := by
-        have : ℓ ((s i) * w) = ℓ w + 1 := by
-          apply (not_isLeftDescent_iff cs w i).1
-          simp only [IsLeftDescent]; push_neg; omega
-        simp only [IsReduced]
-        rw [wordProd_cons, ← hL, this]
-        simp only [List.length_cons, Nat.succ.injEq]
-        exact hr.symm
-      rw [hL, ← wordProd_cons] at lt_len
-      sorry -- exchange property here
-    rcases exch_prop with ⟨k, l⟩
-    have exch_prop' : (π (i :: L)) = π ((i :: L).removeNth k) * (s j) := by
-      rw [← mul_left_inj (s j), mul_assoc, simple_mul_simple_self, mul_one]; exact l
-    have : k.1 = 0 := by
+    have exch_prop : ∃ k < (i :: L).length, (π (i :: L)) * (s j) = π ((i :: L).eraseIdx k) := by
+      apply right_exchange'
+      simp only [IsRightInversion]
+      constructor
+      . simp only [IsReflection]
+        use 1, j; simp only [one_mul, inv_one, mul_one]
+      . rw [wordProd_cons, ← hL]
+        exact lt_len
+    rcases exch_prop with ⟨k, ⟨l₁, l₂⟩⟩
+    have exch_prop' : (π (i :: L)) = π ((i :: L).eraseIdx k) * (s j) := by
+      rw [← mul_left_inj (s j), simple_mul_simple_cancel_right]
+      exact l₂
+    have : k = 0 := by
       by_contra x
       push_neg at x
-      have k_pos : k.1 > 0 := by omega
-      have : w * (s j) = π (L.removeNth (k.1 - 1)) := by
-        rw [← one_mul w, ← simple_mul_simple_self cs i, mul_assoc, mul_assoc]
+      have k_pos : k > 0 := Nat.pos_of_ne_zero x
+      have : (π L) * (s j) = π (L.eraseIdx (k - 1)) := by
+        rw [← one_mul (π L), ← simple_mul_simple_self cs i, mul_assoc, mul_assoc]
         nth_rw 2 [← mul_assoc]
-        rw [hL, ← wordProd_cons, exch_prop', mul_assoc, simple_mul_simple_self, mul_one,
-          ← wordProd_cons, List.removeNth_cons, wordProd_cons, wordProd_cons, ← mul_assoc,
-          simple_mul_simple_self, one_mul]
-        exact k_pos
-      have : ℓ (w * (s j)) < ℓ w := by
-        rw [this, ← hr]
-        have : (L.removeNth (k.1 - 1)).length = L.length - 1 := by
-          rw [← add_left_inj 1, Nat.sub_add_cancel]
-          apply List.removeNth_length L (⟨k.1 - 1, by exact Fin.subNat.proof_1 1 k k_pos⟩)
-          apply List.length_pos.2 y
-        have : ℓ (π (L.removeNth (k.1 - 1))) ≤ L.length - 1 := by
-          rw [← this]; apply length_wordProd_le
+        rw [← wordProd_cons, exch_prop', simple_mul_simple_cancel_right]
+        nth_rw 1 [← Nat.sub_add_cancel k_pos]
+        simp only [Nat.reduceSucc, List.eraseIdx_cons_succ, wordProd_cons,
+          simple_mul_simple_cancel_left]
+      have : ℓ ((π L) * (s j)) < ℓ (π L) := by
+        rw [this, ← hL, ← hr]
+        have erase_len : (L.eraseIdx (k - 1)).length = L.length - 1 := by
+          apply eraseIdx_length
+          rw [List.length_cons] at l₁
+          omega
+        have := length_wordProd_le cs (L.eraseIdx (k - 1))
         apply lt_of_le_of_lt this
-        rw [← Nat.pred_eq_sub_one]
+        rw [erase_len]
         apply Nat.pred_lt (ne_of_gt (List.length_pos.2 y))
-      rw [hL] at *
-      rw [← h₂] at this
-      omega
-    rw [this, List.removeNth, wordProd_cons, ← hL] at exch_prop'
+      rw [← hL, ← h₂] at this
+      linarith
+    rw [this, List.eraseIdx_cons_zero, wordProd_cons, ← hL] at exch_prop'
     exact exch_prop'
 
 lemma smul_eq_muls_of_length_eq :
