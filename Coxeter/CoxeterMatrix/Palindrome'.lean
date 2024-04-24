@@ -60,13 +60,17 @@ variable {L : List B}
 lemma toPalindrome_rev : L.toPalindrome.reverse = L.toPalindrome := by
   by_cases hL : L = []
   · rw [hL]
-    sorry
+    rfl
   · unfold toPalindrome
     simp only [reverse_append]
-    sorry
+    nth_rw 3 [← reverse_tail_reverse_append hL]
+    simp
+    rw [reverse_head]
+    congr
 
 @[simp]
-lemma toPalindrome_inv_eq_self : (π L.toPalindrome)⁻¹ = π L.toPalindrome := sorry
+lemma toPalindrome_inv_eq_self : (π L.toPalindrome)⁻¹ = π L.toPalindrome := by
+  rw [← wordProd_reverse, toPalindrome_rev]
 
 @[simp]
 lemma toPalindrome_i_rev (i : ℕ) : (toPalindrome_i L i).reverse = toPalindrome_i L i :=
@@ -89,7 +93,9 @@ lemma toPalindrome_i_eq_take_mul_take_inv {i : ℕ} (hi : i < L.length) : π (to
       rw [hi, take_length, dropLast_eq_take, ← hi, Nat.pred_succ]
   rw [h, reverse_reverse]
 
-lemma toPalindrome_i_eq_take_mul_take_inv' {i : ℕ} (hi : i < L.length) : π (toPalindrome_i L i) = π (L.take i) * (π (L.take (i + 1)))⁻¹ := sorry
+lemma toPalindrome_i_eq_take_mul_take_inv' {i : ℕ} (hi : i < L.length) : π (toPalindrome_i L i) = π (L.take i) * (π (L.take (i + 1)))⁻¹ := by
+  rw [← toPalindrome_i_rev, wordProd_reverse, toPalindrome_i_eq_take_mul_take_inv cs hi]
+  simp only [mul_inv_rev, mul_assoc, inv_inv]
 
 lemma toPalindrome_i_in_refl (hL : L ≠ []) {i : ℕ} : π (toPalindrome_i L i) ∈ T :=
   toPalindrome_in_refl cs <| (L.take_eq_nil_iff).not.mpr <| by
