@@ -152,3 +152,6 @@ theorem isRightInversion_of_SGR_apply_reflectionToRoot_neg {w : W} (t : cs.refle
 theorem isRightInversion_iff_SGR_apply_reflectionToRoot_neg {w : W} (t : cs.reflections) :
     (ρ w) (cs.reflectionToRoot t).val < 0 ↔ cs.IsRightInversion w t := by
   sorry -- Idea: apply `isRightInversion_of_SGR_apply_reflectionToRoot_neg` to both `(w, t)` and `(w * t, t)`
+
+-- Next step is to prove that if `(ρ (π ω)) (cs.reflectionToRoot t).val < 0`,
+-- then `t` is in the right inversion sequence of `ω`. Use cons-induction on `ω`.
