@@ -332,19 +332,4 @@ lemma closure_le {F : AbstractSimplicialComplex V} (h: s ⊆ F.faces) : closure 
   simp only [sInf_def, Set.mem_setOf_eq, Set.mem_iInter, mem_faces, Set.coe_setOf, Subtype.forall] at h2
   exact h2 F h
 
-/--
-Definition: G is a cone over F with cone point x if
-x ∈ G.vertices - F.vertices
-s ∈ F ⇔ s ∪ {x} ∈ G.
--/
-def Cone (F G: AbstractSimplicialComplex V) (x : V) :=
-  ¬(x ∈ F.vertices) ∧ ∀ s, s ∈ F.faces ↔ s ∈ G.faces ∧ s ∪ {x} ∈ G.faces
-
-def isCone (G: AbstractSimplicialComplex V) := ∃ F x, Cone F G x
-
-lemma cons_pure (hc : Cone F G x) (hp : Pure F) : Pure G := by sorry
-
-/- the following lemma is not true -/
--- lemma cons_pure' (hc : isCone G) : Pure G := by sorry
-
 end AbstractSimplicialComplex
