@@ -16,7 +16,6 @@ local prefix:max "ℓ" => cs.length
 local prefix:max "π" => cs.wordProd
 
 section
-
 -- The content here should be placed in another file, but for now, let's store them here temporarily.
 
 namespace CoxeterSystem
@@ -43,6 +42,7 @@ lemma toPalindrome_length {L : List B} : (toPalindrome L).length = 2 * L.length 
     zify; ring_nf
     exact Nat.pos_of_ne_zero h
 
+@[simp]
 lemma nil_toPalindrome : ([] : List B).toPalindrome = [] := rfl
 
 lemma toPalindrome_eq_nil_of_eq_nil (hL : L = []) : L.toPalindrome = [] := by
@@ -52,7 +52,7 @@ lemma toPalindrome_eq_nil_of_eq_nil (hL : L = []) : L.toPalindrome = [] := by
 -- Our index starts from 0.
 def toPalindrome_i (L : List S) (i : ℕ) := toPalindrome (L.take (i + 1))
 
---notation:210 "t(" L:211 "," i:212 ")" => toPalindrome_i L i
+-- notation:210 "t(" L:211 "," i:212 ")" => toPalindrome_i L i
 
 variable {L : List B}
 
@@ -61,11 +61,9 @@ lemma toPalindrome_rev : L.toPalindrome.reverse = L.toPalindrome := by
   by_cases hL : L = []
   · rw [hL]
     rfl
-  · unfold toPalindrome
-    simp only [reverse_append]
+  · rw [toPalindrome, reverse_append]
     nth_rw 3 [← reverse_tail_reverse_append hL]
-    simp
-    rw [reverse_head]
+    rw [append_assoc, singleton_append, append_cancel_left_eq, reverse_head]
     congr
 
 @[simp]

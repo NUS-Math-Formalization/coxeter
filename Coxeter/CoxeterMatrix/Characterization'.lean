@@ -20,12 +20,6 @@ local prefix:max "π" => cs.wordProd
 
 namespace CoxeterGroup
 
-/-
-namespace OrderTwoGen
-variable {G : Type*} [Group G] (S : Set G) [OrderTwoGen S]
-
-local notation : max "ℓ(" g ")" => (length S g)
--/
 /-- Exchange Property:
 Given an `OrderTwoGen` group, we say the system satisfy the Exchange Property if
 given a reduced expression `w = s₁ s₂ ⋯ sₙ ∈ G` and `s ∈ S`,
