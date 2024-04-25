@@ -52,19 +52,40 @@ lemma empty_is_reduced : cs.IsReduced [] := by
   show ℓ (π []) = [].length
   simp only [CoxeterSystem.wordProd_nil, CoxeterSystem.length_one, List.length_nil]
 
-theorem DeletionProp (ω : List B) (hω : ¬cs.IsReduced ω) : ∃ j < ω.length, ∃ i < j, π ω = π ((ω.eraseIdx j).eraseIdx i) := by
+private lemma not_reduced_imp_not_empty (ω : List B) (h : ¬cs.IsReduced ω) : ω ≠ [] := by
+  by_contra!
+  rw [this] at h
+  have := empty_is_reduced cs
+  contradiction
+
+private lemma max_index_is_not_reduced (ω : List B) (i : ℕ) (h₀ : ¬cs.IsReduced ω)
+  (h₁ : i = max_non_reduced_word_index cs ω) : ¬cs.IsReduced (ω.drop i) := by
+  rw [← non_reduced_p]
+  by_cases h : i = 0
+  . rw [h, non_reduced_p, List.drop_zero]; exact h₀
+  . apply @Nat.findGreatest_of_ne_zero i (non_reduced_p cs ω) (Classical.decPred _) (ω.length)
+    . rw [max_non_reduced_word_index] at h₁; exact h₁.symm
+    . exact h
+
+private lemma beyond_max_index_is_reduced (ω : List B) (n : ℕ) (h₀ : n ≤ ω.length)
+  (h₁ : n > max_non_reduced_word_index cs ω) : cs.IsReduced (ω.drop n) := by
+  apply of_not_not
+  simp only [max_non_reduced_word_index] at h₁
+  apply @Nat.findGreatest_is_greatest n (non_reduced_p cs ω) (Classical.decPred _) (ω.length)
+  exact h₁; exact h₀
+
+private lemma max_index_lt_length (ω : List B) (i : ℕ) (h : i = max_non_reduced_word_index cs ω)
+  (hω : ¬cs.IsReduced ω) : i < ω.length := by
   have ω_not_empty : ω ≠ [] := by
     by_contra!
     rw [this] at hω
     have := empty_is_reduced cs
     contradiction
-  let j := max_non_reduced_word_index cs ω; use j
-  have : j ≤ ω.length := by
-    simp only [j, max_non_reduced_word_index]
-    exact @Nat.findGreatest_le (non_reduced_p cs ω) (Classical.decPred _) (List.length ω)
-  have : j ≠ ω.length := by
-    simp only [j, max_non_reduced_word_index]
+  have := @Nat.findGreatest_le (non_reduced_p cs ω) (Classical.decPred _) (List.length ω)
+  have i_ne_len : i ≠ ω.length := by
+    simp only [max_non_reduced_word_index] at h
     by_contra!
+    rw [h] at this
     have : ¬cs.IsReduced (ω.drop ω.length) := by
       rw [← non_reduced_p]
       apply @Nat.findGreatest_of_ne_zero (ω.length) (non_reduced_p cs ω) (Classical.decPred _)
@@ -74,8 +95,38 @@ theorem DeletionProp (ω : List B) (hω : ¬cs.IsReduced ω) : ∃ j < ω.length
     simp only [List.drop_length] at this
     have := empty_is_reduced cs
     contradiction
-  let ω1 := ω.take j
-  let s1 := ω.get ⟨j, sorry⟩
+  rw [h, max_non_reduced_word_index] at *
+  exact Nat.lt_of_le_of_ne this i_ne_len
+
+theorem DeletionProp (ω : List B) (hω : ¬cs.IsReduced ω) : ∃ j < ω.length, ∃ i < j, π ω = π ((ω.eraseIdx i).eraseIdx j) := by
+  have ω_not_empty := not_reduced_imp_not_empty cs ω hω
+  let i := max_non_reduced_word_index cs ω
+  have := max_index_lt_length cs ω i rfl hω
+  let ω1 := ω.drop i; let ω2 := ω.drop (i + 1)
+  have : ω1 ≠ [] := by
+    simp only [ω1]
+    apply List.length_pos.1
+    rw [List.length_drop]
+    omega
+  let si := ω1.head this
+  have := max_index_is_not_reduced cs ω i hω rfl
+  have ω2_reduced : cs.IsReduced ω2 := by apply beyond_max_index_is_reduced; omega; omega
+  have : ℓ (π ω1) < ℓ (π ω2) := by
+    have := (List.tail_drop ω i).symm
+    have hd_tail : ω1 = si :: ω2 := by
+      simp only [ω1, ω2, si]; rw [this]; simp only [List.head_cons_tail]
+    rw [hd_tail, CoxeterSystem.wordProd_cons]
+    by_contra!
+    have : ℓ ((s si) * (π ω2)) = ℓ (π ω2) + 1 := by
+      apply (CoxeterSystem.length_simple_mul cs (π ω2) si).resolve_right; omega
+    have : cs.IsReduced ω1 := by
+      show ℓ (π ω1) = ω1.length
+      rw [hd_tail, CoxeterSystem.wordProd_cons, List.length_cons, Nat.succ_eq_add_one, this]
+      simp only [add_left_inj]
+      exact ω2_reduced
+    contradiction
+  have exch_prop : ∃ j < ω.length - i, π ω1 = π (ω2.eraseIdx j) := by sorry
+  sorry
 
 /-
 /-! ### The exchange properties and deletion property -/
