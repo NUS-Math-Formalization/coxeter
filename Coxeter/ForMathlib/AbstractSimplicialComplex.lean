@@ -44,11 +44,35 @@ instance : SetLike (AbstractSimplicialComplex V) (Finset V) where
     congr
 
 @[simp, nolint simpNF]
-theorem mem_faces {F : AbstractSimplicialComplex V} {x : Finset V} : x ∈ F.faces ↔ x ∈ F :=
+theorem mem_faces {F : AbstractSimplicialComplex V} : x ∈ F.faces ↔ x ∈ F :=
   Iff.rfl
 
 lemma eq_iff_faces (F G : AbstractSimplicialComplex V) : F = G ↔ F.faces = G.faces := by
   constructor <;> (intro h; ext; rw [h])
+
+/--
+The rank of an ASC is defined to be the supremum of the cardinals of its faces.
+If the size of simplices in F is unbounded, it has rank `0` by definition.
+
+Remark: We should general be careful with the unbounded case.
+-/
+noncomputable def rank (F : AbstractSimplicialComplex V) : ℕ := iSup fun s : F.faces => s.1.card
+
+/-- Definition: For any ASC `F`, we denote by `vertices F` the set of vertices of F. -/
+def vertices (F : AbstractSimplicialComplex V) : Set V := ⋃ s : F.faces, s.1.toSet
+
+/--
+Definition: The simplex with verteces `s ⊆ V` is the complex of all finite subsets of `s`.
+-/
+def simplex (s : Set V) : AbstractSimplicialComplex V where
+  faces := {t | t.toSet ⊆ s}
+  empty_mem := by simp
+  lower' := by
+    intro a b h1 h2
+    refine' Set.Subset.trans ?_ h2
+    congr
+
+section order
 
 @[simp]
 def le (G F : AbstractSimplicialComplex V) := G.faces ⊆ F.faces
@@ -67,17 +91,6 @@ instance partialOrder : PartialOrder (AbstractSimplicialComplex V) where
 
 @[simp]
 lemma le_def {G F : AbstractSimplicialComplex V} : G ≤ F ↔ G.faces ⊆ F.faces := by rfl
-
-/--
-Definition: The simplex with verteces `s ⊆ V` is the complex of all finite subsets of `s`.
--/
-def simplex (s : Set V) : AbstractSimplicialComplex V where
-  faces := {t | t.toSet ⊆ s}
-  empty_mem := by simp
-  lower' := by
-    intro a b h1 h2
-    refine' Set.Subset.trans ?_ h2
-    congr
 
 @[simp]
 lemma simplex_face {s : Set V} {a : Finset V} : a ∈ (simplex s).faces ↔ a.toSet ⊆ s := by rfl
@@ -159,64 +172,9 @@ theorem iSup_faces_of_nonempty {ι : Type*} (x : ι → AbstractSimplicialComple
     apply Set.not_nonempty_iff_eq_empty.1 at h
     simp at h
 
-/-- Definition: For any ASC `F`, we denote by `vertices F` the set of vertices of F. -/
-def vertices (F : AbstractSimplicialComplex V) : Set V := ⋃ s : F.faces, s.1.toSet
+end order
 
-/--
-Definition: Let `F` be an ASC. A maximal face of F is called a facet of F.
--/
-def IsFacet (F : AbstractSimplicialComplex V) (s : Finset V) := s ∈ F ∧ ∀ t ∈ F, s ⊆ t → s = t
-
-/--
-Definition: For any ASC F, we denote by Facets F the set of facets of F.
--/
-def Facets (F : AbstractSimplicialComplex V) : Set (Finset V) := {s | F.IsFacet s}
-
-/-- Definition: A pure abstract simplicial complex is an abstract simplicial complex
-    where all facets have the same cardinality. -/
-def IsPure (F : AbstractSimplicialComplex V) :=
-  ∀ s ∈ Facets F, ∀ t ∈ Facets F, s.card = t.card
-
-class Pure (F : AbstractSimplicialComplex V) : Prop where
-  pure : ∀ s ∈ F.Facets, ∀ t ∈ F.Facets, s.card = t.card
-
-/--Definition: We will call an ASC pure of rank `d` if all its facets has `d` elements-/
-def IsPure' (F : AbstractSimplicialComplex V) (d : ℕ) :=
-  ∀ s ∈ F.Facets, s.card = d
-
-class Pure' (F : AbstractSimplicialComplex V) (d : ℕ) : Prop where
-  pure : ∀ s ∈ F.Facets, s.card = d
-
-lemma isPure_iff_isPure' {F : AbstractSimplicialComplex V} : F.IsPure ↔ ∃ d, F.IsPure' d := by
-  by_cases hemp : Nonempty F.Facets
-  · constructor
-    · let s := Classical.choice (hemp)
-      exact fun hIp ↦ ⟨s.1.card, fun t ht ↦ hIp t ht s s.2⟩
-    · rintro ⟨d, hIp'⟩ s hs t ht
-      rw [hIp' s hs, hIp' t ht]
-  · constructor
-    · intro; use 0
-      simp only [IsPure', Finset.card_eq_zero]
-      contrapose! hemp
-      rcases hemp with ⟨d, ⟨_, _⟩⟩
-      use d
-    · intro
-      simp only [nonempty_subtype, not_exists] at hemp
-      intro s hs
-      exfalso
-      exact hemp s hs
-
-lemma pure_def {F : AbstractSimplicialComplex V} [Pure F] : ∀ s ∈ F.Facets, ∀ t ∈ F.Facets, s.card = t.card := Pure.pure
-
-lemma pure_isPure {F : AbstractSimplicialComplex V} [Pure F] : IsPure F := pure_def
-
-/--
-The rank of an ASC is defined to be the supremum of the cardinals of its faces.
-If the size of simplices in F is unbounded, it has rank `0` by definition.
-
-Remark: We should general be careful with the unbounded case.
--/
-noncomputable def rank (F : AbstractSimplicialComplex V) : ℕ := iSup fun s : F.faces => s.1.card
+section closure
 
 /-- Definition: For a collection s of subsets of V, we denote by closure s the smallest ASC over V containing all elements in s
 as faces.
@@ -383,6 +341,58 @@ instance instCompleteDistribLatticeToAbstractSimplicialComplex : CompleteDistrib
     simp only [Set.mem_union, mem_faces, hf]
 }
 
+end closure
+
+section facet_and_pure
+
+/--
+Definition: Let `F` be an ASC. A maximal face of F is called a facet of F.
+-/
+def IsFacet (F : AbstractSimplicialComplex V) (s : Finset V) := s ∈ F ∧ ∀ t ∈ F, s ⊆ t → s = t
+
+/--
+Definition: For any ASC F, we denote by Facets F the set of facets of F.
+-/
+def Facets (F : AbstractSimplicialComplex V) : Set (Finset V) := {s | F.IsFacet s}
+
+/-- Definition: A pure abstract simplicial complex is an abstract simplicial complex
+    where all facets have the same cardinality. -/
+def IsPure (F : AbstractSimplicialComplex V) :=
+  ∀ s ∈ Facets F, ∀ t ∈ Facets F, s.card = t.card
+
+@[deprecated IsPure]
+class Pure (F : AbstractSimplicialComplex V) : Prop where
+  pure : ∀ s ∈ F.Facets, ∀ t ∈ F.Facets, s.card = t.card
+
+/--Definition: We will call an ASC pure of rank `d` if all its facets has `d` elements-/
+def IsPure' (F : AbstractSimplicialComplex V) (d : ℕ) :=
+  ∀ s ∈ F.Facets, s.card = d
+
+@[deprecated IsPure']
+class Pure' (F : AbstractSimplicialComplex V) (d : ℕ) : Prop where
+  pure : ∀ s ∈ F.Facets, s.card = d
+
+/-- The definitions of purity are equivalent. -/
+lemma isPure_iff_isPure' {F : AbstractSimplicialComplex V} : F.IsPure ↔ ∃ d, F.IsPure' d := by
+  by_cases hemp : Nonempty F.Facets
+  · constructor
+    · let s := Classical.choice (hemp)
+      exact fun hIp ↦ ⟨s.1.card, fun t ht ↦ hIp t ht s s.2⟩
+    · rintro ⟨d, hIp'⟩ s hs t ht
+      rw [hIp' s hs, hIp' t ht]
+  · constructor
+    · intro; use 0
+      simp only [IsPure', Finset.card_eq_zero]
+      contrapose! hemp
+      rcases hemp with ⟨d, ⟨_, _⟩⟩
+      use d
+    · intro
+      simp only [nonempty_subtype, not_exists] at hemp
+      intro s hs
+      exfalso
+      exact hemp s hs
+
+/-- The simplex of `f : Finset V` contains a unique facet `f`.-/
 @[simp]
 theorem closure_singleton_Facets (f : Finset V) : (closure {f}).Facets = {f} := by
   ext g; constructor <;> intro hg
@@ -406,12 +416,13 @@ theorem closure_singleton_Facets (f : Finset V) : (closure {f}).Facets = {f} := 
         Set.iUnion_iUnion_eq_left, Set.mem_setOf_eq] at ht
       apply fun h ↦ subset_antisymm h ht
 
-
+/-- Simplexes of finsets are pure. -/
 theorem isPure_closure_singelton (f : Finset V) : IsPure (closure {f}) := by
   intro s hs t ht
   rw [closure_singleton_Facets, Set.mem_singleton_iff] at *
   rw [hs, ht]
 
+/-- The simplex of `f ∩ g` with `f g : Finset V` is equal to the infimum of the simplexes of `f` and `g`. -/
 theorem closure_singleton_inter_eq_inf {f g : Finset V} : closure {f ∩ g} = closure {f} ⊓ closure {g} := by
   simp only [eq_iff_faces, inf_faces, closure_singleton_faces]
   ext x; constructor <;> {
@@ -419,24 +430,21 @@ theorem closure_singleton_inter_eq_inf {f g : Finset V} : closure {f ∩ g} = cl
     simpa only [Set.mem_inter_iff, Set.mem_setOf_eq, Finset.subset_inter_iff] using h
   }
 
-theorem isPure_inf_closure_singleton {f g : Finset V} : IsPure (closure {f} ⊓ closure {g}) := by
-  rw [← closure_singleton_inter_eq_inf]
-  apply isPure_closure_singelton
-
-lemma bot_eq_ofEmpty' : (⊥ : AbstractSimplicialComplex V) = closurePower ∅ := by
+lemma bot_eq_closurePower_empty : (⊥ : AbstractSimplicialComplex V) = closurePower ∅ := by
   symm
   rw [eq_bot_iff, le_def, show (closurePower ∅).faces = {∅} by simp[closurePower], Set.singleton_subset_iff]
   apply (⊥ : AbstractSimplicialComplex V).empty_mem
 
-lemma bot_eq_ofEmpty : (⊥ : AbstractSimplicialComplex V) = closure ∅ := by
+lemma bot_eq_closure_empty : (⊥ : AbstractSimplicialComplex V) = closure ∅ := by
   symm
   rw [closure_eq_closurePower]
   rw [eq_bot_iff, le_def, show (closurePower ∅).faces = {∅} by simp[closurePower], Set.singleton_subset_iff]
   apply (⊥ : AbstractSimplicialComplex V).empty_mem
 
+/-- The bottom of ASC is the singleton of emptyset. -/
 @[simp]
 lemma bot_faces_eq_empty : (⊥ : AbstractSimplicialComplex V).faces = {∅} := by
-  rw [bot_eq_ofEmpty']
+  rw [bot_eq_closurePower_empty]
   simp only [closurePower, nonempty_subtype, Set.mem_empty_iff_false, exists_const, ↓reduceIte]
 
 @[simp]
@@ -460,6 +468,7 @@ theorem isPure_bot : IsPure (⊥ : AbstractSimplicialComplex V) := by
 theorem iSup_faces_of_isEmpty {ι : Type*} [IsEmpty ι] (x : ι → AbstractSimplicialComplex V) : (⨆ i, x i).faces = {∅} := by
   simp only [iSup_of_empty, bot_faces_eq_empty]
 
+/-- Given a nonempty family `p i` of ASCs, every facet of their supremum `⨆ i, p i` is a facet of some `p i`. -/
 theorem iSup_Facets_le_of_nonempty {ι : Type*} [Nonempty ι] {p : ι → AbstractSimplicialComplex V} : (⨆ i : ι, p i).Facets ≤ ⋃ i : ι, (p i).Facets := by
   intro a ha
   rw [Set.mem_iUnion]
@@ -474,11 +483,15 @@ theorem iSup_Facets_le_of_nonempty {ι : Type*} [Nonempty ι] {p : ι → Abstra
     rw [← mem_faces, iSup_faces_of_nonempty]
     apply Set.mem_iUnion_of_mem i ht
 
-theorem isPure_iSup_isPure {ι : Type*} {p : ι → AbstractSimplicialComplex V} {d : ℕ} (hp : ∀i : ι, IsPure' (p i) d) [Nonempty ι]: IsPure' (⨆ i : ι, p i) d := by
+lemma exits_mem_faces_of_mem_iSup {ι : Type*} [Nonempty ι] {p : ι → AbstractSimplicialComplex V}  (hf : f ∈ (⨆ i : ι, p i).Facets) : ∃ i : ι, f ∈ (p i).Facets :=
+  Set.mem_iUnion.mp (iSup_Facets_le_of_nonempty hf)
+
+/-- The supremum of a nonempty pure ASC family is pure. -/
+theorem isPure_iSup_isPure {ι : Type*} [Nonempty ι] {p : ι → AbstractSimplicialComplex V} {d : ℕ} (hp : ∀i : ι, IsPure' (p i) d) : IsPure' (⨆ i : ι, p i) d := by
   intro s hs
-  apply iSup_Facets_le_of_nonempty at hs
-  obtain ⟨i, hi⟩ := Set.mem_iUnion.mp hs
-  apply hp at hi
-  exact hi
+  obtain ⟨i, hi⟩ := exits_mem_faces_of_mem_iSup hs
+  apply hp i s hi
+
+end facet_and_pure
 
 end AbstractSimplicialComplex
