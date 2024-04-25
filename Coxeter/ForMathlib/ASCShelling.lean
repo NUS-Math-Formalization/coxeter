@@ -13,6 +13,7 @@ def Shelling {F : AbstractSimplicialComplex V} {m : ℕ} (l : Fin m ≃ Facets F
   ∀ k : Fin m, 0 < k.1 → IsPure' ((⨆ j : {j // j < k}, closure {(l j).1}) ⊓ (closure {(l k).1})) (F.rank - 1)
 
 open Classical
+
 /--
 Definition': Let `F` be a pure abstract simplicial complex of rank `d + 1`.
 A shelling of `F` is an linear ordering `l₁`, ⋯ , `lₘ` of all (maximal) facets of `F` such that
@@ -26,14 +27,12 @@ def Shelling' {F :  AbstractSimplicialComplex V} {m : ℕ} (l : Fin m ≃ Facets
 
 /-- Lemma: The two definitions of shellings are equivalent.
 -/
-lemma shelling_iff_shelling' {F : AbstractSimplicialComplex V}  [hpure: Pure F] {m : ℕ} (l : Fin m ≃ Facets F) :
+lemma shelling_iff_shelling' {F : AbstractSimplicialComplex V} (hF : IsPure F) {m : ℕ} (l : Fin m ≃ Facets F) :
     Shelling l ↔ Shelling' l := by
-    constructor
+    constructor <;> refine fun ⟨a, b⟩ ↦ ⟨a, ?_⟩
     · sorry
-    · refine fun ⟨a, b⟩ ↦ ⟨a, ?_⟩
-      intro k kge0 s hs
-      have : ∃j : Fin m, j < k ∧ ∀i : Fin m, i < k → closure {(l i).1} ⊓ closure {(l k).1} ≤ closure {(l j).1} ⊓ closure {(l k).1} := by sorry
-      rw [iSup_inf_eq] at hs
+    · intro k kge0
+
       sorry
 
 /-- Definition: An abstract simplicial complex `F` is called shellable, if it admits a shelling. -/

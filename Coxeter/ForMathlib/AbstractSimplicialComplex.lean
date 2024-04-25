@@ -474,5 +474,11 @@ theorem iSup_Facets_le_of_nonempty {ι : Type*} [Nonempty ι] {p : ι → Abstra
     rw [← mem_faces, iSup_faces_of_nonempty]
     apply Set.mem_iUnion_of_mem i ht
 
+theorem isPure_iSup_isPure {ι : Type*} {p : ι → AbstractSimplicialComplex V} {d : ℕ} (hp : ∀i : ι, IsPure' (p i) d) [Nonempty ι]: IsPure' (⨆ i : ι, p i) d := by
+  intro s hs
+  apply iSup_Facets_le_of_nonempty at hs
+  obtain ⟨i, hi⟩ := Set.mem_iUnion.mp hs
+  apply hp at hi
+  exact hi
 
 end AbstractSimplicialComplex
