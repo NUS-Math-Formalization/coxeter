@@ -43,4 +43,42 @@ theorem left_exchange' {ω : List B} {t : W} (h : cs.IsLeftInversion (π ω) t) 
 Given an `OrderTwoGen` group, we say the system satisfy the deletion property if
 given an expression `w = s₁ s₂ ⋯ sₙ ∈ G`, there exists `1 ≤ i, j < n` such that
 `w = s₁ ⋯ sᵢ₋₁ sᵢ₊₁ ⋯ sⱼ₋₁ sⱼ₋₁ ⋯ sₙ` -/
-theorem DeletionProp (ω : List B) (hω : ¬ cs.IsReduced ω) : ∃ j < ω.length, ∃ i < j, π ω = π ((ω.eraseIdx j).eraseIdx i) := sorry
+def non_reduced_p (ω : List B) := fun k => ¬cs.IsReduced (ω.drop k)
+
+lemma max_non_reduced_word_index_aux (ω : List B) (hω : ¬cs.IsReduced ω) :
+  ∃ n, non_reduced_p cs ω n := by
+  use 0
+  rw [non_reduced_p, List.drop_zero]
+  exact hω
+
+noncomputable def max_non_reduced_word_index (ω : List B) :=
+  @Nat.findGreatest (non_reduced_p cs ω) (Classical.decPred _) (ω.length)
+
+lemma empty_is_reduced : cs.IsReduced [] := by
+  show ℓ (π []) = [].length
+  simp only [CoxeterSystem.wordProd_nil, CoxeterSystem.length_one, List.length_nil]
+
+theorem DeletionProp (ω : List B) (hω : ¬cs.IsReduced ω) : ∃ j < ω.length, ∃ i < j, π ω = π ((ω.eraseIdx j).eraseIdx i) := by
+  have ω_not_empty : ω ≠ [] := by
+    by_contra!
+    rw [this] at hω
+    have := empty_is_reduced cs
+    contradiction
+  let j := max_non_reduced_word_index cs ω; use j
+  have : j ≤ ω.length := by
+    simp only [j, max_non_reduced_word_index]
+    exact @Nat.findGreatest_le (non_reduced_p cs ω) (Classical.decPred _) (List.length ω)
+  have : j ≠ ω.length := by
+    simp only [j, max_non_reduced_word_index]
+    by_contra!
+    have : ¬cs.IsReduced (ω.drop ω.length) := by
+      rw [← non_reduced_p]
+      apply @Nat.findGreatest_of_ne_zero (ω.length) (non_reduced_p cs ω) (Classical.decPred _)
+      apply this
+      have := List.length_pos.2 ω_not_empty
+      omega
+    simp only [List.drop_length] at this
+    have := empty_is_reduced cs
+    contradiction
+  let ω1 := ω.take j
+  let s1 := ω.get ⟨j, sorry⟩
