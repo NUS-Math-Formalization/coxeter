@@ -192,8 +192,8 @@ lemma subset_closure_faces (s : Set (Finset V)) : s ⊆ (closure s).faces := by
 
 lemma closure_faces_eq_self (F : AbstractSimplicialComplex V) : closure F.faces = F := by
   apply le_antisymm
-  · apply sInf_le; simp; rfl
-  · simp
+  · apply sInf_le; simp only [Set.mem_setOf_eq]; rfl
+  · simp only [le_sInf_iff, Set.mem_setOf_eq, le_def, imp_self, forall_const]
 
 lemma closure_mono {s t: Set (Finset V)} : s ⊆ t → closure s ≤ closure t := by
   intro hst
