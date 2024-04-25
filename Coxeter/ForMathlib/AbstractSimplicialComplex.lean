@@ -152,11 +152,6 @@ lemma sSup_eq_unionSubset {s : Set <| AbstractSimplicialComplex V} (hs : s.Nonem
 lemma sSup_faces_of_nonempty {s : Set (AbstractSimplicialComplex V)} (h : s.Nonempty) : (sSup s).faces = ⋃ F : s, F.1.faces := by
   rw [sSup_eq_unionSubset h]; rfl
 
-/--
-Definition: For any ASC F, we denote by vertices F the set of vertices of F.
--/
-def vertices (F : AbstractSimplicialComplex V) : Set V := ⋃ s : F.faces, s.1.toSet
-
 lemma vertices_iff_singleton_set_face (F : AbstractSimplicialComplex V) (x : V) :
     {x} ∈ F.faces ↔ x ∈ vertices F := by
   constructor
@@ -169,52 +164,6 @@ lemma vertices_iff_singleton_set_face (F : AbstractSimplicialComplex V) (x : V) 
     refine @lower' V F a.1 _ ?_ a.2
     simp only [Finset.le_eq_subset, Finset.singleton_subset_iff]
     exact hxsx
-
-/--
-Definition: Let F be an ASC. A maximal face of F is called a facet of F.
--/
-def IsFacet (F : AbstractSimplicialComplex V) (s : Finset V) := s ∈ F ∧ ∀ t ∈ F, s ⊆ t → s = t
-
-/--
-Definition: For any ASC F, we denote by Facets F the set of facets of F.
--/
-def Facets (F : AbstractSimplicialComplex V) : Set (Finset V) := {s | F.IsFacet s}
-
-/-- Definition: A pure abstract simplicial complex is an abstract simplicial complex
-    where all facets have the same cardinality. -/
-def IsPure (F : AbstractSimplicialComplex V) :=
-  ∀ s ∈ Facets F, ∀ t ∈ Facets F, s.card = t.card
-
-class Pure (F : AbstractSimplicialComplex V) : Prop where
-  pure : ∀ s ∈ F.Facets, ∀ t ∈ F.Facets, s.card = t.card
-
-/--Definition: We will call an ASC pure of rank `d` if all its facets has `d` elements-/
-def IsPure' (F : AbstractSimplicialComplex V) (d : ℕ) :=
-  ∀ s ∈ F.Facets, s.card = d
-
-class Pure' (F : AbstractSimplicialComplex V) (d : ℕ) : Prop where
-  pure : ∀ s ∈ F.Facets, s.card = d
-
-lemma isPure_iff_isPure' {F : AbstractSimplicialComplex V} : F.IsPure ↔ ∃ d, F.IsPure' d := by
-  by_cases hemp : Nonempty F.Facets
-  · constructor
-    · let s := Classical.choice (hemp)
-      exact fun hIp ↦ ⟨s.1.card, fun t ht ↦ hIp t ht s s.2⟩
-    · rintro ⟨d, hIp'⟩ s hs t ht
-      rw [hIp' s hs, hIp' t ht]
-  · constructor
-    · intro; use 0
-      simp only [IsPure', Finset.card_eq_zero]
-      contrapose! hemp
-      rcases hemp with ⟨d, ⟨_, _⟩⟩
-      use d
-    · intro
-      simp only [nonempty_subtype, not_exists] at hemp
-      intro s hs t _
-      exfalso
-      exact hemp s hs
-
-lemma pure_def {F : AbstractSimplicialComplex V} [Pure F] : ∀ s ∈ F.Facets, ∀ t ∈ F.Facets, s.card = t.card := Pure.pure
 
 @[simp]
 lemma sup_faces (F G : AbstractSimplicialComplex V) : (F ⊔ G).faces = F.faces ∪ G.faces := by
