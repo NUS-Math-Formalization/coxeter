@@ -9,16 +9,16 @@ variable {A : Type*} [PartialOrder A]
 instance {x y : P} : Fintype (Set.Icc x y) := sorry -- temperory
 
 /-
-Definition: Let P and A be posets. An edge labelling of P in A is a map from the set of edges of P to the poset A.
+Definition: Let `P` and `A` be posets. An edge labelling of `P` in `A` is a map from the set of edges of `P` to the poset `A`.
 -/
 @[simp]
 abbrev edgeLabeling (P A : Type*) [PartialOrder P] := edges P  → A
 
 /-
-Definition: Let P and A be posets and l be an edge labelling of P in A.
-Then any maximal chain m : x_0 ⋖ x_1 ⋖ ⋯ ⋖ x_n in P, we define a list in A by [l(x_0 ⋖ x_1),l(x_1 ⋖ x_2), ⋯ ,l(x_{n-1} ⋖ x_n)].
+Definition: Let `P` and `A` be posets and `l` be an edge labelling of `P` in `A`.
+Then for any maximal chain `m : x_0 ⋖ x_1 ⋖ ⋯ ⋖ x_n` in `P`, we define a list in `A` by `[l(x_0 ⋖ x_1), l(x_1 ⋖ x_2), ⋯, l (x_{n-1} ⋖ x_n)]`.
 -/
-def mapMaxChain (l : edgeLabeling P A) (m : maximalChains P)  : List A := List.map (fun e => l e) <| edgePairs m
+def mapMaxChain (l : edgeLabeling P A) (m : maximalChains P) : List A := List.map (fun e => l e) <| edgePairs m
 
 /-
 Definition: Let P and A be posets and l be an edge labelling of P in A.
@@ -43,7 +43,7 @@ class ELLabeling (l : edgeLabeling P A) where
 
 /-Theorem: Let P be a graded finite poset with an EL-labelling l to a poset A. Then P is shellable.
 -/
-theorem shellable_of_ELLabeling {P : Type*} [PartialOrder P] [PartialOrder A] [Fintype P] [GradedPoset P] (l : edgeLabeling P A) (h: ELLabeling l): Shellable P :=sorry
+theorem shellable_of_ELLabeling {P : Type*} [PartialOrder P] [PartialOrder A] [Fintype P] [GradedPoset P] (l : edgeLabeling P A) (h: ELLabeling l): ShellableDelta P := sorry
 
 
 end PartialOrder
