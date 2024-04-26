@@ -20,6 +20,47 @@ local prefix:max "π" => cs.wordProd
 
 namespace CoxeterGroup
 
+lemma mem_right_inv_seq {ω : List B} {t : W} (h : t ∈ cs.rightInvSeq ω) :
+  ∃ n : ℕ, n < ω.length ∧ t = (π (ω.drop n))⁻¹ * ((Option.map (cs.simple) (ω.get? n)).getD 1) * (π (ω.drop n)) := by
+  induction ω with
+  | nil => simp only [CoxeterSystem.rightInvSeq_nil, List.not_mem_nil] at *
+  | cons hd tail ih =>
+    rw [CoxeterSystem.rightInvSeq] at h
+    simp only [List.mem_cons] at h
+    rcases h with h₁ | h₂
+    . use 0
+      constructor
+      . norm_num
+      . simp only [List.drop_zero, List.get?_cons_zero, Option.map_some', Option.getD_some,
+          CoxeterSystem.wordProd_cons, mul_inv_rev, CoxeterSystem.inv_simple,
+          CoxeterSystem.simple_mul_simple_cancel_right, ← mul_assoc]
+        exact h₁
+    . obtain ⟨n, hn, hprod⟩ := ih h₂
+      use (n + 1)
+      constructor
+      . rw [List.length_cons, Nat.succ_eq_add_one, add_lt_add_iff_right]
+        exact hn
+      . simp only [List.drop_succ_cons, List.get?_cons_succ]
+        exact hprod
+
+-- I prove a property of eraseIdx
+private lemma eraseIdx_eq_take_append_drop (ω : List B) (i : ℕ) :
+  ω.eraseIdx i = (ω.take i) ++ (ω.drop (i + 1)) := by
+  induction ω generalizing i with
+  | nil => simp only [List.eraseIdx_nil, List.take_nil, List.drop_nil, List.append_nil]
+  | cons hd tail ih =>
+    by_cases h : i = 0
+    . rw [h]
+      simp only [List.eraseIdx_cons_zero, List.take_zero, zero_add, List.drop_succ_cons,
+        List.drop_zero, List.nil_append]
+    . have := Nat.ne_zero_iff_zero_lt.1 h
+      have := (Nat.sub_eq_iff_eq_add this).mp rfl
+      simp only [List.drop_succ_cons]
+      rw [this]
+      simp only [Nat.reduceSucc, List.eraseIdx_cons_succ, List.take_cons_succ, List.cons_append,
+        List.cons.injEq, true_and]
+      apply ih
+
 /-- Exchange Property:
 Given an `OrderTwoGen` group, we say the system satisfy the Exchange Property if
 given a reduced expression `w = s₁ s₂ ⋯ sₙ ∈ G` and `s ∈ S`,
@@ -29,7 +70,28 @@ theorem right_exchange {ω : List B} {t : W} (h : cs.IsRightInversion (π ω) t)
 /-- Mirrored version of Exchange Property -/
 theorem left_exchange {ω : List B} {t : W} (h : cs.IsLeftInversion (π ω) t) : t ∈ cs.leftInvSeq ω := sorry
 
-theorem right_exchange' {ω : List B} {t : W} (h : cs.IsRightInversion (π ω) t) : ∃ j < ω.length, π ω * t = π (ω.eraseIdx j) := sorry
+theorem right_exchange' {ω : List B} {t : W} (h : cs.IsRightInversion (π ω) t) :
+  ∃ j < ω.length, π ω * t = π (ω.eraseIdx j) := by
+  have t_in_ris := right_exchange cs h
+  rw [CoxeterSystem.IsRightInversion] at h
+  rcases h with ⟨_, h₂⟩
+  obtain ⟨n, hn, hprod⟩ := mem_right_inv_seq cs t_in_ris
+  rw [hprod]
+  nth_rw 2 [← List.take_append_drop n ω]
+  rw [CoxeterSystem.wordProd_append, ← mul_assoc, ← mul_assoc, mul_inv_cancel_right]
+  have : ω.drop n ≠ [] := by
+    apply List.length_pos_iff_ne_nil.1
+    rw [List.length_drop]; omega
+  rw [← List.head_cons_tail (ω.drop n) this, CoxeterSystem.wordProd_cons]
+  have : s ((ω.drop n).head this) = (Option.map (cs.simple) (ω.get? n)).getD 1 := by sorry
+  rw [← this, List.tail_drop, ← mul_assoc, CoxeterSystem.simple_mul_simple_cancel_right]
+  use n
+  constructor
+  . exact hn
+  . rw [← CoxeterSystem.wordProd_append]; congr
+    apply Eq.symm
+    apply eraseIdx_eq_take_append_drop
+
 
 theorem left_exchange' {ω : List B} {t : W} (h : cs.IsLeftInversion (π ω) t) : ∃ j < ω.length, t * π ω = π (ω.eraseIdx j) := sorry
 
@@ -94,24 +156,6 @@ private lemma max_index_lt_length (ω : List B) (i : ℕ) (h : i = max_non_reduc
     contradiction
   rw [h, max_non_reduced_word_index] at *
   exact Nat.lt_of_le_of_ne this i_ne_len
-
--- I prove a property of eraseIdx
-private lemma eraseIdx_eq_take_append_drop (ω : List B) (i : ℕ) :
-  ω.eraseIdx i = (ω.take i) ++ (ω.drop (i + 1)) := by
-  induction ω generalizing i with
-  | nil => simp only [List.eraseIdx_nil, List.take_nil, List.drop_nil, List.append_nil]
-  | cons hd tail ih =>
-    by_cases h : i = 0
-    . rw [h]
-      simp only [List.eraseIdx_cons_zero, List.take_zero, zero_add, List.drop_succ_cons,
-        List.drop_zero, List.nil_append]
-    . have := Nat.ne_zero_iff_zero_lt.1 h
-      have := (Nat.sub_eq_iff_eq_add this).mp rfl
-      simp only [List.drop_succ_cons]
-      rw [this]
-      simp only [Nat.reduceSucc, List.eraseIdx_cons_succ, List.take_cons_succ, List.cons_append,
-        List.cons.injEq, true_and]
-      apply ih
 
 -- The proof closely follows Bjorner-Brenti.
 theorem DeletionProp (ω : List B) (hω : ¬cs.IsReduced ω) : ∃ j < ω.length, ∃ i < j, π ω = π ((ω.eraseIdx j).eraseIdx i) := by
