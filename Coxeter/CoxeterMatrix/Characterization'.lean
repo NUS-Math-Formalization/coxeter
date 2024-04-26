@@ -53,7 +53,7 @@ private lemma eraseIdx_eq_take_append_drop (ω : List B) (i : ℕ) :
     . rw [h]
       simp only [List.eraseIdx_cons_zero, List.take_zero, zero_add, List.drop_succ_cons,
         List.drop_zero, List.nil_append]
-    . have := Nat.ne_zero_iff_zero_lt.1 h
+    . have := Nat.pos_iff_ne_zero.2 h
       have := (Nat.sub_eq_iff_eq_add this).mp rfl
       simp only [List.drop_succ_cons]
       rw [this]
@@ -61,6 +61,7 @@ private lemma eraseIdx_eq_take_append_drop (ω : List B) (i : ℕ) :
         List.cons.injEq, true_and]
       apply ih
 
+-- This lemma gives the head of the resulting list after dropping n elements
 private lemma drop_head (ω : List B) (n : ℕ) (h : ω.drop n ≠ []) :
   s ((ω.drop n).head h) = (Option.map (cs.simple) (ω.get? n)).getD 1 := by
   induction ω generalizing n with
@@ -88,8 +89,7 @@ theorem left_exchange {ω : List B} {t : W} (h : cs.IsLeftInversion (π ω) t) :
 
 theorem right_exchange' {ω : List B} {t : W} (h : cs.IsRightInversion (π ω) t) :
   ∃ j < ω.length, π ω * t = π (ω.eraseIdx j) := by
-  have t_in_ris := right_exchange cs h
-  obtain ⟨n, hn, hprod⟩ := mem_right_inv_seq cs t_in_ris
+  obtain ⟨n, hn, hprod⟩ := mem_right_inv_seq cs (right_exchange cs h)
   rw [hprod]
   nth_rw 2 [← List.take_append_drop n ω]
   rw [CoxeterSystem.wordProd_append, ← mul_assoc, ← mul_assoc, mul_inv_cancel_right]
@@ -103,8 +103,7 @@ theorem right_exchange' {ω : List B} {t : W} (h : cs.IsRightInversion (π ω) t
   constructor
   . exact hn
   . rw [← CoxeterSystem.wordProd_append]; congr
-    apply Eq.symm
-    apply eraseIdx_eq_take_append_drop
+    apply (eraseIdx_eq_take_append_drop ω n).symm
 
 
 theorem left_exchange' {ω : List B} {t : W} (h : cs.IsLeftInversion (π ω) t) : ∃ j < ω.length, t * π ω = π (ω.eraseIdx j) := sorry
