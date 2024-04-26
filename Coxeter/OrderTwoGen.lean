@@ -402,9 +402,8 @@ noncomputable def metric {G : Type*} [Group G] (S : Set G) [@OrderTwoGen G _ S] 
     simp only [Nat.cast_eq_zero, length_zero_iff_one] at h
     rw [← one_mul y, ← h, mul_assoc, mul_left_inv, mul_one]
   edist_dist := fun x y ↦ by
-    sorry
-    -- simp only [Nonneg.mk_nat_cast, ENNReal.ofReal_natCast]
-    -- exact rfl
+    simp only [Nonneg.mk_natCast, ENNReal.ofReal_natCast]
+    exact rfl
 
 
 noncomputable def choose_reduced_word (S : Set G) [OrderTwoGen S] (g:G) : List S := Classical.choose (exists_reduced_word S g)

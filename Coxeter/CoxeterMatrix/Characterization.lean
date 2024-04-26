@@ -16,49 +16,45 @@ local notation : max "ℓ(" g ")" => (length S g)
 
 @[simp]
 abbrev ExchangeProp := ∀ {L : List S} {s : S}, reduced_word L →
-  ℓ(s * L) ≤ ℓ(L) → ∃ (i: Fin L.length), (s : G) * L = L.removeNth i
+  ℓ(s * L) ≤ ℓ(L) → ∃ (i : Fin L.length), (s : G) * L = L.removeNth i
 
 @[simp]
 abbrev ExchangeProp' := ∀ {L : List S} {s : S}, reduced_word L →
-  ℓ(L * s) ≤ ℓ(L) → ∃ (i: Fin L.length), (L : G) * s = L.removeNth i
+  ℓ(L * s) ≤ ℓ(L) → ∃ (i : Fin L.length), (L : G) * s = L.removeNth i
 
 @[simp]
-abbrev DeletionProp := ∀ (L:List S),
-  ℓ( L ) < L.length →
-  ∃ (j: Fin L.length), ∃ (i : Fin j), (L : G) = (L.removeNth j).removeNth i
+abbrev DeletionProp := ∀ (L : List S), ℓ(L) < L.length →
+  ∃ (j : Fin L.length), ∃ (i : Fin j), (L : G) = (L.removeNth j).removeNth i
 
-
-lemma exchange_iff_exchange' : ExchangeProp S ↔ ExchangeProp' S:= by
+lemma exchange_iff_exchange' : ExchangeProp S ↔ ExchangeProp' S := by
   constructor
   · rw [ExchangeProp, ExchangeProp']
     intro EP L s h_red_L h_len
     have h_red_L_rev := reverse_is_reduced h_red_L
-    have h_len_r :ℓ(s * L.reverse) ≤ ℓ(L.reverse) := by
-      calc
-      _ =  ℓ((s * L.reverse)⁻¹) := length_eq_inv_length
-      _ =  ℓ(L * s) := by
+    have h_len_r : ℓ(s * L.reverse) ≤ ℓ(L.reverse) := by calc
+      _ = ℓ((s * L.reverse)⁻¹) := length_eq_inv_length
+      _ = ℓ(L * s) := by
         congr 1
         nth_rewrite 1 [gprod_reverse, inv_eq_self' s]
         group
-      _ ≤  ℓ(L) := h_len
-      _ =  ℓ(L.reverse) := by simp only [reverse_length_eq_length]
-    let ⟨i, Hp⟩  := EP h_red_L_rev h_len_r
-    rw [←gprod_cons] at Hp
+      _ ≤ ℓ(L) := h_len
+      _ = ℓ(L.reverse) := by simp only [reverse_length_eq_length]
+    let ⟨i, Hp⟩ := EP h_red_L_rev h_len_r
+    rw [← gprod_cons] at Hp
     have h_i_lt_k : i < L.length := by have := i.2; simp only [List.length_reverse] at this; exact this
     let j := L.length - i - 1
     have h_j_lt_k : j < L.length := by apply Nat.sub_sub_one_lt_self; exact Nat.pos_of_lt h_i_lt_k
     let j' : Fin L.length := ⟨j, h_j_lt_k⟩
     use j'
-    rw [←gprod_append_singleton]
+    rw [← gprod_append_singleton]
     apply eq_of_one_div_eq_one_div
-    rw [←inv_eq_one_div, ←inv_eq_one_div, ←OrderTwoGen.gprod_reverse, ←OrderTwoGen.gprod_reverse, List.reverse_cons'']
+    rw [← inv_eq_one_div, ← inv_eq_one_div, ← OrderTwoGen.gprod_reverse, ← OrderTwoGen.gprod_reverse, List.reverse_cons'']
     rw [List.removeNth_reverse L i h_i_lt_k] at Hp
-    rw [Hp];
+    rw [Hp]
   rw [ExchangeProp, ExchangeProp']
   intro EP' L s h_red_L h_len
   have h_red_L_rev := reverse_is_reduced h_red_L
-  have h_len_r : ℓ(L.reverse * s) ≤ ℓ(L.reverse) := by
-    calc
+  have h_len_r : ℓ(L.reverse * s) ≤ ℓ(L.reverse) := by calc
     _ = ℓ((L.reverse * s)⁻¹) := length_eq_inv_length
     _ = ℓ(s * L) := by
       congr 1
@@ -67,22 +63,22 @@ lemma exchange_iff_exchange' : ExchangeProp S ↔ ExchangeProp' S:= by
     _ ≤ ℓ(L) := h_len
     _ = ℓ(L.reverse) := by simp only [reverse_length_eq_length]
   let ⟨i, Hp⟩ := EP' h_red_L_rev h_len_r
-  rw [←gprod_append_singleton] at Hp
+  rw [← gprod_append_singleton] at Hp
   have h_i_lt_k : i < L.length := by have := i.2; simp only [List.length_reverse] at this; exact this
   let j := L.length - i - 1
   have h_j_lt_k : j < L.length := by apply Nat.sub_sub_one_lt_self; exact Nat.pos_of_lt h_i_lt_k
   let j' : Fin L.length := ⟨j, h_j_lt_k⟩
   use j'
-  rw [←gprod_cons]
+  rw [← gprod_cons]
   apply eq_of_one_div_eq_one_div
-  rw [←inv_eq_one_div, ←inv_eq_one_div, ←OrderTwoGen.gprod_reverse, ←OrderTwoGen.gprod_reverse, List.reverse_cons]
+  rw [← inv_eq_one_div, ← inv_eq_one_div, ← OrderTwoGen.gprod_reverse, ← OrderTwoGen.gprod_reverse, List.reverse_cons]
   rw [List.removeNth_reverse L i h_i_lt_k] at Hp
   rw [Hp]
 
 /-
 We now prove that ExchangeProp and DeletionProperty are equivalent
 -/
-lemma exchange_imp_deletion : ExchangeProp S →  DeletionProp S:= by
+lemma exchange_imp_deletion : ExchangeProp S → DeletionProp S := by
   rw [exchange_iff_exchange']
   rw [ExchangeProp', DeletionProp]
   intro EP' L HL
@@ -91,21 +87,20 @@ lemma exchange_imp_deletion : ExchangeProp S →  DeletionProp S:= by
   let L1 := L.take j; let s := L.get j
   have Hj : L1.length = j := List.take_le_length L (le_of_lt j.2)
   have red_L1 : reduced_word L1 := reduced_take_max_reduced_word HL'
-  have non_red_L1p : ¬ reduced_word (L1 ++ [s]) := by
+  have non_red_L1p : ¬reduced_word (L1 ++ [s]) := by
     rw [← List.take_get_lt L j.1 j.2]
-    have := nonreduced_succ_take_max_reduced_word HL'
-    exact this
-  have non_red_L1_s: ℓ((L1.gprod * s)) ≤ ℓ(L1.gprod) := by
+    exact nonreduced_succ_take_max_reduced_word HL'
+  have non_red_L1_s : ℓ((L1.gprod * s)) ≤ ℓ(L1.gprod) := by
     apply reduced_nonreduced_length_le red_L1 non_red_L1p
   let ⟨i, Hp⟩ := EP' red_L1 non_red_L1_s
-  have Hlen : i < j.1 := by rw [←Hj]; exact i.2
+  have Hlen : i < j.1 := by rw [← Hj]; exact i.2
   let i_fin_j : Fin j := ⟨i, Hlen⟩; use i_fin_j
   have h_L_decomp : (List.removeNth (List.removeNth L j) i) =
-    (List.removeNth L1 i).gprod * (List.drop (j+1) L) := by
-    rw [←gprod_append]; apply congr_arg
-    rw [←List.removeNth_append_lt, ←List.removeNth_eq_take_drop]
+    (List.removeNth L1 i).gprod * (List.drop (j + 1) L) := by
+    rw [← gprod_append]; apply congr_arg
+    rw [← List.removeNth_append_lt, ← List.removeNth_eq_take_drop]
     exact i.2
-  rw [h_L_decomp, ←Hp, ←gprod_singleton]
+  rw [h_L_decomp, ← Hp, ← gprod_singleton]
   apply take_drop_get'
 
 lemma deletion_imp_exchange : @DeletionProp G _ S _ → @ExchangeProp G _ S _ := by
