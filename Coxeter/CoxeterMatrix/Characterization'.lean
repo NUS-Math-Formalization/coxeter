@@ -61,6 +61,22 @@ private lemma eraseIdx_eq_take_append_drop (ω : List B) (i : ℕ) :
         List.cons.injEq, true_and]
       apply ih
 
+private lemma drop_head (ω : List B) (n : ℕ) (h : ω.drop n ≠ []) :
+  s ((ω.drop n).head h) = (Option.map (cs.simple) (ω.get? n)).getD 1 := by
+  induction ω generalizing n with
+  | nil => simp only [List.drop_nil, ne_eq, not_true_eq_false] at h
+  | cons hd tail ih =>
+    by_cases h' : n = 0
+    . simp_rw [h', List.drop_zero, List.head_cons, List.get?_cons_zero, Option.map_some',
+        Option.getD_some]
+    . have n_pos := Nat.pos_iff_ne_zero.2 h'
+      have n_sub_add : n = n - 1 + 1 := by rw [Nat.sub_add_cancel]; exact n_pos
+      have : (hd :: tail).drop n = tail.drop (n - 1) := by nth_rw 1 [n_sub_add, List.drop_succ_cons]
+      simp_rw [this]; rw [this] at h
+      rw [ih]; congr 2
+      nth_rw 2 [n_sub_add]
+      apply List.get?_cons_succ.symm
+
 /-- Exchange Property:
 Given an `OrderTwoGen` group, we say the system satisfy the Exchange Property if
 given a reduced expression `w = s₁ s₂ ⋯ sₙ ∈ G` and `s ∈ S`,
@@ -73,8 +89,6 @@ theorem left_exchange {ω : List B} {t : W} (h : cs.IsLeftInversion (π ω) t) :
 theorem right_exchange' {ω : List B} {t : W} (h : cs.IsRightInversion (π ω) t) :
   ∃ j < ω.length, π ω * t = π (ω.eraseIdx j) := by
   have t_in_ris := right_exchange cs h
-  rw [CoxeterSystem.IsRightInversion] at h
-  rcases h with ⟨_, h₂⟩
   obtain ⟨n, hn, hprod⟩ := mem_right_inv_seq cs t_in_ris
   rw [hprod]
   nth_rw 2 [← List.take_append_drop n ω]
@@ -82,9 +96,9 @@ theorem right_exchange' {ω : List B} {t : W} (h : cs.IsRightInversion (π ω) t
   have : ω.drop n ≠ [] := by
     apply List.length_pos_iff_ne_nil.1
     rw [List.length_drop]; omega
-  rw [← List.head_cons_tail (ω.drop n) this, CoxeterSystem.wordProd_cons]
-  have : s ((ω.drop n).head this) = (Option.map (cs.simple) (ω.get? n)).getD 1 := by sorry
-  rw [← this, List.tail_drop, ← mul_assoc, CoxeterSystem.simple_mul_simple_cancel_right]
+  rw [← List.head_cons_tail (ω.drop n) this, CoxeterSystem.wordProd_cons,
+    ← drop_head cs ω n this, List.tail_drop, ← mul_assoc,
+    CoxeterSystem.simple_mul_simple_cancel_right]
   use n
   constructor
   . exact hn
