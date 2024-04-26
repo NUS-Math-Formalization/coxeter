@@ -297,6 +297,11 @@ lemma closure_singleton_faces (f : Finset V) : (closure {f}).faces = {t : Finset
   simp only [nonempty_subtype, Set.mem_singleton_iff, exists_eq, ↓reduceIte, Set.iUnion_coe_set,
     Set.iUnion_iUnion_eq_left]
 
+lemma closure_singleton_mono {f g : Finset V} (h : f ⊆ g) : closure {f} ≤ closure {g} := by
+  rw [le_def, closure_singleton_faces, closure_singleton_faces]
+  intro t ht x htx
+  apply Finset.mem_of_subset h <| ht htx
+
 instance instNonemptyToAbstractSimplicialComplexContainingSet (s : Set (Finset V)) : Nonempty {x : AbstractSimplicialComplex V // s ⊆ x.faces} := ⟨closure s, subset_closure_faces _⟩
 
 /--
@@ -422,6 +427,12 @@ theorem isPure_closure_singelton (f : Finset V) : IsPure (closure {f}) := by
   rw [closure_singleton_Facets, Set.mem_singleton_iff] at *
   rw [hs, ht]
 
+/-- If `f : Finset V` has cardinality `d`, then the simplex of `f` is pure of rank `d`. -/
+theorem isPure'_closure_singleton {f : Finset V} (hf : f.card = d) : IsPure' (closure {f}) d := by
+  intro s hs
+  rw [closure_singleton_Facets, Set.mem_singleton_iff] at hs
+  rw [hs, hf]
+
 /-- The simplex of `f ∩ g` with `f g : Finset V` is equal to the infimum of the simplexes of `f` and `g`. -/
 theorem closure_singleton_inter_eq_inf {f g : Finset V} : closure {f ∩ g} = closure {f} ⊓ closure {g} := by
   simp only [eq_iff_faces, inf_faces, closure_singleton_faces]
@@ -487,7 +498,7 @@ lemma exits_mem_faces_of_mem_iSup {ι : Type*} [Nonempty ι] {p : ι → Abstrac
   Set.mem_iUnion.mp (iSup_Facets_le_of_nonempty hf)
 
 /-- The supremum of a nonempty pure ASC family is pure. -/
-theorem isPure_iSup_isPure {ι : Type*} [Nonempty ι] {p : ι → AbstractSimplicialComplex V} {d : ℕ} (hp : ∀i : ι, IsPure' (p i) d) : IsPure' (⨆ i : ι, p i) d := by
+theorem isPure'_iSup_isPure' {ι : Type*} [Nonempty ι] {p : ι → AbstractSimplicialComplex V} {d : ℕ} (hp : ∀i : ι, IsPure' (p i) d) : IsPure' (⨆ i : ι, p i) d := by
   intro s hs
   obtain ⟨i, hi⟩ := exits_mem_faces_of_mem_iSup hs
   apply hp i s hi
