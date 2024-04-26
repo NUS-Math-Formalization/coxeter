@@ -1,4 +1,4 @@
-import Coxeter.CoxeterMatrix.CoxeterMatrix
+import Coxeter.CoxeterMatrix.CoxeterMatrix'
 import Coxeter.CoxeterMatrix.Palindrome
 import Coxeter.AlternatingWord
 import Coxeter.CoxeterMatrix.CoxeterSystem
