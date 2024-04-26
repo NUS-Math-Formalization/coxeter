@@ -152,6 +152,19 @@ lemma sSup_eq_unionSubset {s : Set <| AbstractSimplicialComplex V} (hs : s.Nonem
 lemma sSup_faces_of_nonempty {s : Set (AbstractSimplicialComplex V)} (h : s.Nonempty) : (sSup s).faces = ⋃ F : s, F.1.faces := by
   rw [sSup_eq_unionSubset h]; rfl
 
+lemma vertices_iff_singleton_set_face (F : AbstractSimplicialComplex V) (x : V) :
+    {x} ∈ F.faces ↔ x ∈ vertices F := by
+  constructor
+  · intro hx
+    simp only [vertices, Set.iUnion_coe_set, mem_faces,
+      Set.mem_iUnion, Finset.mem_coe, exists_prop]
+    exact ⟨{x}, And.intro hx (Finset.mem_singleton.mpr rfl)⟩
+  · rintro ⟨sx, ⟨⟨a, ha⟩, hxsx⟩⟩
+    rw [← ha] at hxsx
+    refine @lower' V F a.1 _ ?_ a.2
+    simp only [Finset.le_eq_subset, Finset.singleton_subset_iff]
+    exact hxsx
+
 @[simp]
 lemma sup_faces (F G : AbstractSimplicialComplex V) : (F ⊔ G).faces = F.faces ∪ G.faces := by
   let s : Set (AbstractSimplicialComplex V) := {F, G}
