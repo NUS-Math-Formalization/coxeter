@@ -76,6 +76,7 @@ theorem DeletionProp (ω : List B) (hω : ¬cs.IsReduced ω) : ∃ j < ω.length
     contradiction
   let ω1 := ω.take j
   let s1 := ω.get ⟨j, sorry⟩
+  sorry
 
 /-
 /-! ### The exchange properties and deletion property -/
