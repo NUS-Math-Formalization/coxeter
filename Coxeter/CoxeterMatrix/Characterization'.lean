@@ -85,7 +85,7 @@ lemma mem_left_inv_seq {ω : List B} {t : W} (h : t ∈ cs.leftInvSeq ω) :
   . omega
   . exact hk_prod
 
--- I prove a property of eraseIdx
+-- I prove some properties of eraseIdx
 lemma eraseIdx_eq_take_append_drop {ω : List B} {i : ℕ} :
   ω.eraseIdx i = (ω.take i) ++ (ω.drop (i + 1)) := by
   induction ω generalizing i with
@@ -282,13 +282,11 @@ private lemma max_index_is_not_reduced (ω : List B) (i : ℕ) (h₀ : ¬cs.IsRe
   by_cases h : i = 0
   . rw [h, non_reduced_p, List.drop_zero]; exact h₀
   . apply @Nat.findGreatest_of_ne_zero i (non_reduced_p cs ω) (Classical.decPred _) (ω.length)
-    . rw [max_non_reduced_word_index] at h₁; exact h₁.symm
-    . exact h
+    exact h₁.symm; exact h
 
 private lemma beyond_max_index_is_reduced (ω : List B) (n : ℕ) (h₀ : n ≤ ω.length)
   (h₁ : n > max_non_reduced_word_index cs ω) : cs.IsReduced (ω.drop n) := by
   apply of_not_not
-  simp only [max_non_reduced_word_index] at h₁
   apply @Nat.findGreatest_is_greatest n (non_reduced_p cs ω) (Classical.decPred _) (ω.length)
   exact h₁; exact h₀
 
@@ -318,8 +316,7 @@ theorem DeletionProp (ω : List B) (hω : ¬cs.IsReduced ω) : ∃ j < ω.length
   let ω1 := ω.drop i; let ω2 := ω.drop (i + 1)
   have : ω1 ≠ [] := by
     apply List.length_pos.1
-    rw [List.length_drop]
-    omega
+    rw [List.length_drop]; omega
   let si := ω1.head this
   have hd_tail : ω1 = si :: ω2 := by
     simp only [ω1, ω2, si, (List.tail_drop ω i).symm, List.head_cons_tail]
