@@ -178,10 +178,6 @@ private lemma t_mul_word_imp_isReflection_t {ω : List B} {t : W} {n : ℕ} (h�
   have : ω.reverse.length - n - 1 < ω.reverse.length := by omega
   apply word_mul_t_imp_isReflection_t cs this hprod
 
-/-- Exchange Property:
-Given an `OrderTwoGen` group, we say the system satisfy the Exchange Property if
-given a reduced expression `w = s₁ s₂ ⋯ sₙ ∈ G` and `s ∈ S`,
-there exists `1 ≤ i < n` such that `s s₁ ⋯ sₙ = s₁ ⋯ sᵢ₋₁ sᵢ₊₁ ⋯ sₙ` -/
 theorem right_exchange {ω : List B} {t : W} (h : cs.IsRightInversion (π ω) t) : t ∈ ris ω := sorry
 
 /-- Mirrored version of Exchange Property -/
@@ -249,26 +245,15 @@ theorem left_exchange_tfae_of_reduced {ω : List B} (t : W) (rω : cs.IsReduced 
     . exact left_exchange'_aux cs
   . simp only [List.getLastD_cons, List.getLastD_nil, forall_exists_index, and_imp]
     intro n hn hprod
-    apply (left_inversion_iff_right_inversion_reverse cs).2
-    have := t_mul_word_imp_isReflection_t cs hn hprod
-    rw [← inv_inj, mul_inv_rev, ← CoxeterSystem.wordProd_reverse cs,
-      CoxeterSystem.inv_reflection_eq cs this, ← CoxeterSystem.wordProd_reverse cs,
-      eraseIdx_reverse (by exact hn)] at hprod
-    have : cs.IsRightInversion (π ω.reverse) t
-      ↔ ∃ j < ω.reverse.length, (π ω.reverse) * t = π (ω.reverse.eraseIdx j) := by
-      apply right_exchange_tfae_of_reduced cs t ((CoxeterSystem.isReduced_reverse cs ω).2 rω)
-      <;> simp only [List.mem_cons, eq_iff_iff, List.mem_singleton, true_or]
-      simp only [List.not_mem_nil, or_false, or_true]
-    rw [this]
-    use ω.length - n - 1
+    rw [CoxeterSystem.IsLeftInversion]
     constructor
-    . rw [List.length_reverse]; omega
-    . exact hprod
+    . exact t_mul_word_imp_isReflection_t cs hn hprod
+    . rw [hprod, rω]
+      have : ℓ (π (ω.eraseIdx n)) ≤ ω.length - 1 := by
+        rw [← eraseIdx_length hn]
+        exact CoxeterSystem.length_wordProd_le cs (ω.eraseIdx n)
+      omega
 
-/-- Deletion Property:
-Given an `OrderTwoGen` group, we say the system satisfy the deletion property if
-given an expression `w = s₁ s₂ ⋯ sₙ ∈ G`, there exists `1 ≤ i, j < n` such that
-`w = s₁ ⋯ sᵢ₋₁ sᵢ₊₁ ⋯ sⱼ₋₁ sⱼ₋₁ ⋯ sₙ` -/
 def non_reduced_p (ω : List B) := fun k => ¬cs.IsReduced (ω.drop k)
 
 lemma max_non_reduced_word_index_aux (ω : List B) (hω : ¬cs.IsReduced ω) :
