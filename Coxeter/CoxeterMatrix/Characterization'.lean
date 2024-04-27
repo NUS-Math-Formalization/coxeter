@@ -250,14 +250,13 @@ theorem left_exchange_tfae_of_reduced {ω : List B} (t : W) (rω : cs.IsReduced 
   . simp only [List.getLastD_cons, List.getLastD_nil, forall_exists_index, and_imp]
     intro n hn hprod
     apply (left_inversion_iff_right_inversion_reverse cs).2
-    have : cs.IsReflection t := by apply t_mul_word_imp_isReflection_t cs hn hprod
+    have := t_mul_word_imp_isReflection_t cs hn hprod
     rw [← inv_inj, mul_inv_rev, ← CoxeterSystem.wordProd_reverse cs,
       CoxeterSystem.inv_reflection_eq cs this, ← CoxeterSystem.wordProd_reverse cs,
       eraseIdx_reverse (by exact hn)] at hprod
-    have := (CoxeterSystem.isReduced_reverse cs ω).2 rω
     have : cs.IsRightInversion (π ω.reverse) t
       ↔ ∃ j < ω.reverse.length, (π ω.reverse) * t = π (ω.reverse.eraseIdx j) := by
-      apply right_exchange_tfae_of_reduced cs t this
+      apply right_exchange_tfae_of_reduced cs t ((CoxeterSystem.isReduced_reverse cs ω).2 rω)
       <;> simp only [List.mem_cons, eq_iff_iff, List.mem_singleton, true_or]
       simp only [List.not_mem_nil, or_false, or_true]
     rw [this]
