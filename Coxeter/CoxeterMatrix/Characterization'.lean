@@ -294,7 +294,6 @@ private lemma beyond_max_index_is_reduced (ω : List B) (n : ℕ) (h₀ : n ≤ 
 
 private lemma max_index_lt_length (ω : List B) (i : ℕ) (h : i = max_non_reduced_word_index cs ω)
   (hω : ¬cs.IsReduced ω) : i < ω.length := by
-  have ω_not_empty := not_reduced_imp_not_empty cs ω hω
   have := @Nat.findGreatest_le (non_reduced_p cs ω) (Classical.decPred _) (List.length ω)
   have i_ne_len : i ≠ ω.length := by
     simp only [max_non_reduced_word_index] at h
@@ -304,7 +303,7 @@ private lemma max_index_lt_length (ω : List B) (i : ℕ) (h : i = max_non_reduc
       rw [← non_reduced_p]
       apply @Nat.findGreatest_of_ne_zero (ω.length) (non_reduced_p cs ω) (Classical.decPred _)
       apply this
-      have := List.length_pos.2 ω_not_empty
+      have := List.length_pos.2 (not_reduced_imp_not_empty cs ω hω)
       omega
     simp only [List.drop_length] at this
     have := empty_is_reduced cs
