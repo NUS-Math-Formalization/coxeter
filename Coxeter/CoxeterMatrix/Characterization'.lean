@@ -20,6 +20,7 @@ local prefix:max "π" => cs.wordProd
 
 namespace CoxeterGroup
 
+-- I prove a bunch of auxiliary lemmas before proceeding with exchange property.
 lemma mem_right_inv_seq {ω : List B} {t : W} (h : t ∈ cs.rightInvSeq ω) :
   ∃ n : ℕ, n < ω.length ∧ t = (π (ω.drop (n + 1)))⁻¹ * ((Option.map (cs.simple) (ω.get? n)).getD 1) * (π (ω.drop (n + 1))) := by
   induction ω with
@@ -80,23 +81,6 @@ private lemma eraseIdx_eq_take_append_drop (ω : List B) (i : ℕ) :
         List.cons.injEq, true_and]
       apply ih
 
--- This lemma gives the head of the resulting list after dropping n elements
-private lemma drop_head (ω : List B) (n : ℕ) (h : ω.drop n ≠ []) :
-  s ((ω.drop n).head h) = (Option.map (cs.simple) (ω.get? n)).getD 1 := by
-  induction ω generalizing n with
-  | nil => simp only [List.drop_nil, ne_eq, not_true_eq_false] at h
-  | cons hd tail ih =>
-    by_cases h' : n = 0
-    . simp_rw [h', List.drop_zero, List.head_cons, List.get?_cons_zero, Option.map_some',
-        Option.getD_some]
-    . have n_pos := Nat.pos_iff_ne_zero.2 h'
-      have n_sub_add : n = n - 1 + 1 := by rw [Nat.sub_add_cancel]; exact n_pos
-      have : (hd :: tail).drop n = tail.drop (n - 1) := by nth_rw 1 [n_sub_add, List.drop_succ_cons]
-      simp_rw [this]; rw [this] at h
-      rw [ih]; congr 2
-      nth_rw 2 [n_sub_add]
-      apply List.get?_cons_succ.symm
-
 /-- Exchange Property:
 Given an `OrderTwoGen` group, we say the system satisfy the Exchange Property if
 given a reduced expression `w = s₁ s₂ ⋯ sₙ ∈ G` and `s ∈ S`,
@@ -104,7 +88,17 @@ there exists `1 ≤ i < n` such that `s s₁ ⋯ sₙ = s₁ ⋯ sᵢ₋₁ sᵢ
 theorem right_exchange {ω : List B} {t : W} (h : cs.IsRightInversion (π ω) t) : t ∈ cs.rightInvSeq ω := sorry
 
 /-- Mirrored version of Exchange Property -/
-theorem left_exchange {ω : List B} {t : W} (h : cs.IsLeftInversion (π ω) t) : t ∈ cs.leftInvSeq ω := sorry
+theorem left_exchange {ω : List B} {t : W} (h : cs.IsLeftInversion (π ω) t) : t ∈ cs.leftInvSeq ω := by
+  rw [← List.mem_reverse, ← CoxeterSystem.rightInvSeq_reverse]
+  have : cs.IsRightInversion (π ω.reverse) t := by
+    simp only [CoxeterSystem.IsRightInversion]
+    constructor
+    . exact h.1
+    . rw [← CoxeterSystem.inv_reflection_eq cs h.1, CoxeterSystem.wordProd_reverse, ← mul_inv_rev,
+        CoxeterSystem.length_inv, CoxeterSystem.length_inv]
+      exact h.2
+  apply right_exchange
+  exact this
 
 theorem right_exchange' {ω : List B} {t : W} (h : cs.IsRightInversion (π ω) t) :
   ∃ j < ω.length, π ω * t = π (ω.eraseIdx j) := by
