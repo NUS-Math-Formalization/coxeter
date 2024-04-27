@@ -163,8 +163,7 @@ lemma word_mul_t_imp_isReflection_t {ω : List B} {t : W} {n : ℕ} (h₀ : n < 
   rw [← CoxeterSystem.wordProd_mul_getD_rightInvSeq, mul_right_inj,
     CoxeterSystem.getD_rightInvSeq] at hprod
   have : ω.drop n ≠ [] := by rw [← List.length_pos, List.length_drop]; omega
-  set hd := (ω.drop n).head this
-  use (π (ω.drop (n + 1)))⁻¹, hd
+  use (π (ω.drop (n + 1)))⁻¹, ((ω.drop n).head this)
   rw [inv_inv, drop_head cs this]
   exact hprod
 
@@ -183,8 +182,7 @@ theorem right_exchange {ω : List B} {t : W} (h : cs.IsRightInversion (π ω) t)
 /-- Mirrored version of Exchange Property -/
 theorem left_exchange {ω : List B} {t : W} (h : cs.IsLeftInversion (π ω) t) : t ∈ lis ω := by
   rw [← List.mem_reverse, ← CoxeterSystem.rightInvSeq_reverse]
-  have := (left_inversion_iff_right_inversion_reverse cs).1 h
-  apply right_exchange cs this
+  apply right_exchange cs ((left_inversion_iff_right_inversion_reverse cs).1 h)
 
 private lemma right_exchange'_aux {ω : List B} {t : W} (h : t ∈ ris ω) :
   ∃ j < ω.length, π ω * t = π (ω.eraseIdx j) := by
@@ -216,13 +214,13 @@ theorem right_exchange_tfae_of_reduced {ω : List B} (t : W) (rω : cs.IsReduced
       t ∈ ris ω,
       ∃ j < ω.length, (π ω) * t = π (ω.eraseIdx j)
     ] := by
-  apply List.tfae_of_cycle
-  . simp only [List.chain_cons, List.Chain.nil, and_true]
-    constructor
-    . exact right_exchange cs
-    . exact right_exchange'_aux cs
-  . simp only [List.getLastD_cons, List.getLastD_nil, forall_exists_index, and_imp]
-    intro n hn hprod
+  tfae_have 1 → 2
+  . exact right_exchange cs
+  tfae_have 2 → 3
+  . exact right_exchange'_aux cs
+  tfae_have 3 → 1
+  . intro h
+    rcases h with ⟨n, hn, hprod⟩
     rw [CoxeterSystem.IsRightInversion]
     constructor
     . exact word_mul_t_imp_isReflection_t cs hn hprod
@@ -231,6 +229,7 @@ theorem right_exchange_tfae_of_reduced {ω : List B} (t : W) (rω : cs.IsReduced
         rw [← eraseIdx_length hn]
         exact CoxeterSystem.length_wordProd_le cs (ω.eraseIdx n)
       omega
+  tfae_finish
 
 theorem left_exchange_tfae_of_reduced {ω : List B} (t : W) (rω : cs.IsReduced ω) :
     List.TFAE [
@@ -238,13 +237,13 @@ theorem left_exchange_tfae_of_reduced {ω : List B} (t : W) (rω : cs.IsReduced 
       t ∈ lis ω,
       ∃ j < ω.length, t * (π ω) = π (ω.eraseIdx j)
     ] := by
-  apply List.tfae_of_cycle
-  . simp only [List.chain_cons, List.Chain.nil, and_true]
-    constructor
-    . exact left_exchange cs
-    . exact left_exchange'_aux cs
-  . simp only [List.getLastD_cons, List.getLastD_nil, forall_exists_index, and_imp]
-    intro n hn hprod
+  tfae_have 1 → 2
+  . exact left_exchange cs
+  tfae_have 2 → 3
+  . exact left_exchange'_aux cs
+  tfae_have 3 → 1
+  . intro h
+    rcases h with ⟨n, hn, hprod⟩
     rw [CoxeterSystem.IsLeftInversion]
     constructor
     . exact t_mul_word_imp_isReflection_t cs hn hprod
@@ -253,6 +252,7 @@ theorem left_exchange_tfae_of_reduced {ω : List B} (t : W) (rω : cs.IsReduced 
         rw [← eraseIdx_length hn]
         exact CoxeterSystem.length_wordProd_le cs (ω.eraseIdx n)
       omega
+  tfae_finish
 
 def non_reduced_p (ω : List B) := fun k => ¬cs.IsReduced (ω.drop k)
 
