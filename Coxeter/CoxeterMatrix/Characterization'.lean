@@ -43,32 +43,11 @@ lemma mem_right_inv_seq {ω : List B} {t : W} (h : t ∈ cs.rightInvSeq ω) :
 
 private lemma drop_reverse {ω : List B} {n : ℕ} (h : n ≤ ω.length):
   ω.reverse.drop n = (ω.take (ω.length - n)).reverse := by
-  induction ω generalizing n with
-  | nil => simp
-  | cons hd tail ih =>
-    by_cases h' : n = 0
-    . rw [h']
-      simp only [List.reverse_cons, List.drop_zero, List.length_cons, tsub_zero,
-        List.take_cons_succ, List.take_length]
-    . have := Nat.pos_iff_ne_zero.2 h'
-      have := Nat.sub_add_cancel this
-      rw [List.length_cons, ← this, Nat.succ_eq_add_one, Nat.succ_eq_add_one, Nat.zero_add,
-        Nat.add_le_add_iff_right] at h
-      nth_rw 2 [← this]
-      simp only [Nat.reduceSucc, List.reverse_cons, List.length_cons, Nat.succ_sub_succ_eq_sub]
-      by_cases h'' : n = tail.length + 1
-      . rw [h'']
-        simp only [add_tsub_cancel_right, ge_iff_le, le_refl, tsub_eq_zero_of_le, List.take_zero,
-          List.reverse_nil]
-        rw [List.drop_length_le]
-        simp only [List.length_append, List.length_reverse, List.length_singleton, le_refl]
-      . have : n - 1 < tail.length := by omega
-        have sub_sub : tail.length - (n - 1) = tail.length - n + 1 := by omega
-        have : n - tail.length = 0 := by omega
-        rw [sub_sub, List.take_cons_succ, List.reverse_cons, List.drop_append_eq_append_drop,
-          List.length_reverse, this]
-        simp only [List.drop_zero, List.append_cancel_right_eq]
-        apply ih (by omega)
+  apply List.reverse_injective
+  have : n = ω.reverse.length - (ω.reverse.length - n) := by rw [List.length_reverse]; omega
+  nth_rw 1 [this]
+  rw [← List.reverse_take (ω.reverse.length - n) (by omega), List.reverse_reverse,
+    List.reverse_reverse, List.length_reverse]
 
 lemma mem_left_inv_seq {ω : List B} {t : W} (h : t ∈ cs.leftInvSeq ω) :
   ∃ n : ℕ, n < ω.length ∧ t = (π (ω.take n)) * (Option.map (cs.simple) (ω.get? n)).getD 1 * (π (ω.take n))⁻¹ := by
