@@ -7,8 +7,29 @@ import Mathlib.GroupTheory.Coxeter.Inversion
 /-!
 # A Characterization
 
-In this file we define the `ExchangeProp` and `DeletionProp` for an `OrderTwoGen` group `G`.
-We then prove that they are equivalent.
+/-! ### The exchange properties and deletion property -/
+
+The right exchange property:
+Let $w = s_{i_1} \cdots s_{i_\ell}$ be a reduced expression for an element $w \in W$
+and let $t \in W$.
+The following are equivalent:
+* $t$ is a right inversion of $w$.
+* $t$ appears in the right inversion sequence of the word $s_{i_1} \cdots s_{i_\ell}$.
+* There exists $j$ with $1 \leq j \leq \ell$ such that
+  $$wt = s_{i_1} \cdots \widehat{s_{i_j}} \cdots s_{i_\ell}$$
+  (i.e. the result of multiplying all of the simple reflections $s_{i_1}, \ldots, s_{i_\ell}$
+  except $s_{i_j}$).
+
+The left exchange property:
+Let $w = s_{i_1} \cdots s_{i_\ell}$ be a reduced expression for an element $w \in W$
+and let $t \in W$.
+The following are equivalent:
+* $t$ is a left inversion of $w$.
+* $t$ appears in the left inversion sequence of the word $s_{i_1} \cdots s_{i_\ell}$.
+* There exists $j$ with $1 \leq j \leq \ell$ such that
+  $$tw = s_{i_1} \cdots \widehat{s_{i_j}} \cdots s_{i_\ell}$$
+  (i.e. the result of multiplying all of the simple reflections $s_{i_1}, \ldots, s_{i_\ell}$
+  except $s_{i_j}$).
 -/
 
 variable {B W : Type*} [Group W] {M : CoxeterMatrix B} (cs: CoxeterSystem M W)
@@ -16,12 +37,13 @@ variable {B W : Type*} [Group W] {M : CoxeterMatrix B} (cs: CoxeterSystem M W)
 local prefix:max "s" => cs.simple
 local prefix:max "ℓ" => cs.length
 local prefix:max "ris" => cs.rightInvSeq
+local prefix:max "lis" => cs.leftInvSeq
 local prefix:max "π" => cs.wordProd
 
 namespace CoxeterGroup
 
 -- I prove a bunch of auxiliary lemmas before proceeding with exchange property.
-lemma mem_right_inv_seq {ω : List B} {t : W} (h : t ∈ cs.rightInvSeq ω) :
+lemma mem_right_inv_seq {ω : List B} {t : W} (h : t ∈ ris ω) :
   ∃ n : ℕ, n < ω.length ∧ t = (π (ω.drop (n + 1)))⁻¹ * ((Option.map (cs.simple) (ω.get? n)).getD 1) * (π (ω.drop (n + 1))) := by
   induction ω with
   | nil => simp only [CoxeterSystem.rightInvSeq_nil, List.not_mem_nil] at *
@@ -42,7 +64,7 @@ lemma mem_right_inv_seq {ω : List B} {t : W} (h : t ∈ cs.rightInvSeq ω) :
       . simp only [List.drop_succ_cons, List.get?_cons_succ]
         exact hprod
 
-private lemma drop_reverse {ω : List B} {n : ℕ} (h : n ≤ ω.length):
+private lemma drop_reverse {ω : List B} {n : ℕ} (h : n ≤ ω.length) :
   ω.reverse.drop n = (ω.take (ω.length - n)).reverse := by
   apply List.reverse_injective
   have : n = ω.reverse.length - (ω.reverse.length - n) := by rw [List.length_reverse]; omega
@@ -64,7 +86,7 @@ lemma mem_left_inv_seq {ω : List B} {t : W} (h : t ∈ cs.leftInvSeq ω) :
   . exact hk_prod
 
 -- I prove a property of eraseIdx
-private lemma eraseIdx_eq_take_append_drop (ω : List B) (i : ℕ) :
+private lemma eraseIdx_eq_take_append_drop {ω : List B} {i : ℕ} :
   ω.eraseIdx i = (ω.take i) ++ (ω.drop (i + 1)) := by
   induction ω generalizing i with
   | nil => simp only [List.eraseIdx_nil, List.take_nil, List.drop_nil, List.append_nil]
@@ -81,43 +103,168 @@ private lemma eraseIdx_eq_take_append_drop (ω : List B) (i : ℕ) :
         List.cons.injEq, true_and]
       apply ih
 
-/-- Exchange Property:
-Given an `OrderTwoGen` group, we say the system satisfy the Exchange Property if
-given a reduced expression `w = s₁ s₂ ⋯ sₙ ∈ G` and `s ∈ S`,
-there exists `1 ≤ i < n` such that `s s₁ ⋯ sₙ = s₁ ⋯ sᵢ₋₁ sᵢ₊₁ ⋯ sₙ` -/
-theorem right_exchange {ω : List B} {t : W} (h : cs.IsRightInversion (π ω) t) : t ∈ cs.rightInvSeq ω := sorry
+private lemma eraseIdx_length {ω : List B} {i : ℕ} (h : i < ω.length) :
+  (ω.eraseIdx i).length = ω.length - 1 := by
+  rw [eraseIdx_eq_take_append_drop, List.length_append, List.length_take, List.length_drop]
+  omega
 
-/-- Mirrored version of Exchange Property -/
-theorem left_exchange {ω : List B} {t : W} (h : cs.IsLeftInversion (π ω) t) : t ∈ cs.leftInvSeq ω := by
-  rw [← List.mem_reverse, ← CoxeterSystem.rightInvSeq_reverse]
-  have : cs.IsRightInversion (π ω.reverse) t := by
+private lemma eraseIdx_reverse {ω : List B} {i : ℕ} (h : i < ω.length) :
+  (ω.eraseIdx i).reverse = ω.reverse.eraseIdx (ω.length - i - 1) := by
+  rw [eraseIdx_eq_take_append_drop, List.reverse_append]
+  have i_one : i + 1 = ω.length - (ω.length - (i + 1)) := by omega
+  have : i = ω.length - (ω.length - i) := by omega
+  rw [i_one, ← List.reverse_take]
+  nth_rw 2 [this]
+  rw [← drop_reverse, eraseIdx_eq_take_append_drop]
+  congr 2; omega; omega; omega
+
+private lemma drop_head {ω : List B} {n : ℕ} (h : ω.drop n ≠ []) :
+  s ((ω.drop n).head h) = (Option.map (cs.simple) (ω.get? n)).getD 1 := by
+  induction ω generalizing n with
+  | nil => simp only [List.drop_nil, ne_eq, not_true_eq_false] at h
+  | cons hd tail ih =>
+    by_cases h' : n = 0
+    . simp_rw [h', List.drop_zero, List.head_cons, List.get?_cons_zero, Option.map_some',
+        Option.getD_some]
+    . have n_pos := Nat.pos_iff_ne_zero.2 h'
+      have n_sub_add : n = n - 1 + 1 := by rw [Nat.sub_add_cancel]; exact n_pos
+      have : (hd :: tail).drop n = tail.drop (n - 1) := by nth_rw 1 [n_sub_add, List.drop_succ_cons]
+      simp_rw [this]; rw [this] at h
+      rw [ih]; congr 2
+      nth_rw 2 [n_sub_add]
+      apply List.get?_cons_succ.symm
+
+lemma left_inversion_iff_right_inversion_reverse {ω : List B} {t : W} :
+  cs.IsLeftInversion (π ω) t ↔ cs.IsRightInversion (π ω.reverse) t := by
+  constructor
+  . intro h
     simp only [CoxeterSystem.IsRightInversion]
     constructor
     . exact h.1
     . rw [← CoxeterSystem.inv_reflection_eq cs h.1, CoxeterSystem.wordProd_reverse, ← mul_inv_rev,
         CoxeterSystem.length_inv, CoxeterSystem.length_inv]
       exact h.2
-  apply right_exchange
-  exact this
+  . intro h
+    simp only [CoxeterSystem.IsLeftInversion]
+    constructor
+    . exact h.1
+    . rw [← CoxeterSystem.inv_reflection_eq cs h.1, ← inv_inv (π ω), ← mul_inv_rev,
+        ← CoxeterSystem.wordProd_reverse, CoxeterSystem.length_inv, CoxeterSystem.length_inv]
+      exact h.2
+
+lemma isReflection_iff_isReflection_inverse {t : W} : cs.IsReflection t ↔ cs.IsReflection t⁻¹ := by
+  constructor
+  . intro h; rw [← CoxeterSystem.inv_reflection_eq cs h, inv_inv]; exact h
+  . intro h; rw [← inv_inv t, CoxeterSystem.inv_reflection_eq cs h]; exact h
+
+private lemma word_mul_t_imp_isReflection_t {ω : List B} {t : W} {n : ℕ} (h₀ : n < ω.length)
+  (hprod : π ω * t = π (ω.eraseIdx n)) : cs.IsReflection t := by
+  rw [CoxeterSystem.IsReflection]
+  rw [← CoxeterSystem.wordProd_mul_getD_rightInvSeq, mul_right_inj,
+    CoxeterSystem.getD_rightInvSeq] at hprod
+  have : ω.drop n ≠ [] := by rw [← List.length_pos, List.length_drop]; omega
+  set hd := (ω.drop n).head this
+  use (π (ω.drop (n + 1)))⁻¹, hd
+  rw [inv_inv, drop_head cs this]
+  exact hprod
+
+private lemma t_mul_word_imp_isReflection_t {ω : List B} {t : W} {n : ℕ} (h₀ : n < ω.length)
+  (hprod : t * π ω = π (ω.eraseIdx n)) : cs.IsReflection t := by
+  rw [← inv_inj, mul_inv_rev, ← CoxeterSystem.wordProd_reverse cs,
+    ← CoxeterSystem.wordProd_reverse cs, eraseIdx_reverse (by exact h₀),
+    ← List.length_reverse] at hprod
+  rw [isReflection_iff_isReflection_inverse]
+  rw [← List.length_reverse] at h₀
+  have : ω.reverse.length - n - 1 < ω.reverse.length := by omega
+  apply word_mul_t_imp_isReflection_t cs this hprod
+
+/-- Exchange Property:
+Given an `OrderTwoGen` group, we say the system satisfy the Exchange Property if
+given a reduced expression `w = s₁ s₂ ⋯ sₙ ∈ G` and `s ∈ S`,
+there exists `1 ≤ i < n` such that `s s₁ ⋯ sₙ = s₁ ⋯ sᵢ₋₁ sᵢ₊₁ ⋯ sₙ` -/
+theorem right_exchange {ω : List B} {t : W} (h : cs.IsRightInversion (π ω) t) : t ∈ ris ω := sorry
+
+/-- Mirrored version of Exchange Property -/
+theorem left_exchange {ω : List B} {t : W} (h : cs.IsLeftInversion (π ω) t) : t ∈ lis ω := by
+  rw [← List.mem_reverse, ← CoxeterSystem.rightInvSeq_reverse]
+  have := (left_inversion_iff_right_inversion_reverse cs).1 h
+  apply right_exchange cs this
+
+private lemma right_exchange'_aux {ω : List B} {t : W} (h : t ∈ ris ω) :
+  ∃ j < ω.length, π ω * t = π (ω.eraseIdx j) := by
+  obtain ⟨n, hn, hprod⟩ := mem_right_inv_seq cs h
+  use n
+  constructor
+  . exact hn
+  . rw [← CoxeterSystem.wordProd_mul_getD_rightInvSeq, mul_right_inj, CoxeterSystem.getD_rightInvSeq]
+    exact hprod
 
 theorem right_exchange' {ω : List B} {t : W} (h : cs.IsRightInversion (π ω) t) :
-  ∃ j < ω.length, π ω * t = π (ω.eraseIdx j) := by
-  obtain ⟨n, hn, hprod⟩ := mem_right_inv_seq cs (right_exchange cs h)
+  ∃ j < ω.length, π ω * t = π (ω.eraseIdx j) := right_exchange'_aux cs (right_exchange cs h)
+
+private lemma left_exchange'_aux {ω : List B} {t : W} (h : t ∈ lis ω) :
+  ∃ j < ω.length, t * π ω = π (ω.eraseIdx j) := by
+  obtain ⟨n, hn, hprod⟩ := mem_left_inv_seq cs h
   use n
   constructor
   . exact hn
-  . rw [← CoxeterSystem.wordProd_mul_getD_rightInvSeq, mul_right_inj,
-      CoxeterSystem.getD_rightInvSeq]
+  . rw [← CoxeterSystem.getD_leftInvSeq_mul_wordProd, mul_left_inj, CoxeterSystem.getD_leftInvSeq]
     exact hprod
 
-theorem left_exchange' {ω : List B} {t : W} (h : cs.IsLeftInversion (π ω) t) : ∃ j < ω.length, t * π ω = π (ω.eraseIdx j) := by
-  obtain ⟨n, hn, hprod⟩ := mem_left_inv_seq cs (left_exchange cs h)
-  use n
-  constructor
-  . exact hn
-  . rw [← CoxeterSystem.getD_leftInvSeq_mul_wordProd, mul_left_inj,
-      CoxeterSystem.getD_leftInvSeq]
-    exact hprod
+theorem left_exchange' {ω : List B} {t : W} (h : cs.IsLeftInversion (π ω) t) :
+  ∃ j < ω.length, t * π ω = π (ω.eraseIdx j) := left_exchange'_aux cs (left_exchange cs h)
+
+theorem right_exchange_tfae_of_reduced {ω : List B} (t : W) (rω : cs.IsReduced ω) :
+    List.TFAE [
+      cs.IsRightInversion (π ω) t,
+      t ∈ ris ω,
+      ∃ j < ω.length, (π ω) * t = π (ω.eraseIdx j)
+    ] := by
+  apply List.tfae_of_cycle
+  . simp only [List.chain_cons, List.Chain.nil, and_true]
+    constructor
+    . exact right_exchange cs
+    . exact right_exchange'_aux cs
+  . simp only [List.getLastD_cons, List.getLastD_nil, forall_exists_index, and_imp]
+    intro n hn hprod
+    rw [CoxeterSystem.IsRightInversion]
+    constructor
+    . exact word_mul_t_imp_isReflection_t cs hn hprod
+    . rw [hprod, rω]
+      have : ℓ (π (ω.eraseIdx n)) ≤ ω.length - 1 := by
+        rw [← eraseIdx_length hn]
+        exact CoxeterSystem.length_wordProd_le cs (ω.eraseIdx n)
+      omega
+
+theorem left_exchange_tfae_of_reduced {ω : List B} (t : W) (rω : cs.IsReduced ω) :
+    List.TFAE [
+      cs.IsLeftInversion (π ω) t,
+      t ∈ lis ω,
+      ∃ j < ω.length, t * (π ω) = π (ω.eraseIdx j)
+    ] := by
+  apply List.tfae_of_cycle
+  . simp only [List.chain_cons, List.Chain.nil, and_true]
+    constructor
+    . exact left_exchange cs
+    . exact left_exchange'_aux cs
+  . simp only [List.getLastD_cons, List.getLastD_nil, forall_exists_index, and_imp]
+    intro n hn hprod
+    apply (left_inversion_iff_right_inversion_reverse cs).2
+    have : cs.IsReflection t := by apply t_mul_word_imp_isReflection_t cs hn hprod
+    rw [← inv_inj, mul_inv_rev, ← CoxeterSystem.wordProd_reverse cs,
+      CoxeterSystem.inv_reflection_eq cs this, ← CoxeterSystem.wordProd_reverse cs,
+      eraseIdx_reverse (by exact hn)] at hprod
+    have := (CoxeterSystem.isReduced_reverse cs ω).2 rω
+    have : cs.IsRightInversion (π ω.reverse) t
+      ↔ ∃ j < ω.reverse.length, (π ω.reverse) * t = π (ω.reverse.eraseIdx j) := by
+      apply right_exchange_tfae_of_reduced cs t this
+      <;> simp only [List.mem_cons, eq_iff_iff, List.mem_singleton, true_or]
+      simp only [List.not_mem_nil, or_false, or_true]
+    rw [this]
+    use ω.length - n - 1
+    constructor
+    . rw [List.length_reverse]; omega
+    . exact hprod
 
 /-- Deletion Property:
 Given an `OrderTwoGen` group, we say the system satisfy the deletion property if
@@ -235,45 +382,6 @@ theorem DeletionProp (ω : List B) (hω : ¬cs.IsReduced ω) : ∃ j < ω.length
       exact hj_prod
 
 /-
-/-! ### The exchange properties and deletion property -/
-
-/-- The right exchange property:
-Let $w = s_{i_1} \cdots s_{i_\ell}$ be a reduced expression for an element $w \in W$
-and let $t \in W$.
-The following are equivalent:
-* $t$ is a right inversion of $w$.
-* $t$ appears in the right inversion sequence of the word $s_{i_1} \cdots s_{i_\ell}$.
-* There exists $j$ with $1 \leq j \leq \ell$ such that
-  $$wt = s_{i_1} \cdots \widehat{s_{i_j}} \cdots s_{i_\ell}$$
-  (i.e. the result of multiplying all of the simple reflections $s_{i_1}, \ldots, s_{i_\ell}$
-  except $s_{i_j}$).
--/
-theorem right_exchange_tfae_of_reduced {ω : List B} (t : W) (rω : cs.IsReduced ω) :
-    List.TFAE [
-      cs.IsRightInversion (π ω) t,
-      t ∈ ris ω,
-      ∃ j < ω.length, (π ω) * t = π (ω.eraseIdx j)
-    ] := by
-  sorry
-
-/-- The left exchange property:
-Let $w = s_{i_1} \cdots s_{i_\ell}$ be a reduced expression for an element $w \in W$
-and let $t \in W$.
-The following are equivalent:
-* $t$ is a left inversion of $w$.
-* $t$ appears in the left inversion sequence of the word $s_{i_1} \cdots s_{i_\ell}$.
-* There exists $j$ with $1 \leq j \leq \ell$ such that
-  $$tw = s_{i_1} \cdots \widehat{s_{i_j}} \cdots s_{i_\ell}$$
-  (i.e. the result of multiplying all of the simple reflections $s_{i_1}, \ldots, s_{i_\ell}$
-  except $s_{i_j}$).
--/
-theorem left_exchange_tfae_of_reduced {ω : List B} (t : W) (rω : cs.IsReduced ω) :
-    List.TFAE [
-      cs.IsLeftInversion (π ω) t,
-      t ∈ lis ω,
-      ∃ j < ω.length, t * (π ω) = π (ω.eraseIdx j)
-    ] := by
-  sorry
 
 theorem nodup_rightInvSeq_iff (ω : List B) :
     List.Nodup (ris ω) ↔ cs.IsReduced ω := by
