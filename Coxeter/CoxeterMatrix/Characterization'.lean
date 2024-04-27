@@ -21,19 +21,17 @@ local prefix:max "π" => cs.wordProd
 namespace CoxeterGroup
 
 lemma mem_right_inv_seq {ω : List B} {t : W} (h : t ∈ cs.rightInvSeq ω) :
-  ∃ n : ℕ, n < ω.length ∧ t = (π (ω.drop n))⁻¹ * ((Option.map (cs.simple) (ω.get? n)).getD 1) * (π (ω.drop n)) := by
+  ∃ n : ℕ, n < ω.length ∧ t = (π (ω.drop (n + 1)))⁻¹ * ((Option.map (cs.simple) (ω.get? n)).getD 1) * (π (ω.drop (n + 1))) := by
   induction ω with
   | nil => simp only [CoxeterSystem.rightInvSeq_nil, List.not_mem_nil] at *
   | cons hd tail ih =>
-    rw [CoxeterSystem.rightInvSeq] at h
-    simp only [List.mem_cons] at h
+    rw [CoxeterSystem.rightInvSeq, List.mem_cons] at h
     rcases h with h₁ | h₂
     . use 0
       constructor
       . norm_num
-      . simp only [List.drop_zero, List.get?_cons_zero, Option.map_some', Option.getD_some,
-          CoxeterSystem.wordProd_cons, mul_inv_rev, CoxeterSystem.inv_simple,
-          CoxeterSystem.simple_mul_simple_cancel_right, ← mul_assoc]
+      . simp only [zero_add, List.drop_succ_cons, List.drop_zero, List.get?_cons_zero,
+          Option.map_some', Option.getD_some]
         exact h₁
     . obtain ⟨n, hn, hprod⟩ := ih h₂
       use (n + 1)
@@ -42,6 +40,10 @@ lemma mem_right_inv_seq {ω : List B} {t : W} (h : t ∈ cs.rightInvSeq ω) :
         exact hn
       . simp only [List.drop_succ_cons, List.get?_cons_succ]
         exact hprod
+
+lemma mem_left_inv_seq {ω : List B} {t : W} (h : t ∈ cs.leftInvSeq ω) :
+  ∃ n : ℕ, n < ω.length ∧  t = (π (ω.take n)) * (Option.map (cs.simple) (ω.get? n)).getD 1 * (π (ω.take j))⁻¹ := by
+  sorry
 
 -- I prove a property of eraseIdx
 private lemma eraseIdx_eq_take_append_drop (ω : List B) (i : ℕ) :
@@ -90,23 +92,15 @@ theorem left_exchange {ω : List B} {t : W} (h : cs.IsLeftInversion (π ω) t) :
 theorem right_exchange' {ω : List B} {t : W} (h : cs.IsRightInversion (π ω) t) :
   ∃ j < ω.length, π ω * t = π (ω.eraseIdx j) := by
   obtain ⟨n, hn, hprod⟩ := mem_right_inv_seq cs (right_exchange cs h)
-  rw [hprod]
-  nth_rw 2 [← List.take_append_drop n ω]
-  rw [CoxeterSystem.wordProd_append, ← mul_assoc, ← mul_assoc, mul_inv_cancel_right]
-  have : ω.drop n ≠ [] := by
-    apply List.length_pos_iff_ne_nil.1
-    rw [List.length_drop]; omega
-  rw [← List.head_cons_tail (ω.drop n) this, CoxeterSystem.wordProd_cons,
-    ← drop_head cs ω n this, List.tail_drop, ← mul_assoc,
-    CoxeterSystem.simple_mul_simple_cancel_right]
   use n
   constructor
   . exact hn
-  . rw [← CoxeterSystem.wordProd_append]; congr
-    apply (eraseIdx_eq_take_append_drop ω n).symm
+  . rw [← CoxeterSystem.wordProd_mul_getD_rightInvSeq, mul_right_inj,
+      CoxeterSystem.getD_rightInvSeq]
+    exact hprod
 
-
-theorem left_exchange' {ω : List B} {t : W} (h : cs.IsLeftInversion (π ω) t) : ∃ j < ω.length, t * π ω = π (ω.eraseIdx j) := sorry
+theorem left_exchange' {ω : List B} {t : W} (h : cs.IsLeftInversion (π ω) t) : ∃ j < ω.length, t * π ω = π (ω.eraseIdx j) := by
+  sorry
 
 /-- Deletion Property:
 Given an `OrderTwoGen` group, we say the system satisfy the deletion property if
