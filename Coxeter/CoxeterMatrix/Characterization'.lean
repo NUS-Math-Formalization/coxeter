@@ -111,12 +111,11 @@ lemma eraseIdx_length {ω : List B} {i : ℕ} (h : i < ω.length) :
 lemma eraseIdx_reverse {ω : List B} {i : ℕ} (h : i < ω.length) :
   (ω.eraseIdx i).reverse = ω.reverse.eraseIdx (ω.length - i - 1) := by
   rw [eraseIdx_eq_take_append_drop, List.reverse_append]
-  have i_one : i + 1 = ω.length - (ω.length - (i + 1)) := by omega
-  have : i = ω.length - (ω.length - i) := by omega
-  rw [i_one, ← List.reverse_take]
-  nth_rw 2 [this]
-  rw [← drop_reverse, eraseIdx_eq_take_append_drop]
-  congr 2; omega; omega; omega
+  have : ∀ k ≤ ω.length, k = ω.length - (ω.length - k) := by omega
+  rw [this (i + 1) (by omega), ← List.reverse_take (ω.length - (i + 1)) (by omega)]
+  nth_rw 2 [this i (by omega)]
+  rw [← drop_reverse (by omega), eraseIdx_eq_take_append_drop]
+  congr 2; omega
 
 lemma drop_head {ω : List B} {n : ℕ} (h : ω.drop n ≠ []) :
   s ((ω.drop n).head h) = (Option.map (cs.simple) (ω.get? n)).getD 1 := by
