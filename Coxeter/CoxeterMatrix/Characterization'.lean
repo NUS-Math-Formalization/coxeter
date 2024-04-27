@@ -336,12 +336,9 @@ theorem DeletionProp (ω : List B) (hω : ¬cs.IsReduced ω) : ∃ j < ω.length
   have exch_prop : ∃ j < ω2.length, π ω1 = π (ω2.eraseIdx j) := by
     rw [hd_tail, CoxeterSystem.wordProd_cons]
     apply left_exchange'
-    rw [CoxeterSystem.IsLeftInversion]
-    constructor
-    . rw [CoxeterSystem.IsReflection]
-      use 1, si
-      simp only [one_mul, inv_one, mul_one]
-    . rw [← CoxeterSystem.wordProd_cons, ← hd_tail]; exact this
+    rw [CoxeterSystem.isLeftInversion_simple_iff_isLeftDescent, CoxeterSystem.IsLeftDescent,
+      ← CoxeterSystem.wordProd_cons, ← hd_tail]
+    exact this
   obtain ⟨j, hj, hj_prod⟩ := exch_prop
   use (j + i + 1)
   constructor
