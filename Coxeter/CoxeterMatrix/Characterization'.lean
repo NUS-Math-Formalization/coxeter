@@ -64,7 +64,7 @@ lemma mem_right_inv_seq {ω : List B} {t : W} (h : t ∈ ris ω) :
       . simp only [List.drop_succ_cons, List.get?_cons_succ]
         exact hprod
 
-private lemma drop_reverse {ω : List B} {n : ℕ} (h : n ≤ ω.length) :
+lemma drop_reverse {ω : List B} {n : ℕ} (h : n ≤ ω.length) :
   ω.reverse.drop n = (ω.take (ω.length - n)).reverse := by
   apply List.reverse_injective
   have : n = ω.reverse.length - (ω.reverse.length - n) := by rw [List.length_reverse]; omega
@@ -86,7 +86,7 @@ lemma mem_left_inv_seq {ω : List B} {t : W} (h : t ∈ cs.leftInvSeq ω) :
   . exact hk_prod
 
 -- I prove a property of eraseIdx
-private lemma eraseIdx_eq_take_append_drop {ω : List B} {i : ℕ} :
+lemma eraseIdx_eq_take_append_drop {ω : List B} {i : ℕ} :
   ω.eraseIdx i = (ω.take i) ++ (ω.drop (i + 1)) := by
   induction ω generalizing i with
   | nil => simp only [List.eraseIdx_nil, List.take_nil, List.drop_nil, List.append_nil]
@@ -103,12 +103,12 @@ private lemma eraseIdx_eq_take_append_drop {ω : List B} {i : ℕ} :
         List.cons.injEq, true_and]
       apply ih
 
-private lemma eraseIdx_length {ω : List B} {i : ℕ} (h : i < ω.length) :
+lemma eraseIdx_length {ω : List B} {i : ℕ} (h : i < ω.length) :
   (ω.eraseIdx i).length = ω.length - 1 := by
   rw [eraseIdx_eq_take_append_drop, List.length_append, List.length_take, List.length_drop]
   omega
 
-private lemma eraseIdx_reverse {ω : List B} {i : ℕ} (h : i < ω.length) :
+lemma eraseIdx_reverse {ω : List B} {i : ℕ} (h : i < ω.length) :
   (ω.eraseIdx i).reverse = ω.reverse.eraseIdx (ω.length - i - 1) := by
   rw [eraseIdx_eq_take_append_drop, List.reverse_append]
   have i_one : i + 1 = ω.length - (ω.length - (i + 1)) := by omega
@@ -118,7 +118,7 @@ private lemma eraseIdx_reverse {ω : List B} {i : ℕ} (h : i < ω.length) :
   rw [← drop_reverse, eraseIdx_eq_take_append_drop]
   congr 2; omega; omega; omega
 
-private lemma drop_head {ω : List B} {n : ℕ} (h : ω.drop n ≠ []) :
+lemma drop_head {ω : List B} {n : ℕ} (h : ω.drop n ≠ []) :
   s ((ω.drop n).head h) = (Option.map (cs.simple) (ω.get? n)).getD 1 := by
   induction ω generalizing n with
   | nil => simp only [List.drop_nil, ne_eq, not_true_eq_false] at h
@@ -157,7 +157,7 @@ lemma isReflection_iff_isReflection_inverse {t : W} : cs.IsReflection t ↔ cs.I
   . intro h; rw [← CoxeterSystem.inv_reflection_eq cs h, inv_inv]; exact h
   . intro h; rw [← inv_inv t, CoxeterSystem.inv_reflection_eq cs h]; exact h
 
-private lemma word_mul_t_imp_isReflection_t {ω : List B} {t : W} {n : ℕ} (h₀ : n < ω.length)
+lemma word_mul_t_imp_isReflection_t {ω : List B} {t : W} {n : ℕ} (h₀ : n < ω.length)
   (hprod : π ω * t = π (ω.eraseIdx n)) : cs.IsReflection t := by
   rw [CoxeterSystem.IsReflection]
   rw [← CoxeterSystem.wordProd_mul_getD_rightInvSeq, mul_right_inj,
@@ -168,7 +168,7 @@ private lemma word_mul_t_imp_isReflection_t {ω : List B} {t : W} {n : ℕ} (h�
   rw [inv_inv, drop_head cs this]
   exact hprod
 
-private lemma t_mul_word_imp_isReflection_t {ω : List B} {t : W} {n : ℕ} (h₀ : n < ω.length)
+lemma t_mul_word_imp_isReflection_t {ω : List B} {t : W} {n : ℕ} (h₀ : n < ω.length)
   (hprod : t * π ω = π (ω.eraseIdx n)) : cs.IsReflection t := by
   rw [← inv_inj, mul_inv_rev, ← CoxeterSystem.wordProd_reverse cs,
     ← CoxeterSystem.wordProd_reverse cs, eraseIdx_reverse (by exact h₀),
