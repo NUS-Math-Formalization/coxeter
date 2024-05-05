@@ -122,19 +122,15 @@ lemma drop_head {ω : List B} {n : ℕ} (h : ω.drop n ≠ []) :
       nth_rw 2 [n_sub_add]
       apply List.get?_cons_succ.symm
 
-lemma drop_take_last_wordProd {ω : List B} {n m : ℕ} (h : m ≤ n) (h' : n < ω.length) :
-  π ((ω.take (n + 1)).drop m) =
-    π ((ω.take n).drop m) * (Option.map (cs.simple) (ω.get? n)).getD 1 := by
-  rw [List.drop_take, List.drop_take]
-  rw [Nat.sub_add_comm h]
-  rw [← List.take_concat_get (ω.drop m) (n - m) (by rw [List.length_drop]; omega)]
-  rw [List.concat_eq_append]
-  rw [CoxeterSystem.wordProd_append, CoxeterSystem.wordProd_singleton]
-  congr
-  rw [List.getElem_eq_get, ← List.get_drop ω (by omega)]
-  simp_rw [Nat.add_sub_cancel' h]
-  rw [List.get?_eq_get (by exact h')]
-  rw [Option.map_some', Option.getD]
+lemma drop_take_head_mul_wordProd {ω : List B} {n m : ℕ} (h : m < n) (h' : n ≤ ω.length) :
+  π ((ω.take n).drop m) =
+    (Option.map (cs.simple) (ω.get? m)).getD 1 * π ((ω.take n).drop (m + 1)) := by
+  have : (ω.take n).drop m ≠ [] := by
+    rw [← List.length_pos, List.length_drop, List.length_take]; omega
+  rw [← List.get?_take h]
+  rw [← drop_head cs this]
+  rw [← CoxeterSystem.wordProd_cons]
+  rw [← List.tail_drop, List.head_cons_tail]
 
 lemma left_inversion_iff_right_inversion_reverse {ω : List B} {t : W} :
   cs.IsLeftInversion (π ω) t ↔ cs.IsRightInversion (π ω.reverse) t := by
@@ -380,11 +376,8 @@ theorem DeletionProp (ω : List B) (hω : ¬cs.IsReduced ω) : ∃ j < ω.length
 -- i realize i have to fintype in some way. uhh any other ideas...???
 theorem nodup_rightInvSeq_iff (ω : List B) : List.Nodup (ris ω) ↔ cs.IsReduced ω := by
   constructor
-  . intro h
-    by_contra h'
+  . intro h; by_contra h'
     rcases (DeletionProp cs ω h') with ⟨j, hj, i, hi, jprod⟩
-    have ω_drop : ω.drop i ≠ [] := by rw [← List.length_pos, List.length_drop]; omega
-    have ω_drop' : ω.drop j ≠ [] := by rw [← List.length_pos, List.length_drop]; omega
     have del_prop' : π ((ω.take (j + 1)).drop i) = π ((ω.take j).drop (i + 1)) := by
       simp_rw [List.eraseIdx_eq_take_drop_succ] at jprod
       rw [List.take_append_of_le_length (by rw [List.length_take]; omega)] at jprod
@@ -396,37 +389,30 @@ theorem nodup_rightInvSeq_iff (ω : List B) : List.Nodup (ris ω) ↔ cs.IsReduc
       rw [List.drop_append_of_le_length (by rw [List.length_take]; omega)] at jprod
       rw [CoxeterSystem.wordProd_append, mul_left_inj] at jprod
       exact jprod
-    have : (π ω) * ((ris ω).getD j 1) * ((ris ω).getD i 1) = π ((ω.eraseIdx j).eraseIdx i) := by
-      rw [CoxeterSystem.wordProd_mul_getD_rightInvSeq]
-      nth_rw 1 [List.eraseIdx_eq_take_drop_succ]
-      rw [CoxeterSystem.wordProd_append, Nat.succ_eq_add_one]
-      rw [CoxeterSystem.getD_rightInvSeq]
-      rw [← drop_head cs ω_drop]
-      nth_rw 2 [mul_assoc]
-      rw [← CoxeterSystem.wordProd_cons]
-      nth_rw 3 [← List.tail_drop]
-      rw [List.head_cons_tail]
-      rw [← mul_assoc]
-      nth_rw 3 [← List.take_append_drop (j + 1) ω]
-      rw [List.drop_append_of_le_length (by rw [List.length_take]; omega)]
-      rw [CoxeterSystem.wordProd_append]
-      rw [mul_inv_rev, ← mul_assoc, mul_inv_cancel_right]
-      rw [drop_take_last_wordProd cs (by exact hi) (by exact hj)]
-      rw [← del_prop']
-      rw [mul_inv_rev, mul_assoc, mul_assoc]
+    have : (π ω) * ((ris ω).getD j 1) * ((ris ω).getD i 1) = π ω := by
+      nth_rw 2 [← mul_one (π ω)]
+      nth_rw 3 [← CoxeterSystem.getD_rightInvSeq_mul_self cs ω i]
+      rw [← mul_assoc, mul_left_inj]
+      simp_rw [CoxeterSystem.wordProd_mul_getD_rightInvSeq]
+      simp_rw [List.eraseIdx_eq_take_drop_succ]
+      simp_rw [CoxeterSystem.wordProd_append, Nat.succ_eq_add_one]
       nth_rw 4 [← List.take_append_drop (j + 1) ω]
       rw [List.drop_append_of_le_length (by rw [List.length_take]; omega)]
-      rw [CoxeterSystem.wordProd_append]
-      rw [inv_mul_cancel_left]
-      rw [← drop_head cs ω_drop']
-      rw [← CoxeterSystem.inv_simple]
-      rw [inv_inv]
-      rw [← CoxeterSystem.wordProd_cons]
-      rw [← List.tail_drop, List.head_cons_tail]
-      rw [← CoxeterSystem.wordProd_append]
-      rw [List.take_append_drop]
-      exact jprod
-    rw [← jprod, mul_assoc, mul_right_eq_self] at this
+      nth_rw 1 [← List.take_append_drop i ω]
+      rw [List.take_append_eq_append_take]
+      rw [List.take_take, min_eq_right (by omega)]
+      simp_rw [CoxeterSystem.wordProd_append]
+      rw [← mul_assoc, mul_left_inj, mul_right_inj]
+      rw [List.length_take, min_eq_left (by omega)]
+      rw [List.take_drop, Nat.add_sub_cancel' (by omega)]
+      rw [drop_take_head_mul_wordProd cs (by exact hi) (by omega)]
+      rw [← del_prop']
+      rw [drop_take_head_mul_wordProd cs (by omega) (by exact hj)]
+      rw [← mul_assoc, mul_left_eq_self]
+      rw [List.get?_eq_get (by omega)]
+      rw [Option.map_some', Option.getD]
+      rw [CoxeterSystem.simple_mul_simple_self]
+    rw [mul_assoc, mul_right_eq_self] at this
     nth_rw 3 [← CoxeterSystem.getD_rightInvSeq_mul_self cs ω i] at this
     rw [mul_left_inj] at this
     have : ¬List.Nodup (ris ω) := by
