@@ -410,7 +410,7 @@ theorem nodup_rightInvSeq_iff (ω : List B) : List.Nodup (ris ω) ↔ cs.IsReduc
       rw [drop_take_head_mul_wordProd cs (by omega) (by exact hj)]
       rw [← mul_assoc, mul_left_eq_self]
       rw [List.get?_eq_get (by omega)]
-      rw [Option.map_some', Option.getD]
+      rw [Option.map_some', Option.getD_some]
       rw [CoxeterSystem.simple_mul_simple_self]
     rw [mul_assoc, mul_right_eq_self] at this
     nth_rw 3 [← CoxeterSystem.getD_rightInvSeq_mul_self cs ω i] at this
