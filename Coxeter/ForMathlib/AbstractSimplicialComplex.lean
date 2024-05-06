@@ -13,16 +13,17 @@ structure AbstractSimplicialComplex (V : Type*)  where
   empty_mem : ∅ ∈ faces
   lower' : IsLowerSet faces -- The set of faces is a lower set under the inclusion relation.
 
-theorem AbstractSimplicialComplex.nonempty {V : Type*} {F : AbstractSimplicialComplex V} : F.faces.Nonempty := Set.nonempty_of_mem F.empty_mem
+theorem AbstractSimplicialComplex.nonempty {V : Type*} {F : AbstractSimplicialComplex V} :
+  F.faces.Nonempty := Set.nonempty_of_mem F.empty_mem
 
-theorem isLowerSet_singleton_empty (α : Type*):
-IsLowerSet {(∅ : Set α)} := by
+theorem isLowerSet_singleton_empty (α : Type*) :
+    IsLowerSet {(∅ : Set α)} := by
   intro _ _ blea ain
   rw [ain, ← Set.bot_eq_empty, ← eq_bot_iff, Set.bot_eq_empty] at blea
   rw [blea]; rfl
 
-theorem Finset.isLowerSet_singleton_empty (α : Type*):
-IsLowerSet {(∅ : Finset α)} := by
+theorem Finset.isLowerSet_singleton_empty (α : Type*) :
+    IsLowerSet {(∅ : Finset α)} := by
   intro _ _ blea ain
   rw [ain, ← Finset.bot_eq_empty, ← eq_bot_iff, Finset.bot_eq_empty] at blea
   rw [blea]; rfl
@@ -33,7 +34,8 @@ namespace AbstractSimplicialComplex
 
 variable {V : Type*}
 
-lemma subset_mem (F : AbstractSimplicialComplex V) : ∀ {s t}, s ∈ F.faces →  t ⊆ s → t ∈ F.faces
+lemma subset_mem (F : AbstractSimplicialComplex V) :
+    ∀ {s t}, s ∈ F.faces →  t ⊆ s → t ∈ F.faces
   := fun hs hst => F.lower' hst hs
 
 instance : SetLike (AbstractSimplicialComplex V) (Finset V) where
@@ -100,8 +102,7 @@ lemma sInf_isGLB (s : Set (AbstractSimplicialComplex V)) : IsGLB s (sInf s) := b
 
 /-- instance: The set of all ASCs on V is a complete lattice with intersections and unions of the set of faces.
 -/
-instance complete_lattice : CompleteLattice (AbstractSimplicialComplex V)
-where
+instance complete_lattice : CompleteLattice (AbstractSimplicialComplex V) where
   inf := fun F G => ⟨F.faces ∩ G.faces, Set.mem_inter F.empty_mem G.empty_mem, IsLowerSet.inter F.lower' G.lower'⟩
   le_inf := fun _ _ _ hab hac _ ha =>
     Set.mem_inter (hab ha) (hac ha)
@@ -110,7 +111,8 @@ where
   inf_le_left := fun _ _ _ ha => ha.1
   __ := completeLatticeOfInf (AbstractSimplicialComplex V) sInf_isGLB
 
-def unionSubset {s : Set <| AbstractSimplicialComplex V} (hs : s.Nonempty) : AbstractSimplicialComplex V where
+def unionSubset {s : Set <| AbstractSimplicialComplex V} (hs : s.Nonempty) :
+    AbstractSimplicialComplex V where
   faces := ⋃ F : s, F.1.faces
   empty_mem := by
     simp [Set.mem_iUnion]
@@ -194,17 +196,18 @@ lemma isPure_iff_isPure' {F : AbstractSimplicialComplex V} : F.IsPure ↔ ∃ d,
       exfalso
       exact hemp s hs
 
-lemma pure_def {F : AbstractSimplicialComplex V} [Pure F] : ∀ s ∈ F.Facets, ∀ t ∈ F.Facets, s.card = t.card := Pure.pure
+lemma pure_def {F : AbstractSimplicialComplex V} [Pure F] :
+  ∀ s ∈ F.Facets, ∀ t ∈ F.Facets, s.card = t.card := Pure.pure
 
 lemma pure_isPure {F : AbstractSimplicialComplex V} [Pure F] : IsPure F := pure_def
 
 /--
 If the size of simplices in F is unbounded, it has rank 0 by definition.
 
-Remark: We should general be careful with the unbounded case.
+Remark: We should in general be careful with the unbounded case.
 -/
-
-noncomputable def rank (F : AbstractSimplicialComplex V) : ℕ := iSup fun s : F.faces => s.1.card
+noncomputable def rank (F : AbstractSimplicialComplex V) : ℕ :=
+  iSup fun s : F.faces => s.1.card
 
 /-- Definition: For a collection s of subsets of V, we denote by closure s the smallest ASC over V containing all elements in s
 as faces.
@@ -276,7 +279,7 @@ def closurePower (s : Set (Finset V)) : AbstractSimplicialComplex V where
     · exact Finset.isLowerSet_singleton_empty V
 
 theorem closure_union_eq_iSup_closure {ι : Type*} (p : ι → Set (Finset V)) :
-  closure (⋃ i : ι, p i) = ⨆ i : ι, closure (p i) := by
+    closure (⋃ i : ι, p i) = ⨆ i : ι, closure (p i) := by
   apply le_antisymm
   · apply sInf_le
     simp only [Set.iUnion_subset_iff, Set.mem_setOf_eq]
@@ -293,7 +296,7 @@ Lemma: Let s be a collection of finsets in V. Then the closure of s is just the 
 
 Remark: So taking closure commuts with taking union.
 -/
-lemma closure_eq_iSup (s : Set (Finset V)) : closure s = ⨆ f : s,  closure {f.1} := by
+lemma closure_eq_iSup (s : Set (Finset V)) : closure s = ⨆ f : s, closure {f.1} := by
   rw [← closure_union_eq_iSup_closure,
     Set.iUnion_singleton_eq_range, Subtype.range_coe_subtype, Set.setOf_mem_eq]
 
