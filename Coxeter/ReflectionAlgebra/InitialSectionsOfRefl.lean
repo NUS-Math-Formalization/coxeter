@@ -128,13 +128,13 @@ def ExistFinset (f : ReflAlgebra G) : Prop := ∀ (w : G), ∃ (T : Finset (Refl
 
 
 
-def dotActionSymmDiff (A : InitialSectionReflOrder G)
+def DotActionSymmDiff (A : InitialSectionReflOrder G)
   (t : Refl G) : Prop := (dotAction (t : G) A).val = symmDiff (A : Set (Refl G)) ({t}) ∧ (t ∉ (A : Set (Refl G)))
 
 def Hecke' (G : Type*) [cox: CoxeterGroup G] :
   Subalgebra ℛ (ReflAlgebra G) where
     carrier := {f | ExistFinset f ∧ ∀ (t : Refl G) (w : G) (A :  InitialSectionReflOrder G ),
-      dotActionSymmDiff A t → f w A = if w*t < t then f w A else f w A + (q½ - q-½) * (f (w * t) A)}
+      DotActionSymmDiff A t → f w A = if w*t < t then f w A else f w A + (q½ - q-½) * (f (w * t) A)}
     mul_mem' := sorry
     add_mem' := sorry
     algebraMap_mem' := sorry
@@ -171,7 +171,7 @@ theorem Hecke'.toHeckeHom.Surjective : Function.Surjective (Hecke'.toHeckeHom (G
 def Hecke'.toHeckeIso: (Hecke' G) ≃ₐ[ℛ] (Hecke G) := AlgEquiv.ofBijective (Hecke'.toHeckeHom (G := G)) ⟨Hecke'.toHeckeHom.Injective, Hecke'.toHeckeHom.Surjective⟩
 
 
-def R' (x w : G) : Hecke' G := sorry
+def r' (x w : G) : Hecke' G := sorry
 
 
 end HeckeAlgebra
