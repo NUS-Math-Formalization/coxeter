@@ -237,21 +237,13 @@ lemma removeNth_cons (s : α) (L : List α) {i : ℕ} (h : i > 0) :
 -- DLevel 2
 lemma take_of_removeNth (L : List α) {i j : ℕ} (h : i ≤ j) :
     (L.removeNth j).take i = L.take i := by
-  by_cases h' : j ≥ L.length
-  . have : L.removeNth j = L := remove_after_L_length L h'
-    rw [this]
+  by_cases h' : L.length ≤ j
+  . rw [remove_after_L_length L h']
   . rw [removeNth_eq_take_drop]
-    push_neg at h'
-    have h'' : j ≤ L.length := by linarith
-    have : (L.take j).length = j := take_le_length L h''
-    have i_le_j' : i ≤ (L.take j).length := by linarith
-    have : L.take i = (L.take j).take i := by
-      nth_rw 1 [← min_eq_left h]
-      apply Eq.symm
-      apply List.take_take i j L
-    rw [this]
-    exact take_append_of_le_length i_le_j'
-
+    nth_rw 2 [← min_eq_left h]
+    rw [← List.take_take i j L]
+    exact take_append_of_le_length (le_trans h
+      (le_of_eq (take_le_length L (by linarith)).symm))
 
 lemma removeNth_reverse (L : List α) (n : ℕ) (h : n < L.length) :
   (L.reverse).removeNth n = (L.removeNth (L.length - n - 1)).reverse := by

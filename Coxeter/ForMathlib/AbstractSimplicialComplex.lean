@@ -13,16 +13,17 @@ structure AbstractSimplicialComplex (V : Type*)  where
   empty_mem : ∅ ∈ faces
   lower' : IsLowerSet faces -- The set of faces is a lower set under the inclusion relation.
 
-theorem AbstractSimplicialComplex.nonempty {V : Type*} {F : AbstractSimplicialComplex V} : F.faces.Nonempty := Set.nonempty_of_mem F.empty_mem
+theorem AbstractSimplicialComplex.nonempty {V : Type*} {F : AbstractSimplicialComplex V} :
+  F.faces.Nonempty := Set.nonempty_of_mem F.empty_mem
 
-theorem isLowerSet_singleton_empty (α : Type*):
-IsLowerSet {(∅ : Set α)} := by
+theorem isLowerSet_singleton_empty (α : Type*) :
+    IsLowerSet {(∅ : Set α)} := by
   intro _ _ blea ain
   rw [ain, ← Set.bot_eq_empty, ← eq_bot_iff, Set.bot_eq_empty] at blea
   rw [blea]; rfl
 
-theorem Finset.isLowerSet_singleton_empty (α : Type*):
-IsLowerSet {(∅ : Finset α)} := by
+theorem Finset.isLowerSet_singleton_empty (α : Type*) :
+    IsLowerSet {(∅ : Finset α)} := by
   intro _ _ blea ain
   rw [ain, ← Finset.bot_eq_empty, ← eq_bot_iff, Finset.bot_eq_empty] at blea
   rw [blea]; rfl
@@ -33,7 +34,8 @@ namespace AbstractSimplicialComplex
 
 variable {V : Type*}
 
-lemma subset_mem (F : AbstractSimplicialComplex V) : ∀ {s t}, s ∈ F.faces →  t ⊆ s → t ∈ F.faces
+lemma subset_mem (F : AbstractSimplicialComplex V) :
+    ∀ {s t}, s ∈ F.faces →  t ⊆ s → t ∈ F.faces
   := fun hs hst => F.lower' hst hs
 
 instance : SetLike (AbstractSimplicialComplex V) (Finset V) where
@@ -116,8 +118,10 @@ lemma sInf_isGLB (s : Set (AbstractSimplicialComplex V)) : IsGLB s (sInf s) := b
 
 /-- instance: The set of all ASCs on `V` is a complete lattice with intersections and unions of the set of faces.
 -/
+
 instance instCompleteLatticeToAbstractSimplicialComplex : CompleteLattice (AbstractSimplicialComplex V)
 where
+
   inf := fun F G => ⟨F.faces ∩ G.faces, Set.mem_inter F.empty_mem G.empty_mem, IsLowerSet.inter F.lower' G.lower'⟩
   le_inf := fun _ _ _ hab hac _ ha =>
     Set.mem_inter (hab ha) (hac ha)
@@ -126,10 +130,12 @@ where
   inf_le_left := fun _ _ _ ha => ha.1
   __ := completeLatticeOfInf (AbstractSimplicialComplex V) sInf_isGLB
 
+
 @[simp]
 lemma inf_faces (F G : AbstractSimplicialComplex V) : (F ⊓ G).faces = F.faces ∩ G.faces := rfl
 
 def unionSubset {s : Set <| AbstractSimplicialComplex V} (hs : s.Nonempty) : AbstractSimplicialComplex V where
+
   faces := ⋃ F : s, F.1.faces
   empty_mem := by
     simp [Set.mem_iUnion]
@@ -170,6 +176,7 @@ lemma sup_faces (F G : AbstractSimplicialComplex V) : (F ⊔ G).faces = F.faces 
   let s : Set (AbstractSimplicialComplex V) := {F, G}
   rw [show F ⊔ G = sSup s by simp [s], show F.faces ∪ G.faces = ⋃ i : s, i.1.faces by simp [s], sSup_faces_of_nonempty (by simp [s])]
 
+
 @[simp]
 theorem iInf_faces {ι : Type*} (x : ι → AbstractSimplicialComplex V) : (⨅ i, x i).faces = ⋂ i, (x i).faces := by
   unfold iInf
@@ -185,9 +192,11 @@ theorem iSup_faces_of_nonempty {ι : Type*} (x : ι → AbstractSimplicialComple
     apply Set.not_nonempty_iff_eq_empty.1 at h
     simp at h
 
+
 end order
 
 section closure
+
 
 /-- Definition: For a collection s of subsets of V, we denote by closure s the smallest ASC over V containing all elements in s
 as faces.
@@ -250,6 +259,7 @@ def closurePower (s : Set (Finset V)) : AbstractSimplicialComplex V where
 /-- Similar statement for `⨅` is not true.-/
 theorem closure_iUnion_eq_iSup_closure {ι : Type*} (p : ι → Set (Finset V)) :
   closure (⋃ i : ι, p i) = ⨆ i : ι, closure (p i) := by
+
   apply le_antisymm
   · apply sInf_le
     simp only [Set.iUnion_subset_iff, Set.mem_setOf_eq]
@@ -266,8 +276,10 @@ Lemma: Let `s` be a collection of finsets in `V`. Then the closure of `s` is jus
 
 Remark: So taking closure commuts with taking union.
 -/
+
 lemma closure_eq_iSup (s : Set (Finset V)) : closure s = ⨆ f : s,  closure {f.1} := by
   rw [← closure_iUnion_eq_iSup_closure,
+
     Set.iUnion_singleton_eq_range, Subtype.range_coe_subtype, Set.setOf_mem_eq]
 
 theorem closure_eq_closurePower (s: Set (Finset V)) : closure s = closurePower s := by
