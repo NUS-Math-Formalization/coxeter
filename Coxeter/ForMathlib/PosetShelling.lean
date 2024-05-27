@@ -13,4 +13,5 @@ def ShellableDelta (P : Type*) [PartialOrder P] [Fintype P] [GradedPoset P] :=
 
 
 
+
 end PartialOrder
