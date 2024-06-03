@@ -19,7 +19,7 @@ Definition: Let `F` be an abstract simplicial complex of rank `d + 1` with finit
 A shelling of `F` is an linear ordering `l₁`, ⋯ , `lₘ` of all (maximal) facets of F such that
  `closure {lᵢ} ⊓ (⨆ {j < i}, closure {lⱼ})` is an abstract simplicial complex pure of rank `d`.
 -/
-def Shelling {F : AbstractSimplicialComplex V} {m : ℕ} (l : Fin m ≃ Facets F) := F.rank > 0 ∧
+def Shelling {F : AbstractSimplicialComplex V} {m : ℕ} [NeZero m] (l : Fin m ≃ Facets F) := F.rank > 0 ∧
   ∀ k : Fin m, 0 < k.1 → IsPure' ((⨆ j : {j // j < k}, closure {(l j).1}) ⊓ (closure {(l k).1})) (F.rank - 1)
 
 /--
@@ -29,7 +29,7 @@ for any `i < k`, there exists `j < k`, such that `lᵢ ∩ lₖ ⊆ lⱼ ∩ l�
 
 Doesn't make sense if `m = 0`.
 -/
-def Shelling' {F :  AbstractSimplicialComplex V} {m : ℕ} (l : Fin m ≃ Facets F) :=
+def Shelling' {F :  AbstractSimplicialComplex V} {m : ℕ} [NeZero m] (l : Fin m ≃ Facets F) :=
   F.rank > 0 ∧
   ∀ k i : Fin m, i < k → ∃ j : Fin m, j < k ∧
     (l i).1 ∩ (l k).1 ⊆ (l j).1 ∩ (l k).1 ∧
@@ -79,47 +79,57 @@ lemma shelling_iff_shelling' {F : AbstractSimplicialComplex V} {m : ℕ} [NeZero
       let aux := fun (i : {i // i < k}) ↦ h k i.val i.prop
         /- ∀(i : { i // i < k }), ∃j < k s.t. ↑(l i) ∩ ↑(l k) ⊆ ↑(l j) ∩ ↑(l k) ∧ |(↑(l j) ∩ ↑(l k))| = rank F - 1 -/
       have : (⨆ i : {i // i < k}, closure {(l i).1}) ⊓ (closure {(l k).1}) = ⨆ i : {i // i < k}, closure {(l (choose (aux i))).1 ∩ (l k).1} := by
-        /- WTS ⨆ᵢ<ₖ cl{lᵢ} ⊓ cl{lₖ} = ⨆ᵢ<ₖ cl{?} ; are we choosing a j here s.t. cardinality is rank F - 1 ? -/
+        /- WTS ⨆ᵢ<ₖ cl{lᵢ} ⊓ cl{lₖ} = ⨆ᵢ<ₖ cl{lᵢ ∩ lₖ} ; choosing a j here s.t. cardinality is rank F - 1 -/
         rw [iSup_inf_eq]
           /- rw as union of intersections, i.e. ⨆ᵢ<ₖ cl{lᵢ} ⊓ cl{lₖ} = ⨆ᵢ<ₖ (cl{lᵢ} ⊓ cl{lₖ}) -/
         apply le_antisymm
+          /- split into two cases: ⨆ᵢ<ₖ (cl{lᵢ} ⊓ cl{lₖ}) ≤ ⨆ᵢ<ₖ cl{lᵢ ∩ lₖ} and vice versa -/
         · apply iSup_mono
-            /- for each i (?) have (cl{lᵢ} ⊓ cl{lₖ}) ≤ (cl{lᵢ} ⊓ cl{lₖ})-/
+            /- rw goal as (cl{lᵢ} ⊓ cl{lₖ}) ≤ cl{lᵢ ∩ lₖ} for any i < k -/
           intro i
+            /- let i < k -/
           rw [← closure_singleton_inter_eq_inf]
-            /- ⨆ᵢ<ₖ (cl{lᵢ} ⊓ cl{lₖ}) = ⨆ᵢ<ₖ cl{lᵢ ⊓ lₖ} -/
+            /- (cl{lᵢ} ⊓ cl{lₖ}) = cl{lᵢ ∩ lₖ} -/
           apply closure_singleton_mono
+            /- suffices to show lᵢ ∩ lₖ ⊆ lᵢ ∩ lₖ (the i on the RHS is aux i) -/
           convert (choose_spec (aux i)).2.1
+            /- fix aux i -/
         · apply iSup_le
+            /- rw goal as cl{lᵢ ∩ lₖ} ≤ ⨆ᵢ<ₖ (cl{lᵢ} ⊓ cl{lₖ}) for any i -/
           intro i
+            /- let i < k -/
           apply le_iSup_of_le ⟨choose (aux i), (choose_spec (aux i)).1⟩
+            /- rw goal as cl{lᵢ ∩ lₖ} ≤ cl{lᵢ} ⊓ closure {lₖ} -/
           rw [← closure_singleton_inter_eq_inf]
       rw [this]
       apply isPure'_iSup_isPure' fun i ↦ isPure'_closure_singleton (choose_spec (aux i)).2.2
-
-
-
+        /- for all i the union members are pure ASCs, so their union is -/
 
 
 /-- Definition: An abstract simplicial complex `F` is called shellable, if it admits a shelling. -/
-def Shellable (F : AbstractSimplicialComplex F) := ∃ (m : ℕ) (l : Fin m ≃ Facets F), Shelling l
+def Shellable (F : AbstractSimplicialComplex F) := ∃ (m : ℕ+) (l : Fin m ≃ Facets F), Shelling l
 
 -- lemma cone_Shellabe_iff {F G : AbstractSimplicialComplex V} {r : ℕ} [Pure F] [Pure G] (x : V) (hcone: Cone F G x) :
 --   Shellable F ↔ Shellable G  := by sorry
 
 /-- Definition: An abstract simplicial complex `F` is shellable, if it admits a shelling using the second definition. -/
-def Shellable' (F: AbstractSimplicialComplex F) := ∃ (m : ℕ) (l : Fin m ≃ Facets F), Shelling' l
+def Shellable' (F: AbstractSimplicialComplex F) := ∃ (m : ℕ+) (l : Fin m ≃ Facets F), Shelling' l
 
 /-- Lemma: The two definitions of shellability are equivalent. -/
-lemma shellable_iff_shellable' {F : AbstractSimplicialComplex V} {m : ℕ} [NeZero m] (l : Fin m ≃ Facets F) :
+lemma shellable_iff_shellable' {F : AbstractSimplicialComplex V} :
   Shellable F ↔ Shellable' F := by
-  constructor <;> refine fun ⟨a, h⟩ ↦ ⟨a, ?_⟩
-  · /- rcases h with ⟨w, leq⟩
-    apply shelling_iff_shelling' l -/
-
-    have : Shelling l := by sorry
-    have : Shelling' l := by
-      apply shelling_iff_shelling'.mp this
-
+    constructor
+    · intro h
+      rcases h with ⟨m, l, sl⟩
+      use m
+      use l
+      apply (shelling_iff_shelling' l).mp
+      exact sl
+    · intro h
+      rcases h with ⟨m, l, sl⟩
+      use m
+      use l
+      apply (shelling_iff_shelling' l).mpr
+      exact sl
 
 end AbstractSimplicialComplex

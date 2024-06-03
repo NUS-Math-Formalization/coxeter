@@ -19,7 +19,7 @@ Definition: Let `F` be an abstract simplicial complex of rank `d + 1` with finit
 A shelling of `F` is an linear ordering `l₁`, ⋯ , `lₘ` of all (maximal) facets of F such that
  `closure {lᵢ} ⊓ (⨆ {j < i}, closure {lⱼ})` is an abstract simplicial complex pure of rank `d`.
 -/
-def Shelling {F : AbstractSimplicialComplex V} {m : ℕ} (l : Fin m ≃ Facets F) := F.rank > 0 ∧
+def Shelling {F : AbstractSimplicialComplex V} {m : ℕ} [NeZero m] (l : Fin m ≃ Facets F) := F.rank > 0 ∧
   ∀ k : Fin m, 0 < k.1 → IsPure' ((⨆ j : {j // j < k}, closure {(l j).1}) ⊓ (closure {(l k).1})) (F.rank - 1)
 
 /--
@@ -29,7 +29,7 @@ for any `i < k`, there exists `j < k`, such that `lᵢ ∩ lₖ ⊆ lⱼ ∩ l�
 
 Doesn't make sense if `m = 0`.
 -/
-def Shelling' {F :  AbstractSimplicialComplex V} {m : ℕ} (l : Fin m ≃ Facets F) :=
+def Shelling' {F :  AbstractSimplicialComplex V} {m : ℕ} [NeZero m] (l : Fin m ≃ Facets F) :=
   F.rank > 0 ∧
   ∀ k i : Fin m, i < k → ∃ j : Fin m, j < k ∧
     (l i).1 ∩ (l k).1 ⊆ (l j).1 ∩ (l k).1 ∧
@@ -87,9 +87,29 @@ lemma shelling_iff_shelling' {F : AbstractSimplicialComplex V} {m : ℕ} [NeZero
 
 
 /-- Definition: An abstract simplicial complex `F` is called shellable, if it admits a shelling. -/
-def Shellable (F : AbstractSimplicialComplex F) := ∃ (m : ℕ) (l : Fin m ≃ Facets F), Shelling l
+def Shellable (F : AbstractSimplicialComplex F) := ∃ (m : ℕ+) (l : Fin m ≃ Facets F), Shelling l
 
 -- lemma cone_Shellabe_iff {F G : AbstractSimplicialComplex V} {r : ℕ} [Pure F] [Pure G] (x : V) (hcone: Cone F G x) :
 --   Shellable F ↔ Shellable G  := by sorry
+
+/-- Definition: An abstract simplicial complex `F` is shellable, if it admits a shelling using the second definition. -/
+def Shellable' (F: AbstractSimplicialComplex F) := ∃ (m : ℕ+) (l : Fin m ≃ Facets F), Shelling' l
+
+/-- Lemma: The two definitions of shellability are equivalent. -/
+lemma shellable_iff_shellable' {F : AbstractSimplicialComplex V} :
+  Shellable F ↔ Shellable' F := by
+    constructor
+    · intro h
+      rcases h with ⟨m, l, sl⟩
+      use m
+      use l
+      apply (shelling_iff_shelling' l).mp
+      exact sl
+    · intro h
+      rcases h with ⟨m, l, sl⟩
+      use m
+      use l
+      apply (shelling_iff_shelling' l).mpr
+      exact sl
 
 end AbstractSimplicialComplex
