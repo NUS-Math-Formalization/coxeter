@@ -23,7 +23,6 @@ open List Classical
 /- Defintion: We define the set of edges of P as the set of all pairs (a,b) such that a is covered by b.-/
 def edges (P : Type*) [PartialOrder P] : Set (P × P) := {(a, b) | a ⋖ b }
 
-
 /-
 Definition: A chain in the poset P is a finite sequence x₀ < x₁ < ⋯ < x_n.
 -/
@@ -450,7 +449,7 @@ lemma maximal_chain_of_cover_chain {P :Type*} [PartialOrder P] [BoundedOrder P] 
 
 /- Definition: We say a poset P is bounded, if it has a unique minimal and a unique maximal element. -/
 /-
-Lemma: Let P be a bounded finite poset. Then a maximal chain exsits.
+Lemma: Let P be a bounded finite poset. Then a maximal chain exists.
 -/
 
 lemma exist_maximal_chain {P : Type*} [PartialOrder P] [BoundedOrder P] [Fintype P] :
@@ -566,9 +565,6 @@ lemma max_chain_mem_edge {P : Type*} [PartialOrder P] {L: List P} {e: P × P} :
     subst h
     simp at this
     exact this.2.1
-
-
-
 
 /-
 We define the set of all maximal chains of P.
