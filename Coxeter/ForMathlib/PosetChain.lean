@@ -85,6 +85,14 @@ lemma getLast_eq_of_getLast?_eq_coe {L : List P} (h : L ≠ []) (h' : L.getLast?
     simp at *
     assumption
 
+lemma head_eq_of_head?_eq_coe {L : List P} (h : L ≠ []) (h' : L.head? = .some a) : L.head h = a := by
+  unfold List.head? at *
+  match L with
+  | [] => simp at *
+  | b :: L' =>
+    simp at *
+    assumption
+
 /-Lemma: A chain has no duplicates.-/
 lemma chain_nodup {L : List P} (h : chain L) : L.Nodup := by
   induction L with
@@ -585,7 +593,7 @@ abbrev maximalChains (P : Type*) [PartialOrder P] [Fintype P] : Finset (List P) 
 def edgePairs {P : Type*} [PartialOrder P] [Fintype P] (L : maximalChains P) : List (edges P) :=
   List.map (fun e => ⟨e.val, max_chain_mem_edge  (Set.mem_setOf_eq.mp (Set.mem_toFinset.mp L.prop))  e.prop⟩) <| L.val.adjEPairs
 
-/- Definition: Define rank to be the Sup of the lenghts of all maximal chains.
+/- Definition: Define rank to be the Sup of the lengths of all maximal chains.
 
   Note that if the length is unbounded,then rank = 0.
  -/
